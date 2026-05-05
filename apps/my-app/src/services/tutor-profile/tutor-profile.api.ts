@@ -15,6 +15,7 @@ import {
   TutorReviewsDto,
   TutorResourcesDto,
   SubmitTutorProfileDto,
+  VerificationStatus,
 } from "@mezon-tutors/shared";
 
 type VerifiedTutorFilters = {
@@ -77,6 +78,13 @@ export const tutorProfileApi = {
   submit(payload: SubmitTutorProfileDto): Promise<boolean> {
     return apiClient.post<ApiResponse<boolean>, boolean>("/tutor-profiles", payload);
   },
+
+  getMyTutorProfileStatus(): Promise<{ hasProfile: boolean; verificationStatus: VerificationStatus | null }> {
+    return apiClient.get<
+      ApiResponse<{ hasProfile: boolean; verificationStatus: VerificationStatus | null }>,
+      { hasProfile: boolean; verificationStatus: VerificationStatus | null }
+    >("/tutor-profiles/me/status");
+  },
 };
 
 const useGetVerifiedTutors = (page: number, limit: number, filters: VerifiedTutorFilters) => {
@@ -135,6 +143,7 @@ const useSubmitTutorProfileMutation = () => {
     mutationFn: (payload: SubmitTutorProfileDto) => tutorProfileApi.submit(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.myTutorProfileStatus() });
     },
   });
 };
@@ -143,6 +152,14 @@ export function submitTutorProfile(payload: SubmitTutorProfileDto): Promise<bool
   return tutorProfileApi.submit(payload);
 }
 
+const useGetMyTutorProfileStatus = () => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.myTutorProfileStatus(),
+    queryFn: () => tutorProfileApi.getMyTutorProfileStatus(),
+    staleTime: 60 * 1000,
+  });
+};
+
 export {
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
@@ -150,4 +167,5 @@ export {
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
   useSubmitTutorProfileMutation,
+  useGetMyTutorProfileStatus,
 };

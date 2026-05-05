@@ -4,6 +4,7 @@ export * from "./dm-channel/dm-channel.api";
 export * from "./mezon-light/mezon-light.client";
 export * from "./mezon-light/mezon-light.service";
 export * from "./tutor-profile/tutor-profile.api";
+export * from "./tutor-profile/tutor-profile.qkey";
 export * from "./trial-lesson-booking/trial-lesson-booking.api";
 export * from "./review/review.api";
 export * from "./storage/storage.service";

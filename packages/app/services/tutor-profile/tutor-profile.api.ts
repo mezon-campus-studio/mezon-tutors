@@ -15,6 +15,7 @@ import {
   TutorReviewsDto,
   TutorResourcesDto,
   SubmitTutorProfileDto,
+  VerificationStatus,
 } from '@mezon-tutors/shared'
 
 type VerifiedTutorFilters = {
@@ -25,6 +26,12 @@ type VerifiedTutorFilters = {
 }
 
 export const tutorProfileApi = {
+  getMyTutorProfileStatus(): Promise<{ hasProfile: boolean; verificationStatus: VerificationStatus | null }> {
+    return apiClient.get<ApiResponse<{ hasProfile: boolean; verificationStatus: VerificationStatus | null }>, { hasProfile: boolean; verificationStatus: VerificationStatus | null }>(
+      '/tutor-profiles/me/status'
+    )
+  },
+
   async getVerifiedTutors(
     page: number,
     limit: number,
@@ -90,6 +97,14 @@ const useGetVerifiedTutors = (page: number, limit: number, filters: VerifiedTuto
   })
 }
 
+const useGetMyTutorProfileStatus = () => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.myStatus(),
+    queryFn: () => tutorProfileApi.getMyTutorProfileStatus(),
+    retry: false,
+  })
+}
+
 const useGetVerifiedTutorAbout = (id: string) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.tutorAbout(id),
@@ -138,6 +153,7 @@ export function submitTutorProfile(payload: SubmitTutorProfileDto): Promise<bool
 }
 
 export {
+  useGetMyTutorProfileStatus,
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
   useGetVerifiedTutorSchedule,

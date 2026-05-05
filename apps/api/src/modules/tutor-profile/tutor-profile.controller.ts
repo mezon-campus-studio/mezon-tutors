@@ -45,6 +45,13 @@ export class TutorProfileController {
     return { success: true }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me/status')
+  async getMyTutorProfileStatus(@Req() req: Request) {
+    const user = req.user as AuthUserPayload
+    return this.tutorProfileService.getMyTutorProfileStatus(user.sub)
+  }
+
   @Get('verified')
   async getVerifiedTutors(
     @Query() query: VerifiedTutorQueryDto

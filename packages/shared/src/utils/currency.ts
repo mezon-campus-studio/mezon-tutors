@@ -18,6 +18,23 @@ export function formatToCurrency(currency: ECurrency, amount: number): string {
   }).format(amount)
 }
 
+export function getCurrencySymbol(currency: ECurrency): string {
+  let locale = ELocale.VIETNAMESE
+
+  if (currency === ECurrency.VND) {
+    locale = ELocale.VIETNAMESE
+  } else {
+    locale = ELocale.ENGLISH
+  }
+
+  const formatted = new Intl.NumberFormat(locale.toString(), {
+    style: 'currency',
+    currency,
+  }).format(0)
+
+  return formatted.replace(/[\d\s.,]/g, '').trim()
+}
+
 export function formatToVND(amount: number): string {
   return new Intl.NumberFormat(ELocale.VIETNAMESE, {
     style: 'currency',

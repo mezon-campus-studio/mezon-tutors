@@ -8,6 +8,7 @@ import {
   TutorProfileVideoState,
   TutorProfileAvailabilityState,
   TimeSlot,
+  ECurrency,
 } from '@mezon-tutors/shared'
 
 export const defaultAboutState: TutorProfileAboutState = {
@@ -66,6 +67,7 @@ export const defaultVideoState: TutorProfileVideoState = {
 export const defaultAvailabilityState: TutorProfileAvailabilityState = {
   selectedDayIndex: 0,
   hourlyRate: '',
+  currency: ECurrency.USD,
   slotsByDay: Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
 }
 

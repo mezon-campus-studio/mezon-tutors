@@ -1,5 +1,6 @@
 {
   "About": {
+    "headerTitle": "Tutor Registration",
     "draftSaved": "Draft saved at {time}",
     "saveExit": "Save & Exit",
     "stepLabel": "Step 1: About",
@@ -41,7 +42,7 @@
       "countryRequired": "Country is required",
       "countryFromList": "Please select a country from the list",
       "phoneRequired": "Phone is required",
-        "phoneInvalid": "Invalid phone number",
+      "phoneInvalid": "Invalid phone number",
       "subjectRequired": "Subject is required",
       "subjectFromList": "Please select a subject from the list",
       "languagesRequired": "Languages are required",
@@ -57,6 +58,13 @@
     "stepLabel": "Step 2: Profile photo",
     "progressPercentLabel": "{percent}% Complete",
     "nextLabel": "Next: Certification & Education",
+    "avatar": {
+      "label": "Avatar",
+      "title": "Your profile photo",
+      "subtitle": "We will use your current Mezon avatar for your tutor profile.",
+      "syncedNote": "This avatar is synced from Mezon.",
+      "manualSyncNote": "You can update it and manually sync from Mezon after approval."
+    },
     "title": "Upload your profile photo",
     "subtitle": "A professional, friendly photo helps you get up to 5x more students and builds immediate trust.",
     "cardTitle": "Tell us about yourself",
@@ -68,6 +76,7 @@
     "identity": {
       "title": "Update Identity Documents",
       "subtitle": "Upload your ID card, national ID, or passport to verify your identity.",
+      "emptyState": "No identity photo",
       "uploadButton": "Upload identity photo",
       "tipsTitle": "Tips for Taking Identity Document Photos",
       "tips": {
@@ -125,6 +134,7 @@
       "photoInvalidType": "Photo must be JPG or PNG",
       "photoInvalidSize": "Photo must be smaller than {max}MB",
       "photoUploadFailed": "Upload failed, please try again",
+      "identityUploadFailed": "Upload failed, please try again",
       "identityRequired": "Identity photo is required",
       "identityInvalidType": "Identity photo must be JPG or PNG",
       "identityInvalidSize": "Identity photo must be smaller than {max}MB"
@@ -142,8 +152,12 @@
     "teaching": {
       "certificateLabel": "Select Certificate",
       "certificatePlaceholder": "e.g. TEFL, TESOL, CELTA",
+      "certificateOther": "Other",
+      "customCertificateLabel": "Certificate Name",
+      "customCertificatePlaceholder": "Enter your certificate name",
       "yearLabel": "Year of Completion",
       "yearPlaceholder": "YYYY",
+      "noResults": "No results found",
       "uploadTitle": "Upload your certificate",
       "uploadPrompt": "Click to upload or drag and drop",
       "uploadHint": "PDF, JPG or PNG (max. 5MB)",
@@ -165,6 +179,8 @@
     "back": "Back",
     "continue": "Continue to Video Step",
     "validation": {
+      "certificateTypeRequired": "Certificate type is required",
+      "customCertificateNameRequired": "Certificate name is required",
       "certificateRequired": "Certificate is required",
       "yearRequired": "Year is required",
       "yearInvalid": "Year must be YYYY",
@@ -206,7 +222,7 @@
     },
     "bestPracticesTitle": "Video Best Practices",
     "bestPractices": [
-      "Keep it between 1–2 minutes long",
+      "Keep it between 1-2 minutes long",
       "Record in a quiet, well-lit space",
       "Introduce your experience and teaching style"
     ],
@@ -238,11 +254,19 @@
     "rate": {
       "question": "How much do you want to charge per hour?",
       "currencyLabel": "USD / hr",
-      "recommended": "Recommended: $25.00 - $45.00 for your subjects."
+      "recommended": "Recommended: {min} - {max} for your subjects."
     },
     "availabilityCardTitle": "Weekly Availability",
     "availability": {
-      "tabs": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      "tabs": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
       "presetTabs": {
         "standard": "Standard",
         "custom": "Custom"
@@ -264,6 +288,7 @@
       "hourlyRateGreaterThanZero": "Hourly rate must be greater than 0.",
       "weeklySlotsRequired": "Please add at least one weekly availability slot before continuing.",
       "timeRequired": "Start time and end time are required.",
+      "minuteStepInvalid": "Minutes must be 00 or 30 (30-minute step).",
       "endTimeMustBeAfterStartTime": "End time must be after start time."
     }
   },
@@ -279,11 +304,42 @@
     "secondaryCta": "Explore Tutors",
     "helpText": "Need help? Contact our support team at support@tutorhub.com.",
     "footer": {
-      "copyright": "© 2024 TutorHub Global. All rights reserved.",
-      "links": ["Terms of Service", "Privacy Policy", "Trust & Safety"]
+      "copyright": "? 2024 TutorHub Global. All rights reserved.",
+      "links": [
+        "Terms of Service",
+        "Privacy Policy",
+        "Trust & Safety"
+      ]
+    }
+  },
+  "EntryStatus": {
+    "loading": "Checking your tutor profile...",
+    "pending": {
+      "status": "PENDING",
+      "title": "Your tutor profile is being reviewed",
+      "description": "Please wait for our review result via email. We usually complete this within 48 hours."
+    },
+    "approved": {
+      "status": "APPROVED",
+      "title": "You are already a tutor",
+      "description": "Your profile has been approved. You can now manage booking requests and your schedule.",
+      "bookingRequests": "Go to Booking Requests",
+      "mySchedule": "Go to My Schedule"
+    },
+    "rejected": {
+      "status": "REJECTED",
+      "title": "Your tutor profile needs updates",
+      "description": "Your previous submission was rejected. Please update your profile information and submit again.",
+      "restart": "Update From Step 1"
     }
   },
   "Navigation": {
-    "steps": ["About", "Photo", "Certification", "Video", "Availability"]
+    "steps": [
+      "About",
+      "Photo",
+      "Certification",
+      "Video",
+      "Availability"
+    ]
   }
 }

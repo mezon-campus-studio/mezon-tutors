@@ -29,30 +29,61 @@ import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto';
 export class TutorProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private buildTrialLessonPriceData(price: number, currency?: ECurrency) {
-    const selectedCurrency = currency ?? ECurrency.VND;
-    const normalized = Math.max(0, Number(price) || 0);
+  private buildTrialLessonPriceData(dto: SubmitTutorProfileDto) {
+    const baseCurrency = dto.currency ?? ECurrency.VND;
+    const prices = (dto as any).prices;
 
+    if (prices) {
+      return {
+        baseCurrency,
+        usd: String(prices.usd),
+        vnd: BigInt(Math.round(prices.vnd)),
+        php: String(prices.php),
+      };
+    }
+
+    const price = Number((dto as any).pricePerHour ?? (dto as any).price ?? 0);
+    const normalized = Math.max(0, price);
+    
     let usd = normalized / 25000;
     let vnd = normalized;
     let php = usd * 57;
 
-    if (selectedCurrency === ECurrency.USD) {
+    if (baseCurrency === ECurrency.USD) {
       usd = normalized;
       vnd = usd * 25000;
       php = usd * 57;
-    } else if (selectedCurrency === ECurrency.PHP) {
+    } else if (baseCurrency === ECurrency.PHP) {
       php = normalized;
       usd = php / 57;
       vnd = usd * 25000;
     }
 
     return {
-      baseCurrency: selectedCurrency,
+      baseCurrency,
       usd: usd.toFixed(6),
       vnd: BigInt(Math.round(vnd)),
       php: php.toFixed(6),
     };
+  }
+
+  async getMyTutorProfileStatus(userId: string): Promise<{ hasProfile: boolean; verificationStatus: VerificationStatus | null }> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      select: { verificationStatus: true },
+    })
+
+    if (!profile) {
+      return {
+        hasProfile: false,
+        verificationStatus: null,
+      }
+    }
+
+    return {
+      hasProfile: true,
+      verificationStatus: profile.verificationStatus,
+    }
   }
 
   async createReview(
@@ -126,8 +157,7 @@ export class TutorProfileService {
       } as unknown as Prisma.TutorProfileCreateInput,
     });
 
-    const inputPrice = Number((dto as unknown as { price?: number }).price ?? 0);
-    const trialLessonPriceData = this.buildTrialLessonPriceData(inputPrice, dto.currency);
+    const trialLessonPriceData = this.buildTrialLessonPriceData(dto);
     const trialLessonPriceDelegate = (
       this.prisma as unknown as {
         trialLessonPrice: {
@@ -218,8 +248,7 @@ export class TutorProfileService {
       } as unknown as Prisma.TutorProfileUpdateInput,
     });
 
-    const inputPrice = Number((dto as unknown as { price?: number }).price ?? 0);
-    const trialLessonPriceData = this.buildTrialLessonPriceData(inputPrice, dto.currency);
+    const trialLessonPriceData = this.buildTrialLessonPriceData(dto);
     const trialLessonPriceDelegate = (
       this.prisma as unknown as {
         trialLessonPrice: {

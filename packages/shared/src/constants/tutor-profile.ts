@@ -126,3 +126,60 @@ export const TUTOR_DETAIL_LAYOUT_CONFIG = {
   sidebarWidth: 320,
   bottomPadding: 24,
 } as const;
+
+export const VIDEO_PREVIEW_WIDTH = 420;
+
+export const YEAR_PICKER_CONFIG = {
+  minYear: 1950,
+  maxYear: new Date().getFullYear(),
+} as const;
+
+export const TEACHING_CERTIFICATES = [
+  'IELTS',
+  'TOEIC',
+  'TOEFL',
+  'TEFL',
+  'TESOL',
+  'CELTA',
+] as const;
+
+export const BECOME_TUTOR_STEPS = {
+  ABOUT: 1,
+  PHOTO: 2,
+  CERTIFICATION: 3,
+  VIDEO: 4,
+  AVAILABILITY: 5,
+  FINAL: 6,
+} as const;
+
+export function calculateStepProgress(currentStep: number): number {
+  return (currentStep - 1) * 20;
+}
+
+export const STEP_ROUTES: Record<number, string> = {
+  [BECOME_TUTOR_STEPS.ABOUT]: '/about',
+  [BECOME_TUTOR_STEPS.PHOTO]: '/photo',
+  [BECOME_TUTOR_STEPS.CERTIFICATION]: '/certification',
+  [BECOME_TUTOR_STEPS.VIDEO]: '/video',
+  [BECOME_TUTOR_STEPS.AVAILABILITY]: '/availability',
+};
+
+export function isEditRoute(pathname: string): boolean {
+  return Object.values(STEP_ROUTES).some((route) => pathname.includes(route));
+}
+
+export const ACCEPT_IMAGE_TYPES = 'image/jpeg,image/png,image/jpg';
+
+export const ACCEPT_FILE_TYPES = '.pdf,.jpg,.jpeg,.png';
+
+export function parseYouTubeId(url: string): string | null {
+  const trimmed = url.trim();
+  const match = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(trimmed);
+  return match ? match[1] : null;
+}
+
+export function parseVimeoId(url: string): string | null {
+  const trimmed = url.trim();
+  const match = /vimeo\.com\/(?:video\/)?(\d+)/.exec(trimmed);
+  return match ? match[1] : null;
+}

@@ -15,6 +15,7 @@ export const tutorProfileQueryKey = {
     country,
     pricePerLesson,
   ],
+  myStatus: () => ['my-tutor-profile-status'],
   tutorDetail: (id: string) => ['tutor-detail', id],
   tutorAbout: (id: string) => ['tutor-about', id],
   tutorSchedule: (id: string) => ['tutor-schedule', id],
