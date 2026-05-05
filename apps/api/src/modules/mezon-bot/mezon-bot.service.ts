@@ -11,7 +11,7 @@ export class MezonBotService {
     if (!this.isConfigured()) {
       throw new Error('MezonBot is not configured');
     }
-    console.log('MezonBot is configured', this.appConfig.mezonBotConfig);
+    
     this.client = new MezonClient({
       botId: this.appConfig.mezonBotConfig.clientId,
       token: this.appConfig.mezonBotConfig.clientSecret,
@@ -20,14 +20,12 @@ export class MezonBotService {
 
 
   async onModuleInit() {
-    await this.client
-      .login()
-      .then(() => {
-        console.log('MezonBotService initialized');
-      })
-      .catch((error) => {
-        console.error('Error initializing MezonBotService:', error);
-      });
+    try {
+      await this.client.login();
+      console.log('MezonBotService initialized');
+    } catch (error) {
+      console.error('Error initializing MezonBotService:', error);
+    }
   }
 
   isConfigured() {

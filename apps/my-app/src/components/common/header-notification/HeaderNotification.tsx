@@ -1,11 +1,12 @@
 'use client';
 
 import { ENotificationType, NOTIFICATION_I18N_NAMESPACE } from '@mezon-tutors/shared';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Bell } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { HeaderNotificationItem } from '@/components/common/header-notification/HeaderNotificationItem';
 import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils';
 import {
   useInfiniteNotifications,
   useMarkAllNotificationsAsReadMutation,
@@ -14,31 +15,18 @@ import {
 } from '@/services/notification/notification.api';
 
 const PAGE_SIZE = 20;
+const ESTIMATED_ITEM_HEIGHT = 128;
 
 type HeaderNotificationProps = {
   enabled: boolean;
 };
-
-function typeBorderClass(type: ENotificationType): string {
-  switch (type) {
-    case ENotificationType.BOOKING:
-      return 'border-l-blue-400';
-    case ENotificationType.PAYMENT:
-      return 'border-l-green-400';
-    case ENotificationType.SYSTEM:
-      return 'border-l-primary';
-    case ENotificationType.LESSON_STARTING_SOON:
-      return 'border-l-orange-400';
-    default:
-      return 'border-l-slate-200';
-  }
-}
 
 export function HeaderNotification({ enabled }: HeaderNotificationProps) {
   const locale = useLocale();
   const t = useTranslations(NOTIFICATION_I18N_NAMESPACE);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   const unreadCountQuery = useUnreadNotificationCount(enabled);
   const notificationsQuery = useInfiniteNotifications(PAGE_SIZE, enabled && open);
   const markAsReadMutation = useMarkNotificationAsReadMutation(PAGE_SIZE);
@@ -48,6 +36,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     () => notificationsQuery.data?.pages.flatMap((page) => page.items) ?? [],
     [notificationsQuery.data]
   );
+
   const unreadCount = unreadCountQuery.data?.unreadCount ?? 0;
 
   const fallbackByType: Record<ENotificationType, string> = {
@@ -101,6 +90,13 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     return translateWithFallback(item.i18nKey, item.i18nParams, item.content);
   };
 
+  const rowVirtualizer = useVirtualizer({
+    count: notificationItems.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => ESTIMATED_ITEM_HEIGHT,
+    overscan: 5,
+  });
+
   useEffect(() => {
     if (!open) return;
 
@@ -133,6 +129,12 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     }
   };
 
+  const handleItemClick = (id: string, isRead: boolean) => {
+    if (!isRead && !markAsReadMutation.isPending) {
+      markAsReadMutation.mutate(id);
+    }
+  };
+
   return (
     <div
       className="relative"
@@ -162,7 +164,6 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
       {open ? (
         <div
           className="absolute top-11 right-0 z-999 flex w-[440px] max-w-[96vw] flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl"
-          aria-label={getLabel('title', 'Notifications')}
         >
           <div className="flex items-center justify-between gap-2">
             <p className="text-lg font-bold text-slate-900">{getLabel('title', 'Notifications')}</p>
@@ -190,6 +191,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
 
           <div
             className="max-h-[420px] overflow-y-auto rounded-xl border border-slate-200"
+            ref={listRef}
             onScroll={handleListScroll}
           >
             {notificationItems.length === 0 && !notificationsQuery.isLoading ? (
@@ -200,50 +202,42 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
               </div>
             ) : null}
 
-            {notificationItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="block w-full cursor-pointer text-left"
-                onClick={() => {
-                  if (!item.isRead && !markAsReadMutation.isPending) {
-                    markAsReadMutation.mutate(item.id);
-                  }
+            {notificationItems.length > 0 ? (
+              <div
+                style={{
+                  height: rowVirtualizer.getTotalSize(),
+                  position: 'relative',
                 }}
               >
-                <div
-                  className={cn(
-                    'flex flex-col gap-2 border-b border-slate-200 p-3 pl-3 border-l-4',
-                    typeBorderClass(item.type),
-                    item.isRead ? 'bg-transparent' : 'bg-sky-50'
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p
-                      className={cn(
-                        'min-w-0 flex-1 leading-5',
-                        item.isRead ? 'font-medium text-slate-800' : 'font-bold text-slate-900'
-                      )}
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const item = notificationItems[virtualRow.index];
+                  if (!item) return null;
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
                     >
-                      {getNotificationTitle(item)}
-                    </p>
-                    {!item.isRead ? (
-                      <span
-                        className="mt-1.5 size-2 shrink-0 rounded-full bg-blue-600"
-                        aria-hidden
+                      <HeaderNotificationItem
+                        item={item}
+                        locale={locale}
+                        title={getNotificationTitle(item)}
+                        content={getNotificationContent(item)}
+                        typeLabel={getLabel(`types.${item.type}`, fallbackByType[item.type])}
+                        onClickAction={handleItemClick}
                       />
-                    ) : null}
-                  </div>
-                  <p className="text-xs font-semibold text-blue-700">
-                    {getLabel(`types.${item.type}`, fallbackByType[item.type])}
-                  </p>
-                  <p className="text-sm leading-5 text-slate-600">{getNotificationContent(item)}</p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(item.createdAt).toLocaleString(locale)}
-                  </p>
-                </div>
-              </button>
-            ))}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
 
             {notificationsQuery.isFetchingNextPage ? (
               <div className="flex justify-center px-3 py-3">

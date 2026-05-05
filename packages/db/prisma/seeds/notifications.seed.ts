@@ -3,9 +3,6 @@ import { NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared';
 
 const SEED_NOTI_DEDUPE_PREFIX = 'seed-noti-';
 
-/**
- * Fallback tiếng Anh khớp en/notifications (khi client không resolve được i18n).
- */
 const EN_FALLBACK = {
   bookingTitle: 'New trial lesson request',
   bookingBody:

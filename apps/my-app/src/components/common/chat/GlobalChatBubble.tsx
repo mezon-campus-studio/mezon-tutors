@@ -1,101 +1,101 @@
-'use client'
+'use client';
 
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { useAtomValue } from 'jotai'
-import { useTranslations } from 'next-intl'
-import { InfoIcon, MessageCircleMoreIcon } from 'lucide-react'
-import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL, MEZON_URL } from '@mezon-tutors/shared'
-import { Button, Card, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
-import { userAtom } from '@/store/auth.atom'
-import { useMezonLight } from '@/providers'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useAtomValue } from 'jotai';
+import { useTranslations } from 'next-intl';
+import { InfoIcon, MessageCircleMoreIcon } from 'lucide-react';
+import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL, MEZON_URL } from '@mezon-tutors/shared';
+import { Button, Card, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
+import { userAtom } from '@/store/auth.atom';
+import { useMezonLight } from '@/providers';
 import {
   persistMezonLightSession,
   refreshMezonLightSession,
   restoreMezonLightClientFromStorage,
   sendMezonLightDMWithRefreshFallback,
   useGetMyDmChannels,
-} from '@/services'
-import { buildFakeMessages, getRandomFakeSetIndex } from './global-chat.fake'
+} from '@/services';
+import { buildFakeMessages, getRandomFakeSetIndex } from './global-chat.fake';
 
 type RuntimeMessage = {
-  id: string
-  sender: 'me'
-  content: string
-}
+  id: string;
+  sender: 'me';
+  content: string;
+};
 
-const MIN_ROWS = 1
-const MAX_ROWS = 5
+const MIN_ROWS = 1;
+const MAX_ROWS = 5;
 
 export default function GlobalChatBubble() {
-  const t = useTranslations('GlobalChat')
-  const currentUser = useAtomValue(userAtom)
-  const { lightClient, setLightClient } = useMezonLight()
-  const [open, setOpen] = useState(false)
-  const [fakeSetIndex, setFakeSetIndex] = useState(0)
-  const [selectedChannelId, setSelectedChannelId] = useState('')
-  const [messageContent, setMessageContent] = useState('')
-  const [isSending, setIsSending] = useState(false)
+  const t = useTranslations('GlobalChat');
+  const currentUser = useAtomValue(userAtom);
+  const { lightClient, setLightClient } = useMezonLight();
+  const [open, setOpen] = useState(false);
+  const [fakeSetIndex, setFakeSetIndex] = useState(0);
+  const [selectedChannelId, setSelectedChannelId] = useState('');
+  const [messageContent, setMessageContent] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [runtimeMessagesByChannel, setRuntimeMessagesByChannel] = useState<
     Record<string, RuntimeMessage[]>
-  >({})
+  >({});
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { data: channels = [] } = useGetMyDmChannels(Boolean(currentUser?.id))
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { data: channels = [] } = useGetMyDmChannels(Boolean(currentUser?.id));
 
   const selectedChannel = useMemo(() => {
     if (!channels.length) {
-      return null
+      return null;
     }
-    const fallback = channels[0]
-    return channels.find((item) => item.channelId === selectedChannelId) ?? fallback
-  }, [channels, selectedChannelId])
+    const fallback = channels[0];
+    return channels.find((item) => item.channelId === selectedChannelId) ?? fallback;
+  }, [channels, selectedChannelId]);
 
   const runtimeMessages = selectedChannel
     ? (runtimeMessagesByChannel[selectedChannel.channelId] ?? [])
-    : []
+    : [];
   const mySenderRole = useMemo<'student' | 'tutor' | null>(() => {
     if (!selectedChannel || !currentUser?.id) {
-      return null
+      return null;
     }
-    return selectedChannel.studentId === currentUser.id ? 'student' : 'tutor'
-  }, [selectedChannel, currentUser?.id])
+    return selectedChannel.studentId === currentUser.id ? 'student' : 'tutor';
+  }, [selectedChannel, currentUser?.id]);
 
   const fakeMessages = useMemo(
     () => (selectedChannel ? buildFakeMessages(t, selectedChannel.peerName, fakeSetIndex) : []),
     [selectedChannel, fakeSetIndex, t]
-  )
+  );
 
   useEffect(() => {
     if (!open) {
-      return
+      return;
     }
-    setFakeSetIndex(getRandomFakeSetIndex())
-  }, [open])
+    setFakeSetIndex(getRandomFakeSetIndex());
+  }, [open]);
 
   const handleSend = async () => {
-    const content = messageContent.trim()
+    const content = messageContent.trim();
     if (!content || !selectedChannel || !currentUser) {
-      return
+      return;
     }
 
-    setIsSending(true)
+    setIsSending(true);
     try {
-      let client = lightClient
+      let client = lightClient;
       if (!client) {
-        client = await restoreMezonLightClientFromStorage()
+        client = await restoreMezonLightClientFromStorage();
         if (!client) {
-          throw new Error(t('restoreError'))
+          throw new Error(t('restoreError'));
         }
-        setLightClient(client)
+        setLightClient(client);
       }
 
-      const isSessionExpired = await client.isSessionExpired()
+      const isSessionExpired = await client.isSessionExpired();
       if (isSessionExpired) {
-        await refreshMezonLightSession(client)
-        await persistMezonLightSession(client)
+        await refreshMezonLightSession(client);
+        await persistMezonLightSession(client);
       }
 
-      await sendMezonLightDMWithRefreshFallback(client, selectedChannel.channelId, content)
+      await sendMezonLightDMWithRefreshFallback(client, selectedChannel.channelId, content);
       setRuntimeMessagesByChannel((prev) => ({
         ...prev,
         [selectedChannel.channelId]: [
@@ -106,38 +106,38 @@ export default function GlobalChatBubble() {
             content,
           },
         ],
-      }))
-      setMessageContent('')
+      }));
+      setMessageContent('');
     } catch (error) {
-      console.error(error)
+      console.error(error);
     } finally {
-      setIsSending(false)
+      setIsSending(false);
     }
-  }
+  };
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const el = textareaRef.current
+    const el = textareaRef.current;
     if (!el) {
-      return
+      return;
     }
 
-    setMessageContent(event.target.value)
-    el.style.height = 'auto'
+    setMessageContent(event.target.value);
+    el.style.height = 'auto';
 
-    const lineHeight = 20
-    const maxHeight = lineHeight * MAX_ROWS
+    const lineHeight = 20;
+    const maxHeight = lineHeight * MAX_ROWS;
 
     if (el.scrollHeight > maxHeight) {
-      el.style.height = `${maxHeight}px`
-      el.style.overflowY = 'auto'
+      el.style.height = `${maxHeight}px`;
+      el.style.overflowY = 'auto';
     } else {
-      el.style.height = `${el.scrollHeight}px`
-      el.style.overflowY = 'hidden'
+      el.style.height = `${el.scrollHeight}px`;
+      el.style.overflowY = 'hidden';
     }
-  }
+  };
 
   if (!currentUser) {
-    return null
+    return null;
   }
 
   return (
@@ -152,7 +152,10 @@ export default function GlobalChatBubble() {
         </Button>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={setOpen}
+      >
         <DialogContent className="h-[min(90vh,620px)] max-w-[95vw] sm:max-w-5xl pt-12">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between px-4">
@@ -279,5 +282,5 @@ export default function GlobalChatBubble() {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

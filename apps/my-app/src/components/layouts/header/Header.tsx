@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { LoginButton } from "@/components/auth/LoginButton";
-import { HeaderNotification } from "@/components/common/HeaderNotification";
+import { HeaderNotification } from "@/components/common/header-notification/HeaderNotification";
 import {
   Avatar,
   AvatarFallback,
