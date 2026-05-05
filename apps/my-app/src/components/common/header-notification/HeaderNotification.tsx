@@ -6,7 +6,7 @@ import { Bell } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { HeaderNotificationItem } from '@/components/common/header-notification/HeaderNotificationItem';
-import { Button } from '@/components/ui';
+import { Button, Spinner } from '@/components/ui';
 import {
   useInfiniteNotifications,
   useMarkAllNotificationsAsReadMutation,
@@ -241,6 +241,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
 
             {notificationsQuery.isFetchingNextPage ? (
               <div className="flex justify-center px-3 py-3">
+                <Spinner />
                 <p className="text-sm text-slate-500">
                   {getLabel('loadingMore', 'Loading more...')}
                 </p>
@@ -249,6 +250,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
 
             {notificationsQuery.isLoading ? (
               <div className="flex justify-center px-4 py-6">
+                <Spinner />
                 <p className="text-sm text-slate-500">
                   {getLabel('loading', 'Loading notifications...')}
                 </p>

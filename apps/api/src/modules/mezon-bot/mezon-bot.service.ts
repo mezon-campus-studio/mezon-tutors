@@ -22,7 +22,6 @@ export class MezonBotService {
   async onModuleInit() {
     try {
       await this.client.login();
-      console.log('MezonBotService initialized');
     } catch (error) {
       console.error('Error initializing MezonBotService:', error);
     }
