@@ -29,29 +29,66 @@ import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto';
 export class TutorProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private buildTrialLessonPriceData(price: number, currency?: ECurrency) {
-    const selectedCurrency = currency ?? ECurrency.VND;
-    const normalized = Math.max(0, Number(price) || 0);
+  private buildTrialLessonPriceData(dto: SubmitTutorProfileDto) {
+    const baseCurrency = dto.currency ?? ECurrency.VND;
+    const prices = dto.prices;
 
-    let usd = normalized / 25000;
-    let vnd = normalized;
-    let php = usd * 57;
-
-    if (selectedCurrency === ECurrency.USD) {
-      usd = normalized;
-      vnd = usd * 25000;
-      php = usd * 57;
-    } else if (selectedCurrency === ECurrency.PHP) {
-      php = normalized;
-      usd = php / 57;
-      vnd = usd * 25000;
+    if (!prices) {
+      throw new Error('Price conversion data is missing. Please provide prices in all supported currencies (USD, VND, PHP).');
     }
 
     return {
-      baseCurrency: selectedCurrency,
-      usd: usd.toFixed(6),
-      vnd: BigInt(Math.round(vnd)),
-      php: php.toFixed(6),
+      baseCurrency,
+      usd: Number(prices.usd).toFixed(2),
+      vnd: BigInt(Math.round(prices.vnd)),
+      php: Number(prices.php).toFixed(2),
+    };
+  }
+
+  async upsertByUserId(userId: string, dto: SubmitTutorProfileDto): Promise<void> {
+    const existingProfile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+    });
+
+    if (existingProfile) {
+      await this.updateByUserId(userId, dto);
+    } else {
+      await this.createByUserId(userId, dto);
+    }
+  }
+
+  async getMyProfile(userId: string) {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      include: {
+        languages: true,
+        availability: true,
+        identityVerification: true,
+        professionalDocuments: true,
+        trialLessonPrice: true,
+      },
+    });
+
+    if (!profile) {
+      return {
+        hasProfile: false,
+        verificationStatus: null,
+        profile: null,
+      };
+    }
+
+    const profileData = profile.trialLessonPrice ? {
+      ...profile,
+      trialLessonPrice: {
+        ...profile.trialLessonPrice,
+        vnd: profile.trialLessonPrice.vnd.toString(),
+      },
+    } : profile;
+
+    return {
+      hasProfile: true,
+      verificationStatus: profile.verificationStatus,
+      profile: profileData,
     };
   }
 
@@ -112,6 +149,7 @@ export class TutorProfileService {
         userId: userId,
         firstName: dto.firstName,
         lastName: dto.lastName,
+        avatar: dto.avatar,
         videoUrl: dto.videoUrl ?? '',
         country: dto.country,
         phone: dto.phone,
@@ -121,13 +159,13 @@ export class TutorProfileService {
         experience: dto.specialization,
         motivate: dto.motivate,
         headline: dto.headline,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ratingAverage: 0,
         verificationStatus: VerificationStatus.PENDING,
       } as unknown as Prisma.TutorProfileCreateInput,
     });
 
-    const inputPrice = Number((dto as unknown as { price?: number }).price ?? 0);
-    const trialLessonPriceData = this.buildTrialLessonPriceData(inputPrice, dto.currency);
+    const trialLessonPriceData = this.buildTrialLessonPriceData(dto);
     const trialLessonPriceDelegate = (
       this.prisma as unknown as {
         trialLessonPrice: {
@@ -173,21 +211,22 @@ export class TutorProfileService {
     }
 
     if (dto.teachingCertificateFileUrl && profile) {
-      await this.createTutorCertificateByUserId(
-        profile.id,
-        dto.teachingCertificateName,
-        dto.teachingCertificateFileUrl,
-        ProfessionalDocumentType.CERTIFICATE
-      );
+      await this.createTutorCertificateByUserId(profile.id, {
+        name: dto.teachingCertificateName,
+        fileUrl: dto.teachingCertificateFileUrl,
+        type: ProfessionalDocumentType.CERTIFICATE,
+        yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
+      });
     }
 
     if (dto.educationFileUrl && profile) {
-      await this.createTutorCertificateByUserId(
-        profile.id,
-        dto.specialization,
-        dto.educationFileUrl,
-        ProfessionalDocumentType.DEGREE
-      );
+      await this.createTutorCertificateByUserId(profile.id, {
+        name: dto.degree,
+        fileUrl: dto.educationFileUrl,
+        type: ProfessionalDocumentType.DEGREE,
+        institution: dto.university,
+        specialization: dto.specialization,
+      });
     }
   }
 
@@ -205,6 +244,7 @@ export class TutorProfileService {
       data: {
         firstName: dto.firstName,
         lastName: dto.lastName,
+        avatar: dto.avatar,
         videoUrl: dto.videoUrl ?? '',
         country: dto.country,
         phone: dto.phone,
@@ -215,11 +255,11 @@ export class TutorProfileService {
         motivate: dto.motivate,
         headline: dto.headline,
         isProfessional: !!dto.teachingCertificateName,
+        verificationStatus: VerificationStatus.PENDING,
       } as unknown as Prisma.TutorProfileUpdateInput,
     });
 
-    const inputPrice = Number((dto as unknown as { price?: number }).price ?? 0);
-    const trialLessonPriceData = this.buildTrialLessonPriceData(inputPrice, dto.currency);
+    const trialLessonPriceData = this.buildTrialLessonPriceData(dto);
     const trialLessonPriceDelegate = (
       this.prisma as unknown as {
         trialLessonPrice: {
@@ -258,6 +298,29 @@ export class TutorProfileService {
 
     if (dto.availability?.length && profile) {
       await this.upsertTutorAvailabilitySlotByUserId(profile.id, dto.availability);
+    }
+
+    if (dto.identityPhotoUrl && profile) {
+      await this.upsertTutorIdentityVerificationByUserId(profile.id, dto.identityPhotoUrl);
+    }
+
+    if (dto.teachingCertificateFileUrl && profile) {
+      await this.upsertTutorCertificateByUserId(profile.id, {
+        name: dto.teachingCertificateName,
+        fileUrl: dto.teachingCertificateFileUrl,
+        type: ProfessionalDocumentType.CERTIFICATE,
+        yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
+      });
+    }
+
+    if (dto.educationFileUrl && profile) {
+      await this.upsertTutorCertificateByUserId(profile.id, {
+        name: dto.degree,
+        fileUrl: dto.educationFileUrl,
+        type: ProfessionalDocumentType.DEGREE,
+        institution: dto.university,
+        specialization: dto.specialization,
+      });
     }
   }
 
@@ -372,21 +435,84 @@ export class TutorProfileService {
     });
   }
 
+  async upsertTutorIdentityVerificationByUserId(
+    userId: string,
+    identityPhotoUrl: string
+  ): Promise<void> {
+    await this.prisma.identityVerification.upsert({
+      where: { tutorId: userId },
+      update: {
+        fileKey: identityPhotoUrl,
+        status: IdentityVerificationStatus.PENDING,
+        uploadedAt: new Date(),
+      },
+      create: {
+        tutorId: userId,
+        fileKey: identityPhotoUrl,
+        status: IdentityVerificationStatus.PENDING,
+      },
+    });
+  }
+
   async createTutorCertificateByUserId(
     userId: string,
-    teachingCertificateName: string,
-    teachingCertificateFileUrl: string,
-    type: ProfessionalDocumentType
+    data: {
+      name: string;
+      fileUrl: string;
+      type: ProfessionalDocumentType;
+      yearOfComplete?: number;
+      institution?: string;
+      specialization?: string;
+    }
   ): Promise<void> {
     await this.prisma.professionalDocument.create({
       data: {
         tutorId: userId,
-        name: teachingCertificateName,
-        type,
+        name: data.name,
+        type: data.type,
         status: ProfessionalDocumentStatus.PENDING,
-        fileKey: teachingCertificateFileUrl,
+        fileKey: data.fileUrl,
+        yearOfComplete: data.yearOfComplete,
+        institution: data.institution,
+        specialization: data.specialization,
       },
     });
+  }
+
+  async upsertTutorCertificateByUserId(
+    userId: string,
+    data: {
+      name: string;
+      fileUrl: string;
+      type: ProfessionalDocumentType;
+      yearOfComplete?: number;
+      institution?: string;
+      specialization?: string;
+    }
+  ): Promise<void> {
+    const existing = await this.prisma.professionalDocument.findFirst({
+      where: {
+        tutorId: userId,
+        type: data.type,
+      },
+    });
+
+    if (existing) {
+      await this.prisma.professionalDocument.update({
+        where: { id: existing.id },
+        data: {
+          name: data.name,
+          fileKey: data.fileUrl,
+          status: ProfessionalDocumentStatus.PENDING,
+          yearOfComplete: data.yearOfComplete,
+          institution: data.institution,
+          specialization: data.specialization,
+          uploadedAt: new Date(),
+        },
+      });
+    } else {
+      await this.createTutorCertificateByUserId(userId, data);
+    }
   }
 
   async getVerifiedTutors(
