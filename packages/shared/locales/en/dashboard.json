@@ -1,12 +1,18 @@
 {
   "Dashboard": {
+    "loading": "Loading...",
+    "accessDenied": {
+      "title": "Access Denied",
+      "description": "You need to log in to access this page."
+    },
     "sidebar": {
       "bookingRequests": "Booking Requests",
       "mySchedule": "My Schedule",
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
-      "logout": "Logout"
+      "logout": "Logout",
+      "fallbackTitle": "Dashboard"
     },
     "bookingRequests": {
       "title": "Booking Requests",
