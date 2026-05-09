@@ -9,7 +9,13 @@
     "logout": "Logout",
     "getStarted": "Get Started",
     "myMessages": "My Messages",
-    "searchPlaceholder": "Search by Subject.."
+    "searchPlaceholder": "Search by Subject..",
+    "language": "Language",
+    "currency": "Currency",
+    "locales": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
   },
   "Footer": {
     "description": "The leading language tutor matching platform for working professionals in Vietnam.",

@@ -11,3 +11,5 @@ export * from "./review/review.api";
 export * from "./storage/storage.service";
 export * from "./currency/currency.api";
 export * from "./tutor-availability/tutor-availability.api";
+export * from "./my-lessons/my-lessons.api";
+export * from "./my-lessons/my-lessons.qkey";

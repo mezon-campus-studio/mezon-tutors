@@ -1,12 +1,18 @@
 {
   "Dashboard": {
+    "loading": "Đang tải...",
+    "accessDenied": {
+      "title": "Truy cập bị từ chối",
+      "description": "Bạn cần đăng nhập để truy cập trang này."
+    },
     "sidebar": {
       "bookingRequests": "Yêu cầu đặt lịch",
       "mySchedule": "Lịch dạy",
       "students": "Học viên",
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
-      "logout": "Đăng xuất"
+      "logout": "Đăng xuất",
+      "fallbackTitle": "Bảng điều khiển"
     },
     "bookingRequests": {
       "title": "Yêu cầu đặt lịch",

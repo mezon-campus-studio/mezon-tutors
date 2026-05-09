@@ -99,3 +99,8 @@ export function formatYmd(date: Date): string {
   const pad2 = (num: number) => String(num).padStart(2, '0')
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
 }
+
+export function formatHour24(hour: number): string {
+  if (hour === 24) return '24:00';
+  return dayjs().hour(Math.floor(hour)).minute(Math.round((hour % 1) * 60)).format('HH:mm');
+}
