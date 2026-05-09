@@ -100,6 +100,10 @@ export function formatYmd(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
 }
 
+export function addMinutes(date: Date, minutes: number): Date {
+  return new Date(date.getTime() + minutes * 60 * 1000);
+}
+
 export function formatHour24(hour: number): string {
   if (hour === 24) return '24:00';
   return dayjs().hour(Math.floor(hour)).minute(Math.round((hour % 1) * 60)).format('HH:mm');

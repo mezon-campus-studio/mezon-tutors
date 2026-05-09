@@ -23,9 +23,7 @@ import {
 } from '@/services';
 import {
   buildTimeSlotsForDay,
-  EDayOfWeek,
   ECurrency,
-  EPeriod,
   ETrialLessonBookingStatus,
   formatToCurrency,
   jsDayToDbDayOfWeek,
@@ -392,103 +390,111 @@ export function TrialBookingSheet({
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="mx-auto h-[90vh]! max-h-screen! w-full gap-0 overflow-hidden rounded-t-2xl border p-0"
+        className="mx-auto flex h-[90vh]! max-h-screen w-full flex-col gap-0 overflow-hidden rounded-t-2xl border p-0"
       >
-        <SheetHeader className="flex-row items-center justify-between border-b px-4 py-3 sm:px-6 sm:py-4">
-          <SheetTitle className="text-2xl! text-primary font-bold sm:text-xl">{t('title')}</SheetTitle>
+        <SheetHeader className="shrink-0 flex-row items-start justify-between gap-3 border-b px-4 py-3 sm:items-center sm:px-6 sm:py-4">
+          <SheetTitle className="min-w-0 flex-1 text-left text-lg font-bold text-primary wrap-break-word sm:text-xl md:text-2xl">
+            {t('title')}
+          </SheetTitle>
           <Button
             variant="ghost"
             size="icon-sm"
+            className="shrink-0"
             onClick={() => onOpenChange(false)}
           >
             <XIcon className="size-5" />
           </Button>
         </SheetHeader>
 
-        <div className="px-4 pt-4 sm:px-6">
-          <ScheduleSelection
-            availableSlots={scheduleAvailableSlots}
-            selectionMode="single"
-            value={selectedScheduleSlots}
-            onChange={handleScheduleSelectionChange}
-            onWeekChange={({ weekOffset: nextWeekOffset }) => {
-              setWeekOffset(nextWeekOffset);
-            }}
-            maxBodyHeight="400px"
-          />
-        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-4 sm:px-6">
+            <ScheduleSelection
+              fillAvailableHeight
+              className="min-h-0 flex-1"
+              availableSlots={scheduleAvailableSlots}
+              selectionMode="single"
+              value={selectedScheduleSlots}
+              onChange={handleScheduleSelectionChange}
+              onWeekChange={({ weekOffset: nextWeekOffset }) => {
+                setWeekOffset(nextWeekOffset);
+              }}
+            />
+          </div>
 
-        <Separator />
+          <Separator className="shrink-0" />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-background px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-3">
-              <Image
-                src={tutor.avatar}
-                alt={tutor.name}
-                width={64}
-                height={64}
-                className="size-14 rounded-full object-cover sm:size-16"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-xl font-bold sm:text-xl">{tutor.name}</p>
-                <p className="text-base text-muted-foreground">
-                  {t('expertTutorTitle', { subject: tutor.title })} -{' '}
-                  {formatToCurrency(currency, lessonPrice)}
-                  {t('perHour')}
+          <div className="shrink-0 bg-background px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Image
+                    src={tutor.avatar}
+                    alt={tutor.name}
+                    width={64}
+                    height={64}
+                    className="size-14 shrink-0 rounded-full object-cover sm:size-16"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xl font-bold">{tutor.name}</p>
+                    <p className="text-pretty text-base text-muted-foreground">
+                      {t('expertTutorTitle', { subject: tutor.title })} -{' '}
+                      {formatToCurrency(currency, lessonPrice)}
+                      {t('perHour')}
+                    </p>
+                  </div>
+                </div>
+                <div className="relative inline-flex w-full max-w-full shrink-0 items-center rounded-lg border p-1 sm:w-auto">
+                  <span
+                    aria-hidden
+                    className="absolute bottom-1 left-1 top-1 rounded-md bg-primary shadow-sm transition-transform duration-300 ease-out"
+                    style={{
+                      width: `calc((100% - 0.5rem) / ${DURATION_OPTIONS.length})`,
+                      transform: `translateX(${selectedDurationIndex * 100}%)`,
+                    }}
+                  />
+                  {DURATION_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`relative z-10 flex-1 cursor-pointer rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 sm:flex-none sm:px-4 sm:text-base ${
+                        duration === option
+                          ? 'text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                      onClick={() => setDuration(option)}
+                    >
+                      {t('durationMins', { value: option })}
+                    </button>
+                  ))}
+                </div>
+                <span className="inline-flex max-w-full min-w-0 items-center gap-1 rounded-full border px-3 py-2 text-sm font-medium sm:px-4 sm:text-base">
+                  <span className="min-w-0 truncate">{footerTimeLabel}</span>
+                  {selectedTime ? (
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      onClick={() => setTimeId('')}
+                      aria-label={t('clearSelectedTime')}
+                    >
+                      <XIcon className="size-4" />
+                    </button>
+                  ) : null}
+                </span>
+              </div>
+              <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto lg:shrink-0">
+                <p className="text-2xl font-bold text-primary sm:text-3xl">
+                  {formatToCurrency(currency, totalPrice)}
                 </p>
+                <Button
+                  size="lg"
+                  className="w-full min-w-0 text-base sm:w-auto sm:min-w-24"
+                  disabled={isConfirmDisabled}
+                  onClick={handleConfirm}
+                >
+                  <span className="line-clamp-2 text-center">{confirmButtonLabel}</span>
+                </Button>
               </div>
             </div>
-            <div className="relative inline-flex items-center rounded-lg border p-1">
-              <span
-                aria-hidden
-                className="absolute bottom-1 left-1 top-1 rounded-md bg-primary shadow-sm transition-transform duration-300 ease-out"
-                style={{
-                  width: `calc((100% - 0.5rem) / ${DURATION_OPTIONS.length})`,
-                  transform: `translateX(${selectedDurationIndex * 100}%)`,
-                }}
-              />
-              {DURATION_OPTIONS.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={`relative z-10 rounded-lg cursor-pointer px-4 py-2 text-base font-medium transition-colors duration-200 ${
-                    duration === option
-                      ? 'text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => setDuration(option)}
-                >
-                  {t('durationMins', { value: option })}
-                </button>
-              ))}
-            </div>
-            <span className="inline-flex items-center gap-1 rounded-full border px-4 py-2 text-base font-medium">
-              {footerTimeLabel}
-              {selectedTime ? (
-                <button
-                  type="button"
-                  className="rounded p-1 cursor-pointer text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  onClick={() => setTimeId('')}
-                  aria-label={t('clearSelectedTime')}
-                >
-                  <XIcon className="size-4" />
-                </button>
-              ) : null}
-            </span>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <p className="text-3xl font-bold text-primary">
-              {formatToCurrency(currency, totalPrice)}
-            </p>
-            <Button
-              size="lg"
-              className="min-w-24 text-base"
-              disabled={isConfirmDisabled}
-              onClick={handleConfirm}
-            >
-              {confirmButtonLabel}
-            </Button>
           </div>
         </div>
       </SheetContent>

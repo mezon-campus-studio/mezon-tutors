@@ -6,6 +6,7 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './shared/services/app-config.service';
 import { ValidationPipe } from '@nestjs/common';
+import { AppService } from './app.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -19,6 +20,8 @@ async function bootstrap() {
   app.enableCors({
     origin: configService.corsOrigins?.split(',') || [],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.setGlobalPrefix('api');
@@ -29,6 +32,8 @@ async function bootstrap() {
       whitelist: true,
     })
   );
+
+  await await app.get(AppService).onModuleInit();
 
   if (configService.nodeEnv !== 'production') {
     const config = new DocumentBuilder()

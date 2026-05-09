@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
+  ENotificationType,
   EPaymentStatus,
   ETrialLessonStatus,
   EWalletTransactionDirection,
@@ -8,21 +9,26 @@ import {
 } from '@mezon-tutors/db';
 import {
   mapVnpayResponseToTrialLessonCancelCode,
+  NOTIFICATION_I18N_KEYS,
   ROUTES,
   type TrialLessonCheckoutCancelCode,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
+import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 
 type VnpayQuery = Record<string, string | string[] | undefined>;
 
 @Injectable()
 export class WebhookService {
+  private readonly logger = new Logger(WebhookService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
-    private readonly appConfig: AppConfigService
+    private readonly appConfig: AppConfigService,
+    private readonly notificationService: NotificationService
   ) {}
 
   /** Absolute URL on the SPA (trial lesson success or cancel with ?code=). */
@@ -91,12 +97,19 @@ export class WebhookService {
       where: { paymentRef: txnRef },
       select: {
         id: true,
+        tutorId: true,
+        studentId: true,
         paymentStatus: true,
         grossAmount: true,
         tutorAmount: true,
         tutor: {
           select: {
             userId: true,
+          },
+        },
+        student: {
+          select: {
+            username: true,
           },
         },
       },
@@ -194,6 +207,29 @@ export class WebhookService {
         updated: didUpdateBooking,
       };
     });
+
+    if (processed.updated && isSucceeded) {
+      try {
+        await this.notificationService.createForUser(booking.tutor.userId, {
+          title: 'New trial lesson booking request',
+          content: 'A student has booked a trial lesson. Please review and confirm the request.',
+          type: ENotificationType.BOOKING,
+          i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingCreated,
+          i18nParams: {
+            studentName: booking.student.username,
+          },
+          metadata: {
+            bookingId: booking.id,
+            studentId: booking.studentId,
+            tutorId: booking.tutorId,
+          },
+          dedupeKey: `trial-booking-paid:${booking.id}`,
+        });
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Failed to create tutor notification for paid booking ${booking.id}: ${detail}`);
+      }
+    }
 
     return {
       updated: processed.updated,

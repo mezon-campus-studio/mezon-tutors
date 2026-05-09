@@ -1,6 +1,5 @@
 import {
   PLATFORM_FEE_PERCENTAGE,
-  ROUTES,
   timeToMinutes,
   utcDateToHHmm,
   utcDateToMinutes,
@@ -311,7 +310,7 @@ export class TrialLessonBookingService {
 
     const availability = await this.prisma.tutorAvailability.findMany({
       where: {
-        tutorId: dto.tutorId,
+        tutorId: tutor.id,
         dayOfWeek: dto.dayOfWeek,
         isActive: true,
       },
@@ -332,7 +331,7 @@ export class TrialLessonBookingService {
     const dayEnd = dayStart.add(1, 'day')
     const existingBookings = await this.prisma.trialLessonBooking.findMany({
       where: {
-        tutorId: dto.tutorId,
+        tutorId: tutor.id,
         status: {
           in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
         },
@@ -382,7 +381,7 @@ export class TrialLessonBookingService {
 
     const booking = await this.prisma.trialLessonBooking.create({
       data: {
-        tutorId: dto.tutorId,
+        tutorId: tutor.id,
         studentId,
         startAt: startAt.toDate(),
         durationMinutes: dto.durationMinutes,

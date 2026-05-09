@@ -4,13 +4,14 @@ import { cookies } from "next/headers";
 const SUPPORTED_LOCALES = ["vi", "en"] as const;
 
 type MessageLoaderConfig = {
-  messageKey: "Common" | "Home" | "TutorProfile" | "Tutors" | "GlobalChat" | "TrialLessonCheckout" | "SubscriptionCheckout" | "BecomeTutorGuide" | "Dashboard" | "MyLessons";
+  messageKey: "Common" | "Home" | "TutorProfile" | "Tutors" | "GlobalChat" | "TrialLessonCheckout" | "SubscriptionCheckout" | "BecomeTutorGuide" | "Dashboard" | "MyLessons" | "Notifications";
   file: string;
   pick?: (payload: Record<string, unknown>) => unknown;
 };
 
 const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Common", file: "common" },
+  { messageKey: "Notifications", file: "notifications" },
   { messageKey: "GlobalChat", file: "global-chat" },
   { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
   { messageKey: "TutorProfile", file: "tutor-profile" },

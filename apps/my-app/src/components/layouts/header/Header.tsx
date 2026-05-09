@@ -1,8 +1,8 @@
 "use client";
 
+import { HeaderNotification } from "@/components/common/header-notification/HeaderNotification";
 import Link from "next/link";
 import Image from "next/image";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
+import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { initAuthAtom, isAuthenticatedAtom, userAtom, dashboardMobileDrawerAtom } from "@/store";
 import { useCurrency } from "@/hooks";
@@ -113,7 +114,11 @@ export default function Header() {
 
         <nav className="hidden items-center gap-4 md:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="text-md font-medium text-slate-600 transition hover:text-violet-700">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-md font-medium text-slate-600 transition hover:text-violet-700"
+            >
               {item.label}
             </Link>
           ))}
@@ -196,6 +201,9 @@ export default function Header() {
               </div>
             </>
           ) : null}
+          {mounted && isAuthenticated ? (
+            <HeaderNotification enabled={isAuthenticated} />
+          ) : null}
           {mounted ? <LoginButton label={t("login")} /> : null}
           {mounted && isAuthenticated && (
             <Avatar 
@@ -203,7 +211,10 @@ export default function Header() {
               onClick={handleAvatarClick}
             >
               {user?.avatar ? (
-                <AvatarImage src={user.avatar} alt={user?.username ?? "User avatar"} />
+                <AvatarImage
+                  src={user.avatar}
+                  alt={user?.username ?? "User avatar"}
+                />
               ) : null}
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>

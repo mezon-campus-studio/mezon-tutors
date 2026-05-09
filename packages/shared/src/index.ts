@@ -15,6 +15,7 @@ export * from './enums/date-time';
 export * from './enums/trial-lesson-booking';
 export * from './enums/locale';
 export * from './enums/currency';
+export * from './enums/notification';
 
 // Constants
 export * from './constants/admin-tutor-application';
@@ -42,6 +43,7 @@ export * from './constants/mezon-light';
 export * from './constants/review';
 export * from './constants/mezon';
 export * from './constants/currency';
+export * from './constants/notification';
 
 // Utils
 export * from './utils/utils';

@@ -1,0 +1,6 @@
+export enum ENotificationType {
+  BOOKING = 'BOOKING',
+  PAYMENT = 'PAYMENT',
+  SYSTEM = 'SYSTEM',
+  LESSON_STARTING_SOON = 'LESSON_STARTING_SOON',
+}

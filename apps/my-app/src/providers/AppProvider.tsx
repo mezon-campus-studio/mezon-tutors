@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import AuthInitializer from '@/components/auth/AuthInitializer';
-import GlobalChatBubble from '@/components/chat/GlobalChatBubble';
+import GlobalChatBubble from '@/components/common/chat/GlobalChatBubble';
 import { Toaster } from '@/components/ui';
 import { MezonLightProvider } from './MezonLightProvider';
 import { QueryProvider } from './QueryProvider';

@@ -1,0 +1,31 @@
+{
+  "openAria": "Open notifications",
+  "title": "Notifications",
+  "unreadCount": "{count} unread",
+  "markAllAsRead": "Mark all read",
+  "empty": "No notifications yet",
+  "loadingMore": "Loading more...",
+  "loading": "Loading notifications...",
+  "loadError": "Cannot load notifications. Please try again.",
+  "types": {
+    "BOOKING": "Booking",
+    "PAYMENT": "Payment",
+    "SYSTEM": "System",
+    "LESSON_STARTING_SOON": "Lesson reminder"
+  },
+  "titles": {
+    "bookingCreated": "New trial lesson request",
+    "paymentSucceeded": "Payment successful",
+    "systemAnnouncement": "System announcement",
+    "lessonStartingSoon": "Lesson starting soon"
+  },
+  "templates": {
+    "bookingCreated": "{studentName} has booked a trial lesson. Please review and confirm.",
+    "bookingConfirmed": "Your booking with {tutorName} has been confirmed.",
+    "bookingCancelled": "Your booking has been cancelled.",
+    "paymentSucceeded": "Your payment for booking {bookingCode} was successful.",
+    "paymentFailed": "Your payment for booking {bookingCode} failed. Please try again.",
+    "systemAnnouncement": "{message}",
+    "lessonStartingSoon": "Your lesson will start in about 15 minutes."
+  }
+}

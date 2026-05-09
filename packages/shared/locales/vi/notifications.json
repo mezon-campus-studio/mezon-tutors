@@ -1,0 +1,31 @@
+{
+  "openAria": "Mở thông báo",
+  "title": "Thông báo",
+  "unreadCount": "{count} chưa đọc",
+  "markAllAsRead": "Đọc tất cả",
+  "empty": "Chưa có thông báo",
+  "loadingMore": "Đang tải thêm...",
+  "loading": "Đang tải thông báo...",
+  "loadError": "Không thể tải thông báo. Vui lòng thử lại.",
+  "types": {
+    "BOOKING": "Đặt lịch",
+    "PAYMENT": "Thanh toán",
+    "SYSTEM": "Hệ thống",
+    "LESSON_STARTING_SOON": "Nhắc giờ học"
+  },
+  "titles": {
+    "bookingCreated": "Yêu cầu học thử mới",
+    "paymentSucceeded": "Thanh toán thành công",
+    "systemAnnouncement": "Thông báo hệ thống",
+    "lessonStartingSoon": "Buổi học sắp bắt đầu"
+  },
+  "templates": {
+    "bookingCreated": "{studentName} đã đặt lịch học thử. Vui lòng kiểm tra và xác nhận.",
+    "bookingConfirmed": "Lịch học với {tutorName} của bạn đã được xác nhận.",
+    "bookingCancelled": "Lịch học của bạn đã bị hủy.",
+    "paymentSucceeded": "Thanh toán cho mã đặt lịch {bookingCode} đã thành công.",
+    "paymentFailed": "Thanh toán cho mã đặt lịch {bookingCode} thất bại. Vui lòng thử lại.",
+    "systemAnnouncement": "{message}",
+    "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 15 phút nữa."
+  }
+}

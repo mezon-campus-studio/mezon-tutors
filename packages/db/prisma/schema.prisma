@@ -89,25 +89,64 @@ enum ECurrency {
   PHP
 }
 
+enum ENotificationType {
+  BOOKING
+  PAYMENT
+  SYSTEM
+  LESSON_STARTING_SOON
+}
+
 /// Application users table mapped to `users`
 model User {
-  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  mezonUserId         String               @unique @map("mezon_user_id")
-  username            String
-  avatar              String
-  role                Role                 @default(STUDENT)
-  email               String
-  createdAt           DateTime             @default(now()) @map("created_at")
-  tutorProfile        TutorProfile?
-  trialLessonBookings TrialLessonBooking[]
-  tutorReviews        TutorReview[]        @relation("TutorReviewAuthor")
-  studentDmChannels   UserDmChannel[]      @relation("UserDmChannelStudent")
-  tutorDmChannels     UserDmChannel[]      @relation("UserDmChannelTutor")
-  refreshTokens       RefreshToken[]
-  wallet              Wallet?
-  withdrawals         Withdrawal[]
+  id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mezonUserId            String                  @unique @map("mezon_user_id")
+  username               String
+  avatar                 String
+  role                   Role                    @default(STUDENT)
+  email                  String
+  createdAt              DateTime                @default(now()) @map("created_at")
+  tutorProfile           TutorProfile?
+  trialLessonBookings    TrialLessonBooking[]
+  tutorReviews           TutorReview[]           @relation("TutorReviewAuthor")
+  studentDmChannels      UserDmChannel[]         @relation("UserDmChannelStudent")
+  tutorDmChannels        UserDmChannel[]         @relation("UserDmChannelTutor")
+  refreshTokens          RefreshToken[]
+  wallet                 Wallet?
+  withdrawals            Withdrawal[]
+  notificationRecipients NotificationRecipient[]
 
   @@map("users")
+}
+
+model Notification {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  content           String                  @db.Text
+  type              ENotificationType
+  i18nKey           String?                 @map("i18n_key")
+  i18nParams        Json?                   @map("i18n_params")
+  dedupeKey         String?                 @unique @map("dedupe_key")
+  metadata          Json?
+  createdAt         DateTime                @default(now()) @map("created_at")
+  recipients        NotificationRecipient[]
+
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model NotificationRecipient {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notificationId String       @map("notification_id") @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  isRead         Boolean      @default(false) @map("is_read")
+  readAt         DateTime?    @map("read_at")
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([notificationId])
+  @@index([userId, isRead])
+  @@map("notification_recipients")
 }
 
 /// Tutor profile (1:1 with User)

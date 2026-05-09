@@ -35,6 +35,7 @@ export interface ScheduleSelectionProps {
   className?: string;
   gridClassName?: string;
   maxBodyHeight?: string;
+  fillAvailableHeight?: boolean;
 }
 
 type WeekDate = {
@@ -164,6 +165,7 @@ export function ScheduleSelection({
   className,
   gridClassName,
   maxBodyHeight = '520px',
+  fillAvailableHeight = false,
 }: ScheduleSelectionProps) {
   const t = useTranslations('Common.ScheduleSelection');
   const [weekOffset, setWeekOffset] = useState(0);
@@ -313,9 +315,19 @@ export function ScheduleSelection({
     );
   };
 
+  const bodyScrollStyle = fillAvailableHeight ? undefined : { maxHeight: maxBodyHeight };
+
   return (
-    <div className={cn('space-y-3 rounded-2xl border bg-background p-3 sm:p-4', className)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div
+      className={cn(
+        'rounded-2xl border bg-background p-3 sm:p-4',
+        fillAvailableHeight
+          ? 'flex min-h-0 flex-1 flex-col gap-3'
+          : 'space-y-3',
+        className,
+      )}
+    >
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-base text-muted-foreground">
           <div className="flex items-center gap-2">
             <span
@@ -349,7 +361,7 @@ export function ScheduleSelection({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex justify-end items-center gap-2 max-lg:w-full">
           <Button
             size="lg"
             className="text-base"
@@ -359,29 +371,34 @@ export function ScheduleSelection({
             <CalendarIcon className="size-4" />
             {t('today')}
           </Button>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            disabled={weekOffset === 0}
-            onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
-          >
-            <ChevronLeftIcon className="size-5" />
-          </Button>
-          <span className="w-full text-center text-base font-semibold">{weekRangeLabel}</span>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            onClick={() => setWeekOffset((prev) => prev + 1)}
-          >
-            <ChevronRightIcon className="size-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              disabled={weekOffset === 0}
+              onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
+            >
+              <ChevronLeftIcon className="size-5" />
+            </Button>
+            <span className="w-full text-center text-base font-semibold">{weekRangeLabel}</span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              onClick={() => setWeekOffset((prev) => prev + 1)}
+            >
+              <ChevronRightIcon className="size-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
       <div
         ref={scrollBodyRef}
-        className="overflow-auto rounded-xl border"
-        style={{ maxHeight: maxBodyHeight }}
+        className={cn(
+          'min-h-0 overflow-auto rounded-xl border bg-background',
+          fillAvailableHeight && 'flex-1 basis-0',
+        )}
+        style={bodyScrollStyle}
       >
         <div className={cn('min-w-[860px]', gridClassName)}>
           <div className="sticky top-0 z-20 grid grid-cols-[84px_repeat(7,minmax(0,1fr))] border-b bg-background">

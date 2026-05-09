@@ -185,6 +185,13 @@ export class AppConfigService {
     return this.env.RESEND_FROM_EMAIL;
   }
 
+  get mezonBotConfig() {
+    return {
+      clientId: this.env.CLIENT_ID,
+      clientSecret: this.env.CLIENT_SECRET,
+    };
+  }
+
   get cloudinaryConfig() {
     return {
       cloudName: this.env.CLOUDINARY_CLOUD_NAME,

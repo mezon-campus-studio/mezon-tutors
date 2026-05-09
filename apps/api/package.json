@@ -31,6 +31,7 @@
     "dayjs": "^1.11.13",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "mezon-sdk": "^2.8.46",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
