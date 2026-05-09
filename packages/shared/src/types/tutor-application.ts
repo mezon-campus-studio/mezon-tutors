@@ -48,6 +48,11 @@ export interface SubmitTutorProfileDto {
 
   price: number;
   currency: ECurrency;
+  prices?: {
+    usd: number;
+    vnd: number;
+    php: number;
+  };
   availability: TutorAvailabilitySlotDto[];
 }
 

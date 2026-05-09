@@ -10,7 +10,7 @@ ALTER TABLE "tutor_profiles" DROP COLUMN "currency",
 DROP COLUMN "price_per_hour";
 
 -- CreateTable
-CREATE TABLE "currencies" (
+CREATE TABLE "trial_lesson_prices" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tutor_id" UUID NOT NULL,
     "type" "ECurrency" NOT NULL DEFAULT 'VND',
@@ -20,11 +20,11 @@ CREATE TABLE "currencies" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "currencies_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "trial_lesson_prices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "currencies_tutor_id_key" ON "currencies"("tutor_id");
+CREATE UNIQUE INDEX "trial_lesson_prices_tutor_id_key" ON "trial_lesson_prices"("tutor_id");
 
 -- AddForeignKey
-ALTER TABLE "currencies" ADD CONSTRAINT "currencies_tutor_id_fkey" FOREIGN KEY ("tutor_id") REFERENCES "tutor_profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "trial_lesson_prices" ADD CONSTRAINT "trial_lesson_prices_tutor_id_fkey" FOREIGN KEY ("tutor_id") REFERENCES "tutor_profiles"("id") ON DELETE CASCADE ON UPDATE CASCADE;

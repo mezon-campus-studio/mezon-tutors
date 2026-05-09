@@ -1,5 +1,6 @@
 {
   "About": {
+    "headerTitle": "Đăng ký gia sư",
     "draftSaved": "Bản nháp đã được lưu lúc {time}",
     "saveExit": "Lưu & Thoát",
     "stepLabel": "Bước 1: Giới thiệu",
@@ -57,6 +58,13 @@
     "stepLabel": "Bước 2: Ảnh hồ sơ",
     "progressPercentLabel": "Hoàn thành {percent}%",
     "nextLabel": "Tiếp theo: Chứng chỉ & Học vấn",
+    "avatar": {
+      "label": "Ảnh đại diện",
+      "title": "Ảnh hồ sơ của bạn",
+      "subtitle": "Hệ thống sẽ dùng ảnh Mezon hiện tại cho hồ sơ gia sư của bạn.",
+      "syncedNote": "Ảnh này được đồng bộ từ Mezon.",
+      "manualSyncNote": "Bạn có thể thay đổi và sync thủ công từ Mezon sau khi được duyệt."
+    },
     "title": "Tải lên ảnh hồ sơ của bạn",
     "subtitle": "Một bức ảnh chuyên nghiệp, thân thiện có thể giúp bạn thu hút nhiều học viên hơn và tạo dựng niềm tin ngay lập tức.",
     "cardTitle": "Hãy giới thiệu về bản thân",
@@ -68,6 +76,7 @@
     "identity": {
       "title": "Cập nhật giấy tờ tùy thân",
       "subtitle": "Tải lên CCCD/CMND/Hộ chiếu để xác minh danh tính.",
+      "emptyState": "Chưa có ảnh giấy tờ",
       "uploadButton": "Tải ảnh identity",
       "tipsTitle": "Mẹo chụp giấy tờ tùy thân",
       "tips": {
@@ -125,6 +134,7 @@
       "photoInvalidType": "Ảnh hồ sơ chỉ hỗ trợ JPG hoặc PNG",
       "photoInvalidSize": "Ảnh hồ sơ phải nhỏ hơn {max}MB",
       "photoUploadFailed": "Tải ảnh lên thất bại, vui lòng thử lại",
+      "identityUploadFailed": "Tải ảnh lên thất bại, vui lòng thử lại",
       "identityRequired": "Vui lòng tải lên ảnh giấy tờ tùy thân",
       "identityInvalidType": "Ảnh giấy tờ tùy thân chỉ hỗ trợ JPG hoặc PNG",
       "identityInvalidSize": "Ảnh giấy tờ tùy thân phải nhỏ hơn {max}MB"
@@ -142,8 +152,12 @@
     "teaching": {
       "certificateLabel": "Loại chứng chỉ",
       "certificatePlaceholder": "VD: TEFL, TESOL, CELTA",
+      "certificateOther": "Khác",
+      "customCertificateLabel": "Tên chứng chỉ",
+      "customCertificatePlaceholder": "Nhập tên chứng chỉ của bạn",
       "yearLabel": "Năm hoàn thành",
       "yearPlaceholder": "YYYY",
+      "noResults": "Không tìm thấy kết quả",
       "uploadTitle": "Tải lên chứng chỉ",
       "uploadPrompt": "Nhấn để tải lên hoặc kéo thả tệp",
       "uploadHint": "PDF, JPG hoặc PNG (tối đa 5MB)",
@@ -165,6 +179,8 @@
     "back": "Quay lại",
     "continue": "Tiếp tục tới bước video",
     "validation": {
+      "certificateTypeRequired": "Vui lòng chọn loại chứng chỉ",
+      "customCertificateNameRequired": "Vui lòng nhập tên chứng chỉ",
       "certificateRequired": "Vui lòng nhập chứng chỉ",
       "yearRequired": "Vui lòng nhập năm",
       "yearInvalid": "Năm phải đúng định dạng YYYY",
@@ -238,7 +254,7 @@
     "rate": {
       "question": "Bạn muốn tính phí bao nhiêu cho mỗi giờ học?",
       "currencyLabel": "USD / giờ",
-      "recommended": "Gợi ý: $25.00 - $45.00 cho các môn bạn dạy."
+      "recommended": "Gợi ý: {min} - {max} cho các môn bạn dạy."
     },
     "availabilityCardTitle": "Lịch dạy hàng tuần",
     "availability": {
@@ -262,9 +278,15 @@
       "hourlyRateRequired": "Vui lòng nhập giá theo giờ.",
       "hourlyRateInvalidFormat": "Giá theo giờ phải là số hợp lệ (tối đa 2 chữ số thập phân).",
       "hourlyRateGreaterThanZero": "Giá theo giờ phải lớn hơn 0.",
+      "hourlyRateTooLow": "Giá phải từ {min} trở lên.",
+      "hourlyRateTooHigh": "Giá không được vượt quá {max}.",
       "weeklySlotsRequired": "Vui lòng thêm ít nhất 1 khung giờ dạy trong tuần trước khi tiếp tục.",
       "timeRequired": "Giờ bắt đầu và giờ kết thúc là bắt buộc.",
-      "endTimeMustBeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu."
+      "endTimeMustBeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu.",
+      "duplicateSlot": "Khung giờ trùng lặp trong ngày {day}. Vui lòng xóa hoặc chỉnh sửa.",
+      "overlappingSlot": "Các khung giờ trong ngày {day} bị trùng giờ. Vui lòng điều chỉnh lại.",
+      "minuteStepInvalid": "Giờ bắt đầu và kết thúc phải là :00 hoặc :30.",
+      "currencyConversionFailed": "Không thể chuyển đổi tiền tệ. Vui lòng thử lại sau."
     }
   },
   "Completion": {
@@ -281,6 +303,27 @@
     "footer": {
       "copyright": "© 2024 TutorHub Global. Đã đăng ký bản quyền.",
       "links": ["Điều khoản sử dụng", "Chính sách bảo mật", "Tin cậy & An toàn"]
+    }
+  },
+  "EntryStatus": {
+    "loading": "Đang kiểm tra hồ sơ gia sư...",
+    "pending": {
+      "status": "ĐANG CHỜ DUYỆT",
+      "title": "Hồ sơ gia sư của bạn đang được duyệt",
+      "description": "Vui lòng chờ kết quả qua email. Chúng tôi thường hoàn tất duyệt trong vòng 48 giờ."
+    },
+    "approved": {
+      "status": "ĐÃ ĐƯỢC DUYỆT",
+      "title": "Hiện tại bạn đã là gia sư",
+      "description": "Hồ sơ của bạn đã được duyệt. Bạn có thể quản lý yêu cầu đặt lịch và lịch dạy của mình.",
+      "bookingRequests": "Đến Trang Yêu Cầu Đặt Lịch",
+      "mySchedule": "Đến Trang Lịch Dạy Của Tôi"
+    },
+    "rejected": {
+      "status": "ĐÃ BỊ TỪ CHỐI",
+      "title": "Hồ sơ gia sư của bạn cần cập nhật",
+      "description": "Lần gửi trước của bạn đã bị từ chối. Vui lòng cập nhật thông tin và gửi lại từ bước 1.",
+      "restart": "Cập Nhật Lại Từ Bước 1"
     }
   },
   "Navigation": {

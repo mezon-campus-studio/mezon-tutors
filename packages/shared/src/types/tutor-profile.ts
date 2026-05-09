@@ -33,6 +33,7 @@ export interface SubmitTutorProfileDto {
   subject: string
   languages: TutorLanguageDto[]
 
+  avatar: string
   identityPhotoUrl: string
   headline: string
   motivate: string
@@ -51,6 +52,11 @@ export interface SubmitTutorProfileDto {
 
   pricePerHour: number
   currency: ECurrency
+  prices?: {
+    usd: number
+    vnd: number
+    php: number
+  }
   availability: TutorAvailabilitySlotDto[]
 }
 

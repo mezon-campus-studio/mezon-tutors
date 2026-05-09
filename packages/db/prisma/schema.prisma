@@ -162,7 +162,7 @@ model TrialLessonPrice {
 
   tutor     TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
 
-  @@map("currencies")
+  @@map("trial_lesson_prices")
 }
 
 /// Reviews from students for tutors
