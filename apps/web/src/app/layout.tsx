@@ -1,70 +1,47 @@
-import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { NextIntlClientProvider } from 'next-intl';
-import './globals.css';
-import { AppProviders } from './providers';
-import AuthInitializer from '@mezon-tutors/app/components/AuthInitializer';
-import GlobalChatBubble from '@mezon-tutors/app/components/chat/GlobalChatBubble';
-import { DEFAULT_THEME } from '@mezon-tutors/app';
-import { getLocale } from 'next-intl/server';
-import { hasLocale } from 'next-intl';
-import { cookies } from 'next/headers';
-import { routing } from 'src/i18n/routing';
-import Header from 'src/components/Header/Header';
-import Footer from 'src/components/Footer/Footer';
+import type { Metadata } from "next";
+import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
+import { cookies } from "next/headers";
+import "./globals.css";
+import { Footer, Header } from "@/components/layouts";
+import { AppProvider } from "@/providers";
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+const notoSans = Noto_Sans({
+  variable: "--font-noto-sans",
+  subsets: ["latin", "vietnamese"],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const notoSansMono = Noto_Sans_Mono({
+  variable: "--font-noto-sans-mono",
+  subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
-  title: 'Mezon Learning | Find Your Best Language Tutor',
-  description:
-    'Learn faster with your best language tutor. Book experienced tutors for 120+ subjects.',
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  viewportFit: 'cover',
+  title: "Mezonly",
+  description: "Mezon Tutors landing page",
 };
 
 export default async function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const requestedLocale = await getLocale();
-  const cookieLocale = (await cookies()).get('NEXT_LOCALE')?.value;
-  const preferredLocale = cookieLocale ?? requestedLocale;
-  const locale = hasLocale(routing.locales, preferredLocale)
-    ? preferredLocale
-    : routing.defaultLocale;
-
+  const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
+  const locale = cookieLocale ?? requestedLocale;
   return (
     <html
       lang={locale}
-      suppressHydrationWarning
-      data-theme={DEFAULT_THEME}
+      className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
     >
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="min-h-full flex flex-col bg-white text-slate-900">
         <NextIntlClientProvider locale={locale}>
-          <AppProviders>
-            <AuthInitializer />
+          <AppProvider>
             <Header />
             {children}
             <Footer />
-            <GlobalChatBubble />
-          </AppProviders>
+          </AppProvider>
         </NextIntlClientProvider>
       </body>
     </html>

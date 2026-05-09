@@ -5,7 +5,6 @@ const paths = [
   'node_modules/.cache',
   '.next',
   'apps/web/.next',
-  'apps/web/.tamagui',
   'apps/api/.turbo',
   'packages/shared/tsconfig.tsbuildinfo',
   'packages/shared/dist',

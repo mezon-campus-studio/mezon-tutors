@@ -1,21 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "react-native": [
-        "react-native-web"
-      ]
-    },
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -28,7 +17,17 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/public/*": ["./public/*"],
+      "hooks/*": ["./hooks/*"],
+      "utils/*": ["./utils/*"],
+      "components/*": ["./components/*"],
+      "views/*": ["./src/views/*"],
+      "services/*": ["./services/*"],
+      "providers/*": ["./providers/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -36,11 +35,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "src/postcss.config.mjs"
+    "**/*.mts"
   ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    ".tamagui"
-  ]
+  "exclude": ["node_modules"]
 }

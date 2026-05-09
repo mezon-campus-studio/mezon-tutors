@@ -1,13 +1,10 @@
 {
   "framework": "nextjs",
   "installCommand": "cd ../.. && corepack enable && corepack prepare yarn@4.11.0 --activate && yarn install",
-  "buildCommand": "yarn build",
+  "buildCommand": "cd ../.. && yarn workspace @mezon-tutors/db build && yarn workspace @mezon-tutors/shared build && yarn workspace @mezon-tutors/web build",
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_ENDPOINT": "https://api.mezonly.site/api",
-      "IGNORE_TS_CONFIG_PATHS": "true",
-      "TAMAGUI_TARGET": "web",
-      "TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD": "1"
+      "NEXT_PUBLIC_API_ENDPOINT": "https://api.mezonly.site/api"
     }
   }
 }

@@ -1,25 +1,19 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalEnv": [
-    "DISABLE_EXTRACTION",
     "NODE_ENV",
     "EAS_BUILD_PLATFORM",
     "DATABASE_URL",
     "NEXT_PUBLIC_API_ENDPOINT",
-    "IGNORE_TS_CONFIG_PATHS",
-    "TAMAGUI_TARGET",
-    "TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD"
+    "IGNORE_TS_CONFIG_PATHS"
   ],
   "pipeline": {
     "build": {
       "env": [
-        "DISABLE_EXTRACTION",
         "NODE_ENV",
         "EAS_BUILD_PLATFORM",
         "NEXT_PUBLIC_API_ENDPOINT",
-        "IGNORE_TS_CONFIG_PATHS",
-        "TAMAGUI_TARGET",
-        "TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD"
+        "IGNORE_TS_CONFIG_PATHS"
       ],
       "dependsOn": ["^build"],
       "outputs": [

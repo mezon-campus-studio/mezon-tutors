@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
   "files": {
-    "ignore": ["**/ios/**", "**/android/**", "**/node_modules/**", "**/.tamagui/**", "**/dist/**"]
+    "ignore": ["**/ios/**", "**/android/**", "**/node_modules/**", "**/dist/**"]
   },
   "organizeImports": {
     "enabled": false
@@ -9,11 +9,9 @@
   "linter": {
     "enabled": true,
     "ignore": [
-      ".tamagui",
       "**/ios/**",
       "**/android/**",
       ".vscode",
-      "**/tamagui.css",
       "**/*.d.ts",
       "packages/vendor/**",
       "packages/**/vendor/**",
@@ -87,11 +85,9 @@
     "lineWidth": 100,
     "attributePosition": "multiline",
     "ignore": [
-      ".tamagui",
       "**/ios/**",
       "**/android/**",
       ".vscode",
-      "**/tamagui.css",
       "**/*.d.ts",
       "packages/vendor/**",
       "packages/**/vendor/**",

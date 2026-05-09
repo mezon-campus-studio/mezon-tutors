@@ -1,72 +1,54 @@
-import { getRequestConfig } from 'next-intl/server';
-import { hasLocale } from 'next-intl';
-import { cookies } from 'next/headers';
-import { routing } from './routing';
+import { getRequestConfig, RequestConfig } from "next-intl/server";
+import { cookies } from "next/headers";
+
+const SUPPORTED_LOCALES = ["vi", "en"] as const;
 
 type MessageLoaderConfig = {
-  messageKey:
-    | 'Common'
-    | 'Admin'
-    | 'TutorProfile'
-    | 'AdminTutorApplications'
-    | 'Tutors'
-    | 'MyLessons'
-    | 'MySchedule'
-    | 'BecomeTutorGuide'
-    | 'Home'
-    | 'Dashboard'
-    | 'TrialLessonCheckout'
-    | 'SubscriptionPlan'
-    | 'SubscriptionCheckout'
-    | 'GlobalChat';
+  messageKey: "Common" | "Home" | "TutorProfile" | "Tutors" | "GlobalChat" | "TrialLessonCheckout" | "SubscriptionCheckout" | "BecomeTutorGuide" | "Dashboard" | "MyLessons" | "Notifications";
   file: string;
   pick?: (payload: Record<string, unknown>) => unknown;
 };
 
 const MESSAGE_LOADERS: MessageLoaderConfig[] = [
-  { messageKey: 'Common', file: 'common' },
-  { messageKey: 'Admin', file: 'admin', pick: (payload) => payload.Admin },
-  { messageKey: 'TutorProfile', file: 'tutor-profile' },
-  { messageKey: 'AdminTutorApplications', file: 'admin-tutor-applications' },
-  { messageKey: 'Tutors', file: 'tutors' },
-  { messageKey: 'MyLessons', file: 'my-lessons' },
-  { messageKey: 'MySchedule', file: 'my-schedule' },
-  { messageKey: 'BecomeTutorGuide', file: 'become-tutor-guide' },
-  { messageKey: 'Home', file: 'home', pick: (payload) => payload.Home },
-  { messageKey: 'Dashboard', file: 'dashboard', pick: (payload) => payload.Dashboard },
+  { messageKey: "Common", file: "common" },
+  { messageKey: "Notifications", file: "notifications" },
+  { messageKey: "GlobalChat", file: "global-chat" },
+  { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
+  { messageKey: "TutorProfile", file: "tutor-profile" },
+  { messageKey: "Tutors", file: "tutors" },
+  { messageKey: "Dashboard", file: "dashboard", pick: (payload) => payload.Dashboard },
+  { messageKey: "MyLessons", file: "my-lessons" },
   {
-    messageKey: 'TrialLessonCheckout',
-    file: 'trial-lesson-checkout',
+    messageKey: "TrialLessonCheckout",
+    file: "trial-lesson-checkout",
     pick: (payload) => payload.TrialLessonCheckout,
   },
   {
-    messageKey: 'SubscriptionPlan',
-    file: 'subscription-plan',
-    pick: (payload) => payload.SubscriptionPlan,
-  },
-  {
-    messageKey: 'SubscriptionCheckout',
-    file: 'subscription-checkout',
+    messageKey: "SubscriptionCheckout",
+    file: "subscription-checkout",
     pick: (payload) => payload.SubscriptionCheckout,
   },
-  { messageKey: 'GlobalChat', file: 'global-chat' },
 ];
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  const requested = await requestLocale;
-  const cookieLocale = (await cookies()).get('NEXT_LOCALE')?.value;
-  const preferredLocale = requested ?? cookieLocale;
+const loadMessage = async (locale: string, file: string) => {
+  try {
+    return (await import(`@mezon-tutors/shared/locales/${locale}/${file}.json`)).default;
+  } catch {
+    return (await import(`@mezon-tutors/shared/locales/vi/${file}.json`)).default;
+  }
+};
 
-  const locale = hasLocale(routing.locales, preferredLocale)
-    ? preferredLocale
-    : routing.defaultLocale;
+export default getRequestConfig(async (): Promise<RequestConfig> => {
+  const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
+
+  const locale = SUPPORTED_LOCALES.includes(cookieLocale as (typeof SUPPORTED_LOCALES)[number])
+    ? cookieLocale!
+    : "vi";
 
   const messages = Object.fromEntries(
     await Promise.all(
       MESSAGE_LOADERS.map(async ({ messageKey, file, pick }) => {
-        const payload = (
-          await import(`@mezon-tutors/shared/locales/${locale}/${file}.json`)
-        ).default as Record<string, unknown>;
+        const payload = await loadMessage(locale, file);
         return [messageKey, pick ? pick(payload) : payload];
       })
     )
