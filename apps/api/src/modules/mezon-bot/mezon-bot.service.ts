@@ -13,8 +13,8 @@ export class MezonBotService {
     }
     
     this.client = new MezonClient({
-      botId: this.appConfig.mezonBotConfig.clientId,
-      token: this.appConfig.mezonBotConfig.clientSecret,
+      botId: this.appConfig.mezonBotConfig.botId,
+      token: this.appConfig.mezonBotConfig.botToken,
     });
   }
 
@@ -29,7 +29,7 @@ export class MezonBotService {
 
   isConfigured() {
     const config = this.appConfig.mezonBotConfig;
-    return Boolean(config.clientId && config.clientSecret);
+    return Boolean(config.botId && config.botToken);
   }
 
   async sendDMToUser(mezonId: string, messageContent: ChannelMessageContent): Promise<void> {

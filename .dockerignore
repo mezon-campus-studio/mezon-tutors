@@ -21,8 +21,6 @@ design-refs
 **/*.md
 apps/web/**
 !apps/web/package.json
-apps/my-app/**
-!apps/my-app/package.json
 packages/app/**
 !packages/app/package.json
 apps/web/.next

@@ -37,6 +37,10 @@ const envSchema = z.object({
     .url('REDIRECT_URI must be a valid URL')
     .min(1, 'REDIRECT_URI is required'),
 
+  // Mezon bot
+  BOT_ID: z.string().min(1, 'BOT_ID is required'),
+  BOT_TOKEN: z.string().min(1, 'BOT_TOKEN is required'),
+
   // Email (Resend)
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
   RESEND_FROM_EMAIL: z.string().email('RESEND_FROM_EMAIL must be a valid email'),
@@ -94,6 +98,8 @@ export class AppConfigService {
       CLIENT_ID: this.configService.get('CLIENT_ID'),
       CLIENT_SECRET: this.configService.get('CLIENT_SECRET'),
       REDIRECT_URI: this.configService.get('REDIRECT_URI'),
+      BOT_ID: this.configService.get('BOT_ID'),
+      BOT_TOKEN: this.configService.get('BOT_TOKEN'),
       RESEND_API_KEY: this.configService.get('RESEND_API_KEY'),
       RESEND_FROM_EMAIL: this.configService.get('RESEND_FROM_EMAIL'),
       VNPAY_TMN_CODE: this.configService.get('VNPAY_TMN_CODE'),
@@ -187,8 +193,8 @@ export class AppConfigService {
 
   get mezonBotConfig() {
     return {
-      clientId: this.env.CLIENT_ID,
-      clientSecret: this.env.CLIENT_SECRET,
+      botId: this.env.BOT_ID,
+      botToken: this.env.BOT_TOKEN,
     };
   }
 

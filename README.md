@@ -57,7 +57,7 @@ Mezon Tutors offers a seamless matching system where learners discover tutors ba
 
 | Layer    | Technologies                                     |
 | -------- | ------------------------------------------------ |
-| Frontend | Next.js 16, React 19, Tamagui, React Native Web  |
+| Frontend | Next.js 16, React 19, Tailwind CSS, shadcn/ui    |
 | Backend  | NestJS 10, Swagger, Passport, JWT, Helmet, Zod   |
 | Database | PostgreSQL, Prisma ORM                           |
 | Shared   | TypeScript, Zod, React Hook Form, TanStack Query |
@@ -69,7 +69,7 @@ Mezon Tutors offers a seamless matching system where learners discover tutors ba
 mezon-tutors/
 ├─ apps/
 │  ├─ api/                 # NestJS backend (Swagger, JWT, RBAC)
-│  └─ web/                 # Next.js frontend (Tamagui UI)
+│  └─ web/                 # Next.js frontend
 ├─ packages/
 │  ├─ app/                 # Cross-platform screens/components used by web
 │  ├─ db/                  # Prisma schema, migrations, seed, DB utilities
@@ -187,19 +187,15 @@ REDIRECT_URI=http://localhost:4000/api/auth/mezon/callback
 
 ### Web
 
-| Variable                            | Required | Description                              |
-| ----------------------------------- | -------- | ---------------------------------------- |
-| `NEXT_PUBLIC_API_ENDPOINT`          | Yes      | Public API base URL used by the web app  |
-| `TAMAGUI_TARGET`                    | No       | Tamagui target, usually `web`            |
-| `TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD` | No       | Suppresses Tamagui dynamic-load warnings |
-| `IGNORE_TS_CONFIG_PATHS`            | No       | Compatibility flag for path resolution   |
+| Variable                   | Required | Description                             |
+| -------------------------- | -------- | --------------------------------------- |
+| `NEXT_PUBLIC_API_ENDPOINT` | Yes      | Public API base URL used by the web app |
+| `IGNORE_TS_CONFIG_PATHS`   | No       | Compatibility flag for path resolution  |
 
 Example:
 
 ```env
 NEXT_PUBLIC_API_ENDPOINT=http://localhost:4000/api
-TAMAGUI_TARGET=web
-TAMAGUI_DISABLE_WARN_DYNAMIC_LOAD=1
 IGNORE_TS_CONFIG_PATHS=true
 ```
 
