@@ -3,8 +3,14 @@ import { ROUTES } from './routes';
 export type DashboardMenuIconKey = 'document' | 'bookingRequests' | 'calendar' | 'logout';
 export type DashboardMenuLabelKey = 'myLessons' | 'bookingRequests' | 'mySchedule' | 'logout';
 
-export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR'] as const;
+export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
+
+export const DASHBOARD_ROLE_TITLES: Record<DashboardRole, string> = {
+  STUDENT: 'Student Dashboard',
+  TUTOR: 'Tutor Dashboard',
+  ADMIN: 'Admin Dashboard',
+};
 
 export type DashboardMenuItem = {
   key: string;
@@ -45,7 +51,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     type: 'action',
     labelKey: 'logout',
     iconKey: 'logout',
-    roles: ['STUDENT', 'TUTOR'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
   },
 ];
 

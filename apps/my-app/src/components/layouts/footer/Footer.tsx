@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from 'next/navigation';
 import Link from "next/link";
 import FooterLinkColumn from "./FooterLinkColumn";
 import FooterSocialButton from "./FooterSocialButton";
@@ -14,6 +15,14 @@ const SOCIALS = [
 
 export default function Footer() {
   const t = useTranslations("Common.Footer");
+  const pathname = usePathname();
+  
+  const isDashboard = pathname?.startsWith('/dashboard');
+  
+  if (isDashboard) {
+    return null;
+  }
+  
   const footerColumns = [
     {
       title: t("product.title"),

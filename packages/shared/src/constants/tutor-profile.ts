@@ -126,3 +126,65 @@ export const TUTOR_DETAIL_LAYOUT_CONFIG = {
   sidebarWidth: 320,
   bottomPadding: 24,
 } as const;
+
+export const VIDEO_PREVIEW_WIDTH = 420;
+
+export const YEAR_PICKER_CONFIG = {
+  minYear: 1950,
+  maxYear: new Date().getFullYear(),
+} as const;
+
+export const TEACHING_CERTIFICATES = [
+  'IELTS',
+  'TOEIC',
+  'TOEFL',
+  'TEFL',
+  'TESOL',
+  'CELTA',
+] as const;
+
+export const BECOME_TUTOR_STEPS = {
+  ABOUT: 1,
+  PHOTO: 2,
+  CERTIFICATION: 3,
+  VIDEO: 4,
+  AVAILABILITY: 5,
+  FINAL: 6,
+} as const;
+
+export function calculateStepProgress(currentStep: number): number {
+  return (currentStep - 1) * 20;
+}
+
+export function getStepRoute(step: number): string {
+  switch (step) {
+    case BECOME_TUTOR_STEPS.ABOUT: return '/become-tutor/about';
+    case BECOME_TUTOR_STEPS.PHOTO: return '/become-tutor/photo';
+    case BECOME_TUTOR_STEPS.CERTIFICATION: return '/become-tutor/certification';
+    case BECOME_TUTOR_STEPS.VIDEO: return '/become-tutor/video';
+    case BECOME_TUTOR_STEPS.AVAILABILITY: return '/become-tutor/availability';
+    default: return '/become-tutor/about';
+  }
+}
+
+export const ACCEPT_IMAGE_TYPES = 'image/jpeg,image/png,image/jpg';
+
+export const ACCEPT_FILE_TYPES = '.pdf,.jpg,.jpeg,.png';
+
+export function parseYouTubeId(url: string): string | null {
+  const trimmed = url.trim();
+  const match = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(trimmed);
+  return match ? match[1] : null;
+}
+
+export function parseVimeoId(url: string): string | null {
+  const trimmed = url.trim();
+  const match = /vimeo\.com\/(?:video\/)?(\d+)/.exec(trimmed);
+  return match ? match[1] : null;
+}
+
+export const PROFESSIONAL_DOCUMENT_TYPE = {
+  DEGREE: 'DEGREE',
+  CERTIFICATE: 'CERTIFICATE',
+  OTHER: 'OTHER',
+} as const;

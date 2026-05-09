@@ -4,14 +4,7 @@ import { cookies } from "next/headers";
 const SUPPORTED_LOCALES = ["vi", "en"] as const;
 
 type MessageLoaderConfig = {
-  messageKey:
-    | "Common"
-    | "Home"
-    | "Tutors"
-    | "GlobalChat"
-    | "TrialLessonCheckout"
-    | "SubscriptionCheckout"
-    | "Notifications";
+  messageKey: "Common" | "Home" | "TutorProfile" | "Tutors" | "GlobalChat" | "TrialLessonCheckout" | "SubscriptionCheckout" | "BecomeTutorGuide" | "Dashboard" | "MyLessons" | "Notifications";
   file: string;
   pick?: (payload: Record<string, unknown>) => unknown;
 };
@@ -21,7 +14,10 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Notifications", file: "notifications" },
   { messageKey: "GlobalChat", file: "global-chat" },
   { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
+  { messageKey: "TutorProfile", file: "tutor-profile" },
   { messageKey: "Tutors", file: "tutors" },
+  { messageKey: "Dashboard", file: "dashboard", pick: (payload) => payload.Dashboard },
+  { messageKey: "MyLessons", file: "my-lessons" },
   {
     messageKey: "TrialLessonCheckout",
     file: "trial-lesson-checkout",

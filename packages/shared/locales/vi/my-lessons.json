@@ -17,12 +17,18 @@
       "tutors": "Gia sư"
     }
   },
+  "tabs": {
+    "lessons": "Buổi học",
+    "calendar": "Lịch",
+    "tutors": "Gia sư"
+  },
   "promo": {
     "title": "Đặt buổi học tiếp theo với Alex Smith",
     "description": "Bạn đang có chuỗi học 3 tuần. Hãy duy trì động lực và tiến nhanh hơn tới mục tiêu.",
     "scheduleButton": "Đặt lịch học"
   },
   "calendar": {
+    "today": "Hôm nay",
     "switchWeek": "Tuần",
     "switchMonth": "Tháng",
     "legendSuffix": "Buổi học",

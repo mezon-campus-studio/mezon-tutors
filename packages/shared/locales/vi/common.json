@@ -9,7 +9,13 @@
     "logout": "Đăng xuất",
     "getStarted": "Bắt đầu ngay",
     "myMessages": "Tin nhắn của tôi",
-    "searchPlaceholder": "Tìm kiếm bằng môn học"
+    "searchPlaceholder": "Tìm kiếm bằng môn học",
+    "language": "Ngôn ngữ",
+    "currency": "Tiền tệ",
+    "locales": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
   },
   "Footer": {
     "description": "Nền tảng kết nối gia sư ngôn ngữ hàng đầu dành cho người đi làm tại Việt Nam.",
