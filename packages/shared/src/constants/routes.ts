@@ -37,7 +37,7 @@ export const ROUTES = {
     INDEX: '/dashboard',
     BOOKING_REQUESTS: '/dashboard/booking-requests',
     MY_SCHEDULE: '/dashboard/my-schedule',
-    MY_LESSONS: '/dashboard/my-lessons',
+    MY_LESSONS: '/dashboard/my-lesson',
   },
   CHECKOUT: {
     TRIAL_LESSON: '/checkout/trial-lesson',

@@ -116,6 +116,7 @@ export class MyLessonsService {
     return {
       id: lesson.id,
       subject: lesson.tutor.subject,
+      tutor_id: lesson.tutor.id,
       tutor_name: this.getTutorName(lesson.tutor),
       tutor_avatar: lesson.tutor.avatar || lesson.tutor.user.avatar,
       category: this.buildCategoryKey(lesson.tutor.subject, lesson.tutor.subject),

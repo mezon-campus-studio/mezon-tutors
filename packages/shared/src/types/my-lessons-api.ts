@@ -10,6 +10,7 @@ export type MyLessonWeekDayApiItem = {
 export type MyLessonApiItem = {
   id: string
   subject: string
+  tutor_id: string
   tutor_name: string
   tutor_avatar: string
   category: MyLessonApiCategory

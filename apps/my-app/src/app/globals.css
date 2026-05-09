@@ -81,6 +81,43 @@
   --sidebar-accent-foreground: #1f1147;
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: #6c5ce7;
+
+  --calendar-myLessons-grid-header-bg: oklch(1 0 0);
+  --calendar-myLessons-grid-body-bg: oklch(1 0 0);
+  --calendar-myLessons-grid-border: oklch(0.85 0 0);
+  --calendar-myLessons-grid-line: oklch(0.90 0 0);
+  --calendar-myLessons-header-text: oklch(0.145 0 0);
+  --calendar-myLessons-day-text: oklch(0.556 0 0);
+  --calendar-myLessons-day-label: oklch(0.556 0 0);
+  --calendar-myLessons-active-day-column: #f3f0ff;
+  --calendar-myLessons-current-column: rgba(243, 240, 255, 0.3);
+  --calendar-myLessons-active-date: #6c5ce7;
+  --calendar-myLessons-inactive-date: oklch(0.145 0 0);
+  --calendar-myLessons-event-bg: #f3f0ff;
+  --calendar-myLessons-event-border: #6c5ce7;
+  --calendar-myLessons-event-text: #1f1147;
+  --calendar-myLessons-now-line: #6c5ce7;
+  --calendar-myLessons-timeline-text: oklch(0.556 0 0);
+
+  --calendar-mySchedule-grid-header-bg: oklch(1 0 0);
+  --calendar-mySchedule-grid-body-bg: oklch(1 0 0);
+  --calendar-mySchedule-grid-border: oklch(0.85 0 0);
+  --calendar-mySchedule-grid-line: oklch(0.90 0 0);
+  --calendar-mySchedule-header-text: oklch(0.145 0 0);
+  --calendar-mySchedule-day-text: oklch(0.556 0 0);
+  --calendar-mySchedule-day-label: oklch(0.556 0 0);
+  --calendar-mySchedule-active-day-column: #f3f0ff;
+  --calendar-mySchedule-current-column: rgba(243, 240, 255, 0.3);
+  --calendar-mySchedule-active-date: #6c5ce7;
+  --calendar-mySchedule-inactive-date: oklch(0.145 0 0);
+  --calendar-mySchedule-event-bg: #f3f0ff;
+  --calendar-mySchedule-event-border: #6c5ce7;
+  --calendar-mySchedule-event-text: #1f1147;
+  --calendar-mySchedule-now-line: #6c5ce7;
+  --calendar-mySchedule-timeline-text: oklch(0.556 0 0);
+  --calendar-mySchedule-empty-slot-bg: oklch(0.97 0 0);
+  --calendar-mySchedule-empty-slot-border: oklch(0.85 0 0);
+  --calendar-mySchedule-empty-slot-text: oklch(0.556 0 0);
 }
 
 .dark {
@@ -121,12 +158,23 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {

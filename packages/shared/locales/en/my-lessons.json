@@ -17,12 +17,18 @@
       "tutors": "Tutors"
     }
   },
+  "tabs": {
+    "lessons": "Lessons",
+    "calendar": "Calendar",
+    "tutors": "Tutors"
+  },
   "promo": {
     "title": "Schedule your next lesson with Alex Smith",
     "description": "You are on a 3-week streak. Keep your learning momentum and reach your goals faster.",
     "scheduleButton": "Schedule lesson"
   },
   "calendar": {
+    "today": "Today",
     "switchWeek": "Week",
     "switchMonth": "Month",
     "legendSuffix": "Lessons",
