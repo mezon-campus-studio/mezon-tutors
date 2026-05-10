@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { Button, Input, Label, YearPicker, Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxEmpty } from "@/components/ui";
-import { BadgeCheck, Wallet, Info, Upload, GraduationCap, ArrowRight, ArrowLeft } from "lucide-react";
+import { BadgeCheck, Wallet, Info, Upload, FileText } from "lucide-react";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
 import { CLOUDINARY_FOLDER, formatLastSavedTime, MAX_FILE_SIZE_MB, TEACHING_CERTIFICATES, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
 import { cloudinaryService } from "@/services";
+import { BecomeTutorSection, BecomeTutorShell } from "../_shared/BecomeTutorShell";
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.CERTIFICATION;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
@@ -271,187 +272,272 @@ export default function CertificationPage() {
     if (focusableFields.has(firstError)) setFocus(firstError);
   };
 
-  return (
-    <div className="min-h-screen become-tutor-shell">
-      <div className="flex flex-col min-h-screen">
-        <div className="flex-1 overflow-y-auto pb-20 md:pb-28">
-          <div className="py-3 px-3 sm:py-4 sm:px-4 md:py-6 md:px-4 lg:py-5 lg:px-6">
-            <div className="max-w-[960px] w-full mx-auto flex flex-col gap-3 sm:gap-4 md:gap-6">
-              <div className="flex items-center justify-between gap-2 sm:gap-3 flex-wrap">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
-                  <h1 className="font-bold text-sm sm:text-base md:text-lg">{t("headerTitle")}</h1>
-                </div>
-                <div className="flex items-center gap-2 md:gap-3">
-                  {draftSavedLabel && <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">{draftSavedLabel}</p>}
-                  <Button variant="ghost" size="sm" className="bg-muted hover:bg-muted/80 text-xs sm:text-sm h-7 sm:h-8 md:h-9 px-2 sm:px-3">{t("saveExit")}</Button>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5 sm:gap-2 md:gap-3">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <p className="text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.1em] uppercase text-primary">{t("stepLabel")}</p>
-                  <p className="text-[10px] sm:text-xs md:text-sm font-medium text-primary">{t("progressPercentLabel", { percent: PROGRESS_PERCENT })}</p>
-                </div>
-                <div className="flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                  <div className="h-1 md:h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${PROGRESS_PERCENT}%` }} />
-                  </div>
-                  <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">{t("currentLabel")}</p>
-                </div>
-              </div>
-
-              <div ref={teachingCardRef} className="become-tutor-card rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 flex flex-col gap-3 sm:gap-4 md:gap-5 border shadow-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <BadgeCheck className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                  <h2 className="text-base sm:text-lg md:text-xl font-bold">{t("teachingTitle")}</h2>
-                </div>
-
-                <form className="flex flex-col gap-2.5 sm:gap-3 md:gap-4">
-                  <div className="flex gap-2.5 sm:gap-3 md:gap-4 flex-col md:flex-row">
-                    <div className="flex-1 flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                      <Label className="text-xs sm:text-sm">{t("teaching.certificateLabel")}</Label>
-                      <Controller
-                        name="certificateType"
-                        control={control}
-                        render={({ field }) => {
-                          const query = (field.value || "").trim().toLowerCase();
-                          const filteredCertificates = query
-                            ? TEACHING_CERTIFICATES.filter((cert) => cert.toLowerCase().includes(query))
-                            : TEACHING_CERTIFICATES;
-
-                          return (
-                            <Combobox
-                              value={field.value}
-                              onValueChange={(value) => {
-                                if (value) {
-                                  field.onChange(value);
-                                }
-                              }}
-                            >
-                              <ComboboxInput 
-                                className="become-tutor-field h-9 sm:h-10 md:h-11 text-sm"
-                                placeholder={t("teaching.certificatePlaceholder")}
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(e.target.value)}
-                              />
-                              <ComboboxContent>
-                                <ComboboxList>
-                                  {filteredCertificates.length > 0 ? (
-                                    filteredCertificates.map((cert) => (
-                                      <ComboboxItem key={cert} value={cert}>
-                                        {cert}
-                                      </ComboboxItem>
-                                    ))
-                                  ) : (
-                                    <ComboboxEmpty>{t("teaching.noResults")}</ComboboxEmpty>
-                                  )}
-                                </ComboboxList>
-                              </ComboboxContent>
-                            </Combobox>
-                          );
-                        }}
-                      />
-                      {errors.certificateType && <p className="text-xs sm:text-sm text-destructive">{errors.certificateType.message}</p>}
-                    </div>
-                    <div className="flex-1 flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                      <Label className="text-xs sm:text-sm">{t("teaching.yearLabel")}</Label>
-                      <Controller name="teachingYear" control={control} render={({ field }) => (
-                        <YearPicker value={field.value} onChange={field.onChange} placeholder={t("teaching.yearPlaceholder")} />
-                      )} />
-                      {errors.teachingYear && <p className="text-xs sm:text-sm text-destructive">{errors.teachingYear.message}</p>}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 sm:gap-2">
-                    <Label className="text-xs sm:text-sm font-semibold">{t("teaching.uploadTitle")}</Label>
-                    <div className="border-2 border-dashed rounded-lg p-4 sm:p-5 md:p-6 flex flex-col items-center gap-2 sm:gap-2.5 md:gap-3 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => document.getElementById("teachingFile")?.click()}>
-                      <Upload className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-muted-foreground" />
-                      <div className="text-center">
-                        <p className="text-xs sm:text-sm font-medium">{t("teaching.uploadPrompt")}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">{t("teaching.uploadHint")}</p>
-                      </div>
-                      {certificationMerged.teachingCertificate.file.fileName && (
-                        <p className="text-xs sm:text-sm text-primary font-medium break-all">{certificationMerged.teachingCertificate.file.fileName}</p>
-                      )}
-                    </div>
-                    <input type="file" id="teachingFile" accept={ACCEPT_FILE_TYPES} onChange={handleTeachingFileChange} className="hidden" />
-                    {errors.teachingCertificateFile && <p className="text-xs sm:text-sm text-destructive">{errors.teachingCertificateFile.message}</p>}
-
-                    <div className="mt-1 sm:mt-2 rounded-lg p-2 sm:p-2.5 md:p-3 bg-muted/50 flex gap-1.5 sm:gap-2 items-start">
-                      <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 flex flex-col gap-0.5 sm:gap-1">
-                        <p className="text-xs sm:text-sm font-semibold text-primary">{t("teaching.reviewTitle")}</p>
-                        <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">{t("teaching.reviewDescription")}</p>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-
-              <div ref={educationCardRef} className="become-tutor-card rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 flex flex-col gap-3 sm:gap-4 md:gap-5 border shadow-sm">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                  <h2 className="text-base sm:text-lg md:text-xl font-bold">{t("educationTitle")}</h2>
-                </div>
-
-                <form className="flex flex-col gap-2.5 sm:gap-3 md:gap-4">
-                  <div className="flex gap-2.5 sm:gap-3 md:gap-4 flex-col md:flex-row">
-                    <div className="flex-1 flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                      <Label htmlFor="university" className="text-xs sm:text-sm">{t("education.universityLabel")}</Label>
-                      <Input className="become-tutor-field h-9 sm:h-10 md:h-11 text-sm" id="university" placeholder={t("education.universityPlaceholder")} {...register("university")} />
-                      {errors.university && <p className="text-xs sm:text-sm text-destructive">{errors.university.message}</p>}
-                    </div>
-                    <div className="flex-1 flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                      <Label htmlFor="degree" className="text-xs sm:text-sm">{t("education.degreeLabel")}</Label>
-                      <Input className="become-tutor-field h-9 sm:h-10 md:h-11 text-sm" id="degree" placeholder={t("education.degreePlaceholder")} {...register("degree")} />
-                      {errors.degree && <p className="text-xs sm:text-sm text-destructive">{errors.degree.message}</p>}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1 sm:gap-1.5 md:gap-2">
-                    <Label htmlFor="specialization" className="text-xs sm:text-sm">{t("education.specializationLabel")}</Label>
-                    <Input className="become-tutor-field h-9 sm:h-10 md:h-11 text-sm" id="specialization" placeholder={t("education.specializationPlaceholder")} {...register("specialization")} />
-                    {errors.specialization && <p className="text-xs sm:text-sm text-destructive">{errors.specialization.message}</p>}
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 sm:gap-2">
-                    <Label className="text-xs sm:text-sm font-semibold">{t("education.uploadTitle")}</Label>
-                    <div className="border-2 border-dashed rounded-lg p-4 sm:p-5 md:p-6 flex flex-col items-center gap-2 sm:gap-2.5 md:gap-3 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => document.getElementById("educationFile")?.click()}>
-                      <Upload className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-muted-foreground" />
-                      <div className="text-center">
-                        <p className="text-xs sm:text-sm font-medium">{t("education.uploadPrompt")}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">{t("education.uploadHint")}</p>
-                      </div>
-                      {certificationMerged.higherEducation.file.fileName && (
-                        <p className="text-xs sm:text-sm text-primary font-medium break-all">{certificationMerged.higherEducation.file.fileName}</p>
-                      )}
-                    </div>
-                    <input type="file" id="educationFile" accept={ACCEPT_FILE_TYPES} onChange={handleEducationFileChange} className="hidden" />
-                    {errors.educationFile && <p className="text-xs sm:text-sm text-destructive">{errors.educationFile.message}</p>}
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t shadow-lg py-2.5 sm:py-3 md:py-4 z-10">
-          <div className="max-w-[960px] w-full mx-auto px-3 sm:px-4 md:px-6">
-            <div className="flex justify-between items-center gap-2">
-              <Button variant="outline" onClick={() => router.push("/become-tutor/photo")} className="gap-1.5 sm:gap-2 h-9 sm:h-10 md:h-11 text-xs sm:text-sm px-3 sm:px-4">
-                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                {t("back")}
-              </Button>
-              <Button type="submit" size="lg" disabled={isUploading} onClick={handleSubmit(onSubmit, onValidationError)} className="gap-1.5 sm:gap-2 h-9 sm:h-10 md:h-11 text-xs sm:text-sm px-3 sm:px-4">
-                {t("continue")}
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+  const renderUploadZone = (
+    id: string,
+    fileName: string | null | undefined,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    promptText: string,
+    hintText: string,
+  ) => (
+    <button
+      type="button"
+      onClick={() => document.getElementById(id)?.click()}
+      className="group flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 p-6 transition-all hover:border-violet-300 hover:bg-violet-50/60"
+    >
+      <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+        {fileName ? <FileText className="size-5" /> : <Upload className="size-5" />}
       </div>
-    </div>
+      <div className="text-center">
+        <p className="text-sm font-semibold text-slate-900">{promptText}</p>
+        <p className="text-xs text-slate-500">{hintText}</p>
+      </div>
+      {fileName ? (
+        <span className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold text-violet-700">
+          <FileText className="size-3 shrink-0" />
+          <span className="truncate">{fileName}</span>
+        </span>
+      ) : null}
+      <input
+        type="file"
+        id={id}
+        accept={ACCEPT_FILE_TYPES}
+        onChange={onChange}
+        className="hidden"
+      />
+    </button>
+  );
+
+  return (
+    <BecomeTutorShell
+      headerTitle={t("headerTitle")}
+      saveExitLabel={t("saveExit")}
+      draftSavedLabel={draftSavedLabel || undefined}
+      stepLabel={t("stepLabel")}
+      progressPercent={PROGRESS_PERCENT}
+      progressLabel={t("progressPercentLabel", { percent: PROGRESS_PERCENT })}
+      nextLabel={t("currentLabel")}
+      backLabel={t("back")}
+      continueLabel={t("continue")}
+      currentStep={CURRENT_STEP}
+      onBack={() => router.push("/become-tutor/photo")}
+      onContinue={handleSubmit(onSubmit, onValidationError)}
+      continueDisabled={isUploading}
+    >
+      <BecomeTutorSection
+        eyebrow="Teaching"
+        title={t("teachingTitle")}
+        contentRef={teachingCardRef}
+      >
+        <div className="mb-5 flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+            <BadgeCheck className="size-5" />
+          </div>
+          <p className="text-xs text-slate-500">
+            {t("teaching.reviewDescription")}
+          </p>
+        </div>
+        <form className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">
+                {t("teaching.certificateLabel")}
+              </Label>
+              <Controller
+                name="certificateType"
+                control={control}
+                render={({ field }) => {
+                  const query = (field.value || "").trim().toLowerCase();
+                  const filteredCertificates = query
+                    ? TEACHING_CERTIFICATES.filter((cert) =>
+                        cert.toLowerCase().includes(query),
+                      )
+                    : TEACHING_CERTIFICATES;
+
+                  return (
+                    <Combobox
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value) {
+                          field.onChange(value);
+                        }
+                      }}
+                    >
+                      <ComboboxInput
+                        className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+                        placeholder={t("teaching.certificatePlaceholder")}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                      <ComboboxContent>
+                        <ComboboxList>
+                          {filteredCertificates.length > 0 ? (
+                            filteredCertificates.map((cert) => (
+                              <ComboboxItem key={cert} value={cert}>
+                                {cert}
+                              </ComboboxItem>
+                            ))
+                          ) : (
+                            <ComboboxEmpty>
+                              {t("teaching.noResults")}
+                            </ComboboxEmpty>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                  );
+                }}
+              />
+              {errors.certificateType && (
+                <p className="text-xs text-rose-600">
+                  {errors.certificateType.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700">
+                {t("teaching.yearLabel")}
+              </Label>
+              <Controller
+                name="teachingYear"
+                control={control}
+                render={({ field }) => (
+                  <YearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={t("teaching.yearPlaceholder")}
+                  />
+                )}
+              />
+              {errors.teachingYear && (
+                <p className="text-xs text-rose-600">
+                  {errors.teachingYear.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-slate-700">
+              {t("teaching.uploadTitle")}
+            </Label>
+            {renderUploadZone(
+              "teachingFile",
+              certificationMerged.teachingCertificate.file.fileName,
+              handleTeachingFileChange,
+              t("teaching.uploadPrompt"),
+              t("teaching.uploadHint"),
+            )}
+            {errors.teachingCertificateFile && (
+              <p className="text-xs text-rose-600">
+                {errors.teachingCertificateFile.message}
+              </p>
+            )}
+            <div className="flex items-start gap-2 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] p-3">
+              <Info className="mt-0.5 size-4 shrink-0 text-violet-600" />
+              <div className="leading-tight">
+                <p className="text-xs font-bold text-violet-900">
+                  {t("teaching.reviewTitle")}
+                </p>
+                <p className="mt-0.5 text-[11px] text-violet-700/80">
+                  {t("teaching.reviewDescription")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </BecomeTutorSection>
+
+      <BecomeTutorSection
+        eyebrow="Education"
+        title={t("educationTitle")}
+        contentRef={educationCardRef}
+      >
+        <div className="mb-5 flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#fce7f3,#fbcfe8)] text-fuchsia-700 ring-1 ring-fuchsia-100">
+            <Wallet className="size-5" />
+          </div>
+          <p className="text-xs text-slate-500">{t("educationTitle")}</p>
+        </div>
+        <form className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="university"
+                className="text-xs font-semibold text-slate-700"
+              >
+                {t("education.universityLabel")}
+              </Label>
+              <Input
+                id="university"
+                placeholder={t("education.universityPlaceholder")}
+                {...register("university")}
+                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.university && (
+                <p className="text-xs text-rose-600">
+                  {errors.university.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="degree"
+                className="text-xs font-semibold text-slate-700"
+              >
+                {t("education.degreeLabel")}
+              </Label>
+              <Input
+                id="degree"
+                placeholder={t("education.degreePlaceholder")}
+                {...register("degree")}
+                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.degree && (
+                <p className="text-xs text-rose-600">{errors.degree.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="specialization"
+              className="text-xs font-semibold text-slate-700"
+            >
+              {t("education.specializationLabel")}
+            </Label>
+            <Input
+              id="specialization"
+              placeholder={t("education.specializationPlaceholder")}
+              {...register("specialization")}
+              className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+            />
+            {errors.specialization && (
+              <p className="text-xs text-rose-600">
+                {errors.specialization.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-slate-700">
+              {t("education.uploadTitle")}
+            </Label>
+            {renderUploadZone(
+              "educationFile",
+              certificationMerged.higherEducation.file.fileName,
+              handleEducationFileChange,
+              t("education.uploadPrompt"),
+              t("education.uploadHint"),
+            )}
+            {errors.educationFile && (
+              <p className="text-xs text-rose-600">
+                {errors.educationFile.message}
+              </p>
+            )}
+          </div>
+        </form>
+      </BecomeTutorSection>
+    </BecomeTutorShell>
   );
 }
 

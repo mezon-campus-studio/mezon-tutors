@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useGetMyLessonsOverview } from '@/services/my-lessons/my-lessons.api';
 import MyLessonsHeader from './components/MyLessonsHeader';
@@ -49,16 +50,15 @@ export default function MyLessonsPage() {
               <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
                 {t('header.title')}
               </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                {t('header.subtitle', { defaultValue: 'Theo dõi lịch học và gia sư của bạn' })}
-              </p>
+              <p className="mt-1 text-sm text-slate-500">{t('header.subtitle')}</p>
             </div>
             <button
               type="button"
               onClick={() => router.push('/tutors')}
               className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
             >
-              + {t('header.scheduleLesson')}
+              <Plus className="size-4" />
+              {t('header.scheduleLesson')}
             </button>
           </div>
 

@@ -1,4 +1,11 @@
 {
+  "Stepper": {
+    "about": "Giới thiệu",
+    "photo": "Ảnh hồ sơ",
+    "certification": "Chứng chỉ",
+    "video": "Video",
+    "availability": "Lịch dạy"
+  },
   "About": {
     "headerTitle": "Đăng ký gia sư",
     "draftSaved": "Bản nháp đã được lưu lúc {time}",

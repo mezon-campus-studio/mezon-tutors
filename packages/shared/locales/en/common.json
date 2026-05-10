@@ -18,7 +18,15 @@
     }
   },
   "Footer": {
-    "description": "The leading language tutor matching platform for working professionals in Vietnam.",
+    "tagline": "TUTOR MATCHING",
+    "description": "The leading tutor matching platform for working professionals in Vietnam. Learn anything, anytime, right on Mezon.",
+    "newsletter": {
+      "title": "Updates from Mezonly",
+      "description": "Get learning tips and new tutor offers in your inbox.",
+      "placeholder": "Enter your email",
+      "submit": "Subscribe",
+      "consent": "By subscribing, you agree to receive emails from us."
+    },
     "product": {
       "title": "Product",
       "findTutor": "Find a tutor",
@@ -41,10 +49,12 @@
       "facebook": "Facebook",
       "linkedin": "LinkedIn"
     },
-    "copyright": "© 2026 TutorMatch. All rights reserved.",
+    "copyright": "© 2026 Mezonly. All rights reserved.",
+    "madeWith": "Powered by Mezon",
     "bottom": {
       "terms": "Terms",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "cookies": "Cookies"
     }
   },
   "PaymentMethodSelection": {

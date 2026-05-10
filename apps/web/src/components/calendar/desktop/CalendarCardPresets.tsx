@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import type { CalendarType } from '../types';
@@ -62,70 +63,65 @@ function MyLessonsPresetHeader({
   const t = useTranslations('MyLessons');
   
   return (
-    <div className="flex justify-between items-center gap-3 flex-wrap pt-3 pb-4">
-      <div className="flex items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-2 pb-4">
+      <div className="flex items-center gap-3">
         <h2
-          className="pl-3 font-bold"
+          className="font-extrabold tracking-tight"
           style={{
-            color: 'var(--primary)',
-            fontSize: isCompact ? 32 : 40,
-            lineHeight: isCompact ? '34px' : '42px',
+            background:
+              'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: isCompact ? 24 : 30,
+            lineHeight: isCompact ? '28px' : '36px',
           }}
         >
           {title}
         </h2>
 
         {showMonthNav && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               type="button"
-              className="text-lg cursor-pointer"
-              style={{ color: 'var(--primary)' }}
+              aria-label="Previous"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={onPrevWeek}
               disabled={!onPrevWeek}
             >
-              {'<'}
+              <ChevronLeft className="size-4" />
             </button>
             <button
               type="button"
-              className="text-lg cursor-pointer"
-              style={{ color: 'var(--primary)' }}
+              aria-label="Next"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={onNextWeek}
               disabled={!onNextWeek}
             >
-              {'>'}
+              <ChevronRight className="size-4" />
             </button>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 mr-3">
+      <div className="flex items-center gap-2">
         {showTodayButton && (
           <button
             type="button"
-            className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors ${
-              todayButtonDisabled 
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:bg-gray-50 cursor-pointer'
+            className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+              todayButtonDisabled
+                ? 'cursor-not-allowed border-slate-200 text-slate-400'
+                : 'cursor-pointer border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50'
             }`}
-            style={{ 
-              borderColor: 'var(--primary)',
-              color: 'var(--primary)',
-            }}
             onClick={todayButtonDisabled ? undefined : onGoToToday}
             disabled={todayButtonDisabled}
           >
             {t('calendar.today')}
           </button>
         )}
-        
-        <div
-          className="rounded-full px-3 py-1.5"
-          style={{ backgroundColor: 'var(--primary)' }}
-        >
-          <span className="text-xs font-semibold text-white">
-            {weekLabel}
-          </span>
+
+        <div className="rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-3.5 py-1.5 shadow-sm shadow-violet-300/40">
+          <span className="text-xs font-bold text-white">{weekLabel}</span>
         </div>
       </div>
     </div>

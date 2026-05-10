@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Input, Card, CardContent, Badge, TimePicker, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@/components/ui';
+import { Button, Input, TimePicker, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@/components/ui';
 import { 
   Wallet, 
   Calendar, 
@@ -15,6 +15,7 @@ import {
   ArrowRight,
   AlertCircle 
 } from 'lucide-react';
+import { BecomeTutorSection, BecomeTutorShell } from '../_shared/BecomeTutorShell';
 import {
   tutorProfileAvailabilityAtom,
   resetTutorProfileAfterSubmitAtom,
@@ -338,231 +339,189 @@ export default function AvailabilityPage() {
   const dayTabs = t.raw('availability.tabs') as string[];
 
   return (
-    <div className="min-h-screen become-tutor-shell pb-20 md:pb-24">
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-        <div className="mb-4 sm:mb-6 md:mb-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6 gap-2 flex-wrap">
-            <div>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">{t('title')}</h1>
-              <p className="text-gray-600 mt-0.5 sm:mt-1 text-xs sm:text-sm md:text-base">{t('subtitle')}</p>
-            </div>
-            {draftSavedLabel && (
-              <Badge variant="secondary" className="text-xs sm:text-sm">
-                {draftSavedLabel}
-              </Badge>
-            )}
-          </div>
-
-          <div className="mb-4 sm:mb-5 md:mb-6">
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">{t('stepLabel')}</span>
-              <span className="text-xs sm:text-sm text-gray-500">
-                {t('progressPercentLabel', { percent: PROGRESS_PERCENT })}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
-              <div
-                className="bg-[#6c5ce7] h-1.5 sm:h-2 rounded-full transition-all duration-300"
-                style={{ width: `${PROGRESS_PERCENT}%` }}
+    <BecomeTutorShell
+      headerTitle={t('title')}
+      saveExitLabel={t('back')}
+      draftSavedLabel={draftSavedLabel || undefined}
+      stepLabel={t('stepLabel')}
+      progressPercent={PROGRESS_PERCENT}
+      progressLabel={t('progressPercentLabel', { percent: PROGRESS_PERCENT })}
+      nextLabel={t('subtitle')}
+      backLabel={t('back')}
+      continueLabel={t('continue')}
+      currentStep={CURRENT_STEP}
+      onBack={() => router.push('/become-tutor/video')}
+      onContinue={handleSubmit(handleContinue)}
+      continueDisabled={submitMutation.isPending}
+    >
+      <BecomeTutorSection eyebrow="Pricing" title={t('rateCardTitle')} description={t('rate.question')}>
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex h-12 flex-1 items-center rounded-xl border border-slate-200 bg-slate-50/60 px-4 transition-colors focus-within:border-violet-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-200/60">
+              <span className="mr-2 text-base font-bold text-violet-600">{getCurrencySymbol(selectedCurrency)}</span>
+              <Controller
+                control={control}
+                name="hourlyRate"
+                rules={{
+                  validate: (value) => {
+                    const trimmed = value.trim();
+                    if (!trimmed) {
+                      return t('validation.hourlyRateRequired');
+                    }
+                    if (!HOURLY_RATE_REGEX.test(trimmed)) {
+                      return t('validation.hourlyRateInvalidFormat');
+                    }
+                    const numValue = Number(trimmed);
+                    if (numValue <= 0) {
+                      return t('validation.hourlyRateGreaterThanZero');
+                    }
+                    const minPrice = MIN_PRICE[selectedCurrency];
+                    const maxPrice = MAX_PRICE[selectedCurrency];
+                    if (numValue < minPrice) {
+                      return t('validation.hourlyRateTooLow', {
+                        min: formatToCurrency(selectedCurrency, minPrice),
+                      });
+                    }
+                    if (numValue > maxPrice) {
+                      return t('validation.hourlyRateTooHigh', {
+                        max: formatToCurrency(selectedCurrency, maxPrice),
+                      });
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field: { value, onChange } }) => (
+                  <Input
+                    className="flex-1 border-0 bg-transparent p-0 text-base font-bold focus-visible:ring-0"
+                    placeholder="0.00"
+                    value={value}
+                    onChange={(e) => {
+                      onChange(e.target.value);
+                      handleHourlyRateChange(e.target.value);
+                    }}
+                  />
+                )}
               />
             </div>
+            <Controller
+              control={control}
+              name="currency"
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    const next = value as ECurrency;
+                    field.onChange(next);
+                    handleCurrencyChange(next);
+                  }}
+                >
+                  <SelectTrigger className="h-12! min-w-[120px] rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                    <SelectValue placeholder={t('rate.currencyLabel')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(ECurrency).map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
+          <div className="rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-3 py-2">
+            <p className="text-xs text-violet-700">
+              {t('rate.recommended', {
+                min: formatRecommendedAmount(MIN_PRICE[selectedCurrency]),
+                max: formatRecommendedAmount(MAX_PRICE[selectedCurrency]),
+              })}
+            </p>
+          </div>
+          {errors.hourlyRate?.message && (
+            <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+              <span>{errors.hourlyRate.message}</span>
+            </div>
+          )}
+        </div>
+      </BecomeTutorSection>
+
+      <BecomeTutorSection eyebrow="Availability" title={t('availabilityCardTitle')} contentRef={availabilityCardRef}>
+        <div className="mb-5 flex flex-wrap gap-1.5 rounded-full border border-violet-100 bg-violet-50/40 p-1">
+          {dayTabs.map((label, index) => {
+            const isActive = selectedDayIndex === index;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setSelectedDayIndex(index)}
+                className={`flex-1 min-w-fit rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${
+                  isActive
+                    ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-sm shadow-violet-300/40'
+                    : 'text-slate-600 hover:bg-white hover:text-violet-700'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
-        <Card className="mb-8 become-tutor-card rounded-xl shadow-sm border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Wallet size={24} className="text-blue-600" />
-              <h3 className="font-bold text-lg">{t('rateCardTitle')}</h3>
-            </div>
-            <p className="text-gray-600 text-sm mb-4">{t('rate.question')}</p>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <div className="flex-1 flex items-center !h-12 rounded-lg border border-gray-300 bg-muted/60 px-4">
-                  <span className="text-gray-500 mr-2">{getCurrencySymbol(selectedCurrency)}</span>
-                  <Controller
-                    control={control}
-                    name="hourlyRate"
-                    rules={{
-                      validate: (value) => {
-                        const trimmed = value.trim();
-                        if (!trimmed) {
-                          return t('validation.hourlyRateRequired');
-                        }
-                        if (!HOURLY_RATE_REGEX.test(trimmed)) {
-                          return t('validation.hourlyRateInvalidFormat');
-                        }
-                        const numValue = Number(trimmed);
-                        if (numValue <= 0) {
-                          return t('validation.hourlyRateGreaterThanZero');
-                        }
-                        const minPrice = MIN_PRICE[selectedCurrency];
-                        const maxPrice = MAX_PRICE[selectedCurrency];
-                        if (numValue < minPrice) {
-                          return t('validation.hourlyRateTooLow', { 
-                            min: formatToCurrency(selectedCurrency, minPrice) 
-                          });
-                        }
-                        if (numValue > maxPrice) {
-                          return t('validation.hourlyRateTooHigh', { 
-                            max: formatToCurrency(selectedCurrency, maxPrice) 
-                          });
-                        }
-                        return true;
-                      },
-                    }}
-                    render={({ field: { value, onChange } }) => (
-                      <Input
-                        className="flex-1 border-0 bg-transparent p-0 focus-visible:ring-0"
-                        placeholder="0.00"
-                        value={value}
-                        onChange={(e) => {
-                          onChange(e.target.value);
-                          handleHourlyRateChange(e.target.value);
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <Controller
-                  control={control}
-                  name="currency"
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        const next = value as ECurrency;
-                        field.onChange(next);
-                        handleCurrencyChange(next);
-                      }}
-                    >
-                      <SelectTrigger className="!h-12 min-w-[120px] bg-muted/60 border-gray-300">
-                        <SelectValue placeholder={t('rate.currencyLabel')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(ECurrency).map((currency) => (
-                          <SelectItem key={currency} value={currency}>
-                            {currency}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+        <div className="space-y-3">
+          {daySlots.map((slot, index) => (
+            <div key={index} className="flex flex-wrap items-end gap-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-3">
+              <div className="min-w-[120px] flex-1 space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  {t('availability.from')}
+                </label>
+                <TimePicker
+                  value={slot.startTime}
+                  onChange={(v) => updateSlot(index, { startTime: v })}
+                  placeholder={DEFAULT_AVAILABILITY_SLOT.startTime}
                 />
               </div>
-              <p className="text-sm text-gray-500">
-                {t('rate.recommended', {
-                  min: formatRecommendedAmount(MIN_PRICE[selectedCurrency]),
-                  max: formatRecommendedAmount(MAX_PRICE[selectedCurrency]),
-                })}
-              </p>
-              {errors.hourlyRate?.message && (
-                <div className="flex items-center gap-2 text-red-600 text-sm">
-                  <AlertCircle size={16} />
-                  <span>{errors.hourlyRate.message}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-8 become-tutor-card rounded-xl shadow-sm border overflow-visible" ref={availabilityCardRef}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Calendar size={24} className="text-blue-600" />
-              <h3 className="font-bold text-lg">{t('availabilityCardTitle')}</h3>
-            </div>
-
-            <div className="flex gap-2 mb-6 flex-wrap">
-              {dayTabs.map((label, index) => (
-                <Button
-                  key={label}
-                  type="button"
-                  variant={selectedDayIndex === index ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedDayIndex(index)}
-                  className={selectedDayIndex === index ? 'bg-[#6c5ce7] hover:bg-[#5a4fcf]' : ''}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              {daySlots.map((slot, index) => (
-                <div key={index} className="flex items-end gap-3 flex-wrap">
-                  <div className="flex-1 min-w-[120px]">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">
-                      {t('availability.from')}
-                    </label>
-                    <TimePicker
-                      value={slot.startTime}
-                      onChange={(v) => updateSlot(index, { startTime: v })}
-                      placeholder={DEFAULT_AVAILABILITY_SLOT.startTime}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center pb-2">
-                    <ArrowRight size={20} className="text-gray-400" />
-                  </div>
-                  <div className="flex-1 min-w-[120px]">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">
-                      {t('availability.to')}
-                    </label>
-                    <TimePicker
-                      value={slot.endTime}
-                      onChange={(v) => updateSlot(index, { endTime: v })}
-                      placeholder={DEFAULT_AVAILABILITY_SLOT.endTime}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeSlot(index)}
-                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 size={18} />
-                  </Button>
-                </div>
-              ))}
-
+              <div className="flex items-center justify-center pb-2">
+                <ArrowRight className="size-4 text-violet-400" />
+              </div>
+              <div className="min-w-[120px] flex-1 space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  {t('availability.to')}
+                </label>
+                <TimePicker
+                  value={slot.endTime}
+                  onChange={(v) => updateSlot(index, { endTime: v })}
+                  placeholder={DEFAULT_AVAILABILITY_SLOT.endTime}
+                />
+              </div>
               <Button
                 type="button"
-                onClick={addSlot}
-                className="w-full bg-[#6c5ce7] hover:bg-[#5a4fcf] text-white rounded-lg p-3 mt-4"
+                variant="outline"
+                onClick={() => removeSlot(index)}
+                className="h-10 rounded-xl border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
               >
-                <Plus size={20} className="mr-2" />
-                {t('availability.addSlot')}
+                <Trash2 className="size-4" />
               </Button>
-
-              {errors.slotsByDay?.message && typeof errors.slotsByDay.message === 'string' && (
-                <div className="flex items-center gap-2 text-red-600 text-sm">
-                  <AlertCircle size={16} />
-                  <span>{errors.slotsByDay.message}</span>
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
+          ))}
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200 p-4 shadow-sm">
-          <div className="max-w-4xl mx-auto flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/become-tutor/video')}
-            >
-              {t('back')}
-            </Button>
-            <Button
-              onClick={handleSubmit(handleContinue)}
-              disabled={submitMutation.isPending}
-              className="bg-[#6c5ce7] hover:bg-[#5a4fcf]"
-            >
-              {t('continue')}
-            </Button>
-          </div>
+          <Button
+            type="button"
+            onClick={addSlot}
+            variant="outline"
+            className="h-11 w-full rounded-full border-dashed border-violet-300 bg-white text-violet-700 hover:bg-violet-50"
+          >
+            <Plus className="mr-1 size-4" />
+            {t('availability.addSlot')}
+          </Button>
+
+          {errors.slotsByDay?.message && typeof errors.slotsByDay.message === 'string' && (
+            <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+              <span>{errors.slotsByDay.message}</span>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </BecomeTutorSection>
+    </BecomeTutorShell>
   );
 }

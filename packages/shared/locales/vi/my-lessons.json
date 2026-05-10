@@ -10,7 +10,8 @@
   },
   "header": {
     "title": "Lịch học của tôi",
-    "scheduleLesson": "+ Đặt lịch học",
+    "subtitle": "Theo dõi lịch học, lịch trình và gia sư của bạn",
+    "scheduleLesson": "Đặt lịch học",
     "tabs": {
       "lessons": "Buổi học",
       "calendar": "Lịch",

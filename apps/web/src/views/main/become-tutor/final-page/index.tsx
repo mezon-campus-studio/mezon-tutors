@@ -34,25 +34,40 @@ function StatusLayout({ statusMeta, statusLabel, title, description, children }:
   const StatusIcon = statusMeta.icon;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="min-h-[70vh] flex items-center px-4 md:px-6">
-        <div className="max-w-[1200px] w-full mx-auto">
-          <div className="py-8 md:py-10 flex flex-col items-center text-center">
-            <div className="mb-4 flex items-center justify-center gap-2.5">
-              <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border ${statusMeta.badge}`}>
-                <StatusIcon className="h-4 w-4" />
-              </span>
-              <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${statusMeta.badge}`}>
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
+        <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/25 blur-[140px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/30 blur-[120px]" />
+      </div>
+
+      <div className="flex min-h-[80vh] items-center px-4 sm:px-6">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="relative overflow-hidden rounded-[2rem] border border-violet-100 bg-white/90 p-8 shadow-2xl shadow-violet-200/40 backdrop-blur sm:p-12">
+            <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.18),transparent_70%)] blur-2xl" />
+
+            <div className="relative flex flex-col items-center text-center">
+              <div className="relative mb-5">
+                <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
+                <div className={`flex size-16 items-center justify-center rounded-3xl border ${statusMeta.badge} shadow-md`}>
+                  <StatusIcon className="size-7" />
+                </div>
+              </div>
+
+              <span className={`mb-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ${statusMeta.badge}`}>
                 {statusLabel}
               </span>
+
+              <h1 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+                {title}
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                {description}
+              </p>
+
+              {children ? <div className="mt-8 w-full">{children}</div> : null}
             </div>
-            <h1 className="text-[34px] md:text-[40px] font-bold tracking-tight text-slate-900 md:whitespace-nowrap">
-              {title}
-            </h1>
-            <p className="mt-2.5 max-w-[1050px] text-lg md:text-2xl leading-8 md:leading-[1.35] text-slate-600">
-              {description}
-            </p>
-            {children && <div className="mt-6">{children}</div>}
           </div>
         </div>
       </div>
@@ -239,10 +254,10 @@ export default function FinalPage() {
         title={t('approved.title')}
         description={t('approved.description')}
       >
-        <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:justify-center sm:flex-wrap">
+        <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:justify-center sm:flex-wrap">
           <Button
             size="lg"
-            className="h-10 rounded-xl bg-indigo-600 px-6 text-sm text-white hover:bg-indigo-700"
+            className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
             onClick={() => router.push(ROUTES.DASHBOARD.BOOKING_REQUESTS)}
           >
             {t('approved.bookingRequests')}
@@ -250,7 +265,7 @@ export default function FinalPage() {
           <Button
             size="lg"
             variant="outline"
-            className="h-10 rounded-xl border-slate-300 bg-white/70 px-6 text-sm text-slate-800 hover:bg-white"
+            className="h-11 rounded-full border-slate-200 px-6 text-sm font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
             onClick={() => router.push(ROUTES.DASHBOARD.MY_SCHEDULE)}
           >
             {t('approved.mySchedule')}
@@ -270,7 +285,7 @@ export default function FinalPage() {
       >
         <Button
           size="lg"
-          className="h-10 rounded-xl bg-indigo-600 px-6 text-sm text-white hover:bg-indigo-700"
+          className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
           onClick={handleLoadProfile}
           disabled={isFetching}
         >

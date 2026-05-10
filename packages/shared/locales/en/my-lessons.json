@@ -10,7 +10,8 @@
   },
   "header": {
     "title": "My lessons",
-    "scheduleLesson": "+ Schedule lesson",
+    "subtitle": "Track your lessons, schedule and tutors",
+    "scheduleLesson": "Schedule lesson",
     "tabs": {
       "lessons": "Lessons",
       "calendar": "Calendar",

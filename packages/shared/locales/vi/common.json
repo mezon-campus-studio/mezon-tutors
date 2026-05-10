@@ -18,7 +18,15 @@
     }
   },
   "Footer": {
-    "description": "Nền tảng kết nối gia sư ngôn ngữ hàng đầu dành cho người đi làm tại Việt Nam.",
+    "tagline": "TUTOR MATCHING",
+    "description": "Nền tảng matching gia sư hàng đầu dành cho người đi làm tại Việt Nam. Học mọi môn, mọi lúc, ngay trên Mezon.",
+    "newsletter": {
+      "title": "Cập nhật từ Mezonly",
+      "description": "Nhận tips học tập và ưu đãi gia sư mới hàng tuần.",
+      "placeholder": "Nhập email của bạn",
+      "submit": "Đăng ký",
+      "consent": "Bằng việc đăng ký, bạn đồng ý nhận email từ chúng tôi."
+    },
     "product": {
       "title": "Sản phẩm",
       "findTutor": "Tìm gia sư",
@@ -41,10 +49,12 @@
       "facebook": "Facebook",
       "linkedin": "LinkedIn"
     },
-    "copyright": "© 2026 TutorMatch. Bảo lưu mọi quyền.",
+    "copyright": "© 2026 Mezonly. Bảo lưu mọi quyền.",
+    "madeWith": "Powered by Mezon",
     "bottom": {
       "terms": "Điều khoản",
-      "privacy": "Bảo mật"
+      "privacy": "Bảo mật",
+      "cookies": "Cookies"
     }
   },
   "PaymentMethodSelection": {

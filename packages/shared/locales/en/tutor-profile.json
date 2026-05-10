@@ -1,4 +1,11 @@
 {
+  "Stepper": {
+    "about": "About",
+    "photo": "Photo",
+    "certification": "Credentials",
+    "video": "Video",
+    "availability": "Schedule"
+  },
   "About": {
     "headerTitle": "Tutor Registration",
     "draftSaved": "Draft saved at {time}",
