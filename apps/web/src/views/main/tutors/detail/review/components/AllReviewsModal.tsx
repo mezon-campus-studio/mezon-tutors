@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { REVIEW_DISPLAY_CONFIG } from '@mezon-tutors/shared';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui';
-import { ReviewCard } from './ReviewCard';
-import { ReviewStarRating } from './ReviewStarRating';
-import { useIsMobile } from '../hooks/useIsMobile';
+import { REVIEW_DISPLAY_CONFIG } from "@mezon-tutors/shared";
+import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { ReviewCard } from "./ReviewCard";
+import { ReviewStarRating } from "./ReviewStarRating";
 
 interface AllReviewsModalProps {
   reviews: Array<{
@@ -28,18 +35,20 @@ interface AllReviewsModalProps {
   ratingCount: number;
 }
 
-export function AllReviewsModal({ 
-  reviews, 
-  currentUserId, 
-  isOpen, 
-  onClose, 
+export function AllReviewsModal({
+  reviews,
+  currentUserId,
+  isOpen,
+  onClose,
   onEditReview,
   ratingAverage,
-  ratingCount 
+  ratingCount,
 }: AllReviewsModalProps) {
-  const t = useTranslations('Tutors.Detail');
+  const t = useTranslations("Tutors.Detail");
   const isMobile = useIsMobile();
-  const [visibleCount, setVisibleCount] = useState<number>(REVIEW_DISPLAY_CONFIG.LOAD_MORE_COUNT);
+  const [visibleCount, setVisibleCount] = useState<number>(
+    REVIEW_DISPLAY_CONFIG.LOAD_MORE_COUNT,
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -52,13 +61,15 @@ export function AllReviewsModal({
 
   const loadMore = useCallback(() => {
     if (hasMore) {
-      setVisibleCount((prev) => Math.min(prev + REVIEW_DISPLAY_CONFIG.LOAD_MORE_COUNT, reviews.length));
+      setVisibleCount((prev) =>
+        Math.min(prev + REVIEW_DISPLAY_CONFIG.LOAD_MORE_COUNT, reviews.length),
+      );
     }
   }, [hasMore, reviews.length]);
 
   const ratingDistribution = useMemo(() => {
     const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviews.forEach(review => {
+    reviews.forEach((review) => {
       distribution[review.rating as keyof typeof distribution]++;
     });
     return distribution;
@@ -74,9 +85,12 @@ export function AllReviewsModal({
     });
   }, [ratingDistribution, maxCount]);
 
-  const isOwnReview = useCallback((reviewerId: string) => {
-    return currentUserId === reviewerId;
-  }, [currentUserId]);
+  const isOwnReview = useCallback(
+    (reviewerId: string) => {
+      return currentUserId === reviewerId;
+    },
+    [currentUserId],
+  );
 
   if (isMobile) {
     return (
@@ -93,7 +107,7 @@ export function AllReviewsModal({
                 <ArrowLeft size={24} className="text-gray-600" />
               </Button>
               <h2 className="text-lg font-semibold text-gray-900">
-                {t('allReviewsTitle')}
+                {t("allReviewsTitle")}
               </h2>
             </div>
 
@@ -104,14 +118,14 @@ export function AllReviewsModal({
                     <div className="text-5xl font-black text-gray-900 leading-none">
                       {ratingAverage.toFixed(1)}
                     </div>
-                    <ReviewStarRating 
-                      rating={ratingAverage} 
-                      readonly 
+                    <ReviewStarRating
+                      rating={ratingAverage}
+                      readonly
                       size={16}
                       gap={2}
                     />
                     <p className="text-sm text-gray-500">
-                      {ratingCount} {t('reviews')}
+                      {ratingCount} {t("reviews")}
                     </p>
                   </div>
 
@@ -122,7 +136,7 @@ export function AllReviewsModal({
                           {star}
                         </span>
                         <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-gray-900"
                             style={{ width: `${percentage}%` }}
                           />
@@ -135,30 +149,30 @@ export function AllReviewsModal({
 
               <div className="flex flex-col gap-3 pb-4">
                 <h3 className="text-lg font-bold text-gray-900">
-                  {ratingCount} {t('reviews')}
+                  {ratingCount} {t("reviews")}
                 </h3>
-                
+
                 {visibleReviews.map((review) => {
                   const isOwn = isOwnReview(review.reviewerId);
                   return (
-                    <ReviewCard 
-                      key={review.id} 
-                      review={review} 
-                      showFullComment 
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      showFullComment
                       isOwnReview={isOwn}
                       onEdit={onEditReview}
                       compact
                     />
                   );
                 })}
-                
+
                 {hasMore && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={loadMore}
                     className="mt-2 rounded-xl"
                   >
-                    {t('loadMoreReviews')}
+                    {t("loadMoreReviews")}
                   </Button>
                 )}
               </div>
@@ -174,38 +188,36 @@ export function AllReviewsModal({
       <DialogContent className="max-w-[720px] w-[92%] max-h-[90vh] p-5 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {t('allReviewsTitle')}
+            {t("allReviewsTitle")}
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-600 mt-1">
-            {t('basedOnReviews', { count: reviews.length })}
+            {t("basedOnReviews", { count: reviews.length })}
           </DialogDescription>
         </DialogHeader>
 
-        <div 
-          className="flex-1 max-h-[520px] overflow-y-auto flex flex-col gap-3 pr-2 pb-4 mt-3 scrollbar-hide"
-        >
+        <div className="flex-1 max-h-[520px] overflow-y-auto flex flex-col gap-3 pr-2 pb-4 mt-3 scrollbar-hide">
           {visibleReviews.map((review) => {
             const isOwn = isOwnReview(review.reviewerId);
             return (
-              <ReviewCard 
-                key={review.id} 
-                review={review} 
-                showFullComment 
+              <ReviewCard
+                key={review.id}
+                review={review}
+                showFullComment
                 isOwnReview={isOwn}
                 onEdit={onEditReview}
                 compact
               />
             );
           })}
-          
+
           {hasMore && (
             <div className="flex items-center justify-center mt-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={loadMore}
                 className="px-6 py-2.5 rounded-lg"
               >
-                {t('loadMoreReviews')}
+                {t("loadMoreReviews")}
               </Button>
             </div>
           )}

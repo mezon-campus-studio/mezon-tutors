@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import {
   Pagination,
@@ -10,7 +11,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui";
-import { useTranslations } from "next-intl";
 
 type TutorsPaginationProps = {
   page: number;
@@ -49,7 +49,7 @@ export default function TutorsPagination({
       items.push(
         <PaginationItem key={`ellipsis-${last}`}>
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     items.push(
@@ -65,7 +65,7 @@ export default function TutorsPagination({
         >
           {p}
         </PaginationLink>
-      </PaginationItem>
+      </PaginationItem>,
     );
     last = p;
   }

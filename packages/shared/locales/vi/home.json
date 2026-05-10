@@ -1,15 +1,242 @@
 {
   "Home": {
     "Hero": {
-      "badge": "Học trực tuyến dễ dàng",
-      "title": "Học cùng",
-      "titleHighlight": "Gia sư chuyên môn",
-      "description": "Kết nối với gia sư uy tín, cá nhân hóa lộ trình học và học theo tốc độ phù hợp của bạn.",
-      "startNow": "Bắt đầu ngay",
-      "watchDemo": "Xem demo",
+      "badge": "Học gia sư trực tuyến trên Mezon",
+      "title": "Giỏi ngoại ngữ",
+      "titleHighlight": "sau giờ làm, theo cách của bạn",
+      "description": "Mezonly kết nối người đi làm bận rộn với gia sư ngoại ngữ đã được kiểm duyệt. Đặt lịch 1-1, chat và vào phòng học trực tiếp trên Mezon — linh hoạt buổi tối và cuối tuần, chỉ trả tiền cho buổi học bạn dùng.",
+      "startNow": "Tìm gia sư ngay",
+      "watchDemo": "Cách thức hoạt động",
       "match": "Phù hợp",
-      "profile": "Hồ sơ",
-      "connect": "Kết nối"
+      "profile": "Xem hồ sơ",
+      "connect": "Đặt buổi thử",
+      "search": {
+        "label": "Tôi muốn học",
+        "placeholder": "Tiếng Anh, Tiếng Nhật, Tiếng Hàn, IELTS...",
+        "submit": "Tìm gia sư"
+      },
+      "trust": "Được tin dùng bởi học viên và gia sư trên khắp Việt Nam",
+      "stats": {
+        "tutors": "Gia sư đã xác minh",
+        "students": "Học viên đang học",
+        "lessons": "Buổi học đã hoàn thành",
+        "rating": "Đánh giá trung bình"
+      },
+      "floating": {
+        "tutor1Name": "Mai Anh",
+        "tutor1Subject": "IELTS · Speaking",
+        "tutor2Name": "John K.",
+        "tutor2Subject": "Tiếng Anh thương mại",
+        "online": "Đang online",
+        "newBooking": "Đặt lịch mới",
+        "newBookingDesc": "+ 7 buổi học hôm nay"
+      },
+      "slides": {
+        "schedule": {
+          "eyebrow": "HỌC SAU GIỜ LÀM",
+          "title": "Khung giờ phù hợp của bạn?",
+          "label": "Lịch học linh hoạt",
+          "description": "Khung giờ buổi tối & cuối tuần — vừa khít lịch của bạn."
+        },
+        "mezon": {
+          "eyebrow": "POWERED BY MEZON",
+          "title": "Lớp học ngay trên Mezon",
+          "label": "Tích hợp Mezon",
+          "description": "Chat, gọi thoại và phòng học live — tất cả trong 1 app."
+        },
+        "pricing": {
+          "eyebrow": "TRẢ THEO BUỔI",
+          "title": "Học thử trước, quyết định sau",
+          "label": "Trả theo từng buổi",
+          "description": "Không gói cước, không cam kết. Nạp khi nào bạn muốn."
+        },
+        "verified": {
+          "eyebrow": "100% XÁC MINH",
+          "title": "Gia sư đáng tin cậy",
+          "label": "Gia sư đã xác minh",
+          "description": "Kiểm tra ID, phỏng vấn và đánh giá thật — mọi gia sư."
+        }
+      }
+    },
+    "Stats": {
+      "title": "Xây dựng cho người không có thời gian để lãng phí",
+      "description": "Nền tảng matching gia sư tôn trọng từng buổi tối và cuối tuần của bạn.",
+      "items": {
+        "tutors": {
+          "value": "1,200+",
+          "label": "Gia sư đã xác minh"
+        },
+        "students": {
+          "value": "25,000+",
+          "label": "Người đi làm đang học"
+        },
+        "lessons": {
+          "value": "180k",
+          "label": "Buổi học đã đặt"
+        },
+        "rating": {
+          "value": "4.9 / 5",
+          "label": "Đánh giá trung bình"
+        }
+      }
+    },
+    "HowItWorks": {
+      "badge": "Cách thức hoạt động",
+      "title": "Ba bước đến buổi học tiếp theo",
+      "description": "Từ lần tìm kiếm đầu tiên tới buổi học đầu tiên — thiết kế phù hợp lịch sinh hoạt bận rộn.",
+      "steps": {
+        "step1": {
+          "title": "Tìm gia sư phù hợp",
+          "description": "Lọc theo accent, trình độ, mức giá và thời gian rảnh. Xem video giới thiệu và đánh giá thật từ học viên."
+        },
+        "step2": {
+          "title": "Đặt buổi học thử",
+          "description": "Chọn khung giờ phù hợp — sáng sớm, buổi tối hoặc cuối tuần. Thanh toán an toàn theo từng buổi, không gói dài hạn."
+        },
+        "step3": {
+          "title": "Học trực tiếp trên Mezon",
+          "description": "Chat, gửi tài liệu và vào phòng học video ngay trên Mezon. Tất cả trong một nền tảng."
+        }
+      }
+    },
+    "FeaturedTutors": {
+      "badge": "Gia sư nổi bật tuần này",
+      "title": "Học từ những người thực sự hiểu bạn",
+      "description": "Gia sư bản xứ, giáo viên có chứng chỉ và mentor song ngữ — đều đã được kiểm duyệt và xác minh.",
+      "viewAll": "Xem tất cả gia sư",
+      "perHour": "/ giờ",
+      "lessons": "buổi học",
+      "tags": {
+        "ielts": "IELTS",
+        "business": "Thương mại",
+        "conversation": "Giao tiếp",
+        "kids": "Trẻ em",
+        "toeic": "TOEIC",
+        "beginner": "Mất gốc"
+      },
+      "list": {
+        "tutor1": {
+          "name": "Linh Phạm",
+          "title": "IELTS 8.5 · 6 năm kinh nghiệm",
+          "country": "Việt Nam"
+        },
+        "tutor2": {
+          "name": "James O'Connor",
+          "title": "Bản xứ · Coach Business English",
+          "country": "Anh Quốc"
+        },
+        "tutor3": {
+          "name": "Emma Wilson",
+          "title": "TESOL · Coach giao tiếp",
+          "country": "Mỹ"
+        },
+        "tutor4": {
+          "name": "David Brown",
+          "title": "CELTA · Trẻ em & mất gốc",
+          "country": "Úc"
+        }
+      },
+      "bookTrial": "Đặt buổi thử"
+    },
+    "WhyUs": {
+      "badge": "Vì sao chọn Mezonly",
+      "title": "Thiết kế cho người đi làm",
+      "description": "Phần lớn học viên trên Mezonly là người đi làm và học sau 7 giờ tối. Mọi chi tiết đều được tinh chỉnh cho họ.",
+      "items": {
+        "evening": {
+          "title": "Khung giờ tối & cuối tuần",
+          "description": "Tìm gia sư chỉ dạy sau 6h tối hoặc rảnh cả cuối tuần. Không vướng giờ hành chính."
+        },
+        "payPerLesson": {
+          "title": "Trả theo buổi",
+          "description": "Không hợp đồng dài hạn. Thử buổi 30 phút trước, nạp thêm khi nào bạn muốn học tiếp."
+        },
+        "verified": {
+          "title": "100% gia sư đã xác minh",
+          "description": "Mọi gia sư đều được phỏng vấn và kiểm tra giấy tờ. Đọc đánh giá minh bạch từ học viên thật."
+        },
+        "mezon": {
+          "title": "Tích hợp Mezon nguyên bản",
+          "description": "Chat, gửi bài tập và vào phòng học live cùng gia sư ngay trên Mezon — không cần cài thêm app."
+        },
+        "personalized": {
+          "title": "Lộ trình cá nhân hóa",
+          "description": "Cho chúng tôi biết mục tiêu của bạn — IELTS, công việc, du lịch — chúng tôi ghép gia sư chuyên đúng mảng đó."
+        },
+        "moneyBack": {
+          "title": "Hoàn tiền buổi thử",
+          "description": "Không hợp gia sư? Hoàn lại buổi học thử, không cần lý do."
+        }
+      }
+    },
+    "MezonShowcase": {
+      "badge": "Powered by Mezon",
+      "title": "Lớp học của bạn ở ngay trên Mezon",
+      "description": "Mezonly lo phần matching, đặt lịch và thanh toán. Mezon lo phần học thật sự — chat, voice và phòng học video trực tiếp với gia sư, tất cả trong một nơi.",
+      "features": {
+        "chat": {
+          "title": "Chat mọi lúc",
+          "description": "Nhắn cho gia sư giữa các buổi học để hỏi nhanh hoặc nhận góp ý."
+        },
+        "rooms": {
+          "title": "Phòng học video",
+          "description": "Vào lớp với 1 click — video HD, chia sẻ màn hình và bảng viết."
+        },
+        "files": {
+          "title": "Gửi bài tập",
+          "description": "Upload bài tập, file ghi âm và PDF thẳng vào cuộc trò chuyện."
+        }
+      },
+      "preview": {
+        "messageTitle": "Mai Anh · Gia sư IELTS",
+        "online": "Đang online",
+        "incoming": "Hẹn em 8h tối! Đừng quên list từ vựng hôm nay nhé 📚",
+        "you": "Bạn",
+        "yourMessage": "Dạ em rõ, hẹn cô tối nay ạ!",
+        "joinRoom": "Vào phòng học"
+      }
+    },
+    "Testimonials": {
+      "badge": "Học viên yêu thích",
+      "title": "Câu chuyện thật từ học viên thật",
+      "description": "Những người đi làm cuối cùng cũng tìm được cách để tiếp tục học.",
+      "items": {
+        "review1": {
+          "name": "Trang Nguyễn",
+          "role": "Marketing Manager · 28",
+          "quote": "Mình tan làm 7h tối, hầu hết trung tâm đều không phù hợp. Với Mezonly mình học 9h tối 2 buổi/tuần — speaking lên nhiều hơn cả 2 năm học ở trung tâm."
+        },
+        "review2": {
+          "name": "Hùng Lê",
+          "role": "Software Engineer · 31",
+          "quote": "Đặt lịch chỉ 2 click, mọi thứ đều trên Mezon, lại trả theo từng buổi. Đúng thứ mình cần khi không thích cam kết dài hạn."
+        },
+        "review3": {
+          "name": "Phương Vũ",
+          "role": "Product Designer · 26",
+          "quote": "Gia sư hợp đúng mục tiêu của mình — tiếng Anh để họp với khách. Phòng học video trên Mezon cảm giác như cô ngồi cạnh."
+        }
+      }
+    },
+    "BecomeTutor": {
+      "badgeAmount": "+15tr VND",
+      "badgeLabel": "Thu nhập trung bình mỗi tháng",
+      "title": "Dạy theo lịch của bạn.",
+      "titleHighlight": "Kiếm tiền từ điều bạn giỏi.",
+      "description": "Sinh viên song ngữ, sinh viên ngoại ngữ hay giáo viên có chứng chỉ? Tạo hồ sơ gia sư trong 10 phút và bắt đầu kiếm tiền ngay tuần đầu tiên. Mezonly lo việc đặt lịch và thanh toán — bạn chỉ cần tập trung dạy.",
+      "benefits": {
+        "payment": "Giá minh bạch, thanh toán hàng tuần",
+        "tools": "Công cụ tích hợp — chat, phòng video và bảng viết trên Mezon",
+        "schedule": "Tự đặt giờ — chỉ cần dạy 5h/tuần là được"
+      },
+      "registerButton": "Đăng ký làm gia sư"
+    },
+    "Cta": {
+      "badge": "Miễn phí",
+      "title": "Buổi học đầu tiên là quà tặng từ chúng tôi",
+      "description": "Đặt 1 buổi học thử 30 phút miễn phí với bất kỳ gia sư nào trên Mezonly. Không gói cước, không cần thẻ tín dụng.",
+      "primary": "Tìm gia sư ngay",
+      "secondary": "Đăng ký làm gia sư"
     },
     "Features": {
       "title": "Học tập dành cho người bận rộn",
@@ -27,19 +254,6 @@
         "title": "Học qua Mezon",
         "description": "Tham gia lớp học trên một nền tảng với chat, tài liệu và hỗ trợ từ gia sư."
       }
-    },
-    "BecomeTutor": {
-      "badgeAmount": "+15M VND",
-      "badgeLabel": "Thu nhập trung bình hàng tháng",
-      "title": "Tìm gia sư cho",
-      "titleHighlight": "Mọi mục tiêu học tập",
-      "description": "Từ luyện thi đến nâng cao kỹ năng giao tiếp, chọn gia sư phù hợp mục tiêu và lịch học của bạn.",
-      "benefits": {
-        "payment": "Giá minh bạch và thanh toán an toàn",
-        "tools": "Công cụ tương tác giúp buổi học hiệu quả",
-        "schedule": "Lịch học linh hoạt, dễ dàng đổi lịch"
-      },
-      "registerButton": "Đăng ký làm gia sư"
     },
     "Seamless": {
       "title": "Trải nghiệm học tập liền mạch",

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ExternalLink, Video } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { type TutorAboutDto, type TutorResourceDto } from '@mezon-tutors/shared';
+import type { TutorAboutDto, TutorResourceDto } from "@mezon-tutors/shared";
+import { ExternalLink, Video } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type TutorResourcesTabProps = {
   tutor: TutorAboutDto & {
@@ -11,15 +11,15 @@ type TutorResourcesTabProps = {
 };
 
 export function TutorResourcesTab({ tutor }: TutorResourcesTabProps) {
-  const t = useTranslations('Tutors.Detail');
+  const t = useTranslations("Tutors.Detail");
 
   if (!tutor.resources.length) {
     return (
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-extrabold text-gray-900">
-          {t('resourcesTitle')}
+          {t("resourcesTitle")}
         </h2>
-        <p className="text-gray-500">{t('resourcesEmpty')}</p>
+        <p className="text-gray-500">{t("resourcesEmpty")}</p>
       </div>
     );
   }
@@ -27,7 +27,7 @@ export function TutorResourcesTab({ tutor }: TutorResourcesTabProps) {
   return (
     <div className="flex flex-col gap-3">
       <h2 className="text-xl font-extrabold text-gray-900">
-        {t('resourcesTitle')}
+        {t("resourcesTitle")}
       </h2>
 
       {tutor.resources.map((resource) => (
@@ -42,16 +42,20 @@ export function TutorResourcesTab({ tutor }: TutorResourcesTabProps) {
               </div>
               <div>
                 <h3 className="font-bold text-gray-900">{resource.title}</h3>
-                <p className="text-xs text-gray-500">{t('resourceTypeVideo')}</p>
+                <p className="text-xs text-gray-500">
+                  {t("resourceTypeVideo")}
+                </p>
               </div>
             </div>
 
             <button
-              onClick={() => window.open(resource.url, '_blank', 'noopener,noreferrer')}
+              onClick={() =>
+                window.open(resource.url, "_blank", "noopener,noreferrer")
+              }
               className="flex items-center gap-2 px-3 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
             >
               <ExternalLink size={14} />
-              {t('openResource')}
+              {t("openResource")}
             </button>
           </div>
         </div>

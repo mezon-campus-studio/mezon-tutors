@@ -34,6 +34,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-white text-slate-900">
         <NextIntlClientProvider locale={locale}>

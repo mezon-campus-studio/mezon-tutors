@@ -14,7 +14,6 @@ RUN mkdir -p scripts && printf 'process.exit(0);\n' > scripts/postinstall.js
 ENV YARN_ENABLE_IMMUTABLE_INSTALLS=false
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
   yarn install
-ENV YARN_ENABLE_IMMUTABLE_INSTALLS=
 COPY --from=pruner /out/full/ .
 COPY --from=pruner /app/tsconfig.base.json ./tsconfig.base.json
 RUN printf '%s\n' 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dummy?schema=public' > packages/db/.env

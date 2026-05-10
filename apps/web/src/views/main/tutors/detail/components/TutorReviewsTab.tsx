@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { type TutorAboutDto, type TutorReviewDto } from '@mezon-tutors/shared';
-import { ReviewsSection } from '../review/components/ReviewsSection';
+import type { TutorAboutDto, TutorReviewDto } from "@mezon-tutors/shared";
+import { ReviewsSection } from "../review/components/ReviewsSection";
 
 type TutorReviewsTabProps = {
   tutor: TutorAboutDto & {

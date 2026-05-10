@@ -1,9 +1,23 @@
-'use client';
+"use client";
 
-import { ArrowRight, Wallet, Clock, TrendingUp } from 'lucide-react';
-import { GUIDE_HIGHLIGHTS, GUIDE_STEPS, type GuideStep, type GuideHighlight, type GuideHighlightIconKey } from '@mezon-tutors/shared';
-import { useTranslations } from 'next-intl';
-import { LoginButton } from '@/components/auth/LoginButton';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  GUIDE_HIGHLIGHTS,
+  GUIDE_STEPS,
+  type GuideHighlight,
+  type GuideHighlightIconKey,
+  type GuideStep,
+} from "@mezon-tutors/shared";
+import { LoginButton } from "@/components/auth/LoginButton";
+import { Badge } from "@/components/ui";
 
 const HIGHLIGHT_ICON_BY_KEY: Record<GuideHighlightIconKey, typeof Wallet> = {
   setOwnRate: Wallet,
@@ -11,20 +25,36 @@ const HIGHLIGHT_ICON_BY_KEY: Record<GuideHighlightIconKey, typeof Wallet> = {
   growProfessionally: TrendingUp,
 };
 
-function GuideStepCard({ step }: { step: GuideStep }) {
-  const t = useTranslations('BecomeTutorGuide');
+const HIGHLIGHT_ACCENT_BY_KEY: Record<GuideHighlightIconKey, string> = {
+  setOwnRate: "from-violet-500 to-purple-500",
+  teachAnytime: "from-purple-500 to-fuchsia-500",
+  growProfessionally: "from-fuchsia-500 to-rose-500",
+};
+
+const STEP_ACCENTS = [
+  "from-violet-500 to-purple-500",
+  "from-purple-500 to-fuchsia-500",
+  "from-fuchsia-500 to-rose-500",
+];
+
+function GuideStepCard({ step, index }: { step: GuideStep; index: number }) {
+  const t = useTranslations("BecomeTutorGuide");
+  const accent = STEP_ACCENTS[index] ?? STEP_ACCENTS[0];
 
   return (
-    <div className="flex-1 flex flex-col items-center gap-2 px-3 py-2">
-      <div className="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center bg-primary/10 border border-primary/20">
-        <span className="text-primary text-[27px] font-extrabold leading-[27px]">
-          {step.number}
-        </span>
+    <div className="relative flex flex-1 flex-col items-center gap-3 rounded-3xl bg-white px-5 py-6 ring-1 ring-violet-100 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-violet-200/40">
+      <div className="absolute -top-3 right-5 rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600 shadow-sm ring-1 ring-violet-100">
+        Step {step.number}
       </div>
-      <h2 className="text-foreground font-bold text-2xl leading-[30px]">
+      <div
+        className={`flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-lg shadow-violet-300/40`}
+      >
+        <span className="text-xl font-extrabold">{step.number}</span>
+      </div>
+      <h2 className="text-center text-xl font-extrabold text-slate-900">
         {t(step.titleKey)}
       </h2>
-      <p className="text-muted-foreground max-w-[250px] text-[11px] leading-4 text-center">
+      <p className="max-w-[260px] text-center text-sm leading-6 text-slate-600">
         {t(step.descriptionKey)}
       </p>
     </div>
@@ -32,33 +62,38 @@ function GuideStepCard({ step }: { step: GuideStep }) {
 }
 
 function GuideHighlightCard({ item }: { item: GuideHighlight }) {
-  const t = useTranslations('BecomeTutorGuide');
+  const t = useTranslations("BecomeTutorGuide");
   const Icon = HIGHLIGHT_ICON_BY_KEY[item.iconKey];
+  const accent = HIGHLIGHT_ACCENT_BY_KEY[item.iconKey];
 
   return (
-    <div className="flex-1 relative overflow-hidden rounded-[20px] border border-border bg-card shadow-sm transition-all duration-300 cursor-pointer group hover:border-primary hover:bg-primary hover:shadow-xl hover:-translate-y-0.5 min-h-[252px] p-[18px]">
-      <div className="absolute -top-[34px] -right-[30px] w-[92px] h-[92px] rounded-full bg-primary/10 group-hover:bg-white/20 transition-colors" />
+    <div className="group relative flex-1 cursor-pointer overflow-hidden rounded-3xl border border-violet-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-200 hover:shadow-xl hover:shadow-violet-200/40">
+      <div
+        className={`pointer-events-none absolute -top-12 -right-12 size-32 rounded-full bg-gradient-to-br ${accent} opacity-15 blur-2xl transition-opacity duration-300 group-hover:opacity-30`}
+      />
 
-      <div className="flex flex-col gap-3 relative z-10 h-full">
-        <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-primary/10 group-hover:bg-white/20 transition-colors">
-          <Icon className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+      <div className="relative flex h-full flex-col gap-4">
+        <div
+          className={`inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-md shadow-violet-300/40`}
+        >
+          <Icon className="size-6" />
         </div>
 
-        <h2 className="text-foreground font-extrabold text-[38px] leading-[44px] group-hover:text-white transition-colors">
+        <h3 className="text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">
           {t(item.titleKey)}
-        </h2>
+        </h3>
 
-        <p className="text-muted-foreground text-xs leading-[18px] group-hover:text-white/90 transition-colors">
+        <p className="text-sm leading-6 text-slate-600">
           {t(item.descriptionKey)}
         </p>
 
-        <div className="flex-1" />
-
-        <div className="flex items-center justify-between">
-          <span className="text-primary text-[9px] font-bold uppercase tracking-wider group-hover:text-white transition-colors">
+        <div className="mt-auto flex items-center justify-between border-t border-violet-50 pt-4">
+          <span
+            className={`bg-gradient-to-r ${accent} bg-clip-text text-[10px] font-bold uppercase tracking-[0.18em] text-transparent`}
+          >
             {t(item.tagKey)}
           </span>
-          <ArrowRight className="w-4 h-4 text-primary group-hover:text-white transition-colors" />
+          <ArrowRight className="size-4 text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-violet-600" />
         </div>
       </div>
     </div>
@@ -66,51 +101,67 @@ function GuideHighlightCard({ item }: { item: GuideHighlight }) {
 }
 
 export function BecomeTutorGuide() {
-  const t = useTranslations('BecomeTutorGuide');
+  const t = useTranslations("BecomeTutorGuide");
 
   return (
-    <div className="min-h-screen bg-muted/50 pt-20 sm:pt-[92px] pb-9 px-3 sm:px-5">
-      <div className="max-w-[960px] w-full mx-auto rounded-md overflow-hidden bg-muted/30">
-        <div className="h-10 bg-muted/30" />
+    <main className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
+        <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/35 blur-[140px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/40 blur-[120px]" />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgb(108 92 231) 1px, transparent 0)",
+            backgroundSize: "32px 32px",
+            maskImage:
+              "radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%)",
+          }}
+        />
+      </div>
 
-        <div className="px-4 sm:px-7 pt-[26px] sm:pt-[42px] pb-6 sm:pb-9 bg-card flex flex-col gap-3.5">
-          <div className="flex flex-col items-center gap-2">
-            <h1 className="text-foreground text-[34px] sm:text-[50px] leading-10 sm:leading-[58px] text-center font-extrabold">
-              {t('title')}
+      <div className="mx-auto w-full max-w-5xl px-5 pt-12 pb-16 sm:pt-16 lg:px-8">
+        <div className="overflow-hidden rounded-[2rem] border border-violet-100 bg-white/80 shadow-sm shadow-violet-100/40 backdrop-blur">
+          <div className="px-6 pt-12 pb-8 text-center sm:px-12 sm:pt-16 sm:pb-12">
+            <Badge className="mx-auto mb-5 h-auto rounded-full border border-violet-200/70 bg-white px-3.5 py-1.5 text-xs font-semibold text-violet-700 shadow-sm shadow-violet-100/50 animate-in fade-in slide-in-from-bottom-3 duration-700">
+              <Sparkles className="mr-1.5 size-3.5" />
+              For tutors
+            </Badge>
+
+            <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl">
+              {t("title")}{" "}
+              <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+                in 3 steps
+              </span>
             </h1>
-            <p className="text-muted-foreground text-center max-w-[640px] text-xs sm:text-[13px] leading-[18px] sm:leading-[19px]">
-              {t('subtitle')}
+
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-600 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:120ms] [animation-fill-mode:both] sm:text-base sm:leading-7">
+              {t("subtitle")}
             </p>
-          </div>
 
-          <div className="relative mt-1 sm:mt-2.5">
-            <div className="hidden sm:block absolute top-[34px] left-[52px] right-[52px] h-px bg-border opacity-55" />
-
-            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-2">
-              {GUIDE_STEPS.map((step) => (
-                <GuideStepCard key={step.id} step={step} />
+            <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-3">
+              {GUIDE_STEPS.map((step, index) => (
+                <GuideStepCard key={step.id} step={step} index={index} />
               ))}
             </div>
-          </div>
 
-          <div className="flex flex-col items-center gap-2 mt-2 sm:mt-3 mb-0.5 sm:mb-1">
-            <div className="rounded-full p-0.5 bg-primary shadow-lg shadow-primary/45">
-              <LoginButton label={t('loginNow')} />
+            <div className="mt-10 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both]">
+              <LoginButton label={t("loginNow")} />
+              <p className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                <CheckCircle2 className="size-3.5 text-emerald-500" />
+                {t("ctaNote")}
+              </p>
             </div>
-            <p className="text-muted-foreground text-xs sm:text-[13px] text-center">
-              {t('ctaNote')}
-            </p>
           </div>
         </div>
 
-        <div className="p-4 sm:p-[22px] bg-muted/50 flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            {GUIDE_HIGHLIGHTS.map((item) => (
-              <GuideHighlightCard key={item.id} item={item} />
-            ))}
-          </div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          {GUIDE_HIGHLIGHTS.map((item) => (
+            <GuideHighlightCard key={item.id} item={item} />
+          ))}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

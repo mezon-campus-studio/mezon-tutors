@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { type TutorAboutDto, type TutorDetailAvailabilitySlotDto } from '@mezon-tutors/shared';
-import { ScheduleViewer, type ScheduleSlotInput } from '@/components/common/ScheduleViewer';
+import type {
+  TutorAboutDto,
+  TutorDetailAvailabilitySlotDto,
+} from "@mezon-tutors/shared";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+import {
+  type ScheduleSlotInput,
+  ScheduleViewer,
+} from "@/components/common/ScheduleViewer";
 
 type TutorScheduleTabProps = {
   tutor: TutorAboutDto & {
@@ -11,7 +17,10 @@ type TutorScheduleTabProps = {
   };
 };
 
-function getDateForDayOfWeek(dbDayOfWeek: number, weekOffset: number = 0): string {
+function getDateForDayOfWeek(
+  dbDayOfWeek: number,
+  weekOffset: number = 0,
+): string {
   const jsDay = (dbDayOfWeek + 1) % 7;
 
   const today = new Date();
@@ -27,22 +36,22 @@ function getDateForDayOfWeek(dbDayOfWeek: number, weekOffset: number = 0): strin
   targetDate.setDate(today.getDate() + daysToAdd);
 
   const year = targetDate.getFullYear();
-  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-  const day = String(targetDate.getDate()).padStart(2, '0');
+  const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+  const day = String(targetDate.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
 
 function generateAvailableSlots(
   availability: TutorDetailAvailabilitySlotDto[],
-  weeksAhead: number = 4
+  weeksAhead: number = 4,
 ): ScheduleSlotInput[] {
   const slots: ScheduleSlotInput[] = [];
-  
+
   for (let weekOffset = 0; weekOffset < weeksAhead; weekOffset++) {
     for (const slot of availability) {
       if (!slot.isActive) continue;
-      
+
       slots.push({
         date: getDateForDayOfWeek(slot.dayOfWeek, weekOffset),
         startTime: slot.startTime,
@@ -50,16 +59,16 @@ function generateAvailableSlots(
       });
     }
   }
-  
+
   return slots;
 }
 
 export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
-  const t = useTranslations('Tutors.Detail');
+  const t = useTranslations("Tutors.Detail");
 
   const availableSlots = useMemo(
     () => generateAvailableSlots(tutor.availability),
-    [tutor.availability]
+    [tutor.availability],
   );
 
   const hasAvailability = tutor.availability?.length > 0;
@@ -69,17 +78,15 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
       <div className="flex flex-col gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-            {t('scheduleTitle')}
+            {t("scheduleTitle")}
           </h2>
           <p className="text-sm text-gray-600">
-            {t('scheduleHint', { timezone: tutor.timezone })}
+            {t("scheduleHint", { timezone: tutor.timezone })}
           </p>
         </div>
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-          <p className="text-center text-gray-600">
-            {t('scheduleEmpty')}
-          </p>
+          <p className="text-center text-gray-600">{t("scheduleEmpty")}</p>
         </div>
       </div>
     );
@@ -89,16 +96,16 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     <div className="flex flex-col gap-4">
       <div>
         <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-          {t('scheduleTitle')}
+          {t("scheduleTitle")}
         </h2>
         <p className="text-sm text-gray-600">
-          {t('scheduleHint', { timezone: tutor.timezone })}
+          {t("scheduleHint", { timezone: tutor.timezone })}
         </p>
       </div>
 
       <ScheduleViewer
         availableSlots={availableSlots}
-        timezone={tutor.timezone || 'UTC+7'}
+        timezone={tutor.timezone || "UTC+7"}
       />
     </div>
   );

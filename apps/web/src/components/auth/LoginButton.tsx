@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef } from "react";
+import { Button } from "@/components/ui";
 import { authService } from "@/services";
 import {
   isAuthenticatedAtom,
@@ -10,7 +11,6 @@ import {
   userAtom,
 } from "@/store/auth.atom";
 import { accessTokenAtom } from "@/store/token.atom";
-import { Button } from "@/components/ui";
 
 const OAUTH_CHANNEL = "mezon-oauth-result";
 
@@ -98,7 +98,7 @@ export function LoginButton({ label }: LoginButtonProps) {
         cleanup();
       }
     },
-    [cleanup, setUser],
+    [cleanup, setUser, setAccessToken],
   );
 
   useEffect(() => {
@@ -162,12 +162,13 @@ export function LoginButton({ label }: LoginButtonProps) {
   return (
     <Button
       type="button"
-      className="inline-flex h-8 items-center justify-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+      className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] px-6 text-sm font-semibold tracking-wide text-white shadow-md shadow-violet-300/40 transition-all duration-300 hover:shadow-lg hover:shadow-violet-400/50 active:scale-[0.97]"
       onClick={() => {
         void handleLoginClick();
       }}
     >
-      {label}
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+      <span className="relative">{label}</span>
     </Button>
   );
 }

@@ -1,15 +1,242 @@
 {
   "Home": {
     "Hero": {
-      "badge": "Online Learning Made Easy",
-      "title": "Learn with",
-      "titleHighlight": "Expert Tutors",
-      "description": "Connect with trusted tutors, personalize your learning path, and study at your own pace from anywhere.",
-      "startNow": "Start Now",
-      "watchDemo": "Watch Demo",
+      "badge": "Online Tutoring on Mezon",
+      "title": "Master a new language",
+      "titleHighlight": "after work, on your time",
+      "description": "Mezonly connects busy professionals with vetted language tutors. Book 1-on-1 lessons, chat and join live rooms directly on Mezon — flexible evenings and weekends, pay only for what you learn.",
+      "startNow": "Find your tutor",
+      "watchDemo": "How it works",
       "match": "Match",
-      "profile": "Profile",
-      "connect": "Connect"
+      "profile": "View profile",
+      "connect": "Book trial",
+      "search": {
+        "label": "I want to learn",
+        "placeholder": "English, Japanese, Korean, IELTS...",
+        "submit": "Search tutors"
+      },
+      "trust": "Trusted by learners and tutors across Vietnam",
+      "stats": {
+        "tutors": "Verified tutors",
+        "students": "Active learners",
+        "lessons": "Lessons delivered",
+        "rating": "Average rating"
+      },
+      "floating": {
+        "tutor1Name": "Mai Anh",
+        "tutor1Subject": "IELTS · Speaking",
+        "tutor2Name": "John K.",
+        "tutor2Subject": "Business English",
+        "online": "Online now",
+        "newBooking": "New booking",
+        "newBookingDesc": "+ 7 lessons today"
+      },
+      "slides": {
+        "schedule": {
+          "eyebrow": "AFTER-WORK PLAN",
+          "title": "When works for you?",
+          "label": "Flexible scheduling",
+          "description": "Evening and weekend slots that finally fit your week."
+        },
+        "mezon": {
+          "eyebrow": "POWERED BY MEZON",
+          "title": "Your classroom on Mezon",
+          "label": "Built on Mezon",
+          "description": "Chat, voice and live lesson rooms — all in one app."
+        },
+        "pricing": {
+          "eyebrow": "PAY PER LESSON",
+          "title": "Try first, decide later",
+          "label": "Pay per lesson",
+          "description": "No subscription, no commitment. Top-up only when you want."
+        },
+        "verified": {
+          "eyebrow": "100% VERIFIED",
+          "title": "Tutors you can trust",
+          "label": "Verified tutors",
+          "description": "ID-checked, interviewed and reviewed — every single one."
+        }
+      }
+    },
+    "Stats": {
+      "title": "Built for learners who don't waste time",
+      "description": "A tutor matching platform that respects your evenings and weekends.",
+      "items": {
+        "tutors": {
+          "value": "1,200+",
+          "label": "Verified tutors"
+        },
+        "students": {
+          "value": "25,000+",
+          "label": "Working professionals"
+        },
+        "lessons": {
+          "value": "180k",
+          "label": "Lessons booked"
+        },
+        "rating": {
+          "value": "4.9 / 5",
+          "label": "Average rating"
+        }
+      }
+    },
+    "HowItWorks": {
+      "badge": "How it works",
+      "title": "Three steps to your next lesson",
+      "description": "From your first search to your first class — designed to fit a busy schedule.",
+      "steps": {
+        "step1": {
+          "title": "Find the right tutor",
+          "description": "Filter by accent, level, price and availability. See video intros and real reviews from other learners."
+        },
+        "step2": {
+          "title": "Book a trial lesson",
+          "description": "Pick a time that works for you — early morning, evening or weekend. Pay securely per lesson, no subscription required."
+        },
+        "step3": {
+          "title": "Learn live on Mezon",
+          "description": "Chat, share files and join your video classroom directly on Mezon. Everything in one place."
+        }
+      }
+    },
+    "FeaturedTutors": {
+      "badge": "Top tutors this week",
+      "title": "Learn from people who get it",
+      "description": "Native speakers, certified teachers and bilingual mentors — all reviewed and verified.",
+      "viewAll": "See all tutors",
+      "perHour": "/ hour",
+      "lessons": "lessons",
+      "tags": {
+        "ielts": "IELTS",
+        "business": "Business",
+        "conversation": "Conversation",
+        "kids": "Kids",
+        "toeic": "TOEIC",
+        "beginner": "Beginner"
+      },
+      "list": {
+        "tutor1": {
+          "name": "Linh Pham",
+          "title": "IELTS 8.5 · 6 yrs experience",
+          "country": "Vietnam"
+        },
+        "tutor2": {
+          "name": "James O'Connor",
+          "title": "Native English · Business coach",
+          "country": "United Kingdom"
+        },
+        "tutor3": {
+          "name": "Emma Wilson",
+          "title": "TESOL · Conversational coach",
+          "country": "United States"
+        },
+        "tutor4": {
+          "name": "David Brown",
+          "title": "CELTA · Kids & beginners",
+          "country": "Australia"
+        }
+      },
+      "bookTrial": "Book trial"
+    },
+    "WhyUs": {
+      "badge": "Why Mezonly",
+      "title": "Built for working adults",
+      "description": "Most learners on Mezonly are professionals studying after 7pm. Every detail is tuned for them.",
+      "items": {
+        "evening": {
+          "title": "Evening & weekend slots",
+          "description": "Browse tutors who only teach after 6pm, or open all weekends. No 9-to-5 conflicts."
+        },
+        "payPerLesson": {
+          "title": "Pay per lesson",
+          "description": "No long contracts. Try a 30-minute trial first, top-up only when you want more."
+        },
+        "verified": {
+          "title": "100% verified tutors",
+          "description": "Every tutor is interviewed and ID-checked. Read transparent reviews from real students."
+        },
+        "mezon": {
+          "title": "Native Mezon integration",
+          "description": "Chat, share homework and join live rooms with your tutor on Mezon — no extra app to install."
+        },
+        "personalized": {
+          "title": "Personalized roadmap",
+          "description": "Tell us your goal — IELTS, business, travel — and we match you with tutors who specialize in it."
+        },
+        "moneyBack": {
+          "title": "Trial money-back",
+          "description": "Didn't click with your tutor? Get your trial lesson refunded, no questions asked."
+        }
+      }
+    },
+    "MezonShowcase": {
+      "badge": "Powered by Mezon",
+      "title": "Your classroom lives on Mezon",
+      "description": "Mezonly handles matching, booking and payments. Mezon handles real conversation — chat, voice and live video rooms with your tutor, all in one place.",
+      "features": {
+        "chat": {
+          "title": "Chat anytime",
+          "description": "Message your tutor between lessons for quick questions or feedback."
+        },
+        "rooms": {
+          "title": "Live video rooms",
+          "description": "Join the lesson with one click — HD video, screen share and whiteboard."
+        },
+        "files": {
+          "title": "Share homework",
+          "description": "Upload assignments, audio recordings and PDFs straight into the chat."
+        }
+      },
+      "preview": {
+        "messageTitle": "Mai Anh · IELTS Tutor",
+        "online": "Online",
+        "incoming": "See you at 8pm! Don't forget today's vocab list 📚",
+        "you": "You",
+        "yourMessage": "Got it, see you tonight!",
+        "joinRoom": "Join lesson room"
+      }
+    },
+    "Testimonials": {
+      "badge": "Loved by learners",
+      "title": "Real stories from real students",
+      "description": "Working professionals who finally found a way to keep learning.",
+      "items": {
+        "review1": {
+          "name": "Trang Nguyen",
+          "role": "Marketing Manager · 28",
+          "quote": "I work until 7pm every day, so most schools weren't an option. With Mezonly I learn at 9pm twice a week — my speaking improved more in 3 months than 2 years at a center."
+        },
+        "review2": {
+          "name": "Hung Le",
+          "role": "Software Engineer · 31",
+          "quote": "Booking is two clicks, everything happens on Mezon, and I can pay per lesson. Exactly what I wanted as someone who hates long-term contracts."
+        },
+        "review3": {
+          "name": "Phuong Vu",
+          "role": "Product Designer · 26",
+          "quote": "My tutor matches my goal perfectly — business English for client calls. The video rooms on Mezon feel like sitting next to her."
+        }
+      }
+    },
+    "BecomeTutor": {
+      "badgeAmount": "+15M VND",
+      "badgeLabel": "Average monthly income",
+      "title": "Teach on your own schedule.",
+      "titleHighlight": "Get paid for what you love.",
+      "description": "Bilingual student, English major or certified teacher? Build your tutor profile in 10 minutes and start earning the first week. Mezonly handles bookings and payments — you focus on teaching.",
+      "benefits": {
+        "payment": "Transparent pricing and weekly payouts",
+        "tools": "Built-in tools — chat, video room and whiteboard on Mezon",
+        "schedule": "Set your own hours — teach as little as 5h / week"
+      },
+      "registerButton": "Become a tutor"
+    },
+    "Cta": {
+      "badge": "Start free",
+      "title": "Your first lesson is on us",
+      "description": "Book a 30-minute trial lesson for free with any tutor on Mezonly. No subscription, no credit card needed.",
+      "primary": "Find a tutor now",
+      "secondary": "Become a tutor"
     },
     "Features": {
       "title": "Learning Built for Busy People",
@@ -27,19 +254,6 @@
         "title": "Learn via Mezon",
         "description": "Join classes in one place with messaging, files, and tutor support."
       }
-    },
-    "BecomeTutor": {
-      "badgeAmount": "+$600",
-      "badgeLabel": "Average monthly income",
-      "title": "Find Tutors for",
-      "titleHighlight": "Every Learning Goal",
-      "description": "From exam preparation to speaking confidence, choose tutors who match your goals and schedule.",
-      "benefits": {
-        "payment": "Transparent pricing and secure payments",
-        "tools": "Interactive tools to keep lessons engaging",
-        "schedule": "Flexible schedules with easy rescheduling"
-      },
-      "registerButton": "Register as a Tutor"
     },
     "Seamless": {
       "title": "A Seamless Learning Experience",

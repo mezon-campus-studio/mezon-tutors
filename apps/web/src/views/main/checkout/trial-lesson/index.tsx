@@ -1,10 +1,14 @@
 "use client";
 
 import dayjs from "dayjs";
-import { CalendarIcon } from "lucide-react";
+import { AlertCircle, CalendarCheck, Clock, Info } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  PaymentMethodId,
+  PaymentMethodSelection,
+} from "@/components/common/PaymentMethodSelection";
 import { toast } from "@/components/ui";
 import { useCurrency } from "@/hooks";
 import {
@@ -13,7 +17,6 @@ import {
   useGetVerifiedTutorAbout,
 } from "@/services";
 import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
-import { PaymentMethodId, PaymentMethodSelection } from "@/components/common/PaymentMethodSelection";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
 
@@ -148,11 +151,24 @@ export default function TrialLessonCheckoutPage() {
 
   if (!query) {
     return (
-      <div className="min-h-screen bg-background px-5 py-10 text-foreground">
-        <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-2 text-center">
-          <p className="text-2xl font-bold">{t("missingInfo.title")}</p>
-          <p className="text-muted-foreground">{t("missingInfo.description")}</p>
-          <p className="text-sm text-muted-foreground">{t("missingInfo.expectedQuery")}</p>
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
+          <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/30 blur-[140px]" />
+        </div>
+        <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-3 px-5 py-20 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#fef3f2,#fee4e2)] ring-1 ring-rose-100">
+            <AlertCircle className="size-6 text-rose-500" />
+          </div>
+          <p className="text-2xl font-extrabold text-slate-900">
+            {t("missingInfo.title")}
+          </p>
+          <p className="text-sm leading-6 text-slate-600">
+            {t("missingInfo.description")}
+          </p>
+          <p className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
+            {t("missingInfo.expectedQuery")}
+          </p>
         </div>
       </div>
     );
@@ -203,33 +219,57 @@ export default function TrialLessonCheckoutPage() {
   const isBookedAndLocked = Boolean(hasActiveBooking && currentBooking?.paymentStatus !== "PENDING");
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-[1240px] px-3 py-4 pb-9 sm:px-5">
-        <div className="space-y-1">
-          <h1 className="text-4xl leading-tight font-extrabold sm:text-5xl">{t("title")}</h1>
-          <p className="text-lg text-muted-foreground">
-            {isTutorPending ? t("loadingBooking") : t("subtitle", { tutorName: tutorLastName })}
+    <div className="relative min-h-screen text-slate-900">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
+        <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/30 blur-[140px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/30 blur-[120px]" />
+      </div>
+
+      <div className="mx-auto w-full max-w-[1240px] px-4 py-8 pb-12 sm:px-6 sm:py-10">
+        <div className="space-y-2">
+          <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            {t("title")}{" "}
+            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+              ✨
+            </span>
+          </h1>
+          <p className="text-sm text-slate-600 sm:text-base">
+            {isTutorPending
+              ? t("loadingBooking")
+              : t("subtitle", { tutorName: tutorLastName })}
           </p>
         </div>
 
-        <div className="mt-4 space-y-2">
-          {isTutorError ? <p className="text-red-400">{t("errors.loadTutor")}</p> : null}
+        <div className="mt-5 space-y-2">
+          {isTutorError ? (
+            <NoticeRow tone="error" message={t("errors.loadTutor")} />
+          ) : null}
           {!isTutorPending && tutor && !hasPrice ? (
-            <p className="text-red-400">{t("errors.missingRate")}</p>
+            <NoticeRow tone="error" message={t("errors.missingRate")} />
           ) : null}
           {!isCurrentBookingLoading && isPendingPayment ? (
-            <p className="text-primary">{t("pendingPaymentNotice")}</p>
+            <NoticeRow tone="info" message={t("pendingPaymentNotice")} />
           ) : null}
           {!isCurrentBookingLoading && isBookedAndLocked ? (
-            <p className="text-amber-400">{t("bookedLockedNotice")}</p>
+            <NoticeRow tone="warning" message={t("bookedLockedNotice")} />
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-col items-start gap-4 lg:flex-row">
-          <div className="w-full flex-1 space-y-3.5 lg:basis-2/3">
-            <div className="flex items-center gap-2">
-              <CalendarIcon size={20} className="text-primary" />
-              <p className="text-xl font-bold">{t("trialLessonDetails")}</p>
+        <div className="mt-6 flex flex-col items-start gap-5 lg:flex-row">
+          <div className="w-full flex-1 space-y-4 lg:basis-2/3">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+                <CalendarCheck className="size-4" />
+              </div>
+              <div className="leading-tight">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+                  Booking
+                </p>
+                <p className="text-base font-extrabold text-slate-900 sm:text-lg">
+                  {t("trialLessonDetails")}
+                </p>
+              </div>
             </div>
             <TrialLessonDetailsCard
               tutorName={tutorDisplayName}
@@ -240,13 +280,19 @@ export default function TrialLessonCheckoutPage() {
               durationLabel={durationLabel}
             />
             {tutor && hasPrice ? (
-              <PaymentSummaryCard durationMinutes={query.durationMinutes} totalDisplay={totalDisplay ?? ""} />
+              <PaymentSummaryCard
+                durationMinutes={query.durationMinutes}
+                totalDisplay={totalDisplay ?? ""}
+              />
             ) : (
-              <p className="text-muted-foreground">{t("loadingPaymentSummary")}</p>
+              <div className="flex items-center gap-2 rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm text-slate-500">
+                <Clock className="size-4 text-violet-400" />
+                {t("loadingPaymentSummary")}
+              </div>
             )}
           </div>
 
-          <div className="w-full lg:max-w-[460px] lg:basis-1/3">
+          <div className="w-full lg:sticky lg:top-24 lg:max-w-[460px] lg:basis-1/3">
             <PaymentMethodSelection
               totalDisplay={tutor && hasPrice ? totalDisplay : undefined}
               onPayAction={handlePay}
@@ -254,15 +300,55 @@ export default function TrialLessonCheckoutPage() {
               showContinuePayment={isPendingPayment && Boolean(paymentLink)}
               continuePaymentDisabled={isCurrentBookingLoading}
               payDisabled={
-                !canPay ||
-                isCurrentBookingLoading ||
-                isBookedAndLocked
+                !canPay || isCurrentBookingLoading || isBookedAndLocked
               }
               isPayLoading={createBooking.isPending || isCurrentBookingLoading}
             />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function NoticeRow({
+  tone,
+  message,
+}: {
+  tone: "error" | "warning" | "info";
+  message: string;
+}) {
+  const config =
+    tone === "error"
+      ? {
+          icon: AlertCircle,
+          bg: "bg-rose-50",
+          ring: "ring-rose-100",
+          text: "text-rose-700",
+          iconColor: "text-rose-500",
+        }
+      : tone === "warning"
+        ? {
+            icon: AlertCircle,
+            bg: "bg-amber-50",
+            ring: "ring-amber-100",
+            text: "text-amber-800",
+            iconColor: "text-amber-500",
+          }
+        : {
+            icon: Info,
+            bg: "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)]",
+            ring: "ring-violet-100",
+            text: "text-violet-700",
+            iconColor: "text-violet-500",
+          };
+  const Icon = config.icon;
+  return (
+    <div
+      className={`flex items-start gap-2 rounded-xl ${config.bg} px-3 py-2.5 text-xs ring-1 ${config.ring}`}
+    >
+      <Icon className={`mt-0.5 size-4 shrink-0 ${config.iconColor}`} />
+      <p className={`leading-5 ${config.text}`}>{message}</p>
     </div>
   );
 }

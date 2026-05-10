@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
 import { getYoutubeEmbedUrl } from "@mezon-tutors/shared";
 import { PlayIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type VideoPreviewProps = {
   videoUrl?: string | null;
@@ -12,7 +12,11 @@ type VideoPreviewProps = {
   title?: string;
 };
 
-export default function VideoPreview({ videoUrl, height = 260, title = "" }: VideoPreviewProps) {
+export default function VideoPreview({
+  videoUrl,
+  height = 260,
+  title = "",
+}: VideoPreviewProps) {
   const t = useTranslations("Tutors.VideoPreview");
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
@@ -97,9 +101,17 @@ export default function VideoPreview({ videoUrl, height = 260, title = "" }: Vid
           </div>
         ) : (
           <div className="px-4 text-center">
-            {title ? <div className="text-sm font-semibold text-slate-900">{title}</div> : null}
+            {title ? (
+              <div className="text-sm font-semibold text-slate-900">
+                {title}
+              </div>
+            ) : null}
             <div className="mt-1 text-sm text-slate-600">
-              {!hasVideoUrl ? t("noVideo") : !isYoutubeVideo ? t("invalidVideo") : t("pressToPlay")}
+              {!hasVideoUrl
+                ? t("noVideo")
+                : !isYoutubeVideo
+                  ? t("invalidVideo")
+                  : t("pressToPlay")}
             </div>
           </div>
         )}
@@ -140,7 +152,7 @@ export default function VideoPreview({ videoUrl, height = 260, title = "" }: Vid
                 </div>
               </div>
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </>

@@ -1,20 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  TUTOR_DETAIL_DEFAULT_TAB,
+  type TutorDetailTabKey,
+} from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
-import { TUTOR_DETAIL_DEFAULT_TAB, type TutorDetailTabKey } from "@mezon-tutors/shared";
+import { useMemo, useState } from "react";
 import {
   useGetVerifiedTutorAbout,
-  useGetVerifiedTutorSchedule,
-  useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
+  useGetVerifiedTutorReviews,
+  useGetVerifiedTutorSchedule,
 } from "@/services";
+import { TutorAboutTab } from "./components/TutorAboutTab";
 import { TutorDetailHeader } from "./components/TutorDetailHeader";
 import { TutorDetailSidebar } from "./components/TutorDetailSidebar";
-import { TutorAboutTab } from "./components/TutorAboutTab";
-import { TutorScheduleTab } from "./components/TutorScheduleTab";
-import { TutorReviewsTab } from "./components/TutorReviewsTab";
 import { TutorResourcesTab } from "./components/TutorResourcesTab";
+import { TutorReviewsTab } from "./components/TutorReviewsTab";
+import { TutorScheduleTab } from "./components/TutorScheduleTab";
 
 type TutorDetailPageProps = {
   tutorId: string;
@@ -22,23 +25,30 @@ type TutorDetailPageProps = {
 
 export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
   const t = useTranslations("Tutors.Detail");
-  const [activeTab, setActiveTab] = useState<TutorDetailTabKey>(TUTOR_DETAIL_DEFAULT_TAB);
-
-  const { data: aboutData, isLoading: isLoadingAbout, isError: isErrorAbout } = useGetVerifiedTutorAbout(tutorId);
-  const { data: scheduleData, isLoading: isLoadingSchedule } = useGetVerifiedTutorSchedule(
-    tutorId,
-    activeTab === "schedule"
-  );
-  const { data: reviewsData, isLoading: isLoadingReviews, isError: isErrorReviews } = useGetVerifiedTutorReviews(
-    tutorId,
-    activeTab === "reviews"
-  );
-  const { data: resourcesData, isLoading: isLoadingResources, isError: isErrorResources } = useGetVerifiedTutorResources(
-    tutorId,
-    activeTab === "resources"
+  const [activeTab, setActiveTab] = useState<TutorDetailTabKey>(
+    TUTOR_DETAIL_DEFAULT_TAB,
   );
 
-  const shouldShowEmpty = !tutorId || isErrorAbout || (!isLoadingAbout && !aboutData);
+  const {
+    data: aboutData,
+    isLoading: isLoadingAbout,
+    isError: isErrorAbout,
+  } = useGetVerifiedTutorAbout(tutorId);
+  const { data: scheduleData, isLoading: isLoadingSchedule } =
+    useGetVerifiedTutorSchedule(tutorId, activeTab === "schedule");
+  const {
+    data: reviewsData,
+    isLoading: isLoadingReviews,
+    isError: isErrorReviews,
+  } = useGetVerifiedTutorReviews(tutorId, activeTab === "reviews");
+  const {
+    data: resourcesData,
+    isLoading: isLoadingResources,
+    isError: isErrorResources,
+  } = useGetVerifiedTutorResources(tutorId, activeTab === "resources");
+
+  const shouldShowEmpty =
+    !tutorId || isErrorAbout || (!isLoadingAbout && !aboutData);
 
   const tabContent = useMemo(() => {
     switch (activeTab) {
@@ -49,7 +59,9 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
           return <p className="text-gray-500">{t("loading")}</p>;
         }
         return aboutData && scheduleData ? (
-          <TutorScheduleTab tutor={{ ...aboutData, availability: scheduleData.availability }} />
+          <TutorScheduleTab
+            tutor={{ ...aboutData, availability: scheduleData.availability }}
+          />
         ) : null;
       case "reviews":
         if (isLoadingReviews) {
@@ -76,13 +88,26 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
           return <p className="text-gray-500">{t("loadError")}</p>;
         }
         return aboutData && resourcesData ? (
-          <TutorResourcesTab tutor={{ ...aboutData, resources: resourcesData.resources }} />
+          <TutorResourcesTab
+            tutor={{ ...aboutData, resources: resourcesData.resources }}
+          />
         ) : null;
       default:
         return null;
     }
-  }, [activeTab, aboutData, scheduleData, isLoadingSchedule, reviewsData, isLoadingReviews, isErrorReviews, resourcesData, isLoadingResources, isErrorResources, t]);
-
+  }, [
+    activeTab,
+    aboutData,
+    scheduleData,
+    isLoadingSchedule,
+    reviewsData,
+    isLoadingReviews,
+    isErrorReviews,
+    resourcesData,
+    isLoadingResources,
+    isErrorResources,
+    t,
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,7 +121,9 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
         {shouldShowEmpty ? (
           <div className="pt-4">
             <div className="text-center py-12">
-              <h2 className="text-xl font-semibold text-gray-900">{t("notFound")}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {t("notFound")}
+              </h2>
             </div>
           </div>
         ) : null}
@@ -110,7 +137,9 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
                 onTabChange={setActiveTab}
               />
 
-              <div className="bg-white border-x border-b border-gray-200 rounded-b-2xl p-6">{tabContent}</div>
+              <div className="bg-white border-x border-b border-gray-200 rounded-b-2xl p-6">
+                {tabContent}
+              </div>
             </div>
 
             <div className="w-full lg:w-80">

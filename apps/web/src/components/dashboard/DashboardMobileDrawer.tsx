@@ -1,18 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { X, FileText, Calendar, ClipboardList, LogOut } from 'lucide-react';
-import MezonlyLogo from '@/public/images/Mezonly-logo.png';
-import { Button } from '@/components/ui';
-import { type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_ROLE_TITLES, type DashboardRole } from '@mezon-tutors/shared';
+import {
+  DASHBOARD_ROLE_TITLES,
+  type DashboardMenuItem,
+  type DashboardRole,
+  getDashboardMenuItemsByRole,
+} from "@mezon-tutors/shared";
+import { useAtomValue } from "jotai";
+import { Calendar, ClipboardList, FileText, LogOut, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
+import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { userAtom } from "@/store/auth.atom";
 
 const ICON_MAP = {
   document: FileText,
   calendar: Calendar,
   bookingRequests: ClipboardList,
   logout: LogOut,
+} as const;
+
+const ICON_ACCENT_MAP = {
+  document: "from-violet-500 to-purple-500",
+  calendar: "from-purple-500 to-fuchsia-500",
+  bookingRequests: "from-fuchsia-500 to-rose-500",
+  logout: "from-rose-500 to-orange-500",
 } as const;
 
 type DashboardMobileDrawerProps = {
@@ -30,78 +44,140 @@ export default function DashboardMobileDrawer({
   pathname,
   onLogout,
 }: DashboardMobileDrawerProps) {
-  const t = useTranslations('Dashboard');
+  const t = useTranslations("Dashboard");
+  const user = useAtomValue(userAtom);
   const menuItems = getDashboardMenuItemsByRole(userRole);
-  const dashboardTitle = userRole && userRole in DASHBOARD_ROLE_TITLES
-    ? DASHBOARD_ROLE_TITLES[userRole as DashboardRole]
-    : t('sidebar.fallbackTitle');
+  const dashboardTitle =
+    userRole && userRole in DASHBOARD_ROLE_TITLES
+      ? DASHBOARD_ROLE_TITLES[userRole as DashboardRole]
+      : t("sidebar.fallbackTitle");
+
+  const userInitials =
+    user?.username
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0]?.toUpperCase())
+      .join("") || "U";
 
   if (!isOpen) return null;
 
   const handleItemClick = (item: DashboardMenuItem) => {
-    if (item.type === 'action') {
+    if (item.type === "action") {
       onLogout();
     }
     onClose();
   };
 
   const isActive = (item: DashboardMenuItem) => {
-    return item.type === 'link' && item.href === pathname;
+    return item.type === "link" && item.href === pathname;
   };
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/50 z-[998] md:hidden"
+      <button
+        type="button"
+        aria-label="Close drawer"
+        className="fixed inset-0 z-[998] bg-slate-900/50 backdrop-blur-sm md:hidden"
         onClick={onClose}
       />
-      
-      <aside className="fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-[999] md:hidden flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <Image src={MezonlyLogo} alt="Mezonly" width={32} height={32} />
-            <span className="text-xl font-extrabold text-slate-900">Mezonly</span>
+
+      <aside className="fixed top-0 left-0 bottom-0 z-[999] flex w-72 flex-col border-r border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] md:hidden">
+        <div className="flex items-center justify-between border-b border-violet-100 px-5 py-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2"
+            onClick={onClose}
+          >
+            <Image
+              src={MezonlyLogo}
+              alt="Mezonly"
+              width={36}
+              height={36}
+              className="drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
+            />
+            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-lg font-extrabold tracking-tight text-transparent">
+              Mezonly
+            </span>
           </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="size-9 rounded-full hover:bg-slate-100"
             onClick={onClose}
           >
-            <X className="h-5 w-5" />
+            <X className="size-5" />
           </Button>
         </div>
 
-        <div className="p-4 border-b border-gray-200 text-center">
-          <h2 className="text-base font-bold text-primary leading-tight">{dashboardTitle}</h2>
-        </div>
+        {user ? (
+          <div className="border-b border-violet-100 px-5 py-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40">
+              <Avatar className="size-11 rounded-xl border-2 border-white ring-2 ring-violet-100">
+                {user.avatar ? (
+                  <AvatarImage
+                    src={user.avatar}
+                    alt={user.username ?? "User"}
+                    className="rounded-lg object-cover"
+                  />
+                ) : null}
+                <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-extrabold text-slate-900">
+                  {user.username || "User"}
+                </p>
+                <p className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">
+                  <span className="size-1 rounded-full bg-emerald-500" />
+                  {dashboardTitle}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
           {menuItems.map((item) => {
             const Icon = ICON_MAP[item.iconKey];
+            const accent = ICON_ACCENT_MAP[item.iconKey];
             const active = isActive(item);
-            const isLogout = item.type === 'action';
+            const isLogout = item.type === "action";
 
             const buttonContent = (
               <Button
                 variant="ghost"
-                className={`
-                  w-full justify-start gap-3 h-11 px-4 font-medium transition-colors
-                  ${active 
-                    ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15' 
+                className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
+                  active
+                    ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
                     : isLogout
-                      ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }
-                `}
+                      ? "text-rose-600 hover:bg-rose-50"
+                      : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"
+                }`}
                 onClick={() => handleItemClick(item)}
               >
-                <Icon className={`w-4 h-4 ${item.iconKey === 'bookingRequests' ? 'w-[19px] h-[19px]' : ''}`} />
-                <span>{t(`sidebar.${item.labelKey}`)}</span>
+                <span
+                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-all ${
+                    active
+                      ? `bg-gradient-to-br ${accent} text-white shadow-sm shadow-violet-300/40`
+                      : isLogout
+                        ? "bg-rose-100 text-rose-600 group-hover:bg-rose-200"
+                        : "bg-slate-100 text-slate-500 group-hover:bg-violet-100 group-hover:text-violet-700"
+                  }`}
+                >
+                  <Icon className="size-3.5" />
+                </span>
+                <span className="truncate">
+                  {t(`sidebar.${item.labelKey}`)}
+                </span>
+                {active ? (
+                  <span className="ml-auto h-5 w-1 rounded-full bg-[linear-gradient(180deg,#7c3aed,#ec4899)]" />
+                ) : null}
               </Button>
             );
 
-            if (item.type === 'link' && item.href) {
+            if (item.type === "link" && item.href) {
               return (
                 <Link key={item.key} href={item.href} className="block">
                   {buttonContent}

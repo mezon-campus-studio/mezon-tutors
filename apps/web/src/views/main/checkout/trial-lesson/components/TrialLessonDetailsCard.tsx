@@ -1,5 +1,6 @@
 "use client";
 
+import { CalendarDays, Clock, Shield, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
@@ -23,45 +24,102 @@ export function TrialLessonDetailsCard({
   const t = useTranslations("TrialLessonCheckout.TrialLessonDetailsCard");
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-primary bg-card">
-      <div className="flex flex-col justify-between gap-3 p-4 md:flex-row md:items-center">
-        <div className="flex-1 space-y-1.5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.6px] text-primary">{t("trialLesson")}</p>
-          <p className="text-xl font-bold text-foreground">{tutorName}</p>
-          <p className="text-muted-foreground">{tutorSubtitle}</p>
-        </div>
-
-        <div className="flex h-[100px] w-full items-center justify-center overflow-hidden rounded-[14px] bg-muted md:w-[170px]">
-          {avatarUrl ? (
-            <Image src={avatarUrl} width={170} height={100} className="h-full w-full object-cover" alt="" />
-          ) : (
-            <p className="text-xs text-muted-foreground">...</p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-start justify-between gap-4 border-t p-4">
-        <div className="space-y-4">
-          <div className="min-w-[110px] space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.5px] text-muted-foreground">{t("date")}</p>
-            <p className="font-bold text-foreground">{dateLabel}</p>
+    <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="relative shrink-0">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                width={72}
+                height={72}
+                alt={tutorName}
+                className="size-16 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-violet-200/40 sm:size-20"
+              />
+            ) : (
+              <div className="flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-xl font-extrabold text-violet-700 sm:size-20">
+                {tutorName.slice(0, 1).toUpperCase()}
+              </div>
+            )}
           </div>
-          <div className="min-w-[110px] space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.5px] text-muted-foreground">{t("time")}</p>
-            <p className="font-bold text-foreground">{timeLabel}</p>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div className="min-w-[110px] space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.5px] text-muted-foreground">{t("duration")}</p>
-            <p className="font-bold text-foreground">{durationLabel}</p>
-          </div>
-          <div className="min-w-[110px] space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.5px] text-muted-foreground">{t("policy")}</p>
-            <p className="font-bold text-primary">{t("freeCancellation")}</p>
+          <div className="min-w-0 flex-1">
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-violet-600">
+              <Sparkles className="size-3" />
+              {t("trialLesson")}
+            </p>
+            <p className="mt-0.5 truncate text-lg font-extrabold text-slate-900 sm:text-xl">
+              {tutorName}
+            </p>
+            <p className="line-clamp-2 text-xs text-slate-500 sm:text-sm">
+              {tutorSubtitle}
+            </p>
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-2 gap-px bg-violet-100/70 sm:grid-cols-4">
+        <DetailCell
+          icon={CalendarDays}
+          label={t("date")}
+          value={dateLabel}
+          accent="from-violet-500 to-purple-500"
+        />
+        <DetailCell
+          icon={Clock}
+          label={t("time")}
+          value={timeLabel}
+          accent="from-purple-500 to-fuchsia-500"
+        />
+        <DetailCell
+          icon={Sparkles}
+          label={t("duration")}
+          value={durationLabel}
+          accent="from-fuchsia-500 to-rose-500"
+        />
+        <DetailCell
+          icon={Shield}
+          label={t("policy")}
+          value={t("freeCancellation")}
+          accent="from-emerald-500 to-teal-500"
+          highlight
+        />
+      </div>
+    </div>
+  );
+}
+
+function DetailCell({
+  icon: Icon,
+  label,
+  value,
+  accent,
+  highlight,
+}: {
+  icon: typeof CalendarDays;
+  label: string;
+  value: string;
+  accent: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="bg-white p-4">
+      <div className="flex items-center gap-2">
+        <div
+          className={`flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${accent} text-white shadow-sm`}
+        >
+          <Icon className="size-3.5" />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+          {label}
+        </p>
+      </div>
+      <p
+        className={`mt-2 text-sm font-extrabold leading-snug ${
+          highlight ? "text-emerald-700" : "text-slate-900"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useAtomValue } from 'jotai';
-import { useTranslations } from 'next-intl';
-import { REVIEW_DISPLAY_CONFIG } from '@mezon-tutors/shared';
-import { Button } from '@/components/ui';
-import { useGetAlreadyBookedTrialLesson } from '@/services';
-import { userAtom } from '@/store/auth.atom';
-import { AllReviewsModal } from './AllReviewsModal';
-import { ReviewCard } from './ReviewCard';
-import { ReviewModal } from './ReviewModal';
-import { ReviewsSummary } from './ReviewsSummary';
-import { useIsMobile } from '../hooks/useIsMobile';
+import { REVIEW_DISPLAY_CONFIG } from "@mezon-tutors/shared";
+import { useAtomValue } from "jotai";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui";
+import { useGetAlreadyBookedTrialLesson } from "@/services";
+import { userAtom } from "@/store/auth.atom";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { AllReviewsModal } from "./AllReviewsModal";
+import { ReviewCard } from "./ReviewCard";
+import { ReviewModal } from "./ReviewModal";
+import { ReviewsSummary } from "./ReviewsSummary";
 
 interface ReviewsSectionProps {
   tutorId: string;
@@ -37,7 +37,7 @@ export function ReviewsSection({
   ratingCount,
   reviews,
 }: ReviewsSectionProps) {
-  const t = useTranslations('Tutors.Detail');
+  const t = useTranslations("Tutors.Detail");
   const isMobile = useIsMobile();
   const [isAllReviewsOpen, setIsAllReviewsOpen] = useState(false);
   const [isPostReviewOpen, setIsPostReviewOpen] = useState(false);
@@ -45,71 +45,88 @@ export function ReviewsSection({
   const currentUser = useAtomValue(userAtom);
   const currentUserId = currentUser?.id;
 
-  const { data: bookingStatus, isLoading: isLoadingBooking } = useGetAlreadyBookedTrialLesson(tutorId, !!currentUserId);
-  const hasCompletedLesson = bookingStatus?.hasBooked && bookingStatus?.status === 'COMPLETED';
+  const { data: bookingStatus, isLoading: isLoadingBooking } =
+    useGetAlreadyBookedTrialLesson(tutorId, !!currentUserId);
+  const hasCompletedLesson =
+    bookingStatus?.hasBooked && bookingStatus?.status === "COMPLETED";
 
   const myReviewFromList = useMemo(() => {
     if (!currentUserId) return null;
-    return reviews.find(r => r.reviewerId === currentUserId) || null;
+    return reviews.find((r) => r.reviewerId === currentUserId) || null;
   }, [reviews, currentUserId]);
 
-  const showPostReviewButton = !!currentUserId && !isLoadingBooking && hasCompletedLesson;
+  const showPostReviewButton =
+    !!currentUserId && !isLoadingBooking && hasCompletedLesson;
 
   const sortedReviews = useMemo(() => {
     if (!currentUserId) return reviews;
-    
-    const myReviewIndex = reviews.findIndex(r => r.reviewerId === currentUserId);
+
+    const myReviewIndex = reviews.findIndex(
+      (r) => r.reviewerId === currentUserId,
+    );
     if (myReviewIndex === -1) return reviews;
-    
+
     const myReviewItem = reviews[myReviewIndex];
     const otherReviews = reviews.filter((_, index) => index !== myReviewIndex);
-    
+
     return [myReviewItem, ...otherReviews];
   }, [reviews, currentUserId]);
 
   const visibleReviews = useMemo(
-    () => sortedReviews.slice(0, isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT),
+    () =>
+      sortedReviews.slice(
+        0,
+        isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT,
+      ),
     [sortedReviews, isMobile],
   );
 
   const leftColumnReviews = useMemo(
-    () => visibleReviews.filter((_, index) => index % REVIEW_DISPLAY_CONFIG.COLUMNS === 0),
+    () =>
+      visibleReviews.filter(
+        (_, index) => index % REVIEW_DISPLAY_CONFIG.COLUMNS === 0,
+      ),
     [visibleReviews],
   );
 
   const rightColumnReviews = useMemo(
-    () => visibleReviews.filter((_, index) => index % REVIEW_DISPLAY_CONFIG.COLUMNS === 1),
+    () =>
+      visibleReviews.filter(
+        (_, index) => index % REVIEW_DISPLAY_CONFIG.COLUMNS === 1,
+      ),
     [visibleReviews],
   );
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center gap-3 flex-wrap">
-        <h2 className={`text-gray-900 font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>
-          {t('whatStudentsSay')}
+        <h2
+          className={`text-gray-900 font-bold ${isMobile ? "text-xl" : "text-2xl"}`}
+        >
+          {t("whatStudentsSay")}
         </h2>
         {showPostReviewButton && (
           <Button
             onClick={() => setIsPostReviewOpen(true)}
             className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg px-4 py-2"
           >
-            {myReviewFromList ? t('editReview') : t('postReview')}
+            {myReviewFromList ? t("editReview") : t("postReview")}
           </Button>
         )}
       </div>
 
-      <ReviewsSummary 
-        ratingAverage={ratingAverage} 
+      <ReviewsSummary
+        ratingAverage={ratingAverage}
         ratingCount={ratingCount}
         isMobile={isMobile}
       />
 
       {reviews.length === 0 ? (
-        <p className="text-gray-500">{t('reviewsEmpty')}</p>
+        <p className="text-gray-500">{t("reviewsEmpty")}</p>
       ) : (
         <>
           <p className="text-sm text-gray-500">
-            {t('basedOnReviews', { count: ratingCount })}
+            {t("basedOnReviews", { count: ratingCount })}
           </p>
 
           {isMobile ? (
@@ -148,13 +165,14 @@ export function ReviewsSection({
             </div>
           )}
 
-          {reviews.length > (isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT) && (
+          {reviews.length >
+            (isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT) && (
             <Button
               variant="outline"
               onClick={() => setIsAllReviewsOpen(true)}
-              className={`self-center mt-2 ${isMobile ? 'w-full rounded-xl py-3' : 'rounded-lg py-2'}`}
+              className={`self-center mt-2 ${isMobile ? "w-full rounded-xl py-3" : "rounded-lg py-2"}`}
             >
-              {t('showAllReviews', { count: reviews.length })}
+              {t("showAllReviews", { count: reviews.length })}
             </Button>
           )}
         </>

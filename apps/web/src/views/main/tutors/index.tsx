@@ -1,19 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Skeleton,
-} from "@/components/ui";
-import { useGetVerifiedTutors } from "@/services/tutor-profile/tutor-profile.api";
-import { useCurrency } from "@/hooks";
 import {
   ECountry,
   ESubject,
@@ -23,12 +9,28 @@ import {
   ROUTES,
   type VerifiedTutorProfileDto,
 } from "@mezon-tutors/shared";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RotateCcw, SearchX } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
+} from "@/components/ui";
+import { useCurrency } from "@/hooks";
+import { parseEnumParam, parseIntParam } from "@/lib/utils";
+import { useGetVerifiedTutors } from "@/services/tutor-profile/tutor-profile.api";
 import TutorCard from "./components/TutorCard";
 import TutorPreviewCard from "./components/TutorPreviewCard";
 import TutorsFilter from "./components/TutorsFilter";
 import TutorsPagination from "./components/TutorsPagination";
-import { parseIntParam, parseEnumParam } from "@/lib/utils";
-import { useTranslations } from "next-intl";
 
 const DEFAULT_LIMIT = 10;
 const DEFAULT_PAGE = 1;
@@ -38,10 +40,7 @@ function LoadingTutorCards() {
   return (
     <section className="space-y-4">
       {Array.from({ length: 3 }).map((_, idx) => (
-        <Card
-          key={`loading-${idx}`}
-          className="border-violet-100 py-0"
-        >
+        <Card key={`loading-${idx}`} className="border-violet-100 py-0">
           <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-3">
               <Skeleton className="size-11 rounded-full" />
@@ -97,7 +96,8 @@ export default function TutorsPage() {
   const [minPrice, setMinPrice] = useState<number>(MIN_PRICE[currency]);
   const [maxPrice, setMaxPrice] = useState<number>(MAX_PRICE[currency]);
   const [sortBy, setSortBy] = useState<ETutorSortBy>(ETutorSortBy.POPULARITY);
-  const [previewTutor, setPreviewTutor] = useState<VerifiedTutorProfileDto | null>(null);
+  const [previewTutor, setPreviewTutor] =
+    useState<VerifiedTutorProfileDto | null>(null);
   const [previewOffsetY, setPreviewOffsetY] = useState(0);
   const listColumnRef = useRef<HTMLDivElement | null>(null);
   const tutorCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -107,14 +107,18 @@ export default function TutorsPage() {
   const isMaxInfinity = maxPrice === MAX_PRICE[currency];
   const effectiveMaxPrice = isMaxInfinity ? undefined : maxPrice;
 
-  const { data, isLoading, isFetching } = useGetVerifiedTutors(page, DEFAULT_LIMIT, {
-    sortBy,
-    subject: subjectParam,
-    country: countryParam,
-    currency,
-    minPrice,
-    maxPrice: effectiveMaxPrice,
-  });
+  const { data, isLoading, isFetching } = useGetVerifiedTutors(
+    page,
+    DEFAULT_LIMIT,
+    {
+      sortBy,
+      subject: subjectParam,
+      country: countryParam,
+      currency,
+      minPrice,
+      maxPrice: effectiveMaxPrice,
+    },
+  );
 
   const items = data?.items ?? [];
   const displayItems = useMemo(() => items, [items]);
@@ -135,7 +139,7 @@ export default function TutorsPage() {
       const qs = sp.toString();
       router.replace(qs ? `${currentPathname}?${qs}` : currentPathname);
     },
-    [currentPathname, currentSearchParams, router]
+    [currentPathname, currentSearchParams, router],
   );
 
   const parsedQuery = useMemo(
@@ -144,28 +148,35 @@ export default function TutorsPage() {
       subject: parseEnumParam(
         currentSearchParams.get("subject"),
         Object.values(ESubject),
-        ESubject.ANY_SUBJECT
+        ESubject.ANY_SUBJECT,
       ),
       country: parseEnumParam(
         currentSearchParams.get("country"),
         Object.values(ECountry),
-        ECountry.ANY_COUNTRY
+        ECountry.ANY_COUNTRY,
       ),
-      minPrice: parseIntParam(currentSearchParams.get("minPrice"), MIN_PRICE[currency]),
-      maxPrice: parseIntParam(currentSearchParams.get("maxPrice"), MAX_PRICE[currency]),
+      minPrice: parseIntParam(
+        currentSearchParams.get("minPrice"),
+        MIN_PRICE[currency],
+      ),
+      maxPrice: parseIntParam(
+        currentSearchParams.get("maxPrice"),
+        MAX_PRICE[currency],
+      ),
       sortBy: parseEnumParam(
         currentSearchParams.get("sortBy"),
         Object.values(ETutorSortBy),
-        ETutorSortBy.POPULARITY
+        ETutorSortBy.POPULARITY,
       ),
     }),
-    [currentSearchParams]
+    [currentSearchParams],
   );
 
   useEffect(() => {
     const nextMinPrice = MIN_PRICE[currency];
     const nextMaxPrice = MAX_PRICE[currency];
-    const nextEffectiveMaxPrice = nextMaxPrice === MAX_PRICE[currency] ? null : nextMaxPrice;
+    const nextEffectiveMaxPrice =
+      nextMaxPrice === MAX_PRICE[currency] ? null : nextMaxPrice;
 
     setMinPrice(nextMinPrice);
     setMaxPrice(nextMaxPrice);
@@ -198,7 +209,9 @@ export default function TutorsPage() {
 
     setPreviewTutor((current) => {
       if (current) {
-        const updatedCurrent = displayItems.find((item) => item.id === current.id);
+        const updatedCurrent = displayItems.find(
+          (item) => item.id === current.id,
+        );
         if (updatedCurrent) {
           return updatedCurrent;
         }
@@ -213,7 +226,8 @@ export default function TutorsPage() {
     const target = tutorCardRefs.current[tutorId];
     if (!anchor || !target) return;
 
-    const y = target.getBoundingClientRect().top - anchor.getBoundingClientRect().top;
+    const y =
+      target.getBoundingClientRect().top - anchor.getBoundingClientRect().top;
     setPreviewOffsetY(Number.isFinite(y) ? Math.max(0, y) : 0);
   }, []);
 
@@ -222,17 +236,26 @@ export default function TutorsPage() {
       setPreviewTutor(tutor);
       updatePreviewOffset(tutor.id);
     },
-    [updatePreviewOffset]
+    [updatePreviewOffset],
   );
 
-const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
+  const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
     window.open(ROUTES.TUTOR.DETAIL(tutor.id), "_blank");
   };
 
   useEffect(() => {
     if (!previewTutor) return;
     updatePreviewOffset(previewTutor.id);
-  }, [previewTutor, updatePreviewOffset, page, subject, country, minPrice, maxPrice, sortBy]);
+  }, [
+    previewTutor,
+    updatePreviewOffset,
+    page,
+    subject,
+    country,
+    minPrice,
+    maxPrice,
+    sortBy,
+  ]);
 
   const handleSubjectChange = useCallback(
     (value: ESubject) => {
@@ -243,7 +266,7 @@ const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
         page: DEFAULT_PAGE,
       });
     },
-    [replaceQuery]
+    [replaceQuery],
   );
 
   const handleCountryChange = useCallback(
@@ -255,7 +278,7 @@ const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
         page: DEFAULT_PAGE,
       });
     },
-    [replaceQuery]
+    [replaceQuery],
   );
 
   const handlePriceRangeChange = useCallback(
@@ -265,11 +288,12 @@ const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
       setPage(DEFAULT_PAGE);
       replaceQuery({
         minPrice: value.minPrice,
-        maxPrice: value.maxPrice === MAX_PRICE[currency] ? null : value.maxPrice,
+        maxPrice:
+          value.maxPrice === MAX_PRICE[currency] ? null : value.maxPrice,
         page: DEFAULT_PAGE,
       });
     },
-    [replaceQuery, currency]
+    [replaceQuery, currency],
   );
 
   const handleSortByChange = useCallback(
@@ -281,8 +305,33 @@ const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
         page: DEFAULT_PAGE,
       });
     },
-    [replaceQuery]
+    [replaceQuery],
   );
+
+  const handleResetFilters = useCallback(() => {
+    const defaultMin = MIN_PRICE[currency];
+    const defaultMax = MAX_PRICE[currency];
+    setSubject(ESubject.ANY_SUBJECT);
+    setCountry(ECountry.ANY_COUNTRY);
+    setMinPrice(defaultMin);
+    setMaxPrice(defaultMax);
+    setSortBy(ETutorSortBy.POPULARITY);
+    setPage(DEFAULT_PAGE);
+    replaceQuery({
+      subject: null,
+      country: null,
+      minPrice: null,
+      maxPrice: null,
+      sortBy: null,
+      page: DEFAULT_PAGE,
+    });
+  }, [replaceQuery, currency]);
+
+  const hasActiveFilters =
+    subject !== ESubject.ANY_SUBJECT ||
+    country !== ECountry.ANY_COUNTRY ||
+    minPrice !== MIN_PRICE[currency] ||
+    maxPrice !== MAX_PRICE[currency];
 
   const handlePageChange = useCallback(
     (nextPage: number) => {
@@ -290,117 +339,172 @@ const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
       setPage(clamped);
       replaceQuery({ page: clamped });
     },
-    [replaceQuery, totalPages]
+    [replaceQuery, totalPages],
   );
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-6 py-8 lg:px-10">
-      <div className="mb-5 space-y-3">
-        <TutorsFilter
-          subject={subject}
-          country={country}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          onSubjectChangeAction={handleSubjectChange}
-          onCountryChangeAction={handleCountryChange}
-          onPriceRangeChangeAction={handlePriceRangeChange}
-        />
-      </div>
+    <main className="relative">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)]" />
+      <div className="pointer-events-none absolute -top-20 left-1/2 -z-10 size-[40rem] -translate-x-1/2 rounded-full bg-violet-200/30 blur-[120px]" />
 
-      <section className="grid gap-6 lg:grid-cols-12">
-        <div
-          className="lg:col-span-8"
-          ref={listColumnRef}
-        >
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xl font-medium text-slate-600">
-              {t.rich("Screen.totalLabelNoSubject", {
-                value: totalTutors,
-                highlight: (chunks) => <span className="text-primary text-2xl">{chunks}</span>,
-              })}
+      <div className="mx-auto w-full max-w-7xl px-6 pb-12 pt-10 lg:px-10">
+        <div className="mb-6 space-y-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+            Find your{" "}
+            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+              perfect tutor
             </span>
+          </h1>
+          <p className="text-sm text-slate-600 sm:text-base">
+            Browse verified tutors, book a trial in seconds, learn live on
+            Mezon.
+          </p>
+        </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">{t("Screen.sortBy")}</span>
-              <Select
-                value={sortBy}
-                onValueChange={(value) => handleSortByChange(value as ETutorSortBy)}
+        <div className="mb-6 space-y-3">
+          <TutorsFilter
+            subject={subject}
+            country={country}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onSubjectChangeAction={handleSubjectChange}
+            onCountryChangeAction={handleCountryChange}
+            onPriceRangeChangeAction={handlePriceRangeChange}
+          />
+        </div>
+
+        <section className="grid gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8" ref={listColumnRef}>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-100 bg-white/60 px-4 py-3 backdrop-blur">
+              <span className="text-base text-slate-600">
+                {t.rich("Screen.totalLabelNoSubject", {
+                  value: totalTutors,
+                  highlight: (chunks) => (
+                    <span className="bg-[linear-gradient(110deg,#7c3aed,#ec4899)] bg-clip-text text-xl font-extrabold text-transparent">
+                      {chunks}
+                    </span>
+                  ),
+                })}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {t("Screen.sortBy")}
+                </span>
+                <Select
+                  value={sortBy}
+                  onValueChange={(value) =>
+                    handleSortByChange(value as ETutorSortBy)
+                  }
+                >
+                  <SelectTrigger
+                    className="h-10! w-44 cursor-pointer rounded-full border-violet-200 bg-white px-4 text-sm font-semibold transition hover:border-violet-300 hover:bg-violet-50/50"
+                    size="default"
+                  >
+                    <SelectValue placeholder={t("Screen.popularity")}>
+                      {t(`Screen.${sortBy}`)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(ETutorSortBy).map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {t(`Screen.${value}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {isLoading ? <LoadingTutorCards /> : null}
+
+            {!isLoading && !hasItems ? (
+              <Card className="overflow-hidden border-violet-100 py-0">
+                <CardContent className="relative px-6 py-14">
+                  <div className="pointer-events-none absolute inset-0 -z-10">
+                    <div className="absolute -top-20 left-1/2 size-80 -translate-x-1/2 rounded-full bg-violet-200/40 blur-3xl" />
+                  </div>
+                  <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
+                      <div className="flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] ring-1 ring-violet-100">
+                        <SearchX
+                          className="size-9 text-violet-600"
+                          strokeWidth={2}
+                        />
+                      </div>
+                    </div>
+                    <h3 className="mb-2 text-xl font-extrabold text-slate-900 sm:text-2xl">
+                      No tutors match your filters
+                    </h3>
+                    <p className="mb-6 text-sm leading-6 text-slate-600">
+                      Try adjusting your subject, country or price range to see
+                      more tutors. Most popular slots are evenings &amp;
+                      weekends.
+                    </p>
+                    {hasActiveFilters ? (
+                      <Button
+                        size="lg"
+                        className="group h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                        onClick={handleResetFilters}
+                      >
+                        <RotateCcw className="mr-1.5 size-4 transition-transform group-hover:-rotate-180" />
+                        Clear all filters
+                      </Button>
+                    ) : (
+                      <p className="text-xs font-medium text-slate-400">
+                        New tutors join every week — check back soon.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <section className="space-y-4">
+                {displayItems.map((tutor: VerifiedTutorProfileDto) => (
+                  <div
+                    key={tutor.id}
+                    ref={(node) => {
+                      tutorCardRefs.current[tutor.id] = node;
+                    }}
+                  >
+                    <TutorCard
+                      tutor={tutor}
+                      isActive={previewTutor?.id === tutor.id}
+                      onHoverAction={handlePreviewTutorChange}
+                      onSelectAction={handleTutorCardClick}
+                    />
+                  </div>
+                ))}
+              </section>
+            )}
+
+            <div className="mt-6">
+              <TutorsPagination
+                page={page}
+                totalPages={totalPages}
+                isFetching={isFetching}
+                onPageChangeAction={handlePageChange}
+              />
+            </div>
+          </div>
+
+          <div className="hidden lg:col-span-4 lg:block">
+            {isLoading ? (
+              <LoadingPreviewCard />
+            ) : (
+              <div
+                style={{
+                  transform: `translate3d(0, ${previewOffsetY}px, 0)`,
+                  transition: `transform ${PREVIEW_ANIM_MS}ms ease`,
+                  willChange: "transform",
+                }}
               >
-                <SelectTrigger
-                  className="h-11! w-44 px-3 text-base cursor-pointer"
-                  size="default"
-                >
-                  <SelectValue placeholder={t("Screen.popularity")}>
-                    {t(`Screen.${sortBy}`)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(ETutorSortBy).map((value) => (
-                    <SelectItem
-                      key={value}
-                      value={value}
-                    >
-                      {t(`Screen.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <TutorPreviewCard tutor={previewTutor} />
+              </div>
+            )}
           </div>
-          {isLoading ? <LoadingTutorCards /> : null}
-
-          {!isLoading && !hasItems ? (
-            <Card className="border-violet-100">
-              <CardContent className="p-8 text-center text-slate-600">
-                {t("Screen.empty")}
-              </CardContent>
-            </Card>
-          ) : (
-            <section className="space-y-4">
-              {displayItems.map((tutor: VerifiedTutorProfileDto) => (
-                <div
-                  key={tutor.id}
-                  ref={(node) => {
-                    tutorCardRefs.current[tutor.id] = node;
-                  }}
-                >
-                  <TutorCard
-                    tutor={tutor}
-                    isActive={previewTutor?.id === tutor.id}
-                    onHoverAction={handlePreviewTutorChange}
-                    onSelectAction={handleTutorCardClick}
-                  />
-                </div>
-              ))}
-            </section>
-          )}
-
-          <div className="mt-6">
-            <TutorsPagination
-              page={page}
-              totalPages={totalPages}
-              isFetching={isFetching}
-              onPageChangeAction={handlePageChange}
-            />
-          </div>
-        </div>
-
-        <div className="hidden lg:col-span-4 lg:block">
-          {isLoading ? (
-            <LoadingPreviewCard />
-          ) : (
-            <div
-              style={{
-                transform: `translate3d(0, ${previewOffsetY}px, 0)`,
-                transition: `transform ${PREVIEW_ANIM_MS}ms ease`,
-                willChange: "transform",
-              }}
-            >
-              <TutorPreviewCard tutor={previewTutor} />
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

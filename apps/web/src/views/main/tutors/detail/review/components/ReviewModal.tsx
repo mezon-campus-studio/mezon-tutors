@@ -1,23 +1,36 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { REVIEW_VALIDATION } from '@mezon-tutors/shared';
-import { Button, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui';
-import { useCreateReview, useUpdateReview, type ReviewDto } from '@/services';
-import { ReviewStarRating } from './ReviewStarRating';
+import { REVIEW_VALIDATION } from "@mezon-tutors/shared";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Textarea,
+} from "@/components/ui";
+import { type ReviewDto, useCreateReview, useUpdateReview } from "@/services";
+import { ReviewStarRating } from "./ReviewStarRating";
 
 interface ReviewModalProps {
   tutorId: string;
   tutorName: string;
-  existingReview?: (ReviewDto | {
-    id: string;
-    reviewerId: string;
-    rating: number;
-    comment: string;
-    createdAt: string;
-    updatedAt?: string;
-  }) | null;
+  existingReview?:
+    | (
+        | ReviewDto
+        | {
+            id: string;
+            reviewerId: string;
+            rating: number;
+            comment: string;
+            createdAt: string;
+            updatedAt?: string;
+          }
+      )
+    | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -29,10 +42,10 @@ export function ReviewModal({
   isOpen,
   onClose,
 }: ReviewModalProps) {
-  const t = useTranslations('Tutors.Detail');
+  const t = useTranslations("Tutors.Detail");
   const [rating, setRating] = useState(existingReview?.rating || 5);
-  const [comment, setComment] = useState(existingReview?.comment || '');
-  const [error, setError] = useState('');
+  const [comment, setComment] = useState(existingReview?.comment || "");
+  const [error, setError] = useState("");
 
   const createReview = useCreateReview();
   const updateReview = useUpdateReview();
@@ -43,21 +56,29 @@ export function ReviewModal({
       setComment(existingReview.comment);
     } else {
       setRating(5);
-      setComment('');
+      setComment("");
     }
   }, [existingReview, isOpen]);
 
   const validateComment = (text: string): boolean => {
     const trimmed = text.trim();
     if (trimmed.length < REVIEW_VALIDATION.MIN_COMMENT_LENGTH) {
-      setError(t('reviewModal.errors.commentTooShort', { min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH }));
+      setError(
+        t("reviewModal.errors.commentTooShort", {
+          min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
+        }),
+      );
       return false;
     }
     if (trimmed.length > REVIEW_VALIDATION.MAX_COMMENT_LENGTH) {
-      setError(t('reviewModal.errors.commentTooLong', { max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH }));
+      setError(
+        t("reviewModal.errors.commentTooLong", {
+          max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH,
+        }),
+      );
       return false;
     }
-    setError('');
+    setError("");
     return true;
   };
 
@@ -84,7 +105,7 @@ export function ReviewModal({
       if (errorMessage) {
         setError(errorMessage);
       } else {
-        setError(t('reviewModal.errors.submitFailed'));
+        setError(t("reviewModal.errors.submitFailed"));
       }
     }
   };
@@ -96,21 +117,23 @@ export function ReviewModal({
       <DialogContent className="max-w-[500px] w-[90%] p-5 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            {existingReview ? t('reviewModal.editTitle') : t('reviewModal.postTitle')}
+            {existingReview
+              ? t("reviewModal.editTitle")
+              : t("reviewModal.postTitle")}
           </DialogTitle>
           <p className="text-sm text-gray-600">
-            {t('reviewModal.forTutor', { tutorName })}
+            {t("reviewModal.forTutor", { tutorName })}
           </p>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-3">
             <label className="text-gray-900 font-semibold text-sm">
-              {t('reviewModal.ratingLabel')}
+              {t("reviewModal.ratingLabel")}
             </label>
-            <ReviewStarRating 
-              rating={rating} 
-              onRatingChange={setRating} 
+            <ReviewStarRating
+              rating={rating}
+              onRatingChange={setRating}
               size={32}
               gap={8}
             />
@@ -119,7 +142,7 @@ export function ReviewModal({
           <div className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <label className="text-gray-900 font-semibold text-sm">
-                {t('reviewModal.commentLabel')}
+                {t("reviewModal.commentLabel")}
               </label>
               <span className="text-xs text-gray-500">
                 {comment.trim().length}/{REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
@@ -131,18 +154,14 @@ export function ReviewModal({
                 setComment(e.target.value);
                 if (error) validateComment(e.target.value);
               }}
-              placeholder={t('reviewModal.placeholderComment', {
+              placeholder={t("reviewModal.placeholderComment", {
                 min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
                 max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH,
               })}
               className="min-h-[120px] bg-gray-50 border-gray-200 text-gray-900 text-sm p-3 rounded-xl resize-none"
               maxLength={REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
             />
-            {error && (
-              <p className="text-sm text-red-600 mt-1">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
           </div>
         </div>
 
@@ -153,14 +172,18 @@ export function ReviewModal({
             onClick={onClose}
             className="px-5 py-3 rounded-lg"
           >
-            {t('reviewModal.cancel')}
+            {t("reviewModal.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isLoading || !comment.trim()}
             className="bg-indigo-600 text-white hover:bg-indigo-700 px-5 py-3 rounded-lg"
           >
-            {isLoading ? t('reviewModal.submitting') : existingReview ? t('reviewModal.update') : t('reviewModal.submit')}
+            {isLoading
+              ? t("reviewModal.submitting")
+              : existingReview
+                ? t("reviewModal.update")
+                : t("reviewModal.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>
