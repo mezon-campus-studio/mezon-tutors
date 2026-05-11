@@ -72,7 +72,7 @@
     "Result": {
       "success": {
         "title": "Payment successful",
-        "description": "Thank you. Your trial lesson booking payment went through. You will receive a confirmation shortly.",
+        "description": "Thank you. Your payment went through and your trial lesson is booked.",
         "primaryCta": "Browse tutors",
         "secondaryCta": "Back to home"
       },
@@ -200,7 +200,7 @@
           "REFUNDED": "Refunded"
         },
         "bookingStatus": {
-          "PENDING": "Pending confirmation",
+          "PENDING": "Awaiting payment",
           "CONFIRMED": "Confirmed",
           "COMPLETED": "Completed",
           "CANCELLED": "Cancelled"

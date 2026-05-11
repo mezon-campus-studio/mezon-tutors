@@ -13,6 +13,7 @@ export type MyLessonApiItem = {
   tutor_id: string
   tutor_name: string
   tutor_avatar: string
+  tutor_mezon_user_id: string | null
   category: MyLessonApiCategory
   status: MyLessonApiStatus
   date_label: string

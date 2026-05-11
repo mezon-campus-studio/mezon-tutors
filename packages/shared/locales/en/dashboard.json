@@ -7,6 +7,7 @@
     },
     "sidebar": {
       "bookingRequests": "Booking Requests",
+      "trialBookings": "Trial Bookings",
       "mySchedule": "My Schedule",
       "students": "Students",
       "earnings": "Earnings",
@@ -15,8 +16,28 @@
       "fallbackTitle": "Dashboard"
     },
     "bookingRequests": {
-      "title": "Booking Requests",
-      "subtitle": "Manage your upcoming tutoring sessions. You have {count} new pending requests this morning.",
+      "eyebrow": "Tutor workspace",
+      "title": "Trial bookings",
+      "subtitle": "All your trial lesson bookings in one place. {count} awaiting student payment.",
+      "searchPlaceholder": "Search by student name...",
+      "metrics": {
+        "total": {
+          "title": "Total Bookings",
+          "helper": "Across all statuses"
+        },
+        "pending": {
+          "title": "Pending",
+          "helper": "Awaiting student payment"
+        },
+        "confirmed": {
+          "title": "Confirmed",
+          "helper": "Ready for upcoming sessions"
+        },
+        "completed": {
+          "title": "Completed",
+          "helper": "Successfully delivered"
+        }
+      },
       "levels": {
         "undergraduateStudent": "Undergraduate Student",
         "highSchoolJunior": "High School Junior",
@@ -54,16 +75,17 @@
         "rate": "Rate",
         "status": "Status",
         "actions": "Actions",
+        "view": "View",
         "noResults": "No booking requests found for this filter."
       },
       "status": {
         "pending": "Pending",
         "confirmed": "Confirmed",
-        "completed": "Completed"
+        "completed": "Completed",
+        "cancelled": "Cancelled"
       },
       "actions": {
         "approve": "Approve",
-        "decline": "Decline",
         "message": "Message",
         "feedback": "Feedback"
       },
@@ -78,6 +100,81 @@
         "responseHint": "Average response to new leads",
         "payoutHint": "Scheduled for Oct 28"
       }
+    },
+    "bookingRequestDetail": {
+      "back": "Back to all bookings",
+      "header": {
+        "eyebrow": "Trial booking",
+        "requestedAt": "Booked at {date}"
+      },
+      "overview": {
+        "date": "Date",
+        "time": "Time",
+        "duration": "Duration",
+        "durationValue": "{minutes} minutes",
+        "payout": "Your earnings"
+      },
+      "breakdown": {
+        "title": "Earnings breakdown",
+        "subtitle": "How the lesson revenue is shared.",
+        "gross": "Gross amount",
+        "platformFee": "Platform fee",
+        "tutorAmount": "Your earnings"
+      },
+      "student": {
+        "title": "Student",
+        "name": "Full name",
+        "contact": "Contact",
+        "contactHint": "Open the message thread to chat directly."
+      },
+      "actions": {
+        "title": "Stay in touch",
+        "hint": "Message the student if you need to align on materials or meeting link.",
+        "share": "Share details",
+        "confirming": "Confirming..."
+      },
+      "toast": {
+        "confirmedTitle": "Booking confirmed",
+        "confirmedDescription": "The student has been notified.",
+        "confirmFailedTitle": "Could not confirm booking",
+        "errorFallback": "Something went wrong. Please try again."
+      },
+      "notFound": {
+        "title": "Booking not found",
+        "description": "This booking request may have been removed or is no longer available.",
+        "back": "Back to trial bookings"
+      }
+    },
+    "mySchedule": {
+      "eyebrow": "Tutor workspace",
+      "title": "My Schedule",
+      "subtitle": "Track your upcoming confirmed lessons in one calendar.",
+      "loading": "Loading your schedule...",
+      "header": {
+        "viewRequests": "Trial bookings"
+      },
+      "calendar": {
+        "week": "Week",
+        "month": "Month",
+        "today": "Today",
+        "company": "Mezonly Tutors"
+      },
+      "upcoming": {
+        "eyebrow": "Upcoming",
+        "title": "Upcoming lessons",
+        "emptyTitle": "No upcoming lessons",
+        "emptyDescription": "Confirmed bookings will show up here when scheduled.",
+        "durationLabel": "{minutes} min",
+        "viewDetail": "Details",
+        "joinLesson": "Join"
+      }
+    },
+    "scheduleEventModal": {
+      "title": "Lesson",
+      "subtitle": "{date} · {time}",
+      "sendMessage": "Send message",
+      "viewProfile": "View tutor profile",
+      "dismiss": "Close"
     },
     "placeholder": {
       "title": "Feature Coming Soon",

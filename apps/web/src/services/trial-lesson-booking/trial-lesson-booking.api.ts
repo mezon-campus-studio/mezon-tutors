@@ -63,6 +63,9 @@ export type CurrentTrialLessonBookingResponse = {
 
 export type TrialLessonBookingRequestItem = {
   id: string
+  tutorId: string
+  studentId: string
+  studentMezonUserId: string | null
   studentName: string
   studentAvatarUrl?: string
   startAt: string

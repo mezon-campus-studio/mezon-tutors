@@ -311,7 +311,7 @@ export default function TrialLessonCheckoutSuccessPage({ bookingId }: { bookingI
           {t('ctaTutors')}
         </Link>
         <Link
-          href={ROUTES.MY_LESSONS.INDEX}
+          href={ROUTES.DASHBOARD.MY_LESSONS}
           className={cn(
             buttonVariants({ size: 'lg' }),
             'min-h-11 w-full justify-center shadow-md sm:w-auto sm:min-w-[220px]'

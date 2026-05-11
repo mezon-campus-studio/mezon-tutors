@@ -60,8 +60,10 @@ export class TrialLessonBookingService {
         include: {
           student: {
             select: {
+              id: true,
               username: true,
               avatar: true,
+              mezonUserId: true,
             },
           },
         },
@@ -75,6 +77,9 @@ export class TrialLessonBookingService {
       data: {
         items: items.map((item) => ({
           id: item.id,
+          tutorId: item.tutorId,
+          studentId: item.student.id,
+          studentMezonUserId: item.student.mezonUserId,
           studentName: item.student.username,
           studentAvatarUrl: item.student.avatar,
           startAt: item.startAt.toISOString(),
@@ -271,7 +276,9 @@ export class TrialLessonBookingService {
     const bookingStatus = await this.hasStudentBookedTutor(studentId, dto.tutorId)
     if (bookingStatus.hasBooked) {
       if (bookingStatus.status === ETrialLessonStatus.PENDING) {
-        throw new ConflictException('Request already sent. Please wait for confirmation')
+        throw new ConflictException(
+          'You already have a pending booking with this tutor. Complete payment to confirm it.'
+        )
       }
       throw new ConflictException('You have already booked a trial lesson with this tutor')
     }

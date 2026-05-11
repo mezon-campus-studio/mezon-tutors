@@ -4,9 +4,9 @@ import { NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared';
 const SEED_NOTI_DEDUPE_PREFIX = 'seed-noti-';
 
 const EN_FALLBACK = {
-  bookingTitle: 'New trial lesson request',
+  bookingTitle: 'New trial lesson booking',
   bookingBody:
-    'Alex Nguyen has booked a trial lesson. Please review and confirm.',
+    'Alex Nguyen paid for a trial lesson with you. Check your schedule and get ready to teach.',
   paymentTitle: 'Payment successful',
   paymentBody: 'Your payment for booking TRIAL-SEED-001 was successful.',
   systemTitle: 'System announcement',
