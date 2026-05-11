@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import AuthInitializer from '@/components/auth/AuthInitializer';
+import RoleAutoRedirect from '@/components/auth/RoleAutoRedirect';
 import GlobalChatBubble from '@/components/common/chat/GlobalChatBubble';
 import { Toaster } from '@/components/ui';
 import { MezonLightProvider } from './MezonLightProvider';
@@ -11,6 +12,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
       <AuthInitializer />
+      <RoleAutoRedirect />
       <MezonLightProvider>
         {children}
         <GlobalChatBubble />

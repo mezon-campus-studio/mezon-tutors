@@ -320,7 +320,11 @@ export default function AboutPage() {
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                      <SelectValue placeholder={t("fields.countryPlaceholder")} />
+                      <SelectValue placeholder={t("fields.countryPlaceholder")}>
+                        {(value) =>
+                          value ? tCountry(value) : t("fields.countryPlaceholder")
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Object.values(ECountry)
@@ -364,7 +368,11 @@ export default function AboutPage() {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                    <SelectValue placeholder={t("fields.subjectPlaceholder")} />
+                    <SelectValue placeholder={t("fields.subjectPlaceholder")}>
+                      {(value) =>
+                        value ? tSubject(value) : t("fields.subjectPlaceholder")
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {Object.values(ESubject)
@@ -414,7 +422,13 @@ export default function AboutPage() {
                         <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-white text-sm">
                           <SelectValue
                             placeholder={t("fields.languagesPlaceholder")}
-                          />
+                          >
+                            {(value) =>
+                              value
+                                ? tLanguage(value)
+                                : t("fields.languagesPlaceholder")
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {Object.values(ELanguage)
@@ -441,7 +455,13 @@ export default function AboutPage() {
                         <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-white text-sm">
                           <SelectValue
                             placeholder={t("fields.proficiencyPlaceholder")}
-                          />
+                          >
+                            {(value) =>
+                              value
+                                ? tProficiency(value)
+                                : t("fields.proficiencyPlaceholder")
+                            }
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {Object.values(EProficiencyLevel).map((proficiency) => (
