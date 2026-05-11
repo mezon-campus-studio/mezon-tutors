@@ -13,3 +13,5 @@ export * from "./currency/currency.api";
 export * from "./tutor-availability/tutor-availability.api";
 export * from "./my-lessons/my-lessons.api";
 export * from "./my-lessons/my-lessons.qkey";
+export * from "./admin-tutor-application/admin-tutor-application.api";
+export * from "./admin-tutor-application/admin-tutor-application.qkey";

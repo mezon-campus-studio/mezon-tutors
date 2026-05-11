@@ -18,6 +18,7 @@ export * from './enums/currency';
 export * from './enums/notification';
 
 // Constants
+export * from './constants/admin';
 export * from './constants/admin-tutor-application';
 export * from './constants/become-tutor-guide';
 export * from './constants/routes';

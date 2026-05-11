@@ -1,7 +1,25 @@
 import { ROUTES } from './routes';
 
-export type DashboardMenuIconKey = 'document' | 'bookingRequests' | 'calendar' | 'logout';
-export type DashboardMenuLabelKey = 'myLessons' | 'bookingRequests' | 'mySchedule' | 'logout';
+export type DashboardMenuIconKey =
+  | 'document'
+  | 'bookingRequests'
+  | 'calendar'
+  | 'logout'
+  | 'tutorApplications'
+  | 'students'
+  | 'payments'
+  | 'reports'
+  | 'dashboard';
+export type DashboardMenuLabelKey =
+  | 'myLessons'
+  | 'bookingRequests'
+  | 'mySchedule'
+  | 'logout'
+  | 'tutorApplications'
+  | 'students'
+  | 'payments'
+  | 'reports'
+  | 'dashboard';
 
 export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
@@ -45,6 +63,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     iconKey: 'calendar',
     href: ROUTES.DASHBOARD.MY_SCHEDULE,
     roles: ['TUTOR'],
+  },
+  {
+    key: 'tutor-applications',
+    type: 'link',
+    labelKey: 'tutorApplications',
+    iconKey: 'tutorApplications',
+    href: ROUTES.ADMIN.TUTOR_APPLICATIONS,
+    roles: ['ADMIN'],
   },
   {
     key: 'logout',

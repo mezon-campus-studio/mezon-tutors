@@ -21,6 +21,8 @@ export default function DashboardPage() {
       router.replace(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === 'TUTOR') {
       router.replace(ROUTES.DASHBOARD.BOOKING_REQUESTS);
+    } else if (user.role === 'ADMIN') {
+      router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }
   }, [user, router]);
 

@@ -7,7 +7,8 @@
       "tutorApplications": "Hồ sơ gia sư",
       "students": "Học viên",
       "payments": "Thanh toán",
-      "reports": "Báo cáo"
+      "reports": "Báo cáo",
+      "logout": "Đăng xuất"
     },
     "loggedInAs": "Đăng nhập dưới tên",
     "adminUser": "Quản trị viên",

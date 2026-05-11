@@ -63,6 +63,8 @@ export default function Header() {
       .map((word) => word[0]?.toUpperCase())
       .join("") || "U";
 
+  const isAdminRoute = pathname?.startsWith("/admin") ?? false;
+
   useEffect(() => {
     void initAuth();
   }, [initAuth]);
@@ -77,6 +79,8 @@ export default function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+  
+  
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === locale) return;
@@ -100,10 +104,14 @@ export default function Header() {
       router.push(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === "TUTOR") {
       router.push(ROUTES.DASHBOARD.BOOKING_REQUESTS);
-    } else if (user.role === "ADMIN") {
-      router.push(ROUTES.DASHBOARD.INDEX);
+    } else if (user.role === 'ADMIN') {
+      router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }
   }, [user?.role, router]);
+
+  if (isAdminRoute) {
+    return null;
+  }
 
   return (
     <>
@@ -243,7 +251,7 @@ export default function Header() {
       </header>
       <DashboardMobileDrawer
         isOpen={isMobileDrawerOpen}
-        onClose={() => setDashboardMobileDrawer(false)}
+        onClose={() => setDashboardMobileDrawer(false)} 
         userRole={user?.role}
         pathname={pathname}
         onLogout={handleLogout}

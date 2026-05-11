@@ -7,7 +7,8 @@
       "tutorApplications": "Tutor Applications",
       "students": "Students",
       "payments": "Payments",
-      "reports": "Reports"
+      "reports": "Reports",
+      "logout": "Logout"
     },
     "loggedInAs": "Logged in as",
     "adminUser": "Admin User",

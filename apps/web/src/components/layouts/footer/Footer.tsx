@@ -63,11 +63,12 @@ export default function Footer() {
   const t = useTranslations("Common.Footer");
   const pathname = usePathname();
 
-  const isDashboard = pathname?.startsWith("/dashboard");
-  const isBecomeTutor = pathname?.startsWith("/become-tutor/");
-  const isCheckout = pathname?.startsWith("/checkout/");
+  const HIDDEN_PREFIXES = ["/dashboard", "/become-tutor", "/checkout", "/admin"];
+  const shouldHide = HIDDEN_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`),
+  );
 
-  if (isDashboard || isBecomeTutor || isCheckout) {
+  if (shouldHide) {
     return null;
   }
 

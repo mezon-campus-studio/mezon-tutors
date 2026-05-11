@@ -1,27 +1,36 @@
 "use client";
 
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
-  DASHBOARD_ROLE_TITLES,
-  type DashboardMenuItem,
-  type DashboardRole,
-  getDashboardMenuItemsByRole,
-  ROUTES,
-} from "@mezon-tutors/shared";
-import { useAtomValue, useSetAtom } from "jotai";
-import { Calendar, ClipboardList, FileText, LogOut } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
-import { authService } from "@/services";
-import { userAtom } from "@/store/auth.atom";
+  Calendar,
+  ClipboardList,
+  CreditCard,
+  FileCheck,
+  FileText,
+  GraduationCap,
+  LayoutDashboard,
+  LineChart,
+  LogOut,
+} from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
+import { userAtom } from '@/store/auth.atom';
+import { authService } from '@/services';
+import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_ROLE_TITLES, type DashboardRole, type DashboardMenuIconKey } from '@mezon-tutors/shared';
 
-const ICON_MAP = {
+const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
   calendar: Calendar,
   bookingRequests: ClipboardList,
   logout: LogOut,
-} as const;
+  tutorApplications: FileCheck,
+  students: GraduationCap,
+  payments: CreditCard,
+  reports: LineChart,
+  dashboard: LayoutDashboard,
+};
 
 const ICON_ACCENT_MAP = {
   document: "from-violet-500 to-purple-500",

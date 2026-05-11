@@ -2,12 +2,13 @@
 
 import {
   DASHBOARD_ROLE_TITLES,
+  DashboardMenuIconKey,
   type DashboardMenuItem,
   type DashboardRole,
   getDashboardMenuItemsByRole,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, ClipboardList, FileText, LogOut, X } from "lucide-react";
+import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -15,12 +16,17 @@ import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { userAtom } from "@/store/auth.atom";
 
-const ICON_MAP = {
+const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
   calendar: Calendar,
   bookingRequests: ClipboardList,
   logout: LogOut,
-} as const;
+  tutorApplications: FileCheck,
+  students: GraduationCap,
+  payments: CreditCard,
+  reports: LineChart,
+  dashboard: LayoutDashboard,
+};
 
 const ICON_ACCENT_MAP = {
   document: "from-violet-500 to-purple-500",
@@ -31,18 +37,18 @@ const ICON_ACCENT_MAP = {
 
 type DashboardMobileDrawerProps = {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
   userRole: string | null | undefined;
   pathname: string;
-  onLogout: () => void;
+  onLogoutAction: () => void;
 };
 
 export default function DashboardMobileDrawer({
   isOpen,
-  onClose,
+  onCloseAction,
   userRole,
   pathname,
-  onLogout,
+  onLogoutAction,
 }: DashboardMobileDrawerProps) {
   const t = useTranslations("Dashboard");
   const user = useAtomValue(userAtom);
@@ -64,9 +70,9 @@ export default function DashboardMobileDrawer({
 
   const handleItemClick = (item: DashboardMenuItem) => {
     if (item.type === "action") {
-      onLogout();
+      onLogoutAction();
     }
-    onClose();
+    onCloseAction();
   };
 
   const isActive = (item: DashboardMenuItem) => {
@@ -79,7 +85,7 @@ export default function DashboardMobileDrawer({
         type="button"
         aria-label="Close drawer"
         className="fixed inset-0 z-[998] bg-slate-900/50 backdrop-blur-sm md:hidden"
-        onClick={onClose}
+        onClick={onCloseAction}
       />
 
       <aside className="fixed top-0 left-0 bottom-0 z-[999] flex w-72 flex-col border-r border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] md:hidden">
@@ -87,7 +93,7 @@ export default function DashboardMobileDrawer({
           <Link
             href="/"
             className="inline-flex items-center gap-2"
-            onClick={onClose}
+            onClick={onCloseAction}
           >
             <Image
               src={MezonlyLogo}
@@ -104,7 +110,7 @@ export default function DashboardMobileDrawer({
             variant="ghost"
             size="icon"
             className="size-9 rounded-full hover:bg-slate-100"
-            onClick={onClose}
+            onClick={onCloseAction}
           >
             <X className="size-5" />
           </Button>
