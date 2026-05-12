@@ -85,7 +85,7 @@ export default function SubscriptionPlanCheckoutPage() {
       return;
     }
     router.push(
-      `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?tutorId=${encodeURIComponent(tutorId)}&planId=${encodeURIComponent(selectedPlanId)}`,
+      `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?tutorId=${encodeURIComponent(tutorId)}&lessonsPerWeek=${encodeURIComponent(selectedPlanId)}`,
     );
   };
 
@@ -157,8 +157,8 @@ export default function SubscriptionPlanCheckoutPage() {
               <CardDescription>
                 {eligibility?.reason === "TRIAL_NOT_COMPLETED"
                   ? t("notEligibleTrial")
-                  : eligibility?.reason === "NO_PLANS"
-                    ? t("notEligibleNoPlans")
+                  : eligibility?.reason === "NO_TRIAL_PRICE"
+                    ? t("notEligibleNoTrialPrice")
                     : eligibility?.reason === "ALREADY_ENROLLED"
                       ? t("notEligibleEnrolled")
                       : t("notEligibleGeneric")}

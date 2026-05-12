@@ -188,7 +188,6 @@ model TutorProfile {
   trialLessonBookings TrialLessonBooking[]
   reviews             TutorReview[]
   trialLessonPrice    TrialLessonPrice?
-  subscriptionPlans   TutorSubscriptionPlan[]
   subscriptionEnrollments SubscriptionEnrollment[]
 
   adminNotes            TutorAdminNote[]
@@ -213,63 +212,30 @@ model TrialLessonPrice {
   @@map("trial_lesson_prices")
 }
 
-model TutorSubscriptionPlan {
-  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tutorId          String   @map("tutor_id") @db.Uuid
-  lessonsPerWeek   Int      @map("lessons_per_week")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  tutor        TutorProfile                 @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-  price        TutorSubscriptionPlanPrice?
-  enrollments SubscriptionEnrollment[]
-
-  @@unique([tutorId, lessonsPerWeek])
-  @@index([tutorId])
-  @@map("tutor_subscription_plans")
-}
-
-model TutorSubscriptionPlanPrice {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  planId       String    @unique @map("plan_id") @db.Uuid
-  baseCurrency ECurrency @default(VND) @map("base_currency")
-  usd          Decimal   @db.Decimal(18, 6)
-  vnd          BigInt    @db.BigInt
-  php          Decimal   @db.Decimal(18, 6)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  plan TutorSubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  @@map("tutor_subscription_plan_prices")
-}
-
 model SubscriptionEnrollment {
-  id             String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  studentId      String                         @map("student_id") @db.Uuid
-  tutorId        String                         @map("tutor_id") @db.Uuid
-  planId         String                         @map("plan_id") @db.Uuid
-  status         ESubscriptionEnrollmentStatus  @default(PENDING_PAYMENT)
-  weeklySlots    Json                           @map("weekly_slots")
-  currency       ECurrency?                     @map("currency")
-  grossAmount    BigInt                         @default(0) @map("gross_amount")
-  platformFee    BigInt                         @default(0) @map("platform_fee")
-  tutorAmount    BigInt                         @default(0) @map("tutor_amount")
-  paymentStatus  EPaymentStatus                 @default(PENDING) @map("payment_status")
-  paymentRef     String?                        @unique @map("payment_ref") @db.VarChar(50)
-  paymentUrl     String?                        @map("payment_url")
-  paidAt         DateTime?                      @map("paid_at")
-  failedAt       DateTime?                      @map("failed_at")
-  createdAt      DateTime                       @default(now()) @map("created_at")
-  updatedAt      DateTime                       @updatedAt @map("updated_at")
+  id               String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId        String                         @map("student_id") @db.Uuid
+  tutorId          String                         @map("tutor_id") @db.Uuid
+  lessonsPerWeek   Int                            @map("lessons_per_week")
+  status           ESubscriptionEnrollmentStatus  @default(PENDING_PAYMENT)
+  weeklySlots      Json                           @map("weekly_slots")
+  currency         ECurrency?                     @map("currency")
+  grossAmount      BigInt                         @default(0) @map("gross_amount")
+  platformFee      BigInt                         @default(0) @map("platform_fee")
+  tutorAmount      BigInt                         @default(0) @map("tutor_amount")
+  paymentStatus    EPaymentStatus                 @default(PENDING) @map("payment_status")
+  paymentRef       String?                        @unique @map("payment_ref") @db.VarChar(50)
+  paymentUrl       String?                        @map("payment_url")
+  paidAt           DateTime?                      @map("paid_at")
+  failedAt         DateTime?                      @map("failed_at")
+  createdAt        DateTime                       @default(now()) @map("created_at")
+  updatedAt        DateTime                       @updatedAt @map("updated_at")
 
   student             User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   tutor               TutorProfile      @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-  plan                TutorSubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
   walletTransactions  Transaction[]
 
   @@index([studentId, tutorId])
-  @@index([planId])
   @@index([paymentRef])
   @@map("subscription_enrollments")
 }

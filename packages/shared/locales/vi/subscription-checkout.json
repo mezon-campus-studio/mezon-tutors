@@ -56,7 +56,7 @@
     "PlanPicker": {
       "eyebrow": "Đăng ký",
       "title": "Chọn gói học theo tháng",
-      "subtitle": "Mỗi gói gồm số buổi mỗi tuần và giá thanh toán hàng tháng.",
+      "subtitle": "Bảy gói cố định (1–7 buổi/tuần, mỗi buổi 60 phút). Giá tháng = giá buổi học thử (một buổi 60 phút) × số buổi/tuần × 4 tuần.",
       "missingTutor": "Thiếu thông tin gia sư.",
       "backTutors": "Danh sách gia sư",
       "loginTitle": "Đăng nhập để tiếp tục",
@@ -64,7 +64,7 @@
       "loginCta": "Về trang chủ",
       "notEligibleTitle": "Chưa thể đăng ký",
       "notEligibleTrial": "Bạn cần hoàn thành buổi học thử và thanh toán thành công trước.",
-      "notEligibleNoPlans": "Gia sư chưa thiết lập gói đăng ký.",
+      "notEligibleNoTrialPrice": "Gia sư chưa thiết lập giá buổi học thử.",
       "notEligibleEnrolled": "Bạn đã có đăng ký đang chờ hoặc đang hiệu lực với gia sư này.",
       "notEligibleGeneric": "Hiện không đủ điều kiện đăng ký.",
       "lessonsPerWeek": "{n} buổi / tuần",
@@ -75,7 +75,7 @@
     },
     "SchedulePicker": {
       "title": "Chọn lịch học hàng tuần",
-      "pickCount": "Chọn đúng {n} buổi trong tuần (mỗi ô 30 phút).",
+      "pickCount": "Chọn đúng {n} buổi trong tuần (mỗi buổi 60 phút).",
       "missingParams": "Thiếu tham số.",
       "backTutors": "Danh sách gia sư",
       "invalidPlan": "Gói không hợp lệ.",

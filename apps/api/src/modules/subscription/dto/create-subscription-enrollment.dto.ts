@@ -4,9 +4,12 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsInt,
   IsString,
   IsUUID,
   Matches,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator'
 
@@ -28,8 +31,11 @@ export class CreateSubscriptionEnrollmentBodyDto {
   @IsUUID()
   tutorId: string
 
-  @IsUUID()
-  planId: string
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(7)
+  lessonsPerWeek: number
 
   @IsEnum(ECurrency)
   currency: ECurrency

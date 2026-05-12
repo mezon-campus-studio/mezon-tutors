@@ -4,7 +4,6 @@ export type DashboardMenuIconKey =
   | 'document'
   | 'trialBookings'
   | 'calendar'
-  | 'subscriptionPlans'
   | 'logout'
   | 'tutorApplications'
   | 'students'
@@ -15,7 +14,6 @@ export type DashboardMenuLabelKey =
   | 'myLessons'
   | 'trialBookings'
   | 'mySchedule'
-  | 'subscriptionPlans'
   | 'logout'
   | 'tutorApplications'
   | 'students'
@@ -64,14 +62,6 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'mySchedule',
     iconKey: 'calendar',
     href: ROUTES.DASHBOARD.MY_SCHEDULE,
-    roles: ['TUTOR'],
-  },
-  {
-    key: 'subscription-plans',
-    type: 'link',
-    labelKey: 'subscriptionPlans',
-    iconKey: 'subscriptionPlans',
-    href: ROUTES.DASHBOARD.TUTOR_SUBSCRIPTION_PLANS,
     roles: ['TUTOR'],
   },
   {

@@ -26,6 +26,7 @@ type ScheduleEvent = {
   dateLabel: string;
   timeLabel: string;
   isCompleted: boolean;
+  lessonKind: 'trial' | 'subscription';
 };
 
 type MyScheduleCalendarCardProps = {
@@ -147,7 +148,7 @@ export default function MyScheduleCalendarCard({
 
   return (
     <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40 sm:p-5">
-      <CalendarCard
+      <CalendarCard<ScheduleEvent>
         type="mySchedule"
         weekDays={finalWeekDays}
         weekHours={finalWeekHours}

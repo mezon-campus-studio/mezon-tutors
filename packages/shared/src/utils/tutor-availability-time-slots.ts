@@ -42,7 +42,8 @@ function periodFromHourMinute(hour: number): EPeriod {
 export function buildTimeSlotsForDay(
   slots: TutorDetailAvailabilitySlotDto[],
   dbDayOfWeek: number,
-  stepMinutes = 30
+  stepMinutes = 30,
+  selectionDurationMinutes?: number,
 ): TrialTimeSlot[] {
   const seen: Record<string, true> = {}
   const result: TrialTimeSlot[] = []
@@ -51,7 +52,12 @@ export function buildTimeSlotsForDay(
     if (!slot.isActive || slot.dayOfWeek !== dbDayOfWeek) continue
 
     const starts = expandRangeToSteps(slot.startTime, slot.endTime, stepMinutes)
+    const requiredEnd = selectionDurationMinutes ?? stepMinutes
     for (const start of starts) {
+      const startM = timeToMinutes(start)
+      if (startM + requiredEnd > timeToMinutes(slot.endTime)) {
+        continue
+      }
       if (seen[start]) continue
       seen[start] = true
       const { hour } = parseTimeParts(start)

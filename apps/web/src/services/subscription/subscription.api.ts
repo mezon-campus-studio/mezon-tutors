@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   ApiResponse,
   CreateSubscriptionEnrollmentDto,
-  ReplaceTutorSubscriptionPlansDto,
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
@@ -17,19 +16,6 @@ export const subscriptionApi = {
     return apiClient.get<ApiResponse<TutorSubscriptionPlanDto[]>, TutorSubscriptionPlanDto[]>(
       '/subscription-plans',
       { params: { tutorId } }
-    )
-  },
-
-  getMyPlans(): Promise<TutorSubscriptionPlanDto[]> {
-    return apiClient.get<ApiResponse<TutorSubscriptionPlanDto[]>, TutorSubscriptionPlanDto[]>(
-      '/subscription-plans/me'
-    )
-  },
-
-  replaceMyPlans(body: ReplaceTutorSubscriptionPlansDto): Promise<TutorSubscriptionPlanDto[]> {
-    return apiClient.put<ApiResponse<TutorSubscriptionPlanDto[]>, TutorSubscriptionPlanDto[]>(
-      '/subscription-plans/me',
-      body
     )
   },
 
@@ -71,29 +57,11 @@ export function useGetSubscriptionPlansByTutor(tutorId: string, enabled = true) 
   })
 }
 
-export function useGetMySubscriptionPlans(enabled = true) {
-  return useQuery({
-    queryKey: subscriptionQueryKey.myPlans,
-    queryFn: () => subscriptionApi.getMyPlans(),
-    enabled,
-  })
-}
-
 export function useGetSubscriptionEligibility(tutorId: string, enabled = true) {
   return useQuery({
     queryKey: subscriptionQueryKey.eligibility(tutorId),
     queryFn: () => subscriptionApi.getEligibility(tutorId),
     enabled: Boolean(tutorId) && enabled,
-  })
-}
-
-export function useReplaceMySubscriptionPlansMutation() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: ReplaceTutorSubscriptionPlansDto) => subscriptionApi.replaceMyPlans(body),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: subscriptionQueryKey.myPlans })
-    },
   })
 }
 

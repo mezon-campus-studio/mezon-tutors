@@ -3,7 +3,7 @@
     "Screen": {
       "brand": "Subscription",
       "headline": "Time to make real progress!",
-      "subtitle": "Subscribe to a monthly plan. Prices are for our standard lesson time of 50 mins.",
+      "subtitle": "Subscribe to a monthly plan. Prices are for our standard lesson time of 60 minutes.",
       "selectPlan": "Select your plan"
     },
     "PlanSelectionList": {
@@ -15,7 +15,7 @@
       "summary": "Summary",
       "title": "Your learning plan",
       "planCard": {
-        "title": "Standard 50m Lessons",
+        "title": "Standard 60-minute lessons",
         "subtitle": "Monthly Curriculum"
       },
       "frequency": "Frequency",
