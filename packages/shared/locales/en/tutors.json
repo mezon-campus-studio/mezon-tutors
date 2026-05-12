@@ -31,6 +31,8 @@
     "reviews": "({count} reviews)",
     "perLesson": "/ lesson",
     "bookTrial": "Book trial lesson",
+    "subscribeMonthly": "Subscribe monthly",
+    "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "messageModal": {
       "title": "Send message to {tutorName}",
@@ -332,6 +334,8 @@
     "openResource": "Open",
     "perLesson": "/ 60-min lesson",
     "bookTrial": "Book trial lesson",
+    "subscribeMonthly": "Subscribe monthly",
+    "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "bookedLast48h": "{count} lessons booked in the last 48h",
     "totalStudents": "{count} students",

@@ -30,15 +30,13 @@ export const ROUTES = {
   MY_LESSONS: {
     INDEX: '/my-lessons',
   },
-  SUBCRIPTION_PLAN: {
-    INDEX: '/subcription-plan',
-  },
   DASHBOARD: {
     INDEX: '/dashboard',
     TRIAL_BOOKING: '/dashboard/tutor/trial-bookings',
     TRIAL_BOOKING_DETAIL: (id: string) => `/dashboard/tutor/trial-bookings/${id}`,
     MY_SCHEDULE: '/dashboard/tutor/my-schedule',
     MY_LESSONS: '/dashboard/my-lesson',
+    TUTOR_SUBSCRIPTION_PLANS: '/dashboard/tutor/subscription-plans',
   },
   CHECKOUT: {
     TRIAL_LESSON: '/checkout/trial-lesson',
@@ -46,6 +44,12 @@ export const ROUTES = {
     TRIAL_LESSON_CANCEL: '/checkout/trial-lesson/cancel',
     TRIAL_LESSON_CANCEL_WITH_CODE: (cancelCode: string) =>
       `/checkout/trial-lesson/cancel?code=${encodeURIComponent(cancelCode)}`,
-    SUBCRIPTION_PLAN: '/checkout/subcription-plan',
+    SUBSCRIPTION_PLAN: '/checkout/subscription-plan',
+    SUBSCRIPTION_PLAN_SCHEDULE: '/checkout/subscription-plan/schedule',
+    SUBSCRIPTION_PLAN_SUCCESS: (enrollmentId: string) =>
+      `/checkout/subscription-plan/success/${enrollmentId}`,
+    SUBSCRIPTION_PLAN_CANCEL: '/checkout/subscription-plan/cancel',
+    SUBSCRIPTION_PLAN_CANCEL_WITH_CODE: (cancelCode: string) =>
+      `/checkout/subscription-plan/cancel?code=${encodeURIComponent(cancelCode)}`,
   },
 } as const;

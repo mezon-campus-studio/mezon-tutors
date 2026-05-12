@@ -13,6 +13,7 @@
       "earnings": "Earnings",
       "myLessons": "My Lessons",
       "logout": "Logout",
+      "subscriptionPlans": "Subscription plans",
       "fallbackTitle": "Dashboard"
     },
     "bookingRequests": {
@@ -148,7 +149,9 @@
     "mySchedule": {
       "eyebrow": "Tutor workspace",
       "title": "My Schedule",
-      "subtitle": "Track your upcoming confirmed lessons in one calendar.",
+      "subtitle": "Confirmed lessons for the week shown on the calendar, plus navigation by week.",
+      "completedBadge": "Completed",
+      "joinEnded": "Ended",
       "loading": "Loading your schedule...",
       "header": {
         "viewRequests": "Trial bookings"
@@ -160,13 +163,14 @@
         "company": "Mezonly Tutors"
       },
       "upcoming": {
-        "eyebrow": "Upcoming",
-        "title": "Upcoming lessons",
-        "emptyTitle": "No upcoming lessons",
-        "emptyDescription": "Confirmed bookings will show up here when scheduled.",
+        "eyebrow": "This week",
+        "title": "Lessons",
+        "emptyTitle": "No lessons this week",
+        "emptyDescription": "Try another week, or open Trial bookings when you have new requests.",
         "durationLabel": "{minutes} min",
         "viewDetail": "Details",
-        "joinLesson": "Join"
+        "joinLesson": "Join",
+        "subscriptionBadge": "Monthly subscription"
       }
     },
     "scheduleEventModal": {

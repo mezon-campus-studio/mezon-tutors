@@ -3,12 +3,14 @@
 import {
   ECurrency,
   formatToCurrency,
+  ROUTES,
   type VerifiedTutorProfileDto,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import {
   BadgeCheck,
   Calendar,
+  CalendarRange,
   GraduationCap,
   Languages,
   MapPin,
@@ -16,13 +18,17 @@ import {
   Star,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button, Card, CardContent } from "@/components/ui";
+import { buttonVariants } from "@/components/ui/button";
 import { useCurrency } from "@/hooks";
+import { useGetSubscriptionEligibility, useGetSubscriptionPlansByTutor } from "@/services";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "./TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
+import { cn } from "@/lib/utils";
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -50,6 +56,22 @@ export default function TutorCard({
   const senderId = currentUser?.id ?? '';
   const senderMezonUserId = currentUser?.mezonUserId;
   const recipientId = tutor.userId;
+  const isOwnProfile = Boolean(currentUser?.id && currentUser.id === tutor.userId);
+  const canFetchSub = Boolean(currentUser?.id && !isOwnProfile);
+  const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
+  const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
+  const hasSubscriptionPlans = Boolean(subscriptionPlans?.length);
+  const trialDone =
+    elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
+  const showSubscribe =
+    canFetchSub &&
+    trialDone &&
+    hasSubscriptionPlans &&
+    elig?.reason !== "ALREADY_ENROLLED";
+  const showBookTrial = !isOwnProfile && (!currentUser?.id || !trialDone);
+  const bookTrialDisabled =
+    canFetchSub &&
+    (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
 
   const tutorPrices = (
     tutor as unknown as {
@@ -167,17 +189,33 @@ export default function TutorCard({
             </div>
 
             <div className="mt-auto flex flex-col gap-2 pt-3">
-              <Button
-                size="lg"
-                className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setIsTrialBookingSheetOpen(true);
-                }}
-              >
-                <Calendar className="mr-1.5 size-4" />
-                {t("bookTrial")}
-              </Button>
+              {showSubscribe ? (
+                <Link
+                  href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "inline-flex h-10 w-full items-center justify-center rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
+                  )}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <CalendarRange className="mr-1.5 size-4" />
+                  {t("subscribeMonthly")}
+                </Link>
+              ) : showBookTrial ? (
+                <Button
+                  size="lg"
+                  disabled={bookTrialDisabled}
+                  title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
+                  className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setIsTrialBookingSheetOpen(true);
+                  }}
+                >
+                  <Calendar className="mr-1.5 size-4" />
+                  {t("bookTrial")}
+                </Button>
+              ) : null}
               <Button
                 variant="outline"
                 size="lg"

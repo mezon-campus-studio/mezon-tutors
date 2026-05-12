@@ -106,7 +106,7 @@ function ColumnEventSlot<TEvent>({ event, config }: ColumnEventSlotProps<TEvent>
 
   return (
     <div
-      className={`absolute w-full z-10 ${hasEventClick ? 'pointer-events-auto' : ''}`}
+      className={`absolute w-full z-10 overflow-hidden ${hasEventClick ? 'pointer-events-auto' : ''}`}
       style={{
         top: top + inset,
         height: Math.max(0, height - inset * 2),
@@ -119,7 +119,7 @@ function ColumnEventSlot<TEvent>({ event, config }: ColumnEventSlotProps<TEvent>
       {hasEventClick ? (
         <button
           type="button"
-          className="h-full w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="flex h-full min-h-0 w-full cursor-pointer flex-col rounded-xl border-0 bg-transparent p-0 text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-violet-400"
           onClick={(e) => {
             e.stopPropagation();
             config.onEventClick?.(event, getEventClickAnchorRect(e.currentTarget));

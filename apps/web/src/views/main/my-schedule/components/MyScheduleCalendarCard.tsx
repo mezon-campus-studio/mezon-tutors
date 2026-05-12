@@ -25,6 +25,7 @@ type ScheduleEvent = {
   endHour: number;
   dateLabel: string;
   timeLabel: string;
+  isCompleted: boolean;
 };
 
 type MyScheduleCalendarCardProps = {

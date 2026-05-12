@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ETrialLessonStatus, Prisma, Role } from '@mezon-tutors/db';
+import { ETrialLessonStatus, ESubscriptionEnrollmentStatus, Prisma, Role } from '@mezon-tutors/db';
 import dayjs = require('dayjs');
 import type {
   MyLessonApiCategory,
@@ -7,6 +7,10 @@ import type {
   MyLessonTutorApiItem,
   MyLessonWeekDayApiItem,
   MyLessonsApiResponse,
+} from '@mezon-tutors/shared';
+import {
+  subscriptionWeeklySlotsToOccurrencesInTimezone,
+  type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -78,12 +82,115 @@ export class MyLessonsService {
       .map((lesson) => this.toLessonApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
 
+    const weekYmd =
+      weekStartDate ??
+      (dayjs as any)(this.getWeekStart(calendarBaseDate)).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD');
+
+    const { weekStart, weekEnd } = this.getDisplayWeekRange(calendarBaseDate, weekStartDate);
+
+    const enrollments = await this.prisma.subscriptionEnrollment.findMany({
+      where: {
+        studentId,
+        status: {
+          in: [ESubscriptionEnrollmentStatus.ACTIVE, ESubscriptionEnrollmentStatus.PENDING_PAYMENT],
+        },
+      },
+      include: {
+        tutor: {
+          include: {
+            user: true,
+            availability: true,
+          },
+        },
+      },
+    });
+
+    const subscriptionBounds: { startAt: Date; endAt: Date }[] = [];
+    const subscriptionCalendarItems: MyLessonApiItem[] = [];
+    const subscriptionUpcomingItems: MyLessonApiItem[] = [];
+
+    for (const enrollment of enrollments) {
+      const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
+      const occ = subscriptionWeeklySlotsToOccurrencesInTimezone(weekYmd, slots);
+      slots.forEach((slot, idx) => {
+        const range = occ[idx];
+        if (!range) {
+          return;
+        }
+        if (range.startAt < weekStart || range.startAt >= weekEnd) {
+          return;
+        }
+        subscriptionBounds.push(range);
+        const item = this.enrollmentOccurrenceToLessonItem(enrollment, range.startAt, range.endAt, idx);
+        subscriptionCalendarItems.push(item);
+        subscriptionUpcomingItems.push(item);
+      });
+    }
+
+    const mergedCalendar = [...calendarLessons, ...subscriptionCalendarItems].sort(
+      (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
+    );
+    const mergedUpcoming = [...upcomingLessons, ...subscriptionUpcomingItems].sort(
+      (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
+    );
+
     return {
-      ...this.buildCalendarMeta(upcomingLessonRows, calendarBaseDate, weekStartDate),
-      calendar_lessons: calendarLessons,
-      upcoming_lessons: upcomingLessons,
+      ...this.buildCalendarMeta(upcomingLessonRows, calendarBaseDate, weekStartDate, subscriptionBounds),
+      calendar_lessons: mergedCalendar,
+      upcoming_lessons: mergedUpcoming,
       previous_lessons: previousLessons,
       tutors: this.buildTutorItems(lessons),
+    };
+  }
+
+  private getDisplayWeekRange(
+    baseDate: Date,
+    weekStartDate?: string
+  ): { weekStart: Date; weekEnd: Date } {
+    if (weekStartDate) {
+      const parsed = (dayjs as any)(weekStartDate).tz('Asia/Ho_Chi_Minh').startOf('day');
+      return { weekStart: parsed.toDate(), weekEnd: parsed.add(7, 'day').toDate() };
+    }
+    const weekStart = this.getWeekStart(baseDate);
+    return { weekStart, weekEnd: this.toUtc(weekStart).add(7, 'day').toDate() };
+  }
+
+  private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return value as unknown as SubscriptionWeeklySlotDto[];
+  }
+
+  private enrollmentOccurrenceToLessonItem(
+    enrollment: {
+      id: string;
+      tutorId: string;
+      weeklySlots: Prisma.JsonValue;
+      tutor: TrialLessonBookingWithTutor['tutor'];
+    },
+    startAt: Date,
+    endAt: Date,
+    slotIdx: number
+  ): MyLessonApiItem {
+    const ymd = (dayjs as any)(startAt).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD');
+    const subj = enrollment.tutor.subject?.trim();
+    return {
+      id: `sub-${enrollment.id}-${slotIdx}-${ymd}`,
+      source: 'subscription',
+      subject: subj ? `${subj} · Subscription` : 'Subscription',
+      tutor_id: enrollment.tutorId,
+      tutor_user_id: enrollment.tutor.userId,
+      tutor_name: this.getTutorName(enrollment.tutor),
+      tutor_avatar: enrollment.tutor.avatar || enrollment.tutor.user.avatar,
+      tutor_mezon_user_id: enrollment.tutor.user.mezonUserId,
+      category: this.buildCategoryKey(enrollment.tutor.subject, enrollment.tutor.subject),
+      status: 'upcoming',
+      date_label: this.formatDateLabel(startAt),
+      time_label: this.formatTimeLabel(startAt, endAt),
+      day_index: this.toCalendarDayIndex(startAt),
+      start_hour: this.getUtcHour(startAt),
+      end_hour: this.getUtcHour(endAt),
     };
   }
 
@@ -307,7 +414,12 @@ export class MyLessonsService {
     return lessons.filter((lesson) => lesson.startAt >= weekStart && lesson.startAt < weekEnd);
   }
 
-  private buildCalendarMeta(upcomingLessonRows: TrialLessonBookingWithTutor[], baseDate: Date, weekStartDate?: string): Pick<
+  private buildCalendarMeta(
+    upcomingLessonRows: TrialLessonBookingWithTutor[],
+    baseDate: Date,
+    weekStartDate?: string,
+    subscriptionBounds?: { startAt: Date; endAt: Date }[]
+  ): Pick<
     MyLessonsApiResponse,
     'calendar_title' | 'week_days' | 'week_hours' | 'current_day_index' | 'current_hour'
   > {
@@ -335,7 +447,11 @@ export class MyLessonsService {
     
     const weekEnd = this.toUtc(weekStart).add(7, 'day');
 
-    const [startHour, endHour] = this.resolveHourRange(upcomingLessonRows, currentHour);
+    const [startHour, endHour] = this.resolveHourRange(
+      upcomingLessonRows,
+      currentHour,
+      subscriptionBounds
+    );
     const weekHours = Array.from({ length: endHour - startHour + 1 }, (_, index) => startHour + index);
 
     const nowTimestamp = now.valueOf();
@@ -368,8 +484,15 @@ export class MyLessonsService {
     });
   }
 
-  private resolveHourRange(upcomingLessonRows: TrialLessonBookingWithTutor[], fallbackHour: number): [number, number] {
-    if (!upcomingLessonRows.length) {
+  private resolveHourRange(
+    upcomingLessonRows: TrialLessonBookingWithTutor[],
+    fallbackHour: number,
+    extraBounds?: { startAt: Date; endAt: Date }[]
+  ): [number, number] {
+    const hasTrials = upcomingLessonRows.length > 0;
+    const hasExtras = Boolean(extraBounds?.length);
+
+    if (!hasTrials && !hasExtras) {
       const startHour = Math.max(0, fallbackHour - 2);
       const endHour = Math.min(23, startHour + 4);
       return [startHour, endHour];
@@ -378,10 +501,19 @@ export class MyLessonsService {
     let minHour = 23;
     let maxHour = 0;
 
-    for (const lesson of upcomingLessonRows) {
-      const endAt = this.toUtc(lesson.startAt).add(lesson.durationMinutes, 'minutes').toDate();
-      minHour = Math.min(minHour, this.getUtcHour(lesson.startAt));
-      maxHour = Math.max(maxHour, this.getUtcHour(endAt));
+    if (hasTrials) {
+      for (const lesson of upcomingLessonRows) {
+        const endAt = this.toUtc(lesson.startAt).add(lesson.durationMinutes, 'minutes').toDate();
+        minHour = Math.min(minHour, this.getUtcHour(lesson.startAt));
+        maxHour = Math.max(maxHour, this.getUtcHour(endAt));
+      }
+    }
+
+    if (hasExtras) {
+      for (const b of extraBounds!) {
+        minHour = Math.min(minHour, this.getUtcHour(b.startAt));
+        maxHour = Math.max(maxHour, this.getUtcHour(b.endAt));
+      }
     }
 
     const currentSpan = maxHour - minHour;
@@ -409,7 +541,7 @@ export class MyLessonsService {
       : this.resolveCalendarBaseDate([]);
 
     return {
-      ...this.buildCalendarMeta([], baseDate),
+      ...this.buildCalendarMeta([], baseDate, weekStartDate, undefined),
       calendar_lessons: [],
       upcoming_lessons: [],
       previous_lessons: [],

@@ -251,10 +251,10 @@ export default function Header() {
       </header>
       <DashboardMobileDrawer
         isOpen={isMobileDrawerOpen}
-        onClose={() => setDashboardMobileDrawer(false)} 
+        onCloseAction={() => setDashboardMobileDrawer(false)}
         userRole={user?.role}
         pathname={pathname}
-        onLogout={handleLogout}
+        onLogoutAction={handleLogout}
       />
     </>
   );

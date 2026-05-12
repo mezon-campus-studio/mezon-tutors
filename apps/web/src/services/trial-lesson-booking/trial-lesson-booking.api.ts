@@ -75,6 +75,7 @@ export type TrialLessonBookingRequestItem = {
   tutorAmount: number
   status: ETrialLessonBookingStatus
   createdAt: string
+  scheduleKind?: 'subscription'
 }
 
 export type TrialLessonBookingRequestsResponse = PaginatedData<TrialLessonBookingRequestItem>

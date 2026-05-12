@@ -7,6 +7,8 @@ export type MyLessonWeekDayApiItem = {
   date_label: string
 }
 
+export type MyLessonApiItemSource = 'trial' | 'subscription'
+
 export type MyLessonApiItem = {
   id: string
   subject: string
@@ -22,6 +24,7 @@ export type MyLessonApiItem = {
   day_index: number
   start_hour: number
   end_hour: number
+  source?: MyLessonApiItemSource
 }
 
 export type MyLessonTutorApiItem = {

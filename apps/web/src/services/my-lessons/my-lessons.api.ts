@@ -50,6 +50,7 @@ export type LessonItem = {
   startHour: number;
   endHour: number;
   rating?: number;
+  source?: 'trial' | 'subscription';
 };
 
 export type TutorItem = {
@@ -130,7 +131,8 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     dayIndex: item.day_index,
     startHour: roundToHalfHour(startHourLocal),
     endHour: roundToHalfHour(endHourLocal),
-  };
+    source: item.source ?? 'trial',
+  }
 };
 
 const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({

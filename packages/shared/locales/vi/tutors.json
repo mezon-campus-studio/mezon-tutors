@@ -31,6 +31,8 @@
     "reviews": "({count} đánh giá)",
     "perLesson": "/ buổi học",
     "bookTrial": "Đặt buổi học thử",
+    "subscribeMonthly": "Đăng ký học theo tháng",
+    "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "messageModal": {
       "title": "Nhắn tin cho {tutorName}",
@@ -332,6 +334,8 @@
     "openResource": "Mở",
     "perLesson": "/ 60 phút",
     "bookTrial": "Đặt buổi học thử",
+    "subscribeMonthly": "Đăng ký học theo tháng",
+    "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "bookedLast48h": "{count} buổi được đặt trong 48h qua",
     "totalStudents": "{count} học viên",

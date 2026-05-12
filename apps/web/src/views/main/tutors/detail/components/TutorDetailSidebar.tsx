@@ -3,24 +3,30 @@
 import {
   ECurrency,
   formatToCurrency,
+  ROUTES,
   type TutorAboutDto,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import {
   Calendar,
+  CalendarRange,
   type CheckCircle2,
   MessageCircle,
   Sparkles,
   Users,
   Video,
 } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui";
+import { buttonVariants } from "@/components/ui/button";
 import { useCurrency } from "@/hooks";
+import { useGetSubscriptionEligibility, useGetSubscriptionPlansByTutor } from "@/services";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "../../components/TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
+import { cn } from "@/lib/utils";
 
 type TutorDetailSidebarProps = {
   tutor: TutorAboutDto;
@@ -37,6 +43,22 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
   const senderId = currentUser?.id;
   const senderMezonUserId = currentUser?.mezonUserId;
   const recipientId = tutor.userId;
+  const isOwnProfile = Boolean(senderId && senderId === tutor.userId);
+  const canFetchSub = Boolean(senderId && !isOwnProfile);
+  const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
+  const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
+  const hasSubscriptionPlans = Boolean(subscriptionPlans?.length);
+  const trialDone =
+    elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
+  const showSubscribe =
+    canFetchSub &&
+    trialDone &&
+    hasSubscriptionPlans &&
+    elig?.reason !== "ALREADY_ENROLLED";
+  const showBookTrial = !isOwnProfile && (!senderId || !trialDone);
+  const bookTrialDisabled =
+    canFetchSub &&
+    (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
 
   const lessonPrice =
     currency === ECurrency.USD
@@ -76,13 +98,30 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
           </div>
 
           <div className="space-y-2.5 p-5">
-            <Button
-              onClick={() => setIsTrialBookingSheetOpen(true)}
-              className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-            >
-              <Calendar className="mr-1.5 size-4" />
-              {t("bookTrial")}
-            </Button>
+            {showBookTrial ? (
+              <Button
+                disabled={bookTrialDisabled}
+                title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
+                onClick={() => setIsTrialBookingSheetOpen(true)}
+                className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+              >
+                <Calendar className="mr-1.5 size-4" />
+                {t("bookTrial")}
+              </Button>
+            ) : null}
+
+            {showSubscribe ? (
+              <Link
+                href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
+                )}
+              >
+                <CalendarRange className="mr-1.5 size-4" />
+                {t("subscribeMonthly")}
+              </Link>
+            ) : null}
 
             <Button
               variant="outline"
