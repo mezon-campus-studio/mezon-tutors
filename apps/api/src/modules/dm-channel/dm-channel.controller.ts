@@ -24,7 +24,7 @@ export class DmChannelController {
   }
 
   @Post()
-  async upsertDmChannel(@Body() dto: UpsertDmChannelDto) {
-    return this.dmChannelService.upsertChannel(dto);
+  async createDmChannel(@Body() dto: UpsertDmChannelDto) {
+    return this.dmChannelService.createChannel(dto);
   }
 }

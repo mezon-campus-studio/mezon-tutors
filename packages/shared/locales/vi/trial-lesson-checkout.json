@@ -72,7 +72,7 @@
     "Result": {
       "success": {
         "title": "Thanh toán thành công",
-        "description": "Cảm ơn bạn. Buổi học thử đã được ghi nhận sau thanh toán. Bạn sẽ nhận xác nhận trong thời gian ngắn.",
+        "description": "Cảm ơn bạn. Thanh toán đã xong và buổi học thử đã được đặt.",
         "primaryCta": "Xem danh sách gia sư",
         "secondaryCta": "Về trang chủ"
       },
@@ -200,7 +200,7 @@
           "REFUNDED": "Đã hoàn tiền"
         },
         "bookingStatus": {
-          "PENDING": "Chờ xác nhận",
+          "PENDING": "Chờ thanh toán",
           "CONFIRMED": "Đã xác nhận",
           "COMPLETED": "Hoàn thành",
           "CANCELLED": "Đã hủy"

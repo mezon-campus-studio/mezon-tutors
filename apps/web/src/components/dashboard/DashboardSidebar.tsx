@@ -23,7 +23,7 @@ import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_
 const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
   calendar: Calendar,
-  bookingRequests: ClipboardList,
+  trialBookings: ClipboardList,
   logout: LogOut,
   tutorApplications: FileCheck,
   students: GraduationCap,
@@ -35,7 +35,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
 const ICON_ACCENT_MAP = {
   document: "from-violet-500 to-purple-500",
   calendar: "from-purple-500 to-fuchsia-500",
-  bookingRequests: "from-fuchsia-500 to-rose-500",
+  trialBookings: "from-fuchsia-500 to-rose-500",
   logout: "from-rose-500 to-orange-500",
 } as const;
 

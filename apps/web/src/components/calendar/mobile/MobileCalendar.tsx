@@ -104,15 +104,8 @@ type MobileCalendarCardProps = {
 };
 
 function MobileCalendarCard({ item, defaultAvatarUrl, config }: MobileCalendarCardProps) {
-  return (
-    <div 
-      className="w-full border border-gray-200 bg-white flex items-center"
-      style={{
-        borderRadius: config.borderRadius,
-        padding: config.padding,
-        gap: config.gap,
-      }}
-    >
+  const inner = (
+    <>
       <PersonBadge
         name={item.person.name}
         avatar={item.person.avatar}
@@ -151,9 +144,12 @@ function MobileCalendarCard({ item, defaultAvatarUrl, config }: MobileCalendarCa
           </span>
         </div>
       </div>
-      {item.actionLabel && item.onAction && (
+      {item.actionLabel && item.onAction ? (
         <Button
-          onClick={item.onAction}
+          onClick={(e) => {
+            e.stopPropagation();
+            item.onAction?.();
+          }}
           className="bg-primary hover:bg-primary/90 text-white font-bold"
           style={{
             borderRadius: config.button.borderRadius,
@@ -166,7 +162,35 @@ function MobileCalendarCard({ item, defaultAvatarUrl, config }: MobileCalendarCa
         >
           {item.actionLabel}
         </Button>
-      )}
+      ) : null}
+    </>
+  );
+
+  const containerStyle = {
+    borderRadius: config.borderRadius,
+    padding: config.padding,
+    gap: config.gap,
+  };
+
+  if (item.onCardPress) {
+    return (
+      <button
+        type="button"
+        className="w-full border border-gray-200 bg-white flex items-center text-left transition hover:bg-gray-50"
+        style={containerStyle}
+        onClick={item.onCardPress}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <div 
+      className="w-full border border-gray-200 bg-white flex items-center"
+      style={containerStyle}
+    >
+      {inner}
     </div>
   );
 }

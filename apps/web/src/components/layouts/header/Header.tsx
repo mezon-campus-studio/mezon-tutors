@@ -103,7 +103,7 @@ export default function Header() {
     if (user.role === "STUDENT") {
       router.push(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === "TUTOR") {
-      router.push(ROUTES.DASHBOARD.BOOKING_REQUESTS);
+      router.push(ROUTES.DASHBOARD.TRIAL_BOOKING);
     } else if (user.role === 'ADMIN') {
       router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }
@@ -241,7 +241,7 @@ export default function Header() {
                     alt={user?.username ?? "User avatar"}
                   />
                 ) : null}
-                <AvatarFallback className="bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                <AvatarFallback className="bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white" onClick={handleAvatarClick}>
                   {userInitials}
                 </AvatarFallback>
               </Avatar>

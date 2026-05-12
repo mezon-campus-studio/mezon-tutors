@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "cdn.mezon.ai",
+      },
+      {
+        protocol: "https",
         hostname: "scontent.fdad3-4.fna.fbcdn.net",
       },
     ],

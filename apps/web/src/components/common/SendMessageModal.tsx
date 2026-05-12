@@ -19,39 +19,35 @@ import {
   restoreMezonLightClientFromStorage,
   sendMezonLightDMWithRefreshFallback,
   useGetDmChannel,
-  useUpsertDmChannelMutation,
+  useCreateDmChannelMutation,
 } from "@/services";
 
-type TutorMessageModalProps = {
+type SendMessageModalProps = {
   open: boolean;
-  tutorFirstName: string;
-  studentId: string;
-  studentMezonUserId?: string;
-  tutorId: string;
-  tutorMezonUserId?: string;
+  title: string;
+  senderId: string;
+  senderMezonUserId: string;
+  recipientId: string;
+  recipientMezonUserId: string;
   onOpenChangeAction: (open: boolean) => void;
 };
 
-export function TutorMessageModal({
+export function SendMessageModal({
   open,
-  tutorFirstName,
-  studentId,
-  studentMezonUserId,
-  tutorId,
-  tutorMezonUserId,
+  title,
+  senderId,
+  senderMezonUserId,
+  recipientId,
+  recipientMezonUserId,
   onOpenChangeAction,
-}: TutorMessageModalProps) {
+}: SendMessageModalProps) {
   const t = useTranslations("Tutors.TutorCard");
   const [messageContent, setMessageContent] = useState("");
   const [messageError, setMessageError] = useState("");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const { lightClient, setLightClient } = useMezonLight();
-  const { refetch: refetchDmChannel } = useGetDmChannel(
-    studentId,
-    tutorId,
-    false,
-  );
-  const upsertDmChannelMutation = useUpsertDmChannelMutation();
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
@@ -63,19 +59,19 @@ export function TutorMessageModal({
   const handleSend = async () => {
     const content = messageContent.trim();
 
-    if (!studentId) {
+    if (!senderId) {
       setMessageError(t("messageModal.errors.missingStudentId"));
       return;
     }
-    if (!studentMezonUserId) {
+    if (!senderMezonUserId) {
       setMessageError(t("messageModal.errors.missingStudentMezonUserId"));
       return;
     }
-    if (!tutorMezonUserId) {
+    if (!recipientMezonUserId) {
       setMessageError(t("messageModal.errors.missingTutorMezonUserId"));
       return;
     }
-    if (!tutorId) {
+    if (!recipientId) {
       setMessageError(t("messageModal.errors.missingTutorId"));
       return;
     }
@@ -107,15 +103,15 @@ export function TutorMessageModal({
 
       let channelId = (await refetchDmChannel()).data?.channelId;
       if (!channelId) {
-        const dmChannel = await createMezonLightDM(client, tutorMezonUserId);
+        const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
         channelId = dmChannel?.channel_id;
         if (!channelId) {
           throw new Error(t("messageModal.errors.missingChannelId"));
         }
 
-        await upsertDmChannelMutation.mutateAsync({
-          studentId,
-          tutorId,
+        await createDmChannelMutation.mutateAsync({
+          senderId,
+          recipientId,
           channelId,
         });
       }
@@ -158,7 +154,7 @@ export function TutorMessageModal({
                 Direct message
               </p>
               <DialogTitle className="truncate text-base font-extrabold text-slate-900 sm:text-lg">
-                {t("messageModal.title", { tutorName: tutorFirstName })}
+                {t("messageModal.title", { tutorName: title })}
               </DialogTitle>
             </div>
           </div>

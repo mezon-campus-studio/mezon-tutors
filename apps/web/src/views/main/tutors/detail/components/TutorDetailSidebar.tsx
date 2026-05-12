@@ -20,7 +20,7 @@ import { Button } from "@/components/ui";
 import { useCurrency } from "@/hooks";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "../../components/TrialBookingSheet";
-import { TutorMessageModal } from "../../components/TutorMessageModal";
+import { SendMessageModal } from "@/components/common/SendMessageModal";
 
 type TutorDetailSidebarProps = {
   tutor: TutorAboutDto;
@@ -34,9 +34,9 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
   const [isTrialBookingSheetOpen, setIsTrialBookingSheetOpen] = useState(false);
 
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
-  const studentId = currentUser?.id;
-  const studentMezonUserId = currentUser?.mezonUserId;
-  const tutorId = tutor.userId;
+  const senderId = currentUser?.id;
+  const senderMezonUserId = currentUser?.mezonUserId;
+  const recipientId = tutor.userId;
 
   const lessonPrice =
     currency === ECurrency.USD
@@ -86,7 +86,7 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
 
             <Button
               variant="outline"
-              disabled={!studentId}
+              disabled={!senderId}
               onClick={() => setIsMessageModalOpen(true)}
               className="h-11 w-full rounded-full border-slate-200 text-sm font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
             >
@@ -139,13 +139,13 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
         </div>
       </div>
 
-      <TutorMessageModal
+      <SendMessageModal
         open={isMessageModalOpen}
-        tutorFirstName={tutor.firstName}
-        studentId={studentId ?? ""}
-        studentMezonUserId={studentMezonUserId}
-        tutorId={tutorId}
-        tutorMezonUserId={tutor.mezonUserId}
+        title={tutor.firstName}
+        senderId={senderId ?? ''}
+        senderMezonUserId={senderMezonUserId ?? ''}
+        recipientId={recipientId}
+        recipientMezonUserId={tutor.mezonUserId}
         onOpenChangeAction={setIsMessageModalOpen}
       />
 

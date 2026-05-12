@@ -7,6 +7,7 @@
     },
     "sidebar": {
       "bookingRequests": "Yêu cầu đặt lịch",
+      "trialBookings": "Buổi học thử",
       "mySchedule": "Lịch dạy",
       "students": "Học viên",
       "earnings": "Thu nhập",
@@ -15,8 +16,28 @@
       "fallbackTitle": "Bảng điều khiển"
     },
     "bookingRequests": {
-      "title": "Yêu cầu đặt lịch",
-      "subtitle": "Quản lý các buổi dạy sắp tới. Bạn có {count} yêu cầu mới đang chờ sáng nay.",
+      "eyebrow": "Khu vực gia sư",
+      "title": "Buổi học thử",
+      "subtitle": "Tất cả buổi học thử của bạn ở một chỗ. Còn {count} chờ học viên thanh toán.",
+      "searchPlaceholder": "Tìm theo tên học viên...",
+      "metrics": {
+        "total": {
+          "title": "Tổng yêu cầu",
+          "helper": "Trên tất cả trạng thái"
+        },
+        "pending": {
+          "title": "Đang chờ",
+          "helper": "Đang đợi bạn phản hồi"
+        },
+        "confirmed": {
+          "title": "Đã xác nhận",
+          "helper": "Sẵn sàng cho buổi học sắp tới"
+        },
+        "completed": {
+          "title": "Hoàn thành",
+          "helper": "Đã dạy thành công"
+        }
+      },
       "levels": {
         "undergraduateStudent": "Sinh viên đại học",
         "highSchoolJunior": "Học sinh trung học",
@@ -54,16 +75,17 @@
         "rate": "Mức phí",
         "status": "Trạng thái",
         "actions": "Hành động",
+        "view": "Xem",
         "noResults": "Không có yêu cầu đặt lịch nào với bộ lọc này."
       },
       "status": {
         "pending": "Đang chờ",
         "confirmed": "Đã xác nhận",
-        "completed": "Hoàn thành"
+        "completed": "Hoàn thành",
+        "cancelled": "Đã hủy"
       },
       "actions": {
         "approve": "Duyệt",
-        "decline": "Từ chối",
         "message": "Nhắn tin",
         "feedback": "Phản hồi"
       },
@@ -78,6 +100,81 @@
         "responseHint": "Thời gian phản hồi trung bình",
         "payoutHint": "Dự kiến thanh toán vào 28/10"
       }
+    },
+    "bookingRequestDetail": {
+      "back": "Quay lại danh sách buổi học",
+      "header": {
+        "eyebrow": "Buổi học thử",
+        "requestedAt": "Đặt lúc {date}"
+      },
+      "overview": {
+        "date": "Ngày",
+        "time": "Thời gian",
+        "duration": "Thời lượng",
+        "durationValue": "{minutes} phút",
+        "payout": "Thu nhập của bạn"
+      },
+      "breakdown": {
+        "title": "Phân tích thu nhập",
+        "subtitle": "Cách doanh thu buổi học được chia.",
+        "gross": "Tổng tiền",
+        "platformFee": "Phí nền tảng",
+        "tutorAmount": "Bạn nhận được"
+      },
+      "student": {
+        "title": "Học viên",
+        "name": "Họ và tên",
+        "contact": "Liên hệ",
+        "contactHint": "Mở khung chat để trao đổi trực tiếp."
+      },
+      "actions": {
+        "title": "Liên lạc",
+        "hint": "Nhắn học viên nếu cần thống nhất tài liệu hoặc link học.",
+        "share": "Chia sẻ thông tin",
+        "confirming": "Đang xác nhận..."
+      },
+      "toast": {
+        "confirmedTitle": "Đã xác nhận lịch học",
+        "confirmedDescription": "Học viên đã được thông báo.",
+        "confirmFailedTitle": "Không thể xác nhận yêu cầu",
+        "errorFallback": "Đã có lỗi xảy ra. Vui lòng thử lại."
+      },
+      "notFound": {
+        "title": "Không tìm thấy yêu cầu",
+        "description": "Yêu cầu đặt lịch này có thể đã bị xóa hoặc không còn khả dụng.",
+        "back": "Quay lại buổi học thử"
+      }
+    },
+    "mySchedule": {
+      "eyebrow": "Khu vực gia sư",
+      "title": "Lịch dạy",
+      "subtitle": "Theo dõi tất cả buổi học đã xác nhận trong một lịch.",
+      "loading": "Đang tải lịch dạy...",
+      "header": {
+        "viewRequests": "Buổi học thử"
+      },
+      "calendar": {
+        "week": "Tuần",
+        "month": "Tháng",
+        "today": "Hôm nay",
+        "company": "Mezonly Tutors"
+      },
+      "upcoming": {
+        "eyebrow": "Sắp tới",
+        "title": "Buổi học sắp tới",
+        "emptyTitle": "Chưa có buổi học sắp tới",
+        "emptyDescription": "Các buổi học đã xác nhận sẽ hiển thị ở đây khi được lên lịch.",
+        "durationLabel": "{minutes} phút",
+        "viewDetail": "Chi tiết",
+        "joinLesson": "Vào lớp"
+      }
+    },
+    "scheduleEventModal": {
+      "title": "Buổi học",
+      "subtitle": "{date} · {time}",
+      "sendMessage": "Nhắn tin",
+      "viewProfile": "Xem hồ sơ gia sư",
+      "dismiss": "Đóng"
     },
     "placeholder": {
       "title": "Tính năng sắp ra mắt",

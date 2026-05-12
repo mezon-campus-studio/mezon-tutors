@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
-  ENotificationType,
   EPaymentStatus,
   ETrialLessonStatus,
   EWalletTransactionDirection,
@@ -9,7 +8,6 @@ import {
 } from '@mezon-tutors/db';
 import {
   mapVnpayResponseToTrialLessonCancelCode,
-  NOTIFICATION_I18N_KEYS,
   ROUTES,
   type TrialLessonCheckoutCancelCode,
 } from '@mezon-tutors/shared';
@@ -100,16 +98,10 @@ export class WebhookService {
         tutorId: true,
         studentId: true,
         paymentStatus: true,
-        grossAmount: true,
         tutorAmount: true,
         tutor: {
           select: {
             userId: true,
-          },
-        },
-        student: {
-          select: {
-            username: true,
           },
         },
       },
@@ -151,22 +143,21 @@ export class WebhookService {
       const didUpdateBooking = updateBookingResult.count > 0;
 
       if (didUpdateBooking && isSucceeded) {
+        const tutorUserId = booking.tutor.userId;
         const wallet = await tx.wallet.upsert({
-          where: { userId: booking.tutor.userId },
+          where: { userId: tutorUserId },
           update: {
             pendingBalance: { increment: booking.tutorAmount },
             totalEarned: { increment: booking.tutorAmount },
           },
           create: {
-            userId: booking.tutor.userId,
+            userId: tutorUserId,
             balance: 0n,
             pendingBalance: booking.tutorAmount,
             totalEarned: booking.tutorAmount,
             totalWithdrawn: 0n,
           },
-          select: {
-            id: true,
-          },
+          select: { id: true },
         });
 
         await tx.transaction.create({
@@ -175,7 +166,7 @@ export class WebhookService {
             bookingId: booking.id,
             type: EWalletTransactionType.BOOKING_PAYMENT,
             direction: EWalletTransactionDirection.CREDIT,
-            amount: booking.grossAmount,
+            amount: booking.tutorAmount,
             description: `Trial lesson payment settled for booking ${booking.id}`,
           },
         });
@@ -209,26 +200,11 @@ export class WebhookService {
     });
 
     if (processed.updated && isSucceeded) {
-      try {
-        await this.notificationService.createForUser(booking.tutor.userId, {
-          title: 'New trial lesson booking request',
-          content: 'A student has booked a trial lesson. Please review and confirm the request.',
-          type: ENotificationType.BOOKING,
-          i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingCreated,
-          i18nParams: {
-            studentName: booking.student.username,
-          },
-          metadata: {
-            bookingId: booking.id,
-            studentId: booking.studentId,
-            tutorId: booking.tutorId,
-          },
-          dedupeKey: `trial-booking-paid:${booking.id}`,
-        });
-      } catch (err) {
-        const detail = err instanceof Error ? err.message : String(err);
-        this.logger.warn(`Failed to create tutor notification for paid booking ${booking.id}: ${detail}`);
-      }
+      await this.notificationService.notifyStudentBookingConfirmed({
+        studentId: booking.studentId,
+        bookingId: booking.id,
+        tutorProfileId: booking.tutorId,
+      });
     }
 
     return {

@@ -39,7 +39,9 @@ export type LessonItem = {
   subject: string;
   tutor: string;
   tutorId: string;
+  tutorUserId: string;
   tutorAvatar: string;
+  tutorMezonUserId?: string | null;
   category: LessonCategory;
   status: LessonStatus;
   dateLabel: string;
@@ -97,15 +99,13 @@ const mapWeekDay = (item: MyLessonWeekDayApiItem): WeekDay => ({
 });
 
 const mapLesson = (item: MyLessonApiItem): LessonItem => {
-
   const startHourLocal = dayjs.utc().hour(item.start_hour).local().hour();
   const endHourLocal = dayjs.utc().hour(item.end_hour).local().hour();
-  
 
   const roundToHalfHour = (hour: number): number => {
     const wholeHour = Math.floor(hour);
     const minutes = (hour - wholeHour) * 60;
-    
+
     if (minutes < 15) {
       return wholeHour;
     } else if (minutes < 45) {
@@ -120,7 +120,9 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     subject: item.subject,
     tutor: item.tutor_name,
     tutorId: item.tutor_id,
+    tutorUserId: item.tutor_user_id,
     tutorAvatar: item.tutor_avatar,
+    tutorMezonUserId: item.tutor_mezon_user_id,
     category: mapCategory(item.category),
     status: mapStatus(item.status),
     dateLabel: item.date_label,
@@ -145,9 +147,9 @@ const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
 
 const mapCalendarMeta = (data: MyLessonsApiResponse, lessons: LessonItem[]): MyLessonsCalendarMeta => {
   const { MIN, MAX } = CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE;
-  
+
   const defaultHours = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i);
-  
+
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const nowLocal = dayjs().tz(userTimeZone);
   const currentHour = (data.current_day_index ?? -1) >= 0 
@@ -155,9 +157,9 @@ const mapCalendarMeta = (data: MyLessonsApiResponse, lessons: LessonItem[]): MyL
     : undefined;
 
   const hourSet = new Set([...defaultHours, ...(data.week_hours || [])]);
-  
+
   if (lessons.length > 0) {
-    lessons.forEach(lesson => {
+    lessons.forEach((lesson) => {
       const start = Math.floor(lesson.startHour);
       const end = Math.ceil(lesson.endHour);
       for (let h = start; h <= end; h++) hourSet.add(h);
@@ -186,10 +188,10 @@ export const myLessonsApi = {
     }
 
     const data = await apiClient.get<MyLessonsApiResponse>(BASE, { params });
-    
 
-    const calendarLessons = data.calendar_lessons.map(mapLesson);
     
+    const calendarLessons = data.calendar_lessons.map(mapLesson);
+
     return {
       calendar: mapCalendarMeta(data, calendarLessons),
       calendarLessons,

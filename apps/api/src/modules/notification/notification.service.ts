@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
-import { Prisma, type ENotificationType } from '@mezon-tutors/db'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { ENotificationType, Prisma } from '@mezon-tutors/db'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { GetMyNotificationsDto } from './dto/get-my-notifications.dto'
+import { NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
 
 type MyNotificationItem = {
   id: string
@@ -20,6 +21,8 @@ type PrismaTx = Prisma.TransactionClient
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name)
+
   constructor(private readonly prisma: PrismaService) {}
 
   async createForUser(userId: string, data: CreateNotificationDto, tx?: PrismaTx): Promise<void> {
@@ -165,5 +168,69 @@ export class NotificationService {
     })
 
     return { unreadCount }
+  }
+
+ async notifyStudentBookingConfirmed(params: {
+    studentId: string
+    bookingId: string
+    tutorProfileId: string
+  }) {
+    const [tutor, student] = await Promise.all([
+      this.prisma.tutorProfile.findUnique({
+        where: { id: params.tutorProfileId },
+        select: { userId: true, firstName: true, lastName: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: params.studentId },
+        select: { username: true },
+      }),
+    ])
+
+    if (!tutor) {
+      this.logger.warn(`Tutor profile not found for booking ${params.bookingId}`)
+      return
+    }
+
+    const tutorName =
+      `${tutor.firstName ?? ''} ${tutor.lastName ?? ''}`.trim() || 'your tutor'
+    const studentName = student?.username ?? 'A student'
+
+    const results = await Promise.allSettled([
+      this.createForUser(params.studentId, {
+        title: 'Trial lesson confirmed',
+        content: `Your trial lesson with ${tutorName} is confirmed.`,
+        type: ENotificationType.BOOKING,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingConfirmed,
+        i18nParams: { tutorName },
+        metadata: { bookingId: params.bookingId },
+        dedupeKey: `trial-booking-confirmed:${params.bookingId}`,
+      }),
+      this.createForUser(tutor.userId, {
+        title: 'New trial lesson booking',
+        content: `${studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.`,
+        type: ENotificationType.BOOKING,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingCreated,
+        i18nParams: { studentName },
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.bookingCreated,
+          titleI18nParams: {},
+          bookingId: params.bookingId,
+          studentId: params.studentId,
+          tutorId: params.tutorProfileId,
+        },
+        dedupeKey: `trial-booking-paid:${params.bookingId}`,
+      }),
+    ])
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const role = index === 0 ? 'student' : 'tutor'
+        const detail =
+          result.reason instanceof Error ? result.reason.message : String(result.reason)
+        this.logger.warn(
+          `Failed to notify ${role} for booking ${params.bookingId}: ${detail}`
+        )
+      }
+    })
   }
 }

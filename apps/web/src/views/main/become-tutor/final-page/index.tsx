@@ -258,7 +258,7 @@ export default function FinalPage() {
           <Button
             size="lg"
             className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
-            onClick={() => router.push(ROUTES.DASHBOARD.BOOKING_REQUESTS)}
+            onClick={() => router.push(ROUTES.DASHBOARD.TRIAL_BOOKING)}
           >
             {t('approved.bookingRequests')}
           </Button>

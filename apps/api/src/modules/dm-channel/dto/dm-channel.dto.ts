@@ -2,10 +2,10 @@ import { IsString, IsUUID } from 'class-validator';
 
 export class UpsertDmChannelDto {
   @IsUUID()
-  studentId: string;
+  senderId: string;
 
   @IsUUID()
-  tutorId: string;
+  recipientId: string;
 
   @IsString()
   channelId: string;
@@ -13,17 +13,17 @@ export class UpsertDmChannelDto {
 
 export class GetDmChannelQueryDto {
   @IsUUID()
-  studentId: string;
+  senderId: string;
 
   @IsUUID()
-  tutorId: string;
+  recipientId: string;
 }
 
 export class MyDmChannelItemDto {
   id: string;
   channelId: string;
-  studentId: string;
-  tutorId: string;
+  senderId: string;
+  recipientId: string;
   peerId: string;
   peerName: string;
   peerAvatar: string;

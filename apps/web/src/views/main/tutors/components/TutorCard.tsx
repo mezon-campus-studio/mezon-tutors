@@ -22,7 +22,7 @@ import { Button, Card, CardContent } from "@/components/ui";
 import { useCurrency } from "@/hooks";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "./TrialBookingSheet";
-import { TutorMessageModal } from "./TutorMessageModal";
+import { SendMessageModal } from "@/components/common/SendMessageModal";
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -47,9 +47,9 @@ export default function TutorCard({
   const [isTrialBookingSheetOpen, setIsTrialBookingSheetOpen] = useState(false);
 
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
-  const studentId = currentUser?.id ?? "";
-  const studentMezonUserId = currentUser?.mezonUserId;
-  const tutorId = tutor.userId;
+  const senderId = currentUser?.id ?? '';
+  const senderMezonUserId = currentUser?.mezonUserId;
+  const recipientId = tutor.userId;
 
   const tutorPrices = (
     tutor as unknown as {
@@ -195,13 +195,13 @@ export default function TutorCard({
         </CardContent>
       </Card>
 
-      <TutorMessageModal
+      <SendMessageModal
         open={isMessageModalOpen}
-        tutorFirstName={tutor.firstName}
-        studentId={studentId}
-        studentMezonUserId={studentMezonUserId}
-        tutorId={tutorId}
-        tutorMezonUserId={tutor.mezonUserId}
+        title={tutor.firstName}
+        senderId={senderId}
+        senderMezonUserId={senderMezonUserId ?? ''}
+        recipientId={recipientId}
+        recipientMezonUserId={tutor.mezonUserId}
         onOpenChangeAction={setIsMessageModalOpen}
       />
 

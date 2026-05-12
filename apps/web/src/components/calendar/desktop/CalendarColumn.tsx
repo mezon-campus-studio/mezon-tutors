@@ -20,6 +20,7 @@ export type CalendarColumnConfig<TEvent> = {
   weekendNoSlotLabel?: string;
   emptySlotMergeHours?: number;
   onSlotClick?: (dayIndex: number, hour: number) => void;
+  onEventClick?: (event: CalendarEvent<TEvent>, anchorRect: DOMRect) => void;
   renderEvent?: (event: CalendarEvent<TEvent>, isCompact: boolean) => ReactNode;
   renderSlot?: (dayIndex: number, hour: number, state?: CalendarSlotState) => ReactNode;
 };
@@ -56,6 +57,14 @@ type ColumnNowLineProps<TEvent> = {
 const getEventEndHour = (event: CalendarEvent<unknown>): number =>
   event.endHour ?? event.startHour + 1;
 
+const EVENT_ANCHOR_SELECTOR = '[data-calendar-event-anchor]';
+
+function getEventClickAnchorRect(target: HTMLElement): DOMRect {
+  const inner = target.querySelector(EVENT_ANCHOR_SELECTOR);
+  if (inner instanceof HTMLElement) return inner.getBoundingClientRect();
+  return target.getBoundingClientRect();
+}
+
 function ColumnEmptySlot<TEvent>({ row, dayIndex, config, height }: ColumnEmptySlotProps<TEvent>) {
   const top = config.layoutEngine.getY(row.hour);
   const hasClick = !config.readonly && config.onSlotClick;
@@ -69,6 +78,18 @@ function ColumnEmptySlot<TEvent>({ row, dayIndex, config, height }: ColumnEmptyS
         padding: config.slotPadding,
       }}
       onClick={hasClick ? () => config.onSlotClick?.(dayIndex, row.hour) : undefined}
+      onKeyDown={
+        hasClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                config.onSlotClick?.(dayIndex, row.hour);
+              }
+            }
+          : undefined
+      }
+      role={hasClick ? 'button' : undefined}
+      tabIndex={hasClick ? 0 : undefined}
     >
       {config.renderSlot?.(dayIndex, row.hour)}
     </div>
@@ -81,10 +102,11 @@ function ColumnEventSlot<TEvent>({ event, config }: ColumnEventSlotProps<TEvent>
   const bottom = config.layoutEngine.getY(endHour);
   const height = Math.max(0, bottom - top);
   const inset = height > 8 ? 1 : 0;
+  const hasEventClick = Boolean(config.onEventClick);
 
   return (
     <div
-      className="absolute w-full z-10"
+      className={`absolute w-full z-10 ${hasEventClick ? 'pointer-events-auto' : ''}`}
       style={{
         top: top + inset,
         height: Math.max(0, height - inset * 2),
@@ -94,7 +116,20 @@ function ColumnEventSlot<TEvent>({ event, config }: ColumnEventSlotProps<TEvent>
         paddingBottom: config.eventPadding,
       }}
     >
-      {config.renderEvent?.(event, config.isCompact)}
+      {hasEventClick ? (
+        <button
+          type="button"
+          className="h-full w-full cursor-pointer rounded-xl border-0 bg-transparent p-0 text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-violet-400"
+          onClick={(e) => {
+            e.stopPropagation();
+            config.onEventClick?.(event, getEventClickAnchorRect(e.currentTarget));
+          }}
+        >
+          {config.renderEvent?.(event, config.isCompact)}
+        </button>
+      ) : (
+        config.renderEvent?.(event, config.isCompact)
+      )}
     </div>
   );
 }

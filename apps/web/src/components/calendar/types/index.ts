@@ -36,6 +36,7 @@ export type MobileCalendarItemBase = {
   dayIndex: number;
   timeLabel: string;
   category?: string;
+  onCardPress?: () => void;
 };
 
 export type MobileCalendarPersonInfo = {
@@ -68,6 +69,7 @@ export type BaseCalendarProps<TEvent = unknown> = {
   enableGapCollapse?: boolean;
   minGapHours?: number;
   onSlotClick?: (dayIndex: number, hour: number) => void;
+  onEventClick?: (event: CalendarEvent<TEvent>, anchorRect: DOMRect) => void;
   renderEvent?: (event: CalendarEvent<TEvent>, isCompact: boolean) => ReactNode;
   renderSlot?: (dayIndex: number, hour: number, state?: CalendarSlotState) => ReactNode;
   isCompact?: boolean;

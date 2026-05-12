@@ -14,13 +14,13 @@
     "LESSON_STARTING_SOON": "Lesson reminder"
   },
   "titles": {
-    "bookingCreated": "New trial lesson request",
+    "bookingCreated": "New trial lesson booking",
     "paymentSucceeded": "Payment successful",
     "systemAnnouncement": "System announcement",
     "lessonStartingSoon": "Lesson starting soon"
   },
   "templates": {
-    "bookingCreated": "{studentName} has booked a trial lesson. Please review and confirm.",
+    "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
     "bookingConfirmed": "Your booking with {tutorName} has been confirmed.",
     "bookingCancelled": "Your booking has been cancelled.",
     "paymentSucceeded": "Your payment for booking {bookingCode} was successful.",

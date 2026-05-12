@@ -2,7 +2,7 @@ import { ROUTES } from './routes';
 
 export type DashboardMenuIconKey =
   | 'document'
-  | 'bookingRequests'
+  | 'trialBookings'
   | 'calendar'
   | 'logout'
   | 'tutorApplications'
@@ -12,7 +12,7 @@ export type DashboardMenuIconKey =
   | 'dashboard';
 export type DashboardMenuLabelKey =
   | 'myLessons'
-  | 'bookingRequests'
+  | 'trialBookings'
   | 'mySchedule'
   | 'logout'
   | 'tutorApplications'
@@ -49,11 +49,11 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     roles: ['STUDENT'],
   },
   {
-    key: 'booking-requests',
+    key: 'trial-bookings',
     type: 'link',
-    labelKey: 'bookingRequests',
-    iconKey: 'bookingRequests',
-    href: ROUTES.DASHBOARD.BOOKING_REQUESTS,
+    labelKey: 'trialBookings',
+    iconKey: 'trialBookings',
+    href: ROUTES.DASHBOARD.TRIAL_BOOKING,
     roles: ['TUTOR'],
   },
   {
