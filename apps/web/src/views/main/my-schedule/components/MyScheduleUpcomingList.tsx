@@ -5,13 +5,7 @@ import dayjs from 'dayjs';
 import { CalendarPlus, Clock4, Sparkles, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Badge,
-  Button,
-} from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
 
@@ -21,23 +15,23 @@ type MyScheduleUpcomingListProps = {
 
 const getInitials = (name?: string) => {
   if (!name) return 'S';
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'S';
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'S'
+  );
 };
 
-export default function MyScheduleUpcomingList({
-  items,
-}: MyScheduleUpcomingListProps) {
+export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingListProps) {
   const t = useTranslations('Dashboard.mySchedule.upcoming');
   const tSchedule = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
 
   return (
-    <aside className="flex w-full flex-col gap-4">
+    <aside className="flex min-h-0 w-full flex-col gap-4 pb-24 pr-1 sm:pr-2">
       <div className="flex items-center gap-3">
         <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
           <CalendarPlus className="size-5" />
@@ -49,7 +43,7 @@ export default function MyScheduleUpcomingList({
           <h2 className="text-lg font-extrabold text-slate-900 md:text-xl">
             {t('title')}
             {items.length > 0 ? (
-              <span className="ml-2 inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-violet-100 px-2 text-xs font-bold text-violet-700">
+              <span className="ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 text-xs font-bold text-violet-700">
                 {items.length}
               </span>
             ) : null}
@@ -64,14 +58,12 @@ export default function MyScheduleUpcomingList({
             <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
               <Sparkles className="size-4" />
             </div>
-            <p className="text-base font-extrabold text-slate-900">
-              {t('emptyTitle')}
-            </p>
+            <p className="text-base font-extrabold text-slate-900">{t('emptyTitle')}</p>
             <p className="text-xs text-slate-600">{t('emptyDescription')}</p>
           </div>
         </div>
       ) : (
-        <div className="flex max-h-[640px] flex-col gap-3 overflow-y-auto pr-1">
+        <div className="max-h-[min(80vh,760px)] min-h-0 space-y-4 overflow-y-auto overflow-x-hidden pb-2 [scrollbar-width:thin]">
           {items.map((item) => {
             const isSubscription = item.scheduleKind === 'subscription';
             const start = dayjs(item.startAt).locale(locale);
@@ -81,62 +73,82 @@ export default function MyScheduleUpcomingList({
               <div
                 key={item.id}
                 className={cn(
-                  'group flex w-full flex-col gap-3 rounded-2xl border border-violet-100 bg-white p-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40',
-                  isCompleted && 'opacity-90',
+                  'flex w-full shrink-0 flex-col gap-4 rounded-3xl border bg-white p-5 shadow-sm transition-all hover:shadow-md',
+                  isSubscription
+                    ? 'border-fuchsia-200/70 bg-linear-to-br from-fuchsia-50/40 via-white to-violet-50/30 hover:border-fuchsia-300/80 hover:shadow-fuchsia-100/50'
+                    : 'border-amber-200/70 bg-linear-to-br from-amber-50/35 via-white to-orange-50/25 hover:border-amber-300/80 hover:shadow-amber-100/50',
+                  isCompleted && 'opacity-[0.92]'
                 )}
               >
-                <div className="flex items-start gap-3">
-                  <Avatar className="size-12 rounded-xl border border-violet-100">
+                <div className="flex items-start gap-4">
+                  <Avatar className="size-14 shrink-0 rounded-2xl border-2 border-white shadow-md ring-1 ring-violet-100">
                     {item.studentAvatarUrl ? (
                       <AvatarImage
                         src={item.studentAvatarUrl}
                         alt={item.studentName}
-                        className="rounded-lg object-cover"
+                        className="rounded-xl object-cover"
                       />
                     ) : null}
-                    <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                    <AvatarFallback className="rounded-xl bg-linear-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
                       {getInitials(item.studentName)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-xs font-semibold text-violet-600">
-                        {start.format('ddd, MMM DD')}
-                      </p>
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          'shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                          isSubscription
+                            ? 'border-fuchsia-200/80 bg-fuchsia-100 text-fuchsia-900'
+                            : 'border-amber-200/80 bg-amber-100 text-amber-950'
+                        )}
+                      >
+                        {isSubscription
+                          ? tSchedule('lessonTypePlan')
+                          : tSchedule('lessonTypeTrial')}
+                      </Badge>
                       {isCompleted ? (
                         <Badge
-                          variant="secondary"
-                          className="shrink-0 px-2 py-0 text-[10px] font-bold uppercase tracking-wide"
+                          variant="outline"
+                          className="shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600"
                         >
                           {tSchedule('completedBadge')}
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="text-base font-extrabold leading-tight text-slate-900">
-                      {start.format('HH:mm')} - {end.format('HH:mm')}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-slate-600">
-                      {item.studentName}
-                    </p>
-                    {isSubscription ? (
-                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-fuchsia-600">
-                        {t('subscriptionBadge')}
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-600">
+                        {start.format('ddd, MMM DD')}
                       </p>
-                    ) : null}
+                      <p className="mt-0.5 text-lg font-extrabold tabular-nums tracking-tight text-slate-900">
+                        {start.format('HH:mm')} – {end.format('HH:mm')}
+                      </p>
+                      <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-slate-800">
+                        {item.studentName}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-violet-50 pt-3">
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-100">
-                    <Clock4 className="size-3" />
+                <div
+                  className={cn(
+                    'flex flex-wrap items-center gap-3 border-t border-violet-100/80 pt-4',
+                    !isSubscription && 'justify-between',
+                  )}
+                >
+                  <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
+                    <Clock4 className="size-3.5 shrink-0" />
                     {t('durationLabel', { minutes: item.durationMinutes })}
                   </div>
-                  <span className="text-xs font-bold text-violet-700">
-                    {isSubscription ? '—' : formatToCurrency(ECurrency.VND, item.tutorAmount)}
-                  </span>
+                  {!isSubscription ? (
+                    <span className="max-w-[55%] shrink-0 truncate text-right text-sm font-extrabold text-violet-700">
+                      {formatToCurrency(ECurrency.VND, item.tutorAmount)}
+                    </span>
+                  ) : null}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="mt-auto flex shrink-0 gap-2">
                   {!isSubscription ? (
                     <Link
                       href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}
@@ -144,7 +156,7 @@ export default function MyScheduleUpcomingList({
                     >
                       <Button
                         variant="outline"
-                        className="h-9 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                        className="h-10 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800"
                       >
                         {t('viewDetail')}
                       </Button>
@@ -153,16 +165,16 @@ export default function MyScheduleUpcomingList({
                   <Button
                     disabled={isCompleted}
                     className={cn(
-                      'h-9 rounded-full text-xs font-semibold',
+                      'h-10 rounded-full text-xs font-semibold',
                       isCompleted
                         ? cn(
                             'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-500 shadow-none hover:bg-slate-100',
-                            isSubscription ? 'w-full' : 'flex-1',
+                            isSubscription ? 'w-full' : 'flex-1'
                           )
                         : cn(
-                            'shadow-md bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50',
-                            isSubscription ? 'w-full' : 'flex-1',
-                          ),
+                            'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50',
+                            isSubscription ? 'w-full' : 'flex-1'
+                          )
                     )}
                   >
                     <Video className="mr-1.5 size-3.5" />

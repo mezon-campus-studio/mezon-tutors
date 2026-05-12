@@ -34,11 +34,14 @@ import { isAuthenticatedAtom } from "@/store/auth.atom";
 import {
   buildTimeSlotsForDay,
   jsDayToDbDayOfWeek,
+  minutesToTime,
   parseYyyyMmDdToLocalDate,
   ROUTES,
+  timeToMinutes,
 } from "@mezon-tutors/shared";
 
-const SLOT_INTERVAL_MINUTES = 30;
+const SUBSCRIPTION_GRID_INTERVAL_MINUTES = 60;
+const SUBSCRIPTION_LESSON_MINUTES = 60;
 
 function pad2(num: number): string {
   return String(num).padStart(2, "0");
@@ -87,7 +90,14 @@ export default function SubscriptionPlanSchedulePage() {
   const t = useTranslations("SubscriptionCheckout.SchedulePicker");
   const searchParams = useSearchParams();
   const tutorId = searchParams.get("tutorId") ?? "";
-  const planId = searchParams.get("planId") ?? "";
+  const lessonsPerWeekRaw = searchParams.get("lessonsPerWeek") ?? "";
+  const lessonsPerWeek = useMemo(() => {
+    const n = Number.parseInt(lessonsPerWeekRaw, 10);
+    if (!Number.isFinite(n) || n < 1 || n > 7) {
+      return null;
+    }
+    return n;
+  }, [lessonsPerWeekRaw]);
   const isAuth = useAtomValue(isAuthenticatedAtom);
   const { currency } = useCurrency();
   const [weekBounds, setWeekBounds] = useState(getInitialWeekBounds);
@@ -95,10 +105,12 @@ export default function SubscriptionPlanSchedulePage() {
 
   const { data: plans, isPending: isPlansLoading } = useGetSubscriptionPlansByTutor(
     tutorId,
-    Boolean(tutorId),
+    Boolean(tutorId)
   );
-  const plan = useMemo(() => plans?.find((p) => p.id === planId) ?? null, [plans, planId]);
-  const lessonsPerWeek = plan?.lessonsPerWeek ?? 0;
+  const plan = useMemo(
+    () => plans?.find((p) => p.lessonsPerWeek === lessonsPerWeek) ?? null,
+    [plans, lessonsPerWeek]
+  );
 
   const { data: schedule } = useGetTutorAvailability(tutorId, Boolean(tutorId));
   const { data: eligibility } = useGetSubscriptionEligibility(tutorId, Boolean(tutorId) && isAuth);
@@ -126,11 +138,20 @@ export default function SubscriptionPlanSchedulePage() {
         return [];
       }
       const dayOfWeek = jsDayToDbDayOfWeek(fullDate.getDay());
-      const daySlots = buildTimeSlotsForDay(rows, dayOfWeek, SLOT_INTERVAL_MINUTES);
-      return daySlots.map((slot) => ({
-        date: dateString,
-        startTime: slot.startTime,
-      }));
+      const daySlots = buildTimeSlotsForDay(
+        rows,
+        dayOfWeek,
+        SUBSCRIPTION_GRID_INTERVAL_MINUTES,
+        SUBSCRIPTION_LESSON_MINUTES
+      );
+      return daySlots.map((slot) => {
+        const endTime = minutesToTime(timeToMinutes(slot.startTime) + SUBSCRIPTION_LESSON_MINUTES);
+        return {
+          date: dateString,
+          startTime: slot.startTime,
+          endTime,
+        };
+      });
     });
   }, [schedule?.availability, weekBounds.end, weekBounds.start]);
 
@@ -138,15 +159,16 @@ export default function SubscriptionPlanSchedulePage() {
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
       setWeekBounds({ start: payload.startDate, end: payload.endDate });
     },
-    [],
+    []
   );
 
   useEffect(() => {
     setSelectedSlots([]);
-  }, [planId, tutorId, weekBounds.start]);
+  }, [lessonsPerWeek, tutorId, weekBounds.start]);
 
-  const canSubmit =
-    Boolean(isAuth && eligibility?.eligible && plan && selectedSlots.length === lessonsPerWeek);
+  const canSubmit = Boolean(
+    isAuth && eligibility?.eligible && plan && selectedSlots.length === lessonsPerWeek
+  );
 
   const handleSubmit = async () => {
     if (!canSubmit || !plan) {
@@ -155,7 +177,7 @@ export default function SubscriptionPlanSchedulePage() {
     try {
       const enrollment = await createEnrollment.mutateAsync({
         tutorId,
-        planId,
+        lessonsPerWeek: plan.lessonsPerWeek,
         currency,
         slots: selectedSlots.map((s) => ({
           date: s.date,
@@ -176,7 +198,7 @@ export default function SubscriptionPlanSchedulePage() {
     setSelectedSlots((prev) => prev.filter((s) => slotKey(s) !== key));
   };
 
-  if (!tutorId || !planId) {
+  if (!tutorId || lessonsPerWeek === null) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
         <Card className="text-center">
@@ -272,6 +294,8 @@ export default function SubscriptionPlanSchedulePage() {
               onWeekChange={handleWeekChange}
               fillAvailableHeight
               className="min-h-0 flex-1"
+              gridIntervalMinutes={SUBSCRIPTION_GRID_INTERVAL_MINUTES}
+              lessonDurationMinutes={SUBSCRIPTION_LESSON_MINUTES}
             />
           </div>
 
@@ -312,24 +336,19 @@ export default function SubscriptionPlanSchedulePage() {
                         className="group relative overflow-hidden rounded-xl border border-violet-200/60 bg-white/90 p-3 shadow-sm ring-1 ring-violet-100/40 transition-all hover:border-violet-300/80 hover:shadow-md"
                       >
                         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-xl bg-linear-to-b from-violet-500 to-fuchsia-500" />
-                        <div className="flex items-stretch gap-3 pl-1">
+                        <div className="flex h-full items-center gap-3 px-3 py-0 pl-[calc(0.75rem+1px)]">
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-violet-600 to-fuchsia-600 text-xs font-bold tabular-nums text-white shadow-sm">
                             {index + 1}
                           </span>
-                          <div className="min-w-0 flex-1 pt-0.5">
+                          <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-0.5">
                             {datePart ? (
-                              <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-violet-600">
+                              <p className="truncate text-[0.65rem] font-semibold uppercase tracking-wider text-violet-600">
                                 {datePart}
                               </p>
                             ) : null}
-                            <p
-                              className={cn(
-                                "flex items-center gap-1.5 text-sm font-semibold tracking-tight text-slate-900",
-                                datePart ? "mt-0.5" : "",
-                              )}
-                            >
+                            <p className="flex min-h-0 min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight text-slate-900">
                               <Clock className="size-3.5 shrink-0 text-fuchsia-500" />
-                              <span className="min-w-0">{timePart}</span>
+                              <span className="min-w-0 truncate">{timePart}</span>
                             </p>
                           </div>
                           <Button
@@ -349,16 +368,16 @@ export default function SubscriptionPlanSchedulePage() {
                 </ul>
               )}
             </CardContent>
-            <CardFooter className="mt-auto flex flex-col gap-2 border-t border-violet-100/80 bg-linear-to-t from-violet-50/40 to-transparent">
+            <CardFooter className="mt-auto shrink-0 flex flex-col gap-2 border-t border-violet-100/80 bg-linear-to-t from-violet-50/40 to-transparent">
               <Button
-                className="w-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)]"
+                className="w-full h-11 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)]"
                 disabled={!canSubmit || createEnrollment.isPending}
                 onClick={() => void handleSubmit()}
               >
-                {t("submit")}
+                {t('submit')}
               </Button>
               <Link
-                className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                className={cn(buttonVariants({ variant: 'outline' }), 'w-full h-11')}
                 href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutorId)}`}
               >
                 {t("back")}

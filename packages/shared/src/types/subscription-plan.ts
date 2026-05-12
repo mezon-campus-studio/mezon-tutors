@@ -1,4 +1,4 @@
-import type { ECurrency } from '../enums/currency'
+import type { ECurrency } from "../enums/currency"
 
 export interface TutorSubscriptionPlanPriceDto {
   baseCurrency: ECurrency
@@ -15,10 +15,10 @@ export interface TutorSubscriptionPlanDto {
 }
 
 export type SubscriptionEligibilityReason =
-  | 'TRIAL_NOT_COMPLETED'
-  | 'NO_PLANS'
-  | 'ALREADY_ENROLLED'
-  | 'NOT_FOUND'
+  | "TRIAL_NOT_COMPLETED"
+  | "NO_TRIAL_PRICE"
+  | "ALREADY_ENROLLED"
+  | "NOT_FOUND"
 
 export interface SubscriptionEligibilityDto {
   eligible: boolean
@@ -41,7 +41,7 @@ export interface CreateSubscriptionEnrollmentSlotDto {
 
 export interface CreateSubscriptionEnrollmentDto {
   tutorId: string
-  planId: string
+  lessonsPerWeek: number
   currency: ECurrency
   slots: CreateSubscriptionEnrollmentSlotDto[]
 }
@@ -49,7 +49,7 @@ export interface CreateSubscriptionEnrollmentDto {
 export interface SubscriptionEnrollmentDto {
   id: string
   tutorId: string
-  planId: string
+  lessonsPerWeek: number
   status: string
   weeklySlots: SubscriptionWeeklySlotDto[]
   currency: ECurrency | null
@@ -65,21 +65,10 @@ export interface SubscriptionEnrollmentDto {
 
 export interface SubscriptionEnrollmentDetailDto extends SubscriptionEnrollmentDto {
   tutor: { id: string; displayName: string; avatarUrl: string | null }
-  lessonsPerWeek: number
-}
-
-export interface ReplaceTutorSubscriptionPlanItemDto {
-  id?: string
-  lessonsPerWeek: number
-  monthlyPrice: number
-}
-
-export interface ReplaceTutorSubscriptionPlansDto {
-  plans: ReplaceTutorSubscriptionPlanItemDto[]
 }
 
 export interface TutorSubscriptionWeekOccurrenceDto {
-  scheduleKind: 'subscription'
+  scheduleKind: "subscription"
   id: string
   enrollmentId: string
   studentId: string

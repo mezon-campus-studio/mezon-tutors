@@ -56,7 +56,7 @@
     "PlanPicker": {
       "eyebrow": "Subscribe",
       "title": "Choose your monthly plan",
-      "subtitle": "Each plan includes sessions per week and a monthly price.",
+      "subtitle": "Seven standard plans (1–7 sessions per week, 60 minutes each). Monthly price = trial lesson price (one 60-minute session) × sessions per week × 4 weeks.",
       "missingTutor": "Missing tutor information.",
       "backTutors": "Browse tutors",
       "loginTitle": "Sign in to continue",
@@ -64,7 +64,7 @@
       "loginCta": "Back to home",
       "notEligibleTitle": "Not available yet",
       "notEligibleTrial": "Complete your trial lesson with successful payment first.",
-      "notEligibleNoPlans": "This tutor has not configured subscription plans.",
+      "notEligibleNoTrialPrice": "This tutor has not set a trial lesson price yet.",
       "notEligibleEnrolled": "You already have a pending or active subscription with this tutor.",
       "notEligibleGeneric": "You are not eligible to subscribe right now.",
       "lessonsPerWeek": "{n} sessions / week",
@@ -75,7 +75,7 @@
     },
     "SchedulePicker": {
       "title": "Pick your weekly schedule",
-      "pickCount": "Select exactly {n} slots for the week (each slot is 30 minutes).",
+      "pickCount": "Select exactly {n} one-hour slots for the week.",
       "missingParams": "Missing parameters.",
       "backTutors": "Browse tutors",
       "invalidPlan": "Invalid plan.",

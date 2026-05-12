@@ -35,6 +35,7 @@ type ScheduleEventItem = {
   dateLabel: string;
   timeLabel: string;
   isCompleted: boolean;
+  lessonKind: 'trial' | 'subscription';
 };
 
 const buildWeekStartMonday = (date: dayjs.Dayjs) => {
@@ -80,6 +81,7 @@ const toScheduleEvent = (
     endHour: roundToHalfHour(endLocal.hour() + endLocal.minute() / 60),
     dateLabel: startLocal.format('ddd, MMM DD'),
     timeLabel: `${startLocal.format('HH:mm')} - ${endLocal.format('HH:mm')}`,
+    lessonKind: item.scheduleKind === 'subscription' ? 'subscription' : 'trial',
   };
 };
 
@@ -228,7 +230,7 @@ export default function MyScheduleView() {
               <p className="text-sm text-slate-500">{t('loading')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+            <div className="grid min-h-0 grid-cols-1 gap-6 xl:grid-cols-[1fr_400px]">
               <MyScheduleCalendarCard
                 title={calendarTitle}
                 weekDays={weekDays}
@@ -245,7 +247,9 @@ export default function MyScheduleView() {
                 }}
               />
 
-              <MyScheduleUpcomingList items={weekListItems} />
+              <div className="min-h-0">
+                <MyScheduleUpcomingList items={weekListItems} />
+              </div>
             </div>
           )}
         </div>

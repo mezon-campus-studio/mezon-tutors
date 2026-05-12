@@ -8,7 +8,7 @@ import {
   getDashboardMenuItemsByRole,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, Package, X } from "lucide-react";
+import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -26,14 +26,12 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   payments: CreditCard,
   reports: LineChart,
   dashboard: LayoutDashboard,
-  subscriptionPlans: Package,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
   calendar: "from-purple-500 to-fuchsia-500",
   trialBookings: "from-fuchsia-500 to-rose-500",
-  subscriptionPlans: "from-amber-500 to-orange-500",
   logout: "from-rose-500 to-orange-500",
   tutorApplications: "from-sky-500 to-blue-500",
   students: "from-emerald-500 to-teal-500",

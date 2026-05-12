@@ -3,7 +3,7 @@
     "Screen": {
       "brand": "Gói đăng ký",
       "headline": "Đã đến lúc tiến bộ thật sự!",
-      "subtitle": "Đăng ký gói tháng. Giá áp dụng cho buổi học tiêu chuẩn 50 phút.",
+      "subtitle": "Đăng ký gói tháng. Giá áp dụng cho buổi học tiêu chuẩn 60 phút.",
       "selectPlan": "Chọn gói của bạn"
     },
     "PlanSelectionList": {
@@ -15,7 +15,7 @@
       "summary": "Tóm tắt",
       "title": "Kế hoạch học của bạn",
       "planCard": {
-        "title": "Buổi học chuẩn 50 phút",
+        "title": "Buổi học chuẩn 60 phút",
         "subtitle": "Lộ trình hàng tháng"
       },
       "frequency": "Tần suất",

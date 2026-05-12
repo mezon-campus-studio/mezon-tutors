@@ -13,7 +13,6 @@
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
       "logout": "Đăng xuất",
-      "subscriptionPlans": "Gói đăng ký",
       "fallbackTitle": "Bảng điều khiển"
     },
     "bookingRequests": {
@@ -151,6 +150,10 @@
       "title": "Lịch dạy",
       "subtitle": "Buổi học đã xác nhận theo tuần đang xem trên lịch; có thể chuyển tuần.",
       "completedBadge": "Đã xong",
+      "lessonTypeTrial": "Buổi thử",
+      "lessonTypePlan": "Gói học",
+      "lessonTagTrial": "Thử",
+      "lessonTagPlan": "Gói",
       "joinEnded": "Đã kết thúc",
       "loading": "Đang tải lịch dạy...",
       "header": {

@@ -13,7 +13,6 @@
       "earnings": "Earnings",
       "myLessons": "My Lessons",
       "logout": "Logout",
-      "subscriptionPlans": "Subscription plans",
       "fallbackTitle": "Dashboard"
     },
     "bookingRequests": {
@@ -151,6 +150,10 @@
       "title": "My Schedule",
       "subtitle": "Confirmed lessons for the week shown on the calendar, plus navigation by week.",
       "completedBadge": "Completed",
+      "lessonTypeTrial": "Trial lesson",
+      "lessonTypePlan": "Plan lesson",
+      "lessonTagTrial": "Trial",
+      "lessonTagPlan": "Plan",
       "joinEnded": "Ended",
       "loading": "Loading your schedule...",
       "header": {

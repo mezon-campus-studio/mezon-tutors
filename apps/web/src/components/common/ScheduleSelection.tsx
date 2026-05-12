@@ -37,6 +37,8 @@ export interface ScheduleSelectionProps {
   gridClassName?: string;
   maxBodyHeight?: string;
   fillAvailableHeight?: boolean;
+  gridIntervalMinutes?: number;
+  lessonDurationMinutes?: number;
 }
 
 type WeekDate = {
@@ -86,11 +88,15 @@ function addDays(date: Date, days: number): Date {
   return result;
 }
 
-function normalizeEndTime(startTime: string, endTime?: string): string {
+function normalizeEndTime(
+  startTime: string,
+  endTime: string | undefined,
+  defaultDurationMinutes: number
+): string {
   if (endTime) {
     return endTime;
   }
-  return minutesToTime(parseTimeToMinutes(startTime) + SLOT_MINUTES);
+  return minutesToTime(parseTimeToMinutes(startTime) + defaultDurationMinutes);
 }
 
 function buildSlotLabel(date: string, startTime: string, endTime: string): string {
@@ -103,8 +109,8 @@ function buildSlotLabel(date: string, startTime: string, endTime: string): strin
   return `${left} . ${startTime} - ${endTime}`;
 }
 
-function toSelectedSlot(slot: ScheduleSlotInput): SelectedScheduleSlot {
-  const endTime = normalizeEndTime(slot.startTime, slot.endTime);
+function toSelectedSlot(slot: ScheduleSlotInput, defaultDurationMinutes: number): SelectedScheduleSlot {
+  const endTime = normalizeEndTime(slot.startTime, slot.endTime, defaultDurationMinutes);
   return {
     date: slot.date,
     startTime: slot.startTime,
@@ -168,6 +174,8 @@ export function ScheduleSelection({
   gridClassName,
   maxBodyHeight = '520px',
   fillAvailableHeight = false,
+  gridIntervalMinutes = SLOT_MINUTES,
+  lessonDurationMinutes = SLOT_MINUTES,
 }: ScheduleSelectionProps) {
   const t = useTranslations('Common.ScheduleSelection');
   const [weekOffset, setWeekOffset] = useState(0);
@@ -209,22 +217,28 @@ export function ScheduleSelection({
   }, [weekDates]);
 
   const timeRows = useMemo(() => {
-    return Array.from({ length: MINUTES_PER_DAY / SLOT_MINUTES }).map((_, index) =>
-      minutesToTime(index * SLOT_MINUTES)
+    return Array.from({ length: MINUTES_PER_DAY / gridIntervalMinutes }).map((_, index) =>
+      minutesToTime(index * gridIntervalMinutes)
     );
-  }, []);
+  }, [gridIntervalMinutes]);
 
   const availableCellSet = useMemo(() => {
     const set = new Set<string>();
     for (const slot of availableSlots) {
       const start = parseTimeToMinutes(slot.startTime);
-      const end = parseTimeToMinutes(normalizeEndTime(slot.startTime, slot.endTime));
-      for (let minute = start; minute + SLOT_MINUTES <= end; minute += SLOT_MINUTES) {
+      const end = parseTimeToMinutes(
+        normalizeEndTime(slot.startTime, slot.endTime, lessonDurationMinutes)
+      );
+      for (
+        let minute = start;
+        minute + lessonDurationMinutes <= end;
+        minute += gridIntervalMinutes
+      ) {
         set.add(`${slot.date}|${minutesToTime(minute)}`);
       }
     }
     return set;
-  }, [availableSlots]);
+  }, [availableSlots, lessonDurationMinutes, gridIntervalMinutes]);
 
   const selectedSet = useMemo(() => {
     return new Set(selectedSlots.map((slot) => toSlotKey(slot)));
@@ -283,7 +297,7 @@ export function ScheduleSelection({
       `[data-schedule-row="${CSS.escape(scrollTargetRowStartTime)}"]`
     );
     rowEl?.scrollIntoView({ block: 'center', behavior: 'auto' });
-  }, [scrollTargetRowStartTime, weekOffset, availableSlots]);
+  }, [scrollTargetRowStartTime, weekOffset, availableSlots, gridIntervalMinutes, lessonDurationMinutes]);
 
   const handleCellSelect = (date: string, startTime: string) => {
     const key = `${date}|${startTime}`;
@@ -299,7 +313,7 @@ export function ScheduleSelection({
       return;
     }
 
-    const newSlot = toSelectedSlot({ date, startTime });
+    const newSlot = toSelectedSlot({ date, startTime }, lessonDurationMinutes);
     if (selectionMode === 'single') {
       emitChange([newSlot]);
       return;
@@ -326,10 +340,8 @@ export function ScheduleSelection({
     <div
       className={cn(
         'rounded-2xl border bg-background p-3 sm:p-4',
-        fillAvailableHeight
-          ? 'flex min-h-0 flex-1 flex-col gap-3'
-          : 'space-y-3',
-        className,
+        fillAvailableHeight ? 'flex min-h-0 flex-1 flex-col gap-3' : 'space-y-3',
+        className
       )}
     >
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
@@ -401,7 +413,7 @@ export function ScheduleSelection({
         ref={scrollBodyRef}
         className={cn(
           'min-h-0 overflow-auto rounded-xl border bg-background',
-          fillAvailableHeight && 'flex-1 basis-0',
+          fillAvailableHeight && 'flex-1 basis-0'
         )}
         style={bodyScrollStyle}
       >
@@ -458,7 +470,7 @@ export function ScheduleSelection({
                     aria-label={buildSlotLabel(
                       day.id,
                       startTime,
-                      minutesToTime(parseTimeToMinutes(startTime) + SLOT_MINUTES)
+                      minutesToTime(parseTimeToMinutes(startTime) + lessonDurationMinutes)
                     )}
                   >
                     {cellType === 'pastAvailable' ? (
