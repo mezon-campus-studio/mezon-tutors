@@ -1,17 +1,17 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/api-client";
 import { dmChannelQueryKey } from "./dm-channel.qkey";
 
-type UpsertDmChannelPayload = {
-  studentId: string;
-  tutorId: string;
+export type CreateDmChannelPayload = {
+  senderId: string;
+  recipientId: string;
   channelId: string;
 };
 
 export type DmChannelRecord = {
   id: string;
-  studentId: string;
-  tutorId: string;
+  senderId: string;
+  recipientId: string;
   channelId: string;
   createdAt: string;
   updatedAt: string;
@@ -20,8 +20,8 @@ export type DmChannelRecord = {
 export type MyDmChannelItem = {
   id: string;
   channelId: string;
-  studentId: string;
-  tutorId: string;
+  senderId: string;
+  recipientId: string;
   peerId: string;
   peerName: string;
   peerAvatar: string;
@@ -30,16 +30,16 @@ export type MyDmChannelItem = {
 };
 
 const dmChannelApi = {
-  getByStudentAndTutor(studentId: string, tutorId: string): Promise<DmChannelRecord | null> {
+  getBetweenUsers(userId: string, peerUserId: string): Promise<DmChannelRecord | null> {
     return apiClient.get("/dm-channels", {
       params: {
-        studentId,
-        tutorId,
+        senderId: userId,
+        recipientId: peerUserId,
       },
     });
   },
 
-  upsert(payload: UpsertDmChannelPayload): Promise<DmChannelRecord> {
+  create(payload: CreateDmChannelPayload): Promise<DmChannelRecord> {
     return apiClient.post("/dm-channels", payload);
   },
 
@@ -48,19 +48,26 @@ const dmChannelApi = {
   },
 };
 
-export function useGetDmChannel(studentId: string, tutorId: string, enabled = true) {
+export function useGetDmChannel(userId: string, peerUserId: string, enabled = true) {
   return useQuery({
-    queryKey: dmChannelQueryKey.byStudentAndTutor(studentId, tutorId),
-    queryFn: () => dmChannelApi.getByStudentAndTutor(studentId, tutorId),
-    enabled: Boolean(studentId) && Boolean(tutorId) && enabled,
+    queryKey: dmChannelQueryKey.byParticipantPair(userId, peerUserId),
+    queryFn: () => dmChannelApi.getBetweenUsers(userId, peerUserId),
+    enabled: Boolean(userId) && Boolean(peerUserId) && enabled,
     staleTime: 0,
     gcTime: 0,
   });
 }
 
-export function useUpsertDmChannelMutation() {
+export function useCreateDmChannelMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: UpsertDmChannelPayload) => dmChannelApi.upsert(payload),
+    mutationFn: (payload: CreateDmChannelPayload) => dmChannelApi.create(payload),
+    onSuccess: (_data, payload) => {
+      void queryClient.invalidateQueries({
+        queryKey: dmChannelQueryKey.byParticipantPair(payload.senderId, payload.recipientId),
+      });
+      void queryClient.invalidateQueries({ queryKey: ['my-dm-channels'] });
+    },
   });
 }
 

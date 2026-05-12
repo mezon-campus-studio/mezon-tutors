@@ -117,7 +117,7 @@ export class MyLessonsService {
       id: lesson.id,
       subject: lesson.tutor.subject,
       tutor_id: lesson.tutor.id,
-      tutor_user_id: lesson.tutor.user.id,
+      tutor_user_id: lesson.tutor.userId,
       tutor_name: this.getTutorName(lesson.tutor),
       tutor_avatar: lesson.tutor.avatar || lesson.tutor.user.avatar,
       tutor_mezon_user_id: lesson.tutor.user.mezonUserId,

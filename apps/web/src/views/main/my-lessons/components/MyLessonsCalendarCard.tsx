@@ -10,7 +10,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import type { LessonItem, MyLessonsCalendarMeta } from '@/services';
 import { userAtom } from '@/store/auth.atom';
 import ScheduleEventModal from '@/views/main/my-schedule/components/ScheduleEventModal';
-import { TutorMessageModal } from '@/views/main/tutors/components/TutorMessageModal';
+import { SendMessageModal } from '@/components/common/SendMessageModal';
 import MyLessonsEventCard from './MyLessonsEventCard';
 import { useAtomValue } from 'jotai';
 
@@ -159,13 +159,13 @@ export default function MyLessonsCalendarCard({
         onSendMessage={() => setMessageOpen(true)}
       />
 
-      <TutorMessageModal
+      <SendMessageModal
         open={messageOpen && pickedLesson !== null}
-        tutorFirstName={tutorPeerFirstName}
-        studentId={user?.id ?? ""}
-        studentMezonUserId={user?.mezonUserId}
-        tutorId={pickedLesson?.tutorId ?? ""}
-        tutorMezonUserId={pickedLesson?.tutorMezonUserId ?? undefined}
+        title={tutorPeerFirstName}
+        senderId={user?.id ?? ''}
+        senderMezonUserId={user?.mezonUserId ?? ''}
+        recipientId={pickedLesson?.tutorUserId ?? ''}
+        recipientMezonUserId={pickedLesson?.tutorMezonUserId ?? ''}
         onOpenChangeAction={(open) => {
           setMessageOpen(open);
           if (!open) setPickedLesson(null);

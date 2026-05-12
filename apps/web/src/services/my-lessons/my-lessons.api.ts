@@ -39,6 +39,7 @@ export type LessonItem = {
   subject: string;
   tutor: string;
   tutorId: string;
+  tutorUserId: string;
   tutorAvatar: string;
   tutorMezonUserId?: string | null;
   category: LessonCategory;
@@ -119,6 +120,7 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     subject: item.subject,
     tutor: item.tutor_name,
     tutorId: item.tutor_id,
+    tutorUserId: item.tutor_user_id,
     tutorAvatar: item.tutor_avatar,
     tutorMezonUserId: item.tutor_mezon_user_id,
     category: mapCategory(item.category),

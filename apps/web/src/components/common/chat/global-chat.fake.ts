@@ -1,12 +1,12 @@
 type FakeMessage = {
   id: string;
-  sender: "student" | "tutor";
+  sender: 'sender' | 'recipient';
   content: string;
 };
 
 type Translator = (key: string, values?: Record<string, string | number>) => string;
 
-const MESSAGE_SENDERS: Array<"student" | "tutor" | "student"> = ["student", "tutor", "student"];
+const MESSAGE_SENDERS: Array<'sender' | 'recipient' | 'sender'> = ['sender', 'recipient', 'sender'];
 const TOTAL_FAKE_SETS = 10;
 
 export function getRandomFakeSetIndex() {

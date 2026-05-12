@@ -108,8 +108,8 @@ model User {
   tutorProfile           TutorProfile?
   trialLessonBookings    TrialLessonBooking[]
   tutorReviews           TutorReview[]           @relation("TutorReviewAuthor")
-  studentDmChannels      UserDmChannel[]         @relation("UserDmChannelStudent")
-  tutorDmChannels        UserDmChannel[]         @relation("UserDmChannelTutor")
+  senderDmChannels       UserDmChannel[]         @relation("UserDmChannelSender")
+  recipientDmChannels    UserDmChannel[]         @relation("UserDmChannelRecipient")
   refreshTokens          RefreshToken[]
   wallet                 Wallet?
   withdrawals            Withdrawal[]
@@ -334,21 +334,20 @@ model TrialLessonBooking {
   @@map("trial_lesson_booking")
 }
 
-/// DM channel mapping between one student and one tutor user
 model UserDmChannel {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  studentId String   @map("student_id") @db.Uuid
-  tutorId   String   @map("tutor_id") @db.Uuid
-  channelId String   @unique @map("channel_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId    String   @map("sender_id") @db.Uuid
+  recipientId String   @map("recipient_id") @db.Uuid
+  channelId   String   @unique @map("channel_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  student User @relation("UserDmChannelStudent", fields: [studentId], references: [id], onDelete: Cascade)
-  tutor   User @relation("UserDmChannelTutor", fields: [tutorId], references: [id], onDelete: Cascade)
+  sender    User @relation("UserDmChannelSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("UserDmChannelRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, tutorId])
-  @@index([studentId])
-  @@index([tutorId])
+  @@unique([senderId, recipientId])
+  @@index([senderId])
+  @@index([recipientId])
   @@map("user_dm_channels")
 }
 

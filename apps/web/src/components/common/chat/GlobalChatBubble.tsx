@@ -53,11 +53,11 @@ export default function GlobalChatBubble() {
   const runtimeMessages = selectedChannel
     ? (runtimeMessagesByChannel[selectedChannel.channelId] ?? [])
     : [];
-  const mySenderRole = useMemo<'student' | 'tutor' | null>(() => {
+  const mySenderRole = useMemo<'sender' | 'recipient' | null>(() => {
     if (!selectedChannel || !currentUser?.id) {
       return null;
     }
-    return selectedChannel.studentId === currentUser.id ? 'student' : 'tutor';
+    return selectedChannel.senderId === currentUser.id ? 'sender' : 'recipient';
   }, [selectedChannel, currentUser?.id]);
 
   const fakeMessages = useMemo(

@@ -17,7 +17,7 @@ import { mapTutorBookingStatusToUi } from '../trial-bookings';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/store';
 import ScheduleEventModal from './components/ScheduleEventModal';
-import { TutorMessageModal } from '../tutors/components/TutorMessageModal';
+import { SendMessageModal } from '@/components/common/SendMessageModal';
 
 type ScheduleEventItem = {
   id: string;
@@ -226,13 +226,13 @@ export default function MyScheduleView() {
         onSendMessage={() => setMessageOpen(true)}
       />
 
-      <TutorMessageModal
+      <SendMessageModal
         open={messageOpen && pickedEvent !== null}
-        tutorFirstName={pickedEvent?.studentName?.trim().split(/\s+/)[0] ?? ''}
-        studentId={pickedEvent?.studentId ?? ''}
-        tutorId={pickedEvent?.tutorId ?? ''}
-        tutorMezonUserId={user?.mezonUserId}
-        recipientMezonUserId={pickedEvent?.studentMezonUserId ?? undefined}
+        title={pickedEvent?.studentName?.trim().split(/\s+/)[0] ?? ''}
+        senderId={user?.id ?? ''}
+        senderMezonUserId={user?.mezonUserId ?? ''}
+        recipientId={pickedEvent?.studentId ?? ''}
+        recipientMezonUserId={pickedEvent?.studentMezonUserId ?? ''}
         onOpenChangeAction={(open) => {
           setMessageOpen(open);
           if (!open) setPickedEvent(null);
