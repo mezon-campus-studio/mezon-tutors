@@ -21,6 +21,7 @@ import { VnpayModule } from './modules/vnpay/vnpay.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MezonBotModule } from './modules/mezon-bot/mezon-bot.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { AppService } from './app.service';
 
 @Module({
@@ -54,6 +55,7 @@ import { AppService } from './app.service';
     WebhookModule,
     NotificationModule,
     MezonBotModule,
+    SubscriptionModule,
   ],
   controllers: [HealthController],
   providers: [

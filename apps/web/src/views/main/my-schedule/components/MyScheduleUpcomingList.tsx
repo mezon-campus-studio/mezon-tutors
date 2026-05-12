@@ -9,8 +9,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Badge,
   Button,
 } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
 
 type MyScheduleUpcomingListProps = {
@@ -31,6 +33,7 @@ export default function MyScheduleUpcomingList({
   items,
 }: MyScheduleUpcomingListProps) {
   const t = useTranslations('Dashboard.mySchedule.upcoming');
+  const tSchedule = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
 
   return (
@@ -70,12 +73,17 @@ export default function MyScheduleUpcomingList({
       ) : (
         <div className="flex max-h-[640px] flex-col gap-3 overflow-y-auto pr-1">
           {items.map((item) => {
+            const isSubscription = item.scheduleKind === 'subscription';
             const start = dayjs(item.startAt).locale(locale);
             const end = start.add(item.durationMinutes, 'minute');
+            const isCompleted = end.isBefore(dayjs());
             return (
               <div
                 key={item.id}
-                className="group flex w-full flex-col gap-3 rounded-2xl border border-violet-100 bg-white p-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40"
+                className={cn(
+                  'group flex w-full flex-col gap-3 rounded-2xl border border-violet-100 bg-white p-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40',
+                  isCompleted && 'opacity-90',
+                )}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="size-12 rounded-xl border border-violet-100">
@@ -91,15 +99,30 @@ export default function MyScheduleUpcomingList({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-violet-600">
-                      {start.format('ddd, MMM DD')}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs font-semibold text-violet-600">
+                        {start.format('ddd, MMM DD')}
+                      </p>
+                      {isCompleted ? (
+                        <Badge
+                          variant="secondary"
+                          className="shrink-0 px-2 py-0 text-[10px] font-bold uppercase tracking-wide"
+                        >
+                          {tSchedule('completedBadge')}
+                        </Badge>
+                      ) : null}
+                    </div>
                     <p className="text-base font-extrabold leading-tight text-slate-900">
                       {start.format('HH:mm')} - {end.format('HH:mm')}
                     </p>
                     <p className="mt-0.5 truncate text-xs text-slate-600">
                       {item.studentName}
                     </p>
+                    {isSubscription ? (
+                      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-fuchsia-600">
+                        {t('subscriptionBadge')}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
@@ -109,25 +132,41 @@ export default function MyScheduleUpcomingList({
                     {t('durationLabel', { minutes: item.durationMinutes })}
                   </div>
                   <span className="text-xs font-bold text-violet-700">
-                    {formatToCurrency(ECurrency.VND, item.tutorAmount)}
+                    {isSubscription ? '—' : formatToCurrency(ECurrency.VND, item.tutorAmount)}
                   </span>
                 </div>
 
                 <div className="flex gap-2">
-                  <Link
-                    href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}
-                    className="flex-1"
-                  >
-                    <Button
-                      variant="outline"
-                      className="h-9 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                  {!isSubscription ? (
+                    <Link
+                      href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}
+                      className="flex-1"
                     >
-                      {t('viewDetail')}
-                    </Button>
-                  </Link>
-                  <Button className="h-9 flex-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+                      <Button
+                        variant="outline"
+                        className="h-9 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                      >
+                        {t('viewDetail')}
+                      </Button>
+                    </Link>
+                  ) : null}
+                  <Button
+                    disabled={isCompleted}
+                    className={cn(
+                      'h-9 rounded-full text-xs font-semibold',
+                      isCompleted
+                        ? cn(
+                            'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-500 shadow-none hover:bg-slate-100',
+                            isSubscription ? 'w-full' : 'flex-1',
+                          )
+                        : cn(
+                            'shadow-md bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50',
+                            isSubscription ? 'w-full' : 'flex-1',
+                          ),
+                    )}
+                  >
                     <Video className="mr-1.5 size-3.5" />
-                    {t('joinLesson')}
+                    {isCompleted ? tSchedule('joinEnded') : t('joinLesson')}
                   </Button>
                 </div>
               </div>

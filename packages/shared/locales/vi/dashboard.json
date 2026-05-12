@@ -13,6 +13,7 @@
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
       "logout": "Đăng xuất",
+      "subscriptionPlans": "Gói đăng ký",
       "fallbackTitle": "Bảng điều khiển"
     },
     "bookingRequests": {
@@ -148,7 +149,9 @@
     "mySchedule": {
       "eyebrow": "Khu vực gia sư",
       "title": "Lịch dạy",
-      "subtitle": "Theo dõi tất cả buổi học đã xác nhận trong một lịch.",
+      "subtitle": "Buổi học đã xác nhận theo tuần đang xem trên lịch; có thể chuyển tuần.",
+      "completedBadge": "Đã xong",
+      "joinEnded": "Đã kết thúc",
       "loading": "Đang tải lịch dạy...",
       "header": {
         "viewRequests": "Buổi học thử"
@@ -160,13 +163,14 @@
         "company": "Mezonly Tutors"
       },
       "upcoming": {
-        "eyebrow": "Sắp tới",
-        "title": "Buổi học sắp tới",
-        "emptyTitle": "Chưa có buổi học sắp tới",
-        "emptyDescription": "Các buổi học đã xác nhận sẽ hiển thị ở đây khi được lên lịch.",
+        "eyebrow": "Tuần này",
+        "title": "Buổi học",
+        "emptyTitle": "Chưa có buổi học tuần này",
+        "emptyDescription": "Chọn tuần khác, hoặc mở Buổi học thử khi có yêu cầu mới.",
         "durationLabel": "{minutes} phút",
         "viewDetail": "Chi tiết",
-        "joinLesson": "Vào lớp"
+        "joinLesson": "Vào lớp",
+        "subscriptionBadge": "Gói theo tháng"
       }
     },
     "scheduleEventModal": {

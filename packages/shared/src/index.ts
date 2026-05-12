@@ -6,6 +6,7 @@ export * from './types/auth';
 export * from './types/tutor-profile';
 export * from './types/my-lessons-api';
 export * from './types/trial-lesson-booking';
+export * from './types/subscription-plan';
 
 // Enums
 export * from './enums/verification-status';
@@ -55,4 +56,5 @@ export * from './utils/date-time';
 export * from './utils/rating';
 export * from './utils/pagination';
 export * from './utils/tutor-availability-time-slots';
+export * from './utils/subscription-week-occurrences';
 export * from './utils/currency';

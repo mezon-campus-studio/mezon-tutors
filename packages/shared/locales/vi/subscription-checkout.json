@@ -52,6 +52,104 @@
           "subtitle": "Dữ liệu của bạn được bảo vệ bằng mã hóa SSL 256-bit chuẩn ngành."
         }
       ]
+    },
+    "PlanPicker": {
+      "eyebrow": "Đăng ký",
+      "title": "Chọn gói học theo tháng",
+      "subtitle": "Mỗi gói gồm số buổi mỗi tuần và giá thanh toán hàng tháng.",
+      "missingTutor": "Thiếu thông tin gia sư.",
+      "backTutors": "Danh sách gia sư",
+      "loginTitle": "Đăng nhập để tiếp tục",
+      "loginDescription": "Bạn cần đăng nhập để xem gói và đăng ký.",
+      "loginCta": "Về trang chủ",
+      "notEligibleTitle": "Chưa thể đăng ký",
+      "notEligibleTrial": "Bạn cần hoàn thành buổi học thử và thanh toán thành công trước.",
+      "notEligibleNoPlans": "Gia sư chưa thiết lập gói đăng ký.",
+      "notEligibleEnrolled": "Bạn đã có đăng ký đang chờ hoặc đang hiệu lực với gia sư này.",
+      "notEligibleGeneric": "Hiện không đủ điều kiện đăng ký.",
+      "lessonsPerWeek": "{n} buổi / tuần",
+      "perMonth": "mỗi tháng",
+      "emptyPlans": "Chưa có gói nào.",
+      "back": "Quay lại",
+      "continueSchedule": "Chọn lịch ({n} buổi)"
+    },
+    "SchedulePicker": {
+      "title": "Chọn lịch học hàng tuần",
+      "pickCount": "Chọn đúng {n} buổi trong tuần (mỗi ô 30 phút).",
+      "missingParams": "Thiếu tham số.",
+      "backTutors": "Danh sách gia sư",
+      "invalidPlan": "Gói không hợp lệ.",
+      "backPlans": "Quay lại chọn gói",
+      "noPlansForTutor": "Không có gói cho gia sư này.",
+      "lockedTitle": "Cần đủ điều kiện",
+      "lockedDescription": "Đăng nhập và hoàn thành buổi thử để chọn lịch.",
+      "selectedTitle": "Đã chọn ({count}/{total})",
+      "selectedHint": "Chọn ô trên lịch. Có thể xóa ở đây trước khi gửi.",
+      "selectedEmpty": "Chưa chọn buổi nào.",
+      "removeSlot": "Bỏ buổi này",
+      "back": "Quay lại chọn gói",
+      "submit": "Gửi đăng ký",
+      "toastSuccessTitle": "Đã gửi",
+      "toastSuccessDescription": "Đăng ký đang chờ thanh toán.",
+      "toastErrorTitle": "Lỗi",
+      "toastErrorFallback": "Không thể gửi."
+    },
+    "Result": {
+      "subscriptionSuccess": {
+        "loading": "Đang tải thông tin đăng ký…",
+        "badge": "Đăng ký",
+        "headline": "Cảm ơn bạn đã thanh toán",
+        "subheadline": "Gói theo tháng được xác nhận khi thanh toán thành công. Bạn có thể xem chi tiết bên dưới.",
+        "notFound": "Không tìm thấy đăng ký này.",
+        "errorTitle": "Đã có lỗi xảy ra",
+        "errorDescription": "Vui lòng thử lại hoặc quay về danh sách gia sư.",
+        "unauthorizedTitle": "Cần đăng nhập",
+        "unauthorizedDescription": "Đăng nhập bằng tài khoản đã dùng để đăng ký để xem trang này.",
+        "unauthorizedDescriptionShort": "Đăng nhập bằng tài khoản đã dùng để đăng ký.",
+        "ctaHome": "Trang chủ",
+        "retry": "Thử lại",
+        "ctaTutors": "Danh sách gia sư",
+        "ctaMyLessons": "Lịch học của tôi",
+        "enrollmentRef": "Mã đăng ký",
+        "copyRef": "Sao chép mã",
+        "copiedToast": "Đã sao chép",
+        "tutorSection": "Gia sư của bạn",
+        "lessonsPerWeekLabel": "{n} buổi mỗi tuần",
+        "paymentSection": "Thanh toán",
+        "amountPaid": "Số tiền",
+        "paidAt": "Thanh toán lúc",
+        "pendingPaymentHint": "Thanh toán đang xử lý. Làm mới trang sau vài phút nếu chưa cập nhật.",
+        "paymentStatus": {
+          "SUCCEEDED": "Đã thanh toán",
+          "PENDING": "Đang chờ",
+          "FAILED": "Thất bại",
+          "REFUNDED": "Đã hoàn tiền"
+        },
+        "enrollmentStatus": {
+          "PENDING_PAYMENT": "Chờ thanh toán",
+          "ACTIVE": "Đang hiệu lực",
+          "CANCELLED": "Đã hủy"
+        }
+      }
+    },
+    "TutorPlansEditor": {
+      "title": "Gói đăng ký",
+      "notTutor": "Chỉ gia sư mới xem được trang này.",
+      "backDashboard": "Dashboard",
+      "planLabel": "Gói {index}",
+      "lessonsPerWeek": "Buổi / tuần",
+      "lessonsWeekOption": "{n} buổi / tuần",
+      "monthlyPriceInBase": "Giá theo tháng ({currency})",
+      "baseCurrencyHint": "Loại tiền nhập theo cấu hình giá buổi thử trong hồ sơ: {currency}.",
+      "needTrialPriceTitle": "Chưa có giá buổi thử",
+      "needTrialPriceDescription": "Cần cấu hình giá buổi học thử (và loại tiền chính) trong hồ sơ gia sư trước khi quản lý gói đăng ký.",
+      "needTrialPriceCta": "Cập nhật hồ sơ",
+      "addPlan": "Thêm gói",
+      "noPlansYet": "Chưa có gói. Thêm gói bên dưới.",
+      "save": "Lưu",
+      "toastSaved": "Đã lưu gói.",
+      "toastErrorTitle": "Không lưu được",
+      "toastError": "Đã có lỗi xảy ra."
     }
   }
 }

@@ -28,6 +28,7 @@ export type SelectedScheduleSlot = {
 export interface ScheduleSelectionProps {
   availableSlots: ScheduleSlotInput[];
   selectionMode?: SelectionMode;
+  maxSelections?: number;
   value?: SelectedScheduleSlot[];
   defaultValue?: SelectedScheduleSlot[];
   onChange?: (slots: SelectedScheduleSlot[]) => void;
@@ -158,6 +159,7 @@ function getScheduleCellClassName(type: ScheduleCellType): string {
 export function ScheduleSelection({
   availableSlots,
   selectionMode = 'single',
+  maxSelections,
   value,
   defaultValue = [],
   onChange,
@@ -306,6 +308,9 @@ export function ScheduleSelection({
     const exists = selectedSet.has(key);
     if (exists) {
       emitChange(selectedSlots.filter((slot) => toSlotKey(slot) !== key));
+      return;
+    }
+    if (maxSelections != null && selectedSlots.length >= maxSelections) {
       return;
     }
     emitChange(

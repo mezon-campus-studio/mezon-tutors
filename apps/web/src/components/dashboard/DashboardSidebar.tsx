@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  Package,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import { userAtom } from '@/store/auth.atom';
@@ -30,14 +31,21 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   payments: CreditCard,
   reports: LineChart,
   dashboard: LayoutDashboard,
+  subscriptionPlans: Package,
 };
 
-const ICON_ACCENT_MAP = {
+const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
   calendar: "from-purple-500 to-fuchsia-500",
   trialBookings: "from-fuchsia-500 to-rose-500",
+  subscriptionPlans: "from-amber-500 to-orange-500",
   logout: "from-rose-500 to-orange-500",
-} as const;
+  tutorApplications: "from-sky-500 to-blue-500",
+  students: "from-emerald-500 to-teal-500",
+  payments: "from-amber-500 to-yellow-500",
+  reports: "from-indigo-500 to-violet-500",
+  dashboard: "from-slate-500 to-slate-600",
+};
 
 type DashboardSidebarProps = {
   userRole: string | null | undefined;

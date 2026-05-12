@@ -52,10 +52,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <DashboardSidebar userRole={user.role} />
       <DashboardMobileDrawer
         isOpen={isMobileDrawerOpen}
-        onClose={() => setIsMobileDrawerOpen(false)}
+        onCloseAction={() => setIsMobileDrawerOpen(false)}
         userRole={user.role}
         pathname={pathname}
-        onLogout={handleLogout}
+        onLogoutAction={handleLogout}
       />
 
       <main className="flex-1 overflow-auto md:ml-64">{children}</main>

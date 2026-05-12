@@ -19,6 +19,16 @@ export class WebhookController {
     return res.redirect(302, url)
   }
 
+  @SkipApiResponseWrap()
+  @Get('vnpay/subscription-enrollment/return')
+  async handleVnpaySubscriptionEnrollmentReturn(
+    @Query() query: Record<string, string | string[] | undefined>,
+    @Res() res: Response
+  ) {
+    const url = await this.webhookService.buildSubscriptionEnrollmentVnpayReturnRedirectUrl(query)
+    return res.redirect(302, url)
+  }
+
   @Get('vnpay/return')
   handleVnpayReturn(@Query() query: Record<string, string | string[] | undefined>) {
     return this.webhookService.handleVnpayReturn(query)
