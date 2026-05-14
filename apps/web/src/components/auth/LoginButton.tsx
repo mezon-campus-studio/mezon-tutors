@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAtomValue, useSetAtom } from "jotai";
-import { ROUTES, isAdminRole } from "@mezon-tutors/shared";
 import { authService } from "@/services";
 import {
   isAuthenticatedAtom,
@@ -42,7 +40,6 @@ type LoginButtonProps = {
 };
 
 export function LoginButton({ label }: LoginButtonProps) {
-  const router = useRouter();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const setUser = useSetAtom(userAtom);
@@ -83,18 +80,12 @@ export function LoginButton({ label }: LoginButtonProps) {
         if (loginUser?.mezonUserId) {
           const authUser = toAuthUser({ ...loginUser, idToken });
           setUser(authUser);
-          if (isAdminRole(authUser.role)) {
-            router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
-          }
         } else {
           void authService
             .getMe()
             .then((data) => {
               const authUser = toAuthUser({ ...data, idToken });
               setUser(authUser);
-              if (isAdminRole(authUser.role)) {
-                router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
-              }
             })
             .catch(() => {
               setAccessToken(null);

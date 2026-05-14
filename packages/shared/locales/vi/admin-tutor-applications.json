@@ -61,41 +61,25 @@
       },
       "documents": {
         "identityVerification": {
-          "title": "Xác thực danh tính",
-          "subtitle": "Kiểm tra giấy tờ tuỳ thân của gia sư trước khi duyệt đơn đăng ký.",
-          "pending": "Đang chờ kiểm duyệt",
+          "title": "Giấy tờ tuỳ thân",
+          "subtitle": "Đính kèm trong đơn đăng ký. Chỉ xem.",
           "uploadedAt": "Tải lên ngày {date}",
-          "approve": "Duyệt giấy tờ",
-          "reject": "Từ chối",
-          "download": "Tải xuống giấy tờ",
-          "idTypeLabel": "Hộ chiếu / Giấy tờ tuỳ thân",
-          "idPreviewPlaceholder": "Xem trước giấy tờ",
-          "noDocument": "Chưa tải lên giấy tờ tuỳ thân",
-          "checklist": {
-            "title": "Danh sách kiểm tra xác minh",
-            "nameMatchesProfile": "Tên khớp với hồ sơ",
-            "documentNotExpired": "Giấy tờ còn hiệu lực",
-            "photoClarity": "Kiểm tra độ rõ của ảnh"
-          }
+          "download": "Mở tệp",
+          "noDocument": "Chưa có giấy tờ tuỳ thân",
+          "idTypeLabel": "Hộ chiếu / Giấy tờ tuỳ thân"
         },
         "professionalDocuments": {
           "title": "Tài liệu chuyên môn",
-          "subtitle": "Xem bằng cấp, chứng chỉ và điểm ngoại ngữ để xác thực trình độ.",
+          "subtitle": "Bằng cấp, chứng chỉ. Chỉ xem.",
+          "empty": "Chưa có tài liệu chuyên môn.",
           "headers": {
             "documentName": "Tên tài liệu",
             "type": "Loại",
-            "issueDate": "Ngày cấp",
             "status": "Trạng thái",
-            "actions": "Hành động"
+            "uploadedAt": "Ngày tải",
+            "file": "Tệp"
           },
-          "status": {
-            "verified": "Đã xác thực",
-            "new": "Mới"
-          },
-          "actions": {
-            "approve": "Duyệt tài liệu",
-            "reject": "Từ chối"
-          }
+          "openFile": "Mở"
         }
       }
     },
@@ -112,7 +96,6 @@
       }
     },
     "modals": {
-      "defaultDocName": "tài liệu này",
       "approve": {
         "title": "Duyệt đơn đăng ký",
         "description": "Bạn có chắc chắn muốn duyệt đơn đăng ký của {name}? Hành động này sẽ cấp quyền gia sư cho họ.",
@@ -132,30 +115,7 @@
         "title": "Lưu ghi chú nội bộ",
         "description": "Bạn có chắc chắn muốn lưu ghi chú nội bộ này?",
         "confirm": "Lưu"
-      },
-      "idApproval": {
-        "title": "Duyệt giấy tờ tuỳ thân",
-        "description": "Bạn có chắc chắn muốn duyệt giấy tờ tuỳ thân cho {name}?",
-        "confirm": "Duyệt ID"
-      },
-      "idRejection": {
-        "title": "Từ chối giấy tờ tuỳ thân",
-        "description": "Bạn có chắc chắn muốn từ chối giấy tờ tuỳ thân cho {name}?",
-        "confirm": "Từ chối ID"
-      },
-      "docApproval": {
-        "title": "Duyệt tài liệu chuyên môn",
-        "description": "Bạn có chắc chắn muốn duyệt tài liệu \"{name}\"?",
-        "confirm": "Duyệt"
-      },
-      "docRejection": {
-        "title": "Từ chối tài liệu chuyên môn",
-        "description": "Bạn có chắc chắn muốn từ chối tài liệu \"{name}\"?",
-        "confirm": "Từ chối"
       }
-    },
-    "messages": {
-      "docStatusUpdated": "Cập nhật trạng thái tài liệu thành công"
     }
   }
 }

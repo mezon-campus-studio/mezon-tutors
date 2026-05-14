@@ -99,23 +99,20 @@ const mapWeekDay = (item: MyLessonWeekDayApiItem): WeekDay => ({
   dateLabel: item.date_label,
 });
 
+const roundToHalfHour = (hour: number): number => {
+  const wholeHour = Math.floor(hour);
+  const minutes = (hour - wholeHour) * 60;
+
+  if (minutes < 15) {
+    return wholeHour;
+  }
+  if (minutes < 45) {
+    return wholeHour + 0.5;
+  }
+  return wholeHour + 1;
+};
+
 const mapLesson = (item: MyLessonApiItem): LessonItem => {
-  const startHourLocal = dayjs.utc().hour(item.start_hour).local().hour();
-  const endHourLocal = dayjs.utc().hour(item.end_hour).local().hour();
-
-  const roundToHalfHour = (hour: number): number => {
-    const wholeHour = Math.floor(hour);
-    const minutes = (hour - wholeHour) * 60;
-
-    if (minutes < 15) {
-      return wholeHour;
-    } else if (minutes < 45) {
-      return wholeHour + 0.5;
-    } else {
-      return wholeHour + 1;
-    }
-  };
-
   return {
     id: item.id,
     subject: item.subject,
@@ -129,8 +126,8 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     dateLabel: item.date_label,
     timeLabel: item.time_label,
     dayIndex: item.day_index,
-    startHour: roundToHalfHour(startHourLocal),
-    endHour: roundToHalfHour(endHourLocal),
+    startHour: roundToHalfHour(item.start_hour),
+    endHour: roundToHalfHour(item.end_hour),
     source: item.source ?? 'trial',
   }
 };

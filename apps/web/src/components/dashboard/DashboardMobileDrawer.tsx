@@ -6,6 +6,7 @@ import {
   type DashboardMenuItem,
   type DashboardRole,
   getDashboardMenuItemsByRole,
+  isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, X } from "lucide-react";
@@ -80,9 +81,8 @@ export default function DashboardMobileDrawer({
     onCloseAction();
   };
 
-  const isActive = (item: DashboardMenuItem) => {
-    return item.type === "link" && item.href === pathname;
-  };
+  const isActive = (item: DashboardMenuItem) =>
+    isDashboardSidebarLinkActive(item, pathname);
 
   return (
     <>

@@ -1,5 +1,5 @@
 import AdminLayout from "@/components/admin/AdminLayout";
-import { AdminGuard } from "@/components/guards/AdminGuard";
+import { RoleGuard } from "@/components/guards/RoleGuard";
 
 export default function AdminRootLayout({
   children,
@@ -7,8 +7,8 @@ export default function AdminRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AdminGuard>
+    <RoleGuard allowedRoles={["ADMIN"]}>
       <AdminLayout>{children}</AdminLayout>
-    </AdminGuard>
+    </RoleGuard>
   );
 }

@@ -28,6 +28,14 @@
     "description": "You are on a 3-week streak. Keep your learning momentum and reach your goals faster.",
     "scheduleButton": "Schedule lesson"
   },
+  "schedule": {
+    "lessonTagPlan": "Plan",
+    "lessonTagTrial": "Trial",
+    "completedBadge": "Completed",
+    "calendar": {
+      "week": "Week"
+    }
+  },
   "calendar": {
     "today": "Today",
     "switchWeek": "Week",

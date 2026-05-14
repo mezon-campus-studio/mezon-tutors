@@ -94,7 +94,45 @@ export function getDashboardMenuItemsByRole(role: string | null | undefined): Da
     return [];
   }
 
-  return DASHBOARD_MENU_ITEMS.filter((item) => item.roles.includes(role));
+  return DASHBOARD_MENU_ITEMS.filter((item) => item.roles.includes(role as DashboardRole));
+}
+
+export function getDefaultDashboardHref(role: string | null | undefined): string {
+  if (role === 'ADMIN') {
+    return ROUTES.ADMIN.TUTOR_APPLICATIONS;
+  }
+  if (role === 'TUTOR') {
+    return ROUTES.DASHBOARD.TRIAL_BOOKING;
+  }
+  if (role === 'STUDENT') {
+    return ROUTES.DASHBOARD.MY_LESSONS;
+  }
+  return ROUTES.HOME.index;
+}
+
+export function isDashboardSidebarLinkActive(
+  item: DashboardMenuItem,
+  pathname: string | null,
+): boolean {
+  if (item.type !== 'link' || !pathname || !item.href) {
+    return false;
+  }
+  if (pathname === item.href) {
+    return true;
+  }
+  if (item.key === 'tutor-applications') {
+    return pathname.startsWith('/admin');
+  }
+  if (item.key === 'trial-bookings') {
+    return pathname.startsWith(ROUTES.DASHBOARD.TRIAL_BOOKING);
+  }
+  if (item.key === 'my-schedule') {
+    return pathname.startsWith(ROUTES.DASHBOARD.MY_SCHEDULE);
+  }
+  if (item.key === 'my-lessons') {
+    return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);
+  }
+  return false;
 }
 
 export const DASHBOARD_SIDEBAR_CONFIG = {

@@ -37,9 +37,10 @@ import {
   calculateStepProgress,
   ECurrency,
   formatToCurrency,
+  formatCurrencyAmountInputDisplay,
   getCurrencySymbol,
+  toCanonicalCurrencyAmountInput,
   MIN_PRICE,
-  MAX_PRICE,
   VerificationStatus,
   convertToAllCurrencies,
 } from '@mezon-tutors/shared';
@@ -72,6 +73,7 @@ export default function AvailabilityPage() {
   const availabilityCardRef = useRef<HTMLDivElement>(null);
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [hourlyRateFieldFocused, setHourlyRateFieldFocused] = useState(false);
 
   const form = useForm<AvailabilityFormValues>({
     defaultValues: {
@@ -376,15 +378,9 @@ export default function AvailabilityPage() {
                       return t('validation.hourlyRateGreaterThanZero');
                     }
                     const minPrice = MIN_PRICE[selectedCurrency];
-                    const maxPrice = MAX_PRICE[selectedCurrency];
                     if (numValue < minPrice) {
                       return t('validation.hourlyRateTooLow', {
                         min: formatToCurrency(selectedCurrency, minPrice),
-                      });
-                    }
-                    if (numValue > maxPrice) {
-                      return t('validation.hourlyRateTooHigh', {
-                        max: formatToCurrency(selectedCurrency, maxPrice),
                       });
                     }
                     return true;
@@ -393,11 +389,19 @@ export default function AvailabilityPage() {
                 render={({ field: { value, onChange } }) => (
                   <Input
                     className="flex-1 border-0 bg-transparent p-0 text-base font-bold focus-visible:ring-0"
-                    placeholder="0.00"
-                    value={value}
+                    placeholder={formatCurrencyAmountInputDisplay(selectedCurrency, "0")}
+                    inputMode="decimal"
+                    value={
+                      hourlyRateFieldFocused
+                        ? value
+                        : formatCurrencyAmountInputDisplay(selectedCurrency, value)
+                    }
+                    onFocus={() => setHourlyRateFieldFocused(true)}
+                    onBlur={() => setHourlyRateFieldFocused(false)}
                     onChange={(e) => {
-                      onChange(e.target.value);
-                      handleHourlyRateChange(e.target.value);
+                      const next = toCanonicalCurrencyAmountInput(e.target.value, selectedCurrency);
+                      onChange(next);
+                      handleHourlyRateChange(next);
                     }}
                   />
                 )}
@@ -433,7 +437,6 @@ export default function AvailabilityPage() {
             <p className="text-xs text-violet-700">
               {t('rate.recommended', {
                 min: formatRecommendedAmount(MIN_PRICE[selectedCurrency]),
-                max: formatRecommendedAmount(MAX_PRICE[selectedCurrency]),
               })}
             </p>
           </div>

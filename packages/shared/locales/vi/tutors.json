@@ -114,8 +114,7 @@
       "bookedLockedNotice": "Bạn đã đặt gia sư này rồi, không thể tạo thêm booking.",
       "missingInfo": {
         "title": "Thiếu thông tin đặt lịch",
-        "description": "Vui lòng mở trang này từ luồng đặt buổi học thử trên thẻ gia sư.",
-        "expectedQuery": "Query cần có: tutorId, startAt, durationMinutes, dayOfWeek"
+        "description": "Vui lòng mở trang này từ luồng đặt buổi học thử trên thẻ gia sư."
       },
       "errors": {
         "loadTutor": "Không thể tải hồ sơ gia sư. Vui lòng thử lại sau.",

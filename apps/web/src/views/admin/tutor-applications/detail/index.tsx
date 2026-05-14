@@ -4,7 +4,6 @@ import { ROUTES } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import { ArrowLeft, Check, X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
@@ -54,7 +53,6 @@ export default function AdminTutorApplicationDetailView({
     "AdminTutorApplicationDetail.modals.approve",
   );
   const tReject = useTranslations("AdminTutorApplicationDetail.modals.reject");
-  const router = useRouter();
 
   const [confirmAction, setConfirmAction] = useState<
     "approve" | "reject" | null
@@ -82,22 +80,18 @@ export default function AdminTutorApplicationDetailView({
     );
   }
 
-  const {
-    profile,
-    adminNotes,
-    professionalDocuments,
-    identityVerification,
-    availability,
-  } = data;
+  const { profile, adminNotes, professionalDocuments, identityVerification, availability } =
+    data;
   const fullName =
     `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim() || "—";
-  const isPending = profile.verificationStatus === "PENDING";
+  const status = profile.verificationStatus;
+  const showApprove = status === "PENDING" || status === "REJECTED";
+  const showReject = status === "PENDING" || status === "APPROVED";
 
   const handleApprove = () => {
     approveMutation.mutate(profile.id, {
       onSuccess: () => {
         setConfirmAction(null);
-        router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
       },
     });
   };
@@ -106,7 +100,6 @@ export default function AdminTutorApplicationDetailView({
     rejectMutation.mutate(profile.id, {
       onSuccess: () => {
         setConfirmAction(null);
-        router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
       },
     });
   };
@@ -154,30 +147,26 @@ export default function AdminTutorApplicationDetailView({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="border-rose-200 text-rose-700 hover:bg-rose-50"
-              onClick={() => setConfirmAction("reject")}
-              disabled={
-                !isPending ||
-                rejectMutation.isPending ||
-                approveMutation.isPending
-              }
-            >
-              <X className="h-4 w-4" />
-              {tActions("reject")}
-            </Button>
-            <Button
-              onClick={() => setConfirmAction("approve")}
-              disabled={
-                !isPending ||
-                approveMutation.isPending ||
-                rejectMutation.isPending
-              }
-            >
-              <Check className="h-4 w-4" />
-              {tActions("approve")}
-            </Button>
+            {showReject ? (
+              <Button
+                variant="outline"
+                className="border-rose-200 text-rose-700 hover:bg-rose-50"
+                onClick={() => setConfirmAction("reject")}
+                disabled={rejectMutation.isPending || approveMutation.isPending}
+              >
+                <X className="h-4 w-4" />
+                {tActions("reject")}
+              </Button>
+            ) : null}
+            {showApprove ? (
+              <Button
+                onClick={() => setConfirmAction("approve")}
+                disabled={approveMutation.isPending || rejectMutation.isPending}
+              >
+                <Check className="h-4 w-4" />
+                {tActions("approve")}
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -186,14 +175,8 @@ export default function AdminTutorApplicationDetailView({
         <div className="space-y-5 lg:col-span-2">
           <PersonalInfoCard profile={profile} />
           <VideoBioCard profile={profile} />
-          <IdentityVerificationCard
-            tutorId={profile.id}
-            verification={identityVerification}
-          />
-          <ProfessionalDocumentsCard
-            tutorId={profile.id}
-            documents={professionalDocuments}
-          />
+          <IdentityVerificationCard verification={identityVerification} />
+          <ProfessionalDocumentsCard documents={professionalDocuments} />
           <AvailabilityCard profile={profile} availability={availability} />
         </div>
         <div className="space-y-5">

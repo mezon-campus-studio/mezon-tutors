@@ -1,6 +1,7 @@
 "use client";
 
 import type { TutorAvailability, TutorProfile } from "@mezon-tutors/shared";
+import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui";
 
@@ -29,6 +30,27 @@ export default function AvailabilityCard({
     "AdminTutorApplicationDetail.sections.availability.days",
   );
   const grouped = groupByDay(availability);
+  const { baseCurrency, usd, vnd, php } = profile.prices;
+  const primaryAmount =
+    baseCurrency === ECurrency.USD
+      ? usd
+      : baseCurrency === ECurrency.PHP
+        ? php
+        : vnd;
+  const hasRate =
+    typeof primaryAmount === "number" &&
+    !Number.isNaN(primaryAmount) &&
+    primaryAmount > 0;
+  const secondaryParts: string[] = [];
+  if (baseCurrency !== ECurrency.VND && vnd > 0) {
+    secondaryParts.push(formatToCurrency(ECurrency.VND, vnd));
+  }
+  if (baseCurrency !== ECurrency.USD && usd > 0) {
+    secondaryParts.push(formatToCurrency(ECurrency.USD, usd));
+  }
+  if (baseCurrency !== ECurrency.PHP && php > 0) {
+    secondaryParts.push(formatToCurrency(ECurrency.PHP, php));
+  }
 
   return (
     <Card className="border-slate-200">
@@ -77,20 +99,26 @@ export default function AvailabilityCard({
             </p>
             <div className="rounded-xl border border-slate-200 bg-white p-5">
               <p className="text-3xl font-bold text-slate-900">
-                {profile.prices?.vnd
-                  ? `${profile.prices.vnd.toLocaleString()} VND`
-                  : "—"}
-                <span className="ml-1 text-sm font-normal text-slate-500">
-                  {t("perHour")}
-                </span>
+                {hasRate ? (
+                  <>
+                    {formatToCurrency(baseCurrency, primaryAmount)}
+                    <span className="ml-1 text-sm font-normal text-slate-500">
+                      {t("perHour")}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
               </p>
-              <p className="mt-2 text-xs text-slate-500">
-                {t("recommendationPrefix")}
-                <span className="font-medium text-slate-700">
-                  {profile.prices?.usd ? `${profile.prices.usd} USD` : "—"}
-                </span>
-                {t("recommendationSuffix")}
-              </p>
+              {secondaryParts.length > 0 ? (
+                <p className="mt-2 text-xs text-slate-500">
+                  {t("recommendationPrefix")}
+                  <span className="font-medium text-slate-700">
+                    {secondaryParts.join(" · ")}
+                  </span>
+                  {t("recommendationSuffix")}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

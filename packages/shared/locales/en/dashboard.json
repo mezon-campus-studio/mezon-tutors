@@ -12,6 +12,8 @@
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
+      "tutorApplications": "Tutor applications",
+      "dashboard": "Dashboard",
       "logout": "Logout",
       "fallbackTitle": "Dashboard"
     },
@@ -181,7 +183,14 @@
       "subtitle": "{date} · {time}",
       "sendMessage": "Send message",
       "viewProfile": "View tutor profile",
-      "dismiss": "Close"
+      "dismiss": "Close",
+      "detailLessonType": "Lesson type",
+      "detailDuration": "Duration",
+      "detailStatus": "Status",
+      "detailSubject": "Subject",
+      "detailCategory": "Category",
+      "durationMinutes": "{minutes} min",
+      "statusUpcoming": "Upcoming"
     },
     "placeholder": {
       "title": "Feature Coming Soon",

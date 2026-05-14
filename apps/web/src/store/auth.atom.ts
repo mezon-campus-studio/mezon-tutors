@@ -38,30 +38,38 @@ export function toAuthUser(source: AuthUserSource): AuthUser {
 export const userAtom = atom<AuthUser | null>(null);
 export const isLoadingAtom = atom<boolean>(true);
 
-let isInitialized = false;
+let loadUserInFlight: Promise<void> | null = null;
 
 export const isAuthenticatedAtom = atom((get) => {
   return Boolean(get(accessTokenAtom));
 });
 
 export const initAuthAtom = atom(null, async (get, set) => {
-  if (isInitialized) return;
-  isInitialized = true;
-
   const token = get(accessTokenAtom);
-
   if (!token) {
+    set(userAtom, null);
     set(isLoadingAtom, false);
     return;
   }
-
-  try {
-    const data = await authService.getMe();
-    set(userAtom, toAuthUser(data));
-  } catch (error) {
-    set(accessTokenAtom, null);
-    set(userAtom, null);
-  } finally {
-    set(isLoadingAtom, false);
+  if (loadUserInFlight) {
+    await loadUserInFlight;
+    return;
   }
+  loadUserInFlight = (async () => {
+    set(isLoadingAtom, true);
+    try {
+      const data = await authService.getMe();
+      if (!get(accessTokenAtom)) {
+        return;
+      }
+      set(userAtom, toAuthUser(data));
+    } catch {
+      set(accessTokenAtom, null);
+      set(userAtom, null);
+    } finally {
+      set(isLoadingAtom, false);
+      loadUserInFlight = null;
+    }
+  })();
+  await loadUserInFlight;
 });

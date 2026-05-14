@@ -119,7 +119,7 @@ export default function SubscriptionPlanCheckoutPage() {
         <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/30 blur-[140px]" />
       </div>
 
-      <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 pb-[calc(10.5rem+env(safe-area-inset-bottom,0))] sm:px-6">
         <div className="mb-8 space-y-2 text-center sm:text-left">
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-violet-600">
             <Sparkles className="size-3.5" />
@@ -182,7 +182,7 @@ export default function SubscriptionPlanCheckoutPage() {
                   type="button"
                   disabled={!canSubscribe}
                   className={cn(
-                    "flex w-full flex-col gap-1 rounded-2xl border bg-card p-5 text-left text-card-foreground ring-1 ring-foreground/10 transition-all outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2",
+                    "flex w-full flex-col cursor-pointer gap-1 rounded-2xl border bg-card p-5 text-left text-card-foreground ring-1 ring-foreground/10 transition-all outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2",
                     active
                       ? "border-violet-400 bg-violet-50 ring-2 ring-violet-200"
                       : "border-slate-200 hover:border-violet-200",
@@ -205,16 +205,23 @@ export default function SubscriptionPlanCheckoutPage() {
             ) : null}
           </div>
         )}
+      </div>
 
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 border-t border-violet-100/80 bg-linear-to-t from-violet-50/95 via-white/95 to-white/95 shadow-[0_-12px_40px_-16px_rgba(124,58,237,0.2)] backdrop-blur-md",
+          "pb-[max(0.75rem,env(safe-area-inset-bottom,0))] pt-6",
+        )}
+      >
+        <div className="mx-auto py-2 flex w-full max-w-3xl flex-row flex-wrap items-center justify-end gap-3 px-6 sm:pl-10 sm:pr-8">
           <Link
-            className={buttonVariants({ variant: "outline" })}
+            className={cn(buttonVariants({ variant: "outline" }), "h-11 shrink-0 px-6")}
             href={tutorId ? ROUTES.TUTOR.DETAIL(tutorId) : ROUTES.TUTOR.INDEX}
           >
             {t("back")}
           </Link>
           <Button
-            className="bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)]"
+            className="h-11 shrink-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6"
             disabled={!canSubscribe || !selectedPlan}
             onClick={handleContinue}
           >

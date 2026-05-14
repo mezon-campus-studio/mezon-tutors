@@ -28,6 +28,14 @@
     "description": "Bạn đang có chuỗi học 3 tuần. Hãy duy trì động lực và tiến nhanh hơn tới mục tiêu.",
     "scheduleButton": "Đặt lịch học"
   },
+  "schedule": {
+    "lessonTagPlan": "Gói",
+    "lessonTagTrial": "Thử",
+    "completedBadge": "Đã xong",
+    "calendar": {
+      "week": "Tuần"
+    }
+  },
   "calendar": {
     "today": "Hôm nay",
     "switchWeek": "Tuần",

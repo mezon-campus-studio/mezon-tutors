@@ -6,7 +6,12 @@ import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { Button } from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
+
+export type ScheduleEventModalDetailRow = {
+  label: string;
+  value: string;
+};
 
 type ScheduleEventModalProps = {
   open: boolean;
@@ -18,15 +23,28 @@ type ScheduleEventModalProps = {
   timeLabel: string;
   onSendMessage: () => void;
   viewProfileHref?: string;
+  avatarUrl?: string | null;
+  avatarAlt?: string;
+  detailRows?: ScheduleEventModalDetailRow[];
 };
 
-const PANEL_W = 320;
-const PANEL_H = 260;
+const PANEL_W = 340;
+const PANEL_MIN_H = 200;
+const PANEL_MAX_H = 480;
 const GAP = 10;
 const PAD = 12;
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(Math.max(n, min), max);
+}
+
+function peerInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return parts
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
 }
 
 export default function ScheduleEventModal({
@@ -39,6 +57,9 @@ export default function ScheduleEventModal({
   timeLabel,
   onSendMessage,
   viewProfileHref,
+  avatarUrl,
+  avatarAlt,
+  detailRows,
 }: ScheduleEventModalProps) {
   const t = useTranslations('Dashboard.scheduleEventModal');
   const [mounted, setMounted] = useState(false);
@@ -49,13 +70,16 @@ export default function ScheduleEventModal({
   useLayoutEffect(() => {
     if (!open) return;
 
+    const panelH = Math.min(PANEL_MAX_H, Math.max(PANEL_MIN_H, 260 + (detailRows?.length ?? 0) * 28));
+
     if (!anchorRect) {
       setStyle({
         position: 'fixed',
         left: '50%',
         top: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 'min(calc(100vw - 2rem), 20rem)',
+        width: 'min(calc(100vw - 2rem), 22rem)',
+        maxHeight: `min(85vh, ${PANEL_MAX_H}px)`,
         zIndex: 50,
       });
       return;
@@ -64,7 +88,7 @@ export default function ScheduleEventModal({
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const panelW = Math.min(PANEL_W, vw - PAD * 2);
-    const alignedTop = clamp(anchorRect.top, PAD, vh - PANEL_H - PAD);
+    const alignedTop = clamp(anchorRect.top, PAD, vh - panelH - PAD);
 
     const fitsRight = anchorRect.right + GAP + panelW <= vw - PAD;
     const leftPlacementLeft = anchorRect.left - GAP - panelW;
@@ -86,10 +110,10 @@ export default function ScheduleEventModal({
         vw - panelW - PAD,
       );
       top = anchorRect.bottom + GAP;
-      if (top + PANEL_H > vh - PAD) {
-        top = anchorRect.top - PANEL_H - GAP;
+      if (top + panelH > vh - PAD) {
+        top = anchorRect.top - panelH - GAP;
       }
-      top = clamp(top, PAD, vh - PANEL_H - PAD);
+      top = clamp(top, PAD, vh - panelH - PAD);
     }
 
     setStyle({
@@ -97,10 +121,11 @@ export default function ScheduleEventModal({
       left,
       top,
       width: `${panelW}px`,
+      maxHeight: `min(85vh, ${PANEL_MAX_H}px)`,
       zIndex: 50,
       transform: undefined,
     });
-  }, [open, anchorRect]);
+  }, [open, anchorRect, detailRows?.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -124,6 +149,8 @@ export default function ScheduleEventModal({
 
   if (!mounted || !open) return null;
 
+  const alt = avatarAlt ?? peerName;
+
   return createPortal(
     <>
       <button
@@ -134,14 +161,36 @@ export default function ScheduleEventModal({
       />
       <article
         style={style}
-        className="flex flex-col gap-0 overflow-hidden rounded-[1.75rem] border border-violet-100 bg-white shadow-2xl shadow-violet-300/30"
+        className="flex flex-col overflow-hidden rounded-[1.75rem] border border-violet-100 bg-white shadow-2xl shadow-violet-300/30"
       >
-        <div className="border-b border-violet-100 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4 text-left">
+        <div className="shrink-0 border-b border-violet-100 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4 text-left">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">{t('title')}</p>
-          <p className="text-lg font-extrabold text-slate-900">{peerName}</p>
-          <p className="mt-1 text-sm text-slate-500">{t('subtitle', { date: dateLabel, time: timeLabel })}</p>
+          <div className="mt-2 flex gap-3">
+            <Avatar className="size-14 shrink-0 rounded-2xl border-2 border-white shadow-md ring-1 ring-violet-100">
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt={alt} className="object-cover" /> : null}
+              <AvatarFallback className="rounded-2xl bg-linear-to-br from-violet-600 to-fuchsia-600 text-lg font-bold text-white">
+                {peerInitials(peerName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-extrabold leading-snug text-slate-900">{peerName}</p>
+              <p className="mt-1 text-sm text-slate-500">{t('subtitle', { date: dateLabel, time: timeLabel })}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 px-5 py-4">
+        {detailRows?.length ? (
+          <div className="max-h-[220px] shrink-0 overflow-y-auto border-b border-violet-100 px-5 py-3 [scrollbar-width:thin]">
+            <dl className="space-y-2.5">
+              {detailRows.map((row, i) => (
+                <div key={`${row.label}-${i}`} className="flex gap-3 text-sm leading-snug">
+                  <dt className="w-[40%] shrink-0 text-slate-500">{row.label}</dt>
+                  <dd className="min-w-0 flex-1 break-words text-right font-semibold text-slate-900">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : null}
+        <div className="mt-auto flex shrink-0 flex-col gap-2 px-5 py-4">
           <Button
             type="button"
             className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40"

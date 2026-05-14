@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { HeaderNotification } from "@/components/common/header-notification/HeaderNotification";
 import DashboardMobileDrawer from "@/components/dashboard/DashboardMobileDrawer";
@@ -25,7 +25,6 @@ import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { authService } from "@/services";
 import {
   dashboardMobileDrawerAtom,
-  initAuthAtom,
   isAuthenticatedAtom,
   userAtom,
 } from "@/store";
@@ -35,7 +34,6 @@ export default function Header() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const initAuth = useSetAtom(initAuthAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const user = useAtomValue(userAtom);
   const setUser = useSetAtom(userAtom);
@@ -45,15 +43,29 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { currency, setCurrency, currencyOptions } = useCurrency();
-  const navItems = [
-    { label: t("findTutors"), href: "/tutors", requiresAuth: false },
-    { label: t("becomeTutor"), href: "/become-tutor", requiresAuth: false },
-    {
-      label: t("myLessons"),
-      href: "/checkout/trial-lesson",
-      requiresAuth: true,
-    },
-  ].filter((item) => !item.requiresAuth || (mounted && isAuthenticated));
+  const navItems = useMemo(() => {
+    const base = [
+      { label: t("findTutors"), href: ROUTES.TUTOR.INDEX, requiresAuth: false },
+      { label: t("becomeTutor"), href: ROUTES.BECOME_TUTOR.INDEX, requiresAuth: false },
+    ];
+    const roleNav: Array<{ label: string; href: string; requiresAuth: boolean }> = [];
+    if (user?.role === "STUDENT") {
+      roleNav.push({
+        label: t("myLessons"),
+        href: ROUTES.DASHBOARD.MY_LESSONS,
+        requiresAuth: true,
+      });
+    } else if (user?.role === "TUTOR") {
+      roleNav.push({
+        label: t("mySchedule"),
+        href: ROUTES.DASHBOARD.MY_SCHEDULE,
+        requiresAuth: true,
+      });
+    }
+    return [...base, ...roleNav].filter(
+      (item) => !item.requiresAuth || (mounted && isAuthenticated),
+    );
+  }, [t, user?.role, mounted, isAuthenticated]);
 
   const userInitials =
     user?.username
@@ -64,10 +76,6 @@ export default function Header() {
       .join("") || "U";
 
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
-
-  useEffect(() => {
-    void initAuth();
-  }, [initAuth]);
 
   useEffect(() => {
     setMounted(true);
@@ -174,7 +182,7 @@ export default function Header() {
             {navItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/" && pathname?.startsWith(item.href));
+                (item.href !== ROUTES.HOME.index && pathname?.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
@@ -232,6 +240,7 @@ export default function Header() {
             {mounted ? <LoginButton label={t("login")} /> : null}
             {mounted && isAuthenticated && (
               <Avatar
+                key={`${user?.id ?? ""}-${user?.avatar ?? ""}`}
                 className="size-9 cursor-pointer border-2 border-violet-200 ring-2 ring-violet-100 transition-all hover:border-violet-400 hover:ring-violet-200"
                 onClick={handleAvatarClick}
               >

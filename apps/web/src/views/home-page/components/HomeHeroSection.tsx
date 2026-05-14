@@ -580,7 +580,7 @@ function PricingSlide({ t }: { t: (key: string) => string }) {
         }
       />
 
-      <div className="flex-1 space-y-5 px-6 py-6">
+      <div className="flex-1 space-y-5 px-6 py-2">
         <div className="text-center">
           <div className="inline-flex items-baseline gap-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">

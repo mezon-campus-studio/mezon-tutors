@@ -261,7 +261,7 @@
     "rate": {
       "question": "Bạn muốn tính phí bao nhiêu cho mỗi giờ học?",
       "currencyLabel": "USD / giờ",
-      "recommended": "Gợi ý: {min} - {max} cho các môn bạn dạy."
+      "recommended": "Gợi ý: tối thiểu {min} cho các môn bạn dạy."
     },
     "availabilityCardTitle": "Lịch dạy hàng tuần",
     "availability": {
@@ -286,7 +286,6 @@
       "hourlyRateInvalidFormat": "Giá theo giờ phải là số hợp lệ (tối đa 2 chữ số thập phân).",
       "hourlyRateGreaterThanZero": "Giá theo giờ phải lớn hơn 0.",
       "hourlyRateTooLow": "Giá phải từ {min} trở lên.",
-      "hourlyRateTooHigh": "Giá không được vượt quá {max}.",
       "weeklySlotsRequired": "Vui lòng thêm ít nhất 1 khung giờ dạy trong tuần trước khi tiếp tục.",
       "timeRequired": "Giờ bắt đầu và giờ kết thúc là bắt buộc.",
       "endTimeMustBeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu.",

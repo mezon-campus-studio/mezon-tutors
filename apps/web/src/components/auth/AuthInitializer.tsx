@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { initAuthAtom } from "@/store/auth.atom";
+import { accessTokenAtom } from "@/store/token.atom";
 
 export default function AuthInitializer() {
   const initAuth = useSetAtom(initAuthAtom);
+  const token = useAtomValue(accessTokenAtom);
+  const hasToken = Boolean(token);
 
   useEffect(() => {
     void initAuth();
-  }, [initAuth]);
+  }, [initAuth, hasToken]);
 
   return null;
 }

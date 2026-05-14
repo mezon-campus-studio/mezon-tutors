@@ -166,9 +166,6 @@ export default function TrialLessonCheckoutPage() {
           <p className="text-sm leading-6 text-slate-600">
             {t("missingInfo.description")}
           </p>
-          <p className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
-            {t("missingInfo.expectedQuery")}
-          </p>
         </div>
       </div>
     );

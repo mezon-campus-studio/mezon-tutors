@@ -19,6 +19,72 @@ export function formatToCurrency(currency: ECurrency, amount: number): string {
   }).format(amount)
 }
 
+function amountGroupingLocale(currency: ECurrency): string {
+  if (currency === ECurrency.VND) {
+    return ELocale.VIETNAMESE
+  }
+  if (currency === ECurrency.PHP) {
+    return 'en-PH'
+  }
+  return ELocale.ENGLISH
+}
+
+export function toCanonicalCurrencyAmountInput(raw: string, currency: ECurrency): string {
+  const t = raw.replace(/\s/g, '')
+  if (!t) {
+    return ''
+  }
+  if (currency === ECurrency.VND) {
+    const noCommas = t.replace(/,/g, '')
+    const parts = noCommas.split('.')
+    if (parts.length === 1) {
+      return parts[0].replace(/\D/g, '')
+    }
+    const last = parts[parts.length - 1].replace(/\D/g, '')
+    const heads = parts.slice(0, -1).map((p) => p.replace(/\D/g, ''))
+    if (parts.length === 2 && heads[0] !== '') {
+      if (last.length > 0 && last.length <= 2) {
+        return `${heads[0]}.${last}`
+      }
+      if (last.length === 0) {
+        return `${heads[0]}.`
+      }
+    }
+    return [...heads, last].join('')
+  }
+  const cleaned = t.replace(/,/g, '').replace(/[^\d.]/g, '')
+  if (!cleaned) {
+    return ''
+  }
+  const dot = cleaned.indexOf('.')
+  const intDigits = (dot === -1 ? cleaned : cleaned.slice(0, dot)).replace(/\D/g, '')
+  const fracDigits =
+    dot === -1 ? '' : cleaned.slice(dot + 1).replace(/\D/g, '').slice(0, 2)
+  if (dot !== -1) {
+    if (fracDigits.length > 0) {
+      return `${intDigits}.${fracDigits}`
+    }
+    return intDigits === '' && cleaned.startsWith('.') ? '0.' : `${intDigits}.`
+  }
+  return intDigits
+}
+
+export function formatCurrencyAmountInputDisplay(currency: ECurrency, canonical: string): string {
+  const t = canonical.trim()
+  if (!t) {
+    return ''
+  }
+  const parseStr = t.endsWith('.') && t !== '.' ? t.slice(0, -1) : t
+  const n = Number.parseFloat(parseStr)
+  if (Number.isNaN(n)) {
+    return canonical
+  }
+  return new Intl.NumberFormat(amountGroupingLocale(currency), {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+  }).format(n)
+}
+
 export function getCurrencySymbol(currency: ECurrency): string {
   let locale = ELocale.VIETNAMESE
 

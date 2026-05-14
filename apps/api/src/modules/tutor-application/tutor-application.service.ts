@@ -3,18 +3,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Role, TutorProfile, VerificationStatus } from '@mezon-tutors/db';
 import {
   FullTutorApplication,
-  IdentityVerification,
-  ProfessionalDocument,
-  ProfessionalDocumentStatus,
   TutorAdminNote,
   TutorApplicationMetrics,
 } from '@mezon-tutors/shared';
 import { calculateAverageDurationHours } from '../../common/utils/time.util';
 import { CreateAdminNoteDto } from './dto/create-admin-note.dto';
-import { UpdateIdentityVerificationStatusDto } from './dto/update-identity-verification-status.dto';
 import { EmailService } from '../../shared/services/email.service';
-import { ContentReviewer, IdentityChecklist } from '../../shared/types';
-import { IdentityVerificationStatus } from '@mezon-tutors/db';
+import { ContentReviewer } from '../../shared/types';
 import { TutorApplicationMapper, TutorProfileWithUser } from './tutor-application.mapper';
 
 @Injectable()
@@ -29,7 +24,7 @@ export class TutorApplicationService {
     const [profile, notes, documents, verification, availability] = await Promise.all([
       this.prisma.tutorProfile.findFirst({
         where: { id },
-        include: { user: true, languages: true },
+        include: { user: true, languages: true, trialLessonPrice: true },
       }),
       this.prisma.tutorAdminNote.findMany({
         where: { tutorId: id },
@@ -70,39 +65,6 @@ export class TutorApplicationService {
     });
 
     return note;
-  }
-
-  async updateProfessionalDocumentStatus(
-    id: string,
-    status: ProfessionalDocumentStatus
-  ): Promise<ProfessionalDocument> {
-    const doc = await this.prisma.professionalDocument.update({
-      where: { id },
-      data: {
-        status,
-        reviewedAt: new Date(),
-      },
-    });
-
-    return doc;
-  }
-
-  async updateIdentityVerificationStatus(
-    id: string,
-    payload: UpdateIdentityVerificationStatusDto
-  ): Promise<IdentityVerification> {
-    const verification = await this.prisma.identityVerification.update({
-      where: { id },
-      data: {
-        status: payload.status,
-        nameMatch: payload.nameMatch,
-        notExpired: payload.notExpired,
-        photoClarity: payload.photoClarity,
-        reviewedAt: new Date(),
-      },
-    });
-
-    return verification;
   }
 
   async listApplications(): Promise<TutorProfile[]> {
@@ -151,8 +113,10 @@ export class TutorApplicationService {
   async reject(id: string): Promise<{ success: boolean }> {
     const profile = await this.prisma.tutorProfile.findUnique({
       where: { id },
-
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        email: true,
         user: {
           select: { email: true, username: true },
         },
@@ -163,11 +127,23 @@ export class TutorApplicationService {
       throw new NotFoundException(`Tutor application not found: ${id}`);
     }
 
-    await this.prisma.tutorProfile.update({
-      where: { id },
-      data: {
-        verificationStatus: VerificationStatus.REJECTED,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.tutorProfile.update({
+        where: { id },
+        data: {
+          verificationStatus: VerificationStatus.REJECTED,
+        },
+      });
+      const user = await tx.user.findUnique({
+        where: { id: profile.userId },
+        select: { role: true },
+      });
+      if (user?.role === Role.TUTOR) {
+        await tx.user.update({
+          where: { id: profile.userId },
+          data: { role: Role.STUDENT },
+        });
+      }
     });
 
     const reviewerNotes: ContentReviewer[] = await this.prisma.tutorAdminNote.findMany({
@@ -175,21 +151,12 @@ export class TutorApplicationService {
       select: { content: true },
     });
 
-    const checklist: IdentityChecklist | null = await this.prisma.identityVerification.findFirst({
-      where: { tutorId: profile.id, status: IdentityVerificationStatus.REJECTED },
-      select: {
-        nameMatch: true,
-        notExpired: true,
-        photoClarity: true,
-      },
-    });
-
     if (profile.email) {
       await this.emailService.sendRejectionEmail(
         profile.email,
         profile.user.username,
         reviewerNotes,
-        checklist
+        null
       );
     }
 

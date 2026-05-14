@@ -12,6 +12,8 @@
       "students": "Học viên",
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
+      "tutorApplications": "Hồ sơ gia sư",
+      "dashboard": "Bảng điều khiển",
       "logout": "Đăng xuất",
       "fallbackTitle": "Bảng điều khiển"
     },
@@ -181,7 +183,14 @@
       "subtitle": "{date} · {time}",
       "sendMessage": "Nhắn tin",
       "viewProfile": "Xem hồ sơ gia sư",
-      "dismiss": "Đóng"
+      "dismiss": "Đóng",
+      "detailLessonType": "Loại buổi học",
+      "detailDuration": "Thời lượng",
+      "detailStatus": "Trạng thái",
+      "detailSubject": "Môn học",
+      "detailCategory": "Danh mục",
+      "durationMinutes": "{minutes} phút",
+      "statusUpcoming": "Sắp diễn ra"
     },
     "placeholder": {
       "title": "Tính năng sắp ra mắt",

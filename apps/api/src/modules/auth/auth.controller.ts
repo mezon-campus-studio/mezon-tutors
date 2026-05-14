@@ -39,6 +39,7 @@ export class AuthController {
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
       maxAge: REFRESH_TOKEN_MAX_AGE,
+      path: '/',
     };
   }
 
@@ -132,7 +133,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@Req() req: Request) {
-    return req.user;
+    const jwtUser = req.user as { sub: string };
+    return this.authService.getCurrentUserForMe(jwtUser.sub);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -144,7 +146,7 @@ export class AuthController {
 
     const opts = this.getRefreshCookieOptions();
     res.clearCookie('refresh_token', {
-      path: '/',
+      path: opts.path ?? '/',
       httpOnly: opts.httpOnly,
       secure: opts.secure,
       sameSite: opts.sameSite,

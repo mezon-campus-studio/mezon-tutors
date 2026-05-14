@@ -243,6 +243,22 @@ export class AuthService {
     };
   }
 
+  async getCurrentUserForMe(userId: string) {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return {
+      sub: user.id,
+      id: user.id,
+      mezonUserId: user.mezonUserId,
+      username: user.username,
+      role: user.role,
+      avatar: user.avatar || null,
+      email: user.email ?? null,
+    };
+  }
+
   async handleMezonCallback(code: string, state?: string) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
