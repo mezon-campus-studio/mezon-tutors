@@ -1,18 +1,18 @@
 {
   "Home": {
     "Hero": {
-      "badge": "Học gia sư trực tuyến trên Mezon",
-      "title": "Giỏi ngoại ngữ",
-      "titleHighlight": "sau giờ làm, theo cách của bạn",
-      "description": "Mezonly kết nối người đi làm bận rộn với gia sư ngoại ngữ đã được kiểm duyệt. Đặt lịch 1-1, chat và vào phòng học trực tiếp trên Mezon — linh hoạt buổi tối và cuối tuần, chỉ trả tiền cho buổi học bạn dùng.",
+      "badge": "Học gia sư trực tuyến trên Mezonly",
+      "title": "Học đúng điều bạn cần",
+      "titleHighlightLead": "lúc nào cũng được,",
+      "titleHighlightTail": "theo cách của bạn",
+      "description": "Mezonly kết nối học viên với gia sư đã được kiểm duyệt — từ ngoại ngữ, môn học đến nhiều kỹ năng khác. Đặt lịch 1-1, chat và vào phòng học trực tiếp trên Mezon, học vào thời điểm phù hợp với bạn trong ngày.",
       "startNow": "Tìm gia sư ngay",
-      "watchDemo": "Cách thức hoạt động",
       "match": "Phù hợp",
       "profile": "Xem hồ sơ",
       "connect": "Đặt buổi thử",
       "search": {
         "label": "Tôi muốn học",
-        "placeholder": "Tiếng Anh, Tiếng Nhật, Tiếng Hàn, IELTS...",
+        "placeholder": "Toán, tiếng Anh, lập trình, IELTS...",
         "submit": "Tìm gia sư"
       },
       "trust": "Được tin dùng bởi học viên và gia sư trên khắp Việt Nam",
@@ -33,10 +33,10 @@
       },
       "slides": {
         "schedule": {
-          "eyebrow": "HỌC SAU GIỜ LÀM",
+          "eyebrow": "THEO LỊCH CỦA BẠN",
           "title": "Khung giờ phù hợp của bạn?",
           "label": "Lịch học linh hoạt",
-          "description": "Khung giờ buổi tối & cuối tuần — vừa khít lịch của bạn."
+          "description": "Chọn giờ vừa lịch — sáng, trưa, tối hay lúc nghỉ ngắn trong ngày."
         },
         "mezon": {
           "eyebrow": "POWERED BY MEZON",
@@ -60,7 +60,7 @@
     },
     "Stats": {
       "title": "Xây dựng cho người không có thời gian để lãng phí",
-      "description": "Nền tảng matching gia sư tôn trọng từng buổi tối và cuối tuần của bạn.",
+      "description": "Nền tảng ghép gia sư cho lịch thật của bạn — học khi nào thuận tiện.",
       "items": {
         "tutors": {
           "value": "1,200+",
@@ -87,11 +87,11 @@
       "steps": {
         "step1": {
           "title": "Tìm gia sư phù hợp",
-          "description": "Lọc theo accent, trình độ, mức giá và thời gian rảnh. Xem video giới thiệu và đánh giá thật từ học viên."
+          "description": "Lọc theo môn học, trình độ, mức giá và thời gian rảnh. Xem video giới thiệu và đánh giá thật từ học viên."
         },
         "step2": {
           "title": "Đặt buổi học thử",
-          "description": "Chọn khung giờ phù hợp — sáng sớm, buổi tối hoặc cuối tuần. Thanh toán an toàn theo từng buổi, không gói dài hạn."
+          "description": "Chọn khung giờ phù hợp nhịp của bạn, bất kỳ ngày nào trong tuần. Thanh toán an toàn theo từng buổi, không gói dài hạn."
         },
         "step3": {
           "title": "Học trực tiếp trên Mezon",
@@ -102,7 +102,7 @@
     "FeaturedTutors": {
       "badge": "Gia sư nổi bật tuần này",
       "title": "Học từ những người thực sự hiểu bạn",
-      "description": "Gia sư bản xứ, giáo viên có chứng chỉ và mentor song ngữ — đều đã được kiểm duyệt và xác minh.",
+      "description": "Chuyên gia từng môn, giáo viên có chứng chỉ và mentor song ngữ — đều đã được kiểm duyệt và xác minh.",
       "viewAll": "Xem tất cả gia sư",
       "perHour": "/ giờ",
       "lessons": "buổi học",
@@ -141,11 +141,11 @@
     "WhyUs": {
       "badge": "Vì sao chọn Mezonly",
       "title": "Thiết kế cho người đi làm",
-      "description": "Phần lớn học viên trên Mezonly là người đi làm và học sau 7 giờ tối. Mọi chi tiết đều được tinh chỉnh cho họ.",
+      "description": "Học sinh bận và người đi làm dùng Mezonly để học tiếp mà không phải dừng cuộc sống lại.",
       "items": {
         "evening": {
-          "title": "Khung giờ tối & cuối tuần",
-          "description": "Tìm gia sư chỉ dạy sau 6h tối hoặc rảnh cả cuối tuần. Không vướng giờ hành chính."
+          "title": "Lịch học linh hoạt",
+          "description": "Đặt buổi học khi thuận tiện — ban ngày, sau giờ làm hay lúc rảnh trong tuần đều được."
         },
         "payPerLesson": {
           "title": "Trả theo buổi",
@@ -161,7 +161,7 @@
         },
         "personalized": {
           "title": "Lộ trình cá nhân hóa",
-          "description": "Cho chúng tôi biết mục tiêu của bạn — IELTS, công việc, du lịch — chúng tôi ghép gia sư chuyên đúng mảng đó."
+          "description": "Cho chúng tôi biết mục tiêu — thi cử, ngoại ngữ, STEM hay kỹ năng công việc — để ghép gia sư chuyên đúng mảng đó."
         },
         "moneyBack": {
           "title": "Hoàn tiền buổi thử",
@@ -243,12 +243,12 @@
       "description": "Lịch học linh hoạt, công cụ thực tiễn và mô hình dạy học phù hợp nhịp sống hiện đại.",
       "exploreAll": "Xem tất cả",
       "eveningClasses": {
-        "title": "Lớp buổi tối",
-        "description": "Học sau giờ làm với các buổi học phù hợp lịch sinh hoạt buổi tối."
+        "title": "Buổi học vừa lịch của bạn",
+        "description": "Chọn giờ học hợp nhịp của bạn — sáng, trưa hay tối đều được."
       },
       "flexibleWeekends": {
-        "title": "Cuối tuần linh hoạt",
-        "description": "Đặt lịch học cuối tuần khi bạn có nhiều thời gian hơn."
+        "title": "Ngày nào rảnh cũng được",
+        "description": "Đặt lịch khi bạn có khoảng trống trong tuần — không chỉ cuối tuần."
       },
       "learnViaMezon": {
         "title": "Học qua Mezon",

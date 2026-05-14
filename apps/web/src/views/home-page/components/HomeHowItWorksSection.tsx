@@ -18,7 +18,10 @@ export default function HomeHowItWorksSection() {
   const t = useTranslations("Home.HowItWorks");
 
   return (
-    <section className="relative bg-violet-50/60 py-20 sm:py-28">
+    <section
+      id="how-it-works"
+      className="relative scroll-mt-24 bg-violet-50/60 py-20 sm:py-28"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-violet-200/40 blur-3xl" />
       </div>

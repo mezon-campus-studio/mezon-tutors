@@ -9,7 +9,6 @@ import {
   FileText,
   Globe2,
   MessageCircle,
-  PlayCircle,
   Send,
   ShieldCheck,
   Smile,
@@ -19,10 +18,12 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useId, useState } from "react";
 import { Badge, Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 const SLIDE_DURATION_MS = 6000;
 
@@ -45,6 +46,9 @@ const SLIDE_ICONS: Record<SlideKey, typeof Calendar> = {
 
 export default function HomeHeroSection() {
   const t = useTranslations("Home.Hero");
+  const locale = useLocale();
+  const isVi = locale === "vi";
+  const underlineGradientId = useId().replace(/:/g, "");
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -57,130 +61,217 @@ export default function HomeHeroSection() {
   }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-28 sm:pt-16 lg:pt-20">
+    <section className="relative overflow-hidden pt-12 pb-28 sm:pt-16 lg:pb-32 lg:pt-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
-        <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/35 blur-[140px]" />
-        <div className="absolute -top-20 right-0 size-[32rem] rounded-full bg-fuchsia-200/40 blur-[120px]" />
-        <div className="absolute top-1/3 -left-20 size-[28rem] rounded-full bg-indigo-200/30 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(165deg,#f5f0ff_0%,#faf8ff_35%,#ffffff_72%,#fffdfd_100%)]" />
         <div
-          className="absolute inset-0 opacity-[0.05]"
+          className="absolute -top-44 left-1/2 size-[46rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/45 via-fuchsia-300/35 to-transparent blur-[130px] motion-reduce:animate-none [animation:hero-blob-drift_22s_ease-in-out_infinite]"
+          style={{ animationDelay: "-4s" }}
+        />
+        <div
+          className="absolute -top-16 -right-24 size-[36rem] rounded-full bg-gradient-to-bl from-rose-300/35 via-fuchsia-200/40 to-transparent blur-[110px] motion-reduce:animate-none [animation:hero-blob-drift_18s_ease-in-out_infinite]"
+          style={{ animationDelay: "-2s" }}
+        />
+        <div className="absolute top-1/4 -left-32 size-[30rem] rounded-full bg-gradient-to-tr from-indigo-300/40 via-violet-200/35 to-transparent blur-[100px] motion-reduce:animate-none [animation:hero-blob-drift_20s_ease-in-out_infinite]" />
+        <div className="absolute -bottom-24 right-1/4 size-72 rounded-full bg-violet-400/20 blur-[90px] motion-reduce:animate-none [animation:hero-badge-shimmer_14s_ease-in-out_infinite]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-300/40 to-transparent" />
+        <div
+          className="absolute inset-0 opacity-[0.055]"
           style={{
             backgroundImage:
               "radial-gradient(circle at 1px 1px, rgb(108 92 231) 1px, transparent 0)",
-            backgroundSize: "32px 32px",
+            backgroundSize: "28px 28px",
             maskImage:
-              "radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 80%)",
+              "radial-gradient(ellipse 85% 65% at 50% 28%, black 28%, transparent 78%)",
           }}
         />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-12 lg:px-10">
-        <div className="space-y-7">
-          <Badge className="h-auto rounded-full border border-violet-200/70 bg-white/70 px-3.5 py-1.5 text-xs font-semibold text-violet-700 shadow-sm shadow-violet-100/50 backdrop-blur animate-in fade-in slide-in-from-bottom-3 duration-700">
-            <Sparkles className="mr-1.5 size-3.5" />
-            {t("badge")}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
+        <div className="space-y-8">
+          <Badge className="relative h-auto overflow-hidden rounded-full border border-violet-200/80 bg-white/80 px-4 py-1.5 text-xs font-semibold text-violet-800 shadow-md shadow-violet-200/25 ring-1 ring-white/80 backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 duration-700">
+            <Sparkles className="relative mr-1.5 size-3.5 shrink-0 text-violet-600" />
+            <span className="relative">{t("badge")}</span>
           </Badge>
 
-          <h1 className="text-balance text-4xl font-extrabold leading-[1.08] tracking-[-0.02em] text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl lg:text-5xl xl:text-[3.6rem]">
-            {t("title")}
-            <br />
-            <span className="relative inline-block pb-1">
-              <span className="relative z-10 bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
-                {t("titleHighlight")}
-              </span>
-              <svg
-                className="absolute -bottom-1 left-0 z-0 w-full"
-                viewBox="0 0 300 12"
-                fill="none"
-                preserveAspectRatio="none"
-                role="presentation"
-              >
-                <path
-                  d="M2 8 C 80 2, 180 2, 298 8"
-                  stroke="url(#hero-underline)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                <defs>
-                  <linearGradient
-                    id="hero-underline"
-                    x1="0"
-                    y1="0"
-                    x2="1"
-                    y2="0"
-                  >
-                    <stop offset="0%" stopColor="#7c3aed" />
-                    <stop offset="100%" stopColor="#ec4899" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          <h1
+            className={cn(
+              "text-balance font-extrabold tracking-[-0.03em] text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem]",
+              isVi
+                ? "leading-[1.18] sm:leading-[1.22] lg:leading-[1.24]"
+                : "leading-[1.06] sm:leading-[1.1] lg:leading-[1.12]",
+            )}
+          >
+            <span
+              className={cn(
+                "block text-4xl sm:text-5xl",
+                isVi && "leading-[1.2] sm:leading-[1.24] lg:leading-[1.26]",
+              )}
+            >
+              {t("title")}
             </span>
+            {isVi ? (
+              <>
+                <span className="mt-1 block text-4xl leading-[1.2] sm:mt-1.5 sm:text-5xl sm:leading-[1.24] lg:leading-[1.26]">
+                  <span className="bg-[linear-gradient(105deg,#6d28d9_0%,#a855f7_55%,#c026d3_100%)] bg-clip-text text-transparent">
+                    {t("titleHighlightLead")}
+                  </span>
+                </span>
+                <span className="mt-1 block text-4xl leading-[1.2] sm:mt-1.5 sm:text-5xl sm:leading-[1.24] lg:leading-[1.26]">
+                  <span className="relative inline-block pb-1 sm:pb-1.5">
+                    <span className="relative z-10 bg-[linear-gradient(105deg,#c026d3_0%,#ec4899_45%,#f472b6_100%)] bg-clip-text text-transparent">
+                      {t("titleHighlightTail")}
+                    </span>
+                    <svg
+                      className="absolute -bottom-0.5 left-0 z-0 w-full min-w-[8.5rem] sm:min-w-[12rem]"
+                      viewBox="0 0 300 12"
+                      fill="none"
+                      preserveAspectRatio="none"
+                      role="presentation"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M2 8 C 80 2, 180 2, 298 8"
+                        stroke={`url(#hero-underline-${underlineGradientId})`}
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                      <defs>
+                        <linearGradient
+                          id={`hero-underline-${underlineGradientId}`}
+                          x1="0"
+                          y1="0"
+                          x2="1"
+                          y2="0"
+                        >
+                          <stop offset="0%" stopColor="#db2777" />
+                          <stop offset="55%" stopColor="#ec4899" />
+                          <stop offset="100%" stopColor="#f472b6" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </span>
+                </span>
+              </>
+            ) : (
+              <span className="mt-1 block text-4xl sm:text-5xl lg:mt-1.5">
+                <span className="bg-[linear-gradient(105deg,#6d28d9_0%,#a855f7_55%,#c026d3_100%)] bg-clip-text text-transparent">
+                  {t("titleHighlightLead")}
+                </span>{" "}
+                <span className="relative inline-block pb-1.5">
+                  <span className="relative z-10 bg-[linear-gradient(105deg,#c026d3_0%,#ec4899_45%,#f472b6_100%)] bg-clip-text text-transparent">
+                    {t("titleHighlightTail")}
+                  </span>
+                  <svg
+                    className="absolute -bottom-0.5 left-0 z-0 w-full min-w-[8.5rem] sm:min-w-[12rem]"
+                    viewBox="0 0 300 12"
+                    fill="none"
+                    preserveAspectRatio="none"
+                    role="presentation"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2 8 C 80 2, 180 2, 298 8"
+                      stroke={`url(#hero-underline-${underlineGradientId})`}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <defs>
+                      <linearGradient
+                        id={`hero-underline-${underlineGradientId}`}
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="0"
+                      >
+                        <stop offset="0%" stopColor="#db2777" />
+                        <stop offset="55%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#f472b6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+              </span>
+            )}
           </h1>
 
           <p className="max-w-xl text-base leading-7 text-slate-600 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:120ms] [animation-fill-mode:both] sm:text-lg sm:leading-8">
             {t("description")}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:240ms] [animation-fill-mode:both]">
-            <Link href="/tutors">
-              <Button className="group h-12 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] px-7 text-sm font-semibold text-white shadow-lg shadow-violet-300/50 transition-all hover:shadow-xl hover:shadow-violet-400/50">
-                {t("startNow")}
-                <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
+          <div className="flex flex-wrap items-center gap-3 pt-1 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:240ms] [animation-fill-mode:both]">
+            <Link href="/tutors" className="inline-flex">
+              <Button className="group relative h-12 overflow-hidden rounded-full bg-[linear-gradient(110deg,#6d28d9_0%,#9333ea_42%,#db2777_100%)] px-7 text-sm font-semibold text-white shadow-[0_14px_40px_-12px_rgba(124,58,237,0.55)] ring-1 ring-white/25 transition-[transform,box-shadow] duration-300 hover:scale-[1.02] hover:shadow-[0_20px_44px_-12px_rgba(124,58,237,0.6)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100">
+                <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <span className="relative flex items-center">
+                  {t("startNow")}
+                  <ArrowRight className="ml-1 size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
               </Button>
             </Link>
-            <Button
-              variant="ghost"
-              className="h-12 rounded-full px-5 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-            >
-              <PlayCircle className="mr-1.5 size-5 text-violet-600" />
-              {t("watchDemo")}
-            </Button>
           </div>
 
-          <div className="flex items-center gap-4 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both]">
+          <div className="flex max-w-md flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/55 p-4 shadow-[0_20px_50px_-28px_rgba(91,33,182,0.18)] backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both] sm:flex-row sm:items-center sm:gap-5 sm:p-5">
             <div className="flex -space-x-2.5">
               {TRUST_AVATARS.map((avatar) => (
                 <div
                   key={avatar.id}
-                  className={`flex size-9 items-center justify-center rounded-full border-[2.5px] border-white bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${avatar.gradient} text-[11px] font-bold text-white shadow-sm`}
+                  className={`relative flex size-10 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${avatar.gradient} text-[11px] font-bold text-white shadow-md ring-1 ring-black/5 transition-transform duration-300 hover:z-10 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
                 >
                   {avatar.initials}
                 </div>
               ))}
-              <div className="flex size-9 items-center justify-center rounded-full border-[2.5px] border-white bg-violet-100 text-[10px] font-bold text-violet-700 shadow-sm">
+              <div className="flex size-10 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,#ede9fe,#fae8ff)] text-[10px] font-bold text-violet-800 shadow-md ring-1 ring-violet-200/60">
                 +25k
               </div>
             </div>
-            <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-0.5">
+            <div className="hidden h-10 w-px shrink-0 bg-gradient-to-b from-transparent via-slate-200 to-transparent sm:block" />
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
                 {["s1", "s2", "s3", "s4", "s5"].map((id) => (
                   <Star
                     key={id}
-                    className="size-3.5 fill-amber-400 text-amber-400"
+                    className="size-4 fill-amber-400 text-amber-400 drop-shadow-sm"
                   />
                 ))}
-                <span className="ml-1 text-xs font-bold text-slate-900">
+                <span className="ml-1.5 text-sm font-bold tabular-nums text-slate-900">
                   4.9
                 </span>
               </div>
-              <p className="text-[11px] font-medium text-slate-500">
+              <p className="text-xs leading-snug font-medium text-slate-500">
                 {t("trust")}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 [animation-delay:120ms] [animation-fill-mode:both]">
-          <HeroCarousel
-            t={t}
-            activeSlide={activeSlide}
-            isPaused={isPaused}
-            onSelect={setActiveSlide}
-            onPause={() => setIsPaused(true)}
-            onResume={() => setIsPaused(false)}
-          />
+        <div className="relative mx-auto w-full max-w-[26rem] motion-reduce:animate-none lg:mx-0 lg:max-w-none animate-in fade-in slide-in-from-bottom-6 duration-1000 [animation-delay:120ms] [animation-fill-mode:both] motion-safe:[animation:hero-card-float_10s_ease-in-out_infinite]">
+          <div className="pointer-events-none absolute -left-6 top-[18%] z-0 hidden h-52 w-40 -rotate-6 overflow-hidden rounded-2xl border-2 border-white shadow-[0_24px_60px_-16px_rgba(91,33,182,0.35)] lg:block">
+            <Image
+              src="/images/teach.jpg"
+              alt=""
+              fill
+              className="object-cover"
+              sizes="160px"
+            />
+          </div>
+          <div className="pointer-events-none absolute -right-2 bottom-[22%] z-20 hidden lg:flex">
+            <span className="flex size-12 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-violet-600 shadow-lg shadow-violet-300/30 ring-1 ring-violet-100 backdrop-blur-sm motion-safe:animate-[hero-card-float_7s_ease-in-out_infinite_reverse]">
+              <Calendar className="size-6" />
+            </span>
+          </div>
+          <div className="relative z-10">
+            <HeroCarousel
+              t={t}
+              activeSlide={activeSlide}
+              isPaused={isPaused}
+              onSelect={setActiveSlide}
+              onPause={() => setIsPaused(true)}
+              onResume={() => setIsPaused(false)}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -220,7 +311,7 @@ function HeroCarousel({
         <div className="absolute inset-x-12 bottom-0 h-72 rounded-full bg-[radial-gradient(circle_at_70%_70%,rgba(236,72,153,0.15),transparent_70%)] blur-3xl" />
       </div>
 
-      <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white shadow-[0_12px_32px_-18px_rgba(91,33,182,0.2)]">
+      <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-200/60 bg-white/95 shadow-[0_25px_70px_-24px_rgba(91,33,182,0.28),0_0_0_1px_rgba(255,255,255,0.9)_inset] ring-1 ring-violet-200/25 backdrop-blur-[2px]">
         <div
           className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{ transform: `translateX(-${activeSlide * 100}%)` }}
@@ -669,7 +760,11 @@ function PricingSlide({ t }: { t: (key: string) => string }) {
 function VerifiedSlide({ t }: { t: (key: string) => string }) {
   const subjects = [
     { id: "math", label: "Math", accent: "from-violet-500 to-purple-500" },
-    { id: "languages", label: "Languages", accent: "from-purple-500 to-fuchsia-500" },
+    {
+      id: "languages",
+      label: "Languages",
+      accent: "from-purple-500 to-fuchsia-500",
+    },
     { id: "science", label: "Science", accent: "from-fuchsia-500 to-rose-500" },
     { id: "coding", label: "Coding", accent: "from-rose-500 to-orange-500" },
     { id: "business", label: "Business", accent: "from-amber-500 to-rose-500" },
