@@ -261,7 +261,7 @@
     "rate": {
       "question": "How much do you want to charge per hour?",
       "currencyLabel": "USD / hr",
-      "recommended": "Recommended: {min} - {max} for your subjects."
+      "recommended": "Recommended: at least {min} for your subjects."
     },
     "availabilityCardTitle": "Weekly Availability",
     "availability": {
@@ -294,7 +294,6 @@
       "hourlyRateInvalidFormat": "Hourly rate must be a valid number (up to 2 decimal places).",
       "hourlyRateGreaterThanZero": "Hourly rate must be greater than 0.",
       "hourlyRateTooLow": "Price must be at least {min}.",
-      "hourlyRateTooHigh": "Price cannot exceed {max}.",
       "weeklySlotsRequired": "Please add at least one weekly availability slot before continuing.",
       "timeRequired": "Start time and end time are required.",
       "minuteStepInvalid": "Minutes must be 00 or 30 (30-minute step).",

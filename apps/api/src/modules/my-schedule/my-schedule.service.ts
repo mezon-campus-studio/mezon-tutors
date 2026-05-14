@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ETrialLessonStatus } from '@mezon-tutors/db';
+import { ETrialLessonStatus, EPaymentStatus } from '@mezon-tutors/db';
 import { DEFAULT_TIMEZONE } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import timezone = require('dayjs/plugin/timezone');
@@ -89,6 +89,10 @@ export class MyScheduleService {
             gte: monday.toDate(),
             lte: sunday.toDate(),
           },
+          status: {
+            in: [ETrialLessonStatus.CONFIRMED, ETrialLessonStatus.COMPLETED],
+          },
+          paymentStatus: EPaymentStatus.SUCCEEDED,
         },
         include: {
           student: {

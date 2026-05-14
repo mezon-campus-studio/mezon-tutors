@@ -1,18 +1,10 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { TutorApplicationService } from './tutor-application.service';
 import { CreateAdminNoteDto } from './dto/create-admin-note.dto';
-import { UpdateProfessionalDocumentStatusDto } from './dto/update-professional-document-status.dto';
-import { UpdateIdentityVerificationStatusDto } from './dto/update-identity-verification-status.dto';
-import type {
-  FullTutorApplication,
-  IdentityVerification,
-  ProfessionalDocument,
-  TutorAdminNote,
-  TutorApplicationMetrics,
-} from '@mezon-tutors/shared';
+import type { FullTutorApplication, TutorAdminNote, TutorApplicationMetrics } from '@mezon-tutors/shared';
 import { TutorProfile } from '@mezon-tutors/db';
 
 @Controller('admin')
@@ -50,21 +42,5 @@ export class TutorApplicationController {
   @Post('tutor-admin-notes')
   async createAdminNote(@Body() dto: CreateAdminNoteDto): Promise<TutorAdminNote> {
     return this.tutorApplicationService.createAdminNote(dto);
-  }
-
-  @Patch('professional-documents/:id/status')
-  async updateProfessionalDocumentStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateProfessionalDocumentStatusDto
-  ): Promise<ProfessionalDocument> {
-    return this.tutorApplicationService.updateProfessionalDocumentStatus(id, dto.status);
-  }
-
-  @Patch('identity-verification/:id/status')
-  async updateIdentityVerificationStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateIdentityVerificationStatusDto
-  ): Promise<IdentityVerification> {
-    return this.tutorApplicationService.updateIdentityVerificationStatus(id, dto);
   }
 }

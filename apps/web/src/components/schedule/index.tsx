@@ -1,48 +1,69 @@
 'use client';
 
+import { useMemo, type ReactNode } from 'react';
+import { CalendarCard, type CalendarEvent } from '@/components/calendar';
+import type { CalendarType } from '@/components/calendar/types';
 import {
-  CALENDAR_CONFIG,
   buildFallbackWeekDays,
+  CALENDAR_CONFIG,
   getFallbackWeekHours,
 } from '@mezon-tutors/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { CalendarCard, type CalendarEvent } from '@/components/calendar';
-import MyScheduleEventCard from './MyScheduleEventCard';
 
-type ScheduleEvent = {
+export type DashboardScheduleWeekDay = {
+  shortLabel: string;
+  dateLabel: string;
+};
+
+export type DashboardScheduleCalendarEvent = {
   id: string;
-  tutorId: string;
-  studentId: string;
-  studentMezonUserId: string | null;
-  studentName: string;
-  studentAvatarUrl?: string;
-  startAt: string;
-  durationMinutes: number;
   dayIndex: number;
   startHour: number;
   endHour: number;
-  dateLabel: string;
-  timeLabel: string;
-  isCompleted: boolean;
-  lessonKind: 'trial' | 'subscription';
 };
 
-type MyScheduleCalendarCardProps = {
+export type DashboardScheduleCalendarLabels = {
+  today: string;
+  weekBadge: string;
+  prevWeekAria?: string;
+  nextWeekAria?: string;
+};
+
+export type DashboardScheduleCalendarProps<T extends DashboardScheduleCalendarEvent> = {
   title: string;
-  weekDays: { shortLabel: string; dateLabel: string }[];
-  events: ScheduleEvent[];
+  weekDays: DashboardScheduleWeekDay[];
+  events: T[];
   currentDayIndex?: number;
   currentHour?: number;
   isCurrentWeek?: boolean;
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
   onGoToToday?: () => void;
-  onSelectEvent?: (event: ScheduleEvent, anchorRect: DOMRect) => void;
+  labels: DashboardScheduleCalendarLabels;
+  renderEvent: (event: T) => ReactNode;
+  onEventClick?: (event: T, anchorRect: DOMRect) => void;
+  calendarType?: CalendarType;
 };
 
-export default function MyScheduleCalendarCard({
+export function buildDashboardScheduleWeekHours(
+  events: Pick<DashboardScheduleCalendarEvent, 'startHour' | 'endHour'>[],
+  currentHour?: number,
+): number[] {
+  const { MIN, MAX } = CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE;
+  const defaultHours = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i);
+  const hourSet = new Set<number>(defaultHours);
+  for (const event of events) {
+    const start = Math.floor(event.startHour);
+    const end = Math.ceil(event.endHour);
+    for (let h = start; h <= end; h++) hourSet.add(h);
+  }
+  if (currentHour !== undefined) {
+    hourSet.add(Math.floor(currentHour));
+  }
+  return Array.from(hourSet).sort((a, b) => a - b);
+}
+
+export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEvent>({
   title,
   weekDays,
   events,
@@ -52,11 +73,15 @@ export default function MyScheduleCalendarCard({
   onPrevWeek,
   onNextWeek,
   onGoToToday,
-  onSelectEvent,
-}: MyScheduleCalendarCardProps) {
-  const t = useTranslations('Dashboard.mySchedule');
+  labels,
+  renderEvent,
+  onEventClick,
+  calendarType = 'mySchedule',
+}: DashboardScheduleCalendarProps<T>) {
+  const prevAria = labels.prevWeekAria ?? 'Previous week';
+  const nextAria = labels.nextWeekAria ?? 'Next week';
 
-  const calendarEvents: CalendarEvent<ScheduleEvent>[] = useMemo(
+  const calendarEvents: CalendarEvent<T>[] = useMemo(
     () =>
       events.map((event) => ({
         id: event.id,
@@ -68,35 +93,21 @@ export default function MyScheduleCalendarCard({
     [events],
   );
 
-  const weekHours = useMemo(() => {
-    const { MIN, MAX } = CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE;
-    const defaultHours = Array.from(
-      { length: MAX - MIN + 1 },
-      (_, i) => MIN + i,
-    );
-    const hourSet = new Set<number>(defaultHours);
-    for (const event of events) {
-      const start = Math.floor(event.startHour);
-      const end = Math.ceil(event.endHour);
-      for (let h = start; h <= end; h++) hourSet.add(h);
-    }
-    if (currentHour !== undefined) {
-      hourSet.add(Math.floor(currentHour));
-    }
-    return Array.from(hourSet).sort((a, b) => a - b);
-  }, [events, currentHour]);
+  const weekHours = useMemo(
+    () => buildDashboardScheduleWeekHours(events, currentHour),
+    [events, currentHour],
+  );
 
   const finalWeekDays = weekDays.length ? weekDays : buildFallbackWeekDays();
   const finalWeekHours = weekHours.length ? weekHours : getFallbackWeekHours();
 
-  const customHeader = (
+  const header = (
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
       <div className="flex items-center gap-3">
         <h2
           className="text-2xl font-extrabold tracking-tight md:text-3xl"
           style={{
-            background:
-              'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
+            background: 'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -107,7 +118,7 @@ export default function MyScheduleCalendarCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label="Previous week"
+            aria-label={prevAria}
             className="flex size-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
             onClick={onPrevWeek}
             disabled={!onPrevWeek}
@@ -116,7 +127,7 @@ export default function MyScheduleCalendarCard({
           </button>
           <button
             type="button"
-            aria-label="Next week"
+            aria-label={nextAria}
             className="flex size-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
             onClick={onNextWeek}
             disabled={!onNextWeek}
@@ -137,10 +148,10 @@ export default function MyScheduleCalendarCard({
           onClick={isCurrentWeek ? undefined : onGoToToday}
           disabled={isCurrentWeek}
         >
-          {t('calendar.today')}
+          {labels.today}
         </button>
         <span className="rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-violet-300/40">
-          {t('calendar.week')}
+          {labels.weekBadge}
         </span>
       </div>
     </div>
@@ -148,8 +159,8 @@ export default function MyScheduleCalendarCard({
 
   return (
     <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40 sm:p-5">
-      <CalendarCard<ScheduleEvent>
-        type="mySchedule"
+      <CalendarCard<T>
+        type={calendarType}
         weekDays={finalWeekDays}
         weekHours={finalWeekHours}
         events={calendarEvents}
@@ -157,9 +168,9 @@ export default function MyScheduleCalendarCard({
         currentHour={currentHour}
         enableGapCollapse
         readonly
-        onEventClick={onSelectEvent ? (ev, rect) => onSelectEvent(ev.data, rect) : undefined}
-        renderEvent={(event) => <MyScheduleEventCard event={event.data} />}
-        header={customHeader}
+        onEventClick={onEventClick ? (ev, rect) => onEventClick(ev.data, rect) : undefined}
+        renderEvent={(ev, _isCompact) => renderEvent(ev.data)}
+        header={header}
       />
     </div>
   );

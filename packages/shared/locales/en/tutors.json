@@ -114,8 +114,7 @@
       "bookedLockedNotice": "You already booked this tutor and cannot create another booking.",
       "missingInfo": {
         "title": "Missing booking information",
-        "description": "Open this page from the trial lesson booking flow on a tutor card.",
-        "expectedQuery": "Expected query: tutorId, startAt, durationMinutes, dayOfWeek"
+        "description": "Open this page from the trial lesson booking flow on a tutor card."
       },
       "errors": {
         "loadTutor": "Could not load tutor profile. Please try again later.",

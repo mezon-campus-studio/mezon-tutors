@@ -2,12 +2,13 @@
 
 import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
-import { CalendarPlus, Clock4, Sparkles, Video } from 'lucide-react';
+import { CalendarPlus, Clock4, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
+import { mapTutorBookingStatusToUi } from '../../trial-bookings';
 
 type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];
@@ -68,7 +69,8 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
             const isSubscription = item.scheduleKind === 'subscription';
             const start = dayjs(item.startAt).locale(locale);
             const end = start.add(item.durationMinutes, 'minute');
-            const isCompleted = end.isBefore(dayjs());
+            const isCompleted =
+              end.isBefore(dayjs()) || mapTutorBookingStatusToUi(item.status) === 'completed';
             return (
               <div
                 key={item.id}
@@ -148,12 +150,9 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
                   ) : null}
                 </div>
 
-                <div className="mt-auto flex shrink-0 gap-2">
-                  {!isSubscription ? (
-                    <Link
-                      href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}
-                      className="flex-1"
-                    >
+                {!isSubscription ? (
+                  <div className="mt-auto flex shrink-0">
+                    <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)} className="w-full">
                       <Button
                         variant="outline"
                         className="h-10 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800"
@@ -161,26 +160,8 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
                         {t('viewDetail')}
                       </Button>
                     </Link>
-                  ) : null}
-                  <Button
-                    disabled={isCompleted}
-                    className={cn(
-                      'h-10 rounded-full text-xs font-semibold',
-                      isCompleted
-                        ? cn(
-                            'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-500 shadow-none hover:bg-slate-100',
-                            isSubscription ? 'w-full' : 'flex-1'
-                          )
-                        : cn(
-                            'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50',
-                            isSubscription ? 'w-full' : 'flex-1'
-                          )
-                    )}
-                  >
-                    <Video className="mr-1.5 size-3.5" />
-                    {isCompleted ? tSchedule('joinEnded') : t('joinLesson')}
-                  </Button>
-                </div>
+                  </div>
+                ) : null}
               </div>
             );
           })}

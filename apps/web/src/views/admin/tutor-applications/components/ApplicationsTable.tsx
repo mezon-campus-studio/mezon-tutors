@@ -88,11 +88,13 @@ export default function ApplicationsTable({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {applications.map((app) => {
-              const isPending = app.verificationStatus === "PENDING";
               const fullName =
                 `${app.firstName ?? ""} ${app.lastName ?? ""}`.trim() || "—";
               const isApproving = approvingId === app.id;
               const isRejecting = rejectingId === app.id;
+              const s = app.verificationStatus;
+              const showApprove = s === "PENDING" || s === "REJECTED";
+              const showReject = s === "PENDING" || s === "APPROVED";
 
               return (
                 <tr key={app.id} className="bg-white hover:bg-slate-50">
@@ -134,7 +136,7 @@ export default function ApplicationsTable({
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      {isPending && onApprove && (
+                      {onApprove && showApprove && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -145,7 +147,7 @@ export default function ApplicationsTable({
                           <Check className="h-4 w-4" />
                         </Button>
                       )}
-                      {isPending && onReject && (
+                      {onReject && showReject && (
                         <Button
                           variant="outline"
                           size="sm"

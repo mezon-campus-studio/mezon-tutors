@@ -33,10 +33,16 @@ export const apiClient = axios.create({
   },
 });
 
+function isAuthRefreshRequest(config: InternalAxiosRequestConfig | undefined): boolean {
+  const url = config?.url ?? '';
+  const path = url.split('?')[0] ?? '';
+  return path === '/auth/refresh';
+}
+
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const accessToken = store.get(accessTokenAtom);
-    if (accessToken && config.headers) {
+    if (accessToken && config.headers && !isAuthRefreshRequest(config)) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     if (config.data instanceof FormData && config.headers) {
@@ -66,6 +72,13 @@ apiClient.interceptors.response.use(
     ) | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      if (isAuthRefreshRequest(originalRequest)) {
+        store.set(accessTokenAtom, null);
+        const finalStatus = error.response?.status || 500;
+        const body = error.response?.data || null;
+        return Promise.reject(new ApiError(finalStatus, error.message, body));
+      }
+
       originalRequest._retry = true;
 
       try {

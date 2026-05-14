@@ -61,41 +61,25 @@
       },
       "documents": {
         "identityVerification": {
-          "title": "Identity verification",
-          "subtitle": "Review and verify tutor identity documents before approving this application.",
-          "pending": "Pending",
+          "title": "Identity document",
+          "subtitle": "Submitted with the application. View only.",
           "uploadedAt": "Uploaded on {date}",
-          "approve": "Approve ID",
-          "reject": "Reject",
-          "download": "Download ID",
-          "idTypeLabel": "Passport / Government ID",
-          "idPreviewPlaceholder": "ID preview",
+          "download": "Open file",
           "noDocument": "No identity document uploaded",
-          "checklist": {
-            "title": "Verification Checklist",
-            "nameMatchesProfile": "Name matches profile",
-            "documentNotExpired": "Document is not expired",
-            "photoClarity": "Photo clarity verification"
-          }
+          "idTypeLabel": "Passport / Government ID"
         },
         "professionalDocuments": {
-          "title": "Professional Documents",
-          "subtitle": "Check diplomas, certifications and language scores to validate qualifications.",
+          "title": "Professional documents",
+          "subtitle": "Certificates and education records. View only.",
+          "empty": "No professional documents on file.",
           "headers": {
             "documentName": "Document name",
             "type": "Type",
-            "issueDate": "Issue date",
             "status": "Status",
-            "actions": "Actions"
+            "uploadedAt": "Uploaded",
+            "file": "File"
           },
-          "status": {
-            "verified": "Verified",
-            "new": "New"
-          },
-          "actions": {
-            "approve": "Approve document",
-            "reject": "Reject"
-          }
+          "openFile": "Open"
         }
       }
     },
@@ -112,7 +96,6 @@
       }
     },
     "modals": {
-      "defaultDocName": "this document",
       "approve": {
         "title": "Approve Application",
         "description": "Are you sure you want to approve {name}'s application? This will grant them tutor access.",
@@ -132,30 +115,7 @@
         "title": "Save Internal Note",
         "description": "Are you sure you want to save this internal note?",
         "confirm": "Save"
-      },
-      "idApproval": {
-        "title": "Approve Identity Document",
-        "description": "Are you sure you want to approve this identity document for {name}?",
-        "confirm": "Approve ID"
-      },
-      "idRejection": {
-        "title": "Reject Identity Document",
-        "description": "Are you sure you want to reject this identity document for {name}?",
-        "confirm": "Reject ID"
-      },
-      "docApproval": {
-        "title": "Approve Professional Document",
-        "description": "Are you sure you want to approve the document \"{name}\"?",
-        "confirm": "Approve"
-      },
-      "docRejection": {
-        "title": "Reject Professional Document",
-        "description": "Are you sure you want to reject the document \"{name}\"?",
-        "confirm": "Reject"
       }
-    },
-    "messages": {
-      "docStatusUpdated": "Document status updated"
     }
   }
 }

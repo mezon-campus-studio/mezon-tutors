@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "scontent.fdad3-4.fna.fbcdn.net",
       },
+      {
+        protocol: "https",
+        hostname: "cdn-icons-png.flaticon.com",
+      }
     ],
   },
 };

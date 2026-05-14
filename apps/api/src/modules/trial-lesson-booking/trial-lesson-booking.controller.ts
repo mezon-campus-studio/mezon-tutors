@@ -66,9 +66,12 @@ export class TrialLessonBookingController {
 
     const status =
       query.status && query.status !== ETrialLessonStatus.CANCELLED ? query.status : undefined
+    const statusIn = query.statusIn?.length ? query.statusIn : undefined
 
     return this.trialLessonBookingService.getTutorBookingRequests(user.sub, {
-      status,
+      status: statusIn?.length ? undefined : status,
+      statusIn,
+      orderBy: statusIn?.length ? 'startAt' : undefined,
       page: query.page,
       limit: query.limit,
     })

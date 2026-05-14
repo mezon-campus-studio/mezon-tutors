@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui';
-import { ROUTES, type ETrialLessonBookingStatus, type TutorSubscriptionWeekOccurrenceDto } from '@mezon-tutors/shared';
+import { ETrialLessonBookingStatus, ROUTES, type TutorSubscriptionWeekOccurrenceDto } from '@mezon-tutors/shared';
 import {
   useGetMyTrialLessonBookingRequests,
   useGetTutorSubscriptionWeekOccurrences,
   type TrialLessonBookingRequestItem,
 } from '@/services';
-import MyScheduleCalendarCard from './components/MyScheduleCalendarCard';
+import { DashboardScheduleCalendar } from '@/components/schedule';
+import MyScheduleEventCard from './components/MyScheduleEventCard';
 import MyScheduleUpcomingList from './components/MyScheduleUpcomingList';
 import { mapTutorBookingStatusToUi } from '../trial-bookings';
 import { useAtomValue } from 'jotai';
@@ -57,13 +58,17 @@ const toScheduleEvent = (
   weekStart: dayjs.Dayjs,
   weekEnd: dayjs.Dayjs,
   locale: string,
-): Omit<ScheduleEventItem, 'isCompleted'> | null => {
+): ScheduleEventItem | null => {
   const start = dayjs(item.startAt);
   if (!start.isValid()) return null;
   if (start.isBefore(weekStart) || !start.isBefore(weekEnd)) return null;
 
   const startLocal = start.locale(locale);
   const endLocal = startLocal.add(item.durationMinutes, 'minute');
+  const now = dayjs();
+  const uiStatus = mapTutorBookingStatusToUi(item.status);
+  const isCompleted =
+    endLocal.isBefore(now) || uiStatus === 'completed';
 
   const diffDays = startLocal.startOf('day').diff(weekStart.startOf('day'), 'day');
 
@@ -82,6 +87,7 @@ const toScheduleEvent = (
     dateLabel: startLocal.format('ddd, MMM DD'),
     timeLabel: `${startLocal.format('HH:mm')} - ${endLocal.format('HH:mm')}`,
     lessonKind: item.scheduleKind === 'subscription' ? 'subscription' : 'trial',
+    isCompleted,
   };
 };
 
@@ -108,6 +114,7 @@ function subscriptionOccurrenceToRequestItem(
 
 export default function MyScheduleView() {
   const t = useTranslations('Dashboard.mySchedule');
+  const tModal = useTranslations('Dashboard.scheduleEventModal');
   const locale = useLocale();
   const router = useRouter();
   const user = useAtomValue(userAtom);
@@ -125,7 +132,7 @@ export default function MyScheduleView() {
   const weekStartYmd = useMemo(() => weekStart.format('YYYY-MM-DD'), [weekStart]);
 
   const { data: trialData, isLoading: isTrialLoading } = useGetMyTrialLessonBookingRequests({
-    status: 'CONFIRMED',
+    statusIn: ['CONFIRMED', 'COMPLETED'],
     page: 1,
     limit: 100,
   });
@@ -147,7 +154,7 @@ export default function MyScheduleView() {
         const day = weekStart.add(i, 'day').locale(locale);
         return {
           shortLabel: day.format('ddd').toUpperCase(),
-          dateLabel: day.format('MMM DD'),
+          dateLabel: day.format('DD'),
         };
       }),
     [weekStart, locale],
@@ -156,14 +163,8 @@ export default function MyScheduleView() {
   const calendarTitle = `${weekStart.locale(locale).format('MMMM YYYY')}`;
 
   const eventsThisWeek = useMemo(() => {
-    const now = dayjs();
     return items
-      .map((item) => {
-        const ev = toScheduleEvent(item, weekStart, weekEnd, locale);
-        if (!ev) return null;
-        const endAt = dayjs(item.startAt).add(item.durationMinutes, 'minute');
-        return { ...ev, isCompleted: endAt.isBefore(now) };
-      })
+      .map((item) => toScheduleEvent(item, weekStart, weekEnd, locale))
       .filter((item): item is ScheduleEventItem => Boolean(item));
   }, [items, weekStart, weekEnd, locale]);
 
@@ -173,7 +174,10 @@ export default function MyScheduleView() {
         const start = dayjs(item.startAt);
         return !start.isBefore(weekStart) && start.isBefore(weekEnd);
       })
-      .filter((item) => mapTutorBookingStatusToUi(item.status) === 'confirmed')
+      .filter((item) => {
+        const ui = mapTutorBookingStatusToUi(item.status);
+        return ui === 'confirmed' || ui === 'completed';
+      })
       .sort(
         (a, b) =>
           dayjs(a.startAt).valueOf() - dayjs(b.startAt).valueOf(),
@@ -194,6 +198,25 @@ export default function MyScheduleView() {
   const handleGoToToday = () => setSelectedDate(dayjs());
 
   const isCurrentWeek = weekStart.isSame(buildWeekStartMonday(dayjs()), 'day');
+
+  const scheduleEventDetailRows = useMemo(() => {
+    if (!pickedEvent) return undefined;
+    return [
+      {
+        label: tModal('detailLessonType'),
+        value:
+          pickedEvent.lessonKind === 'subscription' ? t('lessonTypePlan') : t('lessonTypeTrial'),
+      },
+      {
+        label: tModal('detailDuration'),
+        value: tModal('durationMinutes', { minutes: pickedEvent.durationMinutes }),
+      },
+      {
+        label: tModal('detailStatus'),
+        value: pickedEvent.isCompleted ? t('completedBadge') : tModal('statusUpcoming'),
+      },
+    ];
+  }, [pickedEvent, t, tModal]);
 
   return (
     <main className="min-h-screen">
@@ -231,7 +254,7 @@ export default function MyScheduleView() {
             </div>
           ) : (
             <div className="grid min-h-0 grid-cols-1 gap-6 xl:grid-cols-[1fr_400px]">
-              <MyScheduleCalendarCard
+              <DashboardScheduleCalendar<ScheduleEventItem>
                 title={calendarTitle}
                 weekDays={weekDays}
                 events={eventsThisWeek}
@@ -241,7 +264,12 @@ export default function MyScheduleView() {
                 onPrevWeek={handlePrevWeek}
                 onNextWeek={handleNextWeek}
                 onGoToToday={handleGoToToday}
-                onSelectEvent={(ev, rect) => {
+                labels={{
+                  today: t('calendar.today'),
+                  weekBadge: t('calendar.week'),
+                }}
+                renderEvent={(event) => <MyScheduleEventCard event={event} />}
+                onEventClick={(ev, rect) => {
                   setPickedEvent(ev);
                   setEventAnchorRect(rect);
                 }}
@@ -268,6 +296,9 @@ export default function MyScheduleView() {
         peerName={pickedEvent?.studentName ?? ''}
         dateLabel={pickedEvent?.dateLabel ?? ''}
         timeLabel={pickedEvent?.timeLabel ?? ''}
+        avatarUrl={pickedEvent?.studentAvatarUrl}
+        avatarAlt={pickedEvent?.studentName}
+        detailRows={scheduleEventDetailRows}
         onSendMessage={() => setMessageOpen(true)}
       />
 

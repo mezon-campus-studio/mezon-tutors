@@ -34,6 +34,8 @@ export class TrialLessonBookingService {
     tutorUserId: string,
     options?: {
       status?: ETrialLessonStatus
+      statusIn?: ETrialLessonStatus[]
+      orderBy?: 'startAt' | 'createdAt'
       page?: number
       limit?: number
     }
@@ -49,9 +51,32 @@ export class TrialLessonBookingService {
 
     const page = Math.max(1, options?.page ?? 1)
     const limit = Math.max(10, Math.min(100, options?.limit ?? 10))
-    const where = {
+    const statusIn = (options?.statusIn ?? []).filter(Boolean)
+    const statusFilter =
+      !statusIn.length && options?.status && options?.status !== ETrialLessonStatus.CANCELLED
+        ? options.status
+        : undefined
+
+    const postPayStatuses = new Set<ETrialLessonStatus>([
+      ETrialLessonStatus.CONFIRMED,
+      ETrialLessonStatus.COMPLETED,
+    ]);
+    const needsPaymentSucceeded = statusIn.length
+      ? statusIn.every((s) => postPayStatuses.has(s))
+      : statusFilter === ETrialLessonStatus.CONFIRMED || statusFilter === ETrialLessonStatus.COMPLETED
+
+    const where: Prisma.TrialLessonBookingWhereInput = {
       tutorId: tutor.id,
+      ...(statusIn.length
+        ? { status: { in: statusIn } }
+        : statusFilter
+          ? { status: statusFilter }
+          : { status: { not: ETrialLessonStatus.CANCELLED } }),
+      ...(needsPaymentSucceeded ? { paymentStatus: EPaymentStatus.SUCCEEDED } : {}),
     }
+
+    const orderBy =
+      options?.orderBy === 'startAt' ? ({ startAt: 'asc' } as const) : ({ createdAt: 'desc' } as const);
 
     const [total, items] = await this.prisma.$transaction([
       this.prisma.trialLessonBooking.count({ where }),
@@ -67,7 +92,7 @@ export class TrialLessonBookingService {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -244,6 +269,7 @@ export class TrialLessonBookingService {
       where: {
         tutorId,
         status: ETrialLessonStatus.CONFIRMED,
+        paymentStatus: EPaymentStatus.SUCCEEDED,
         startAt: {
           gte: dayStart.toDate(),
           lt: dayEnd.toDate(),

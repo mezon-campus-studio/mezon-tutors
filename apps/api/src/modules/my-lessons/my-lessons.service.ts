@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ETrialLessonStatus, ESubscriptionEnrollmentStatus, Prisma, Role } from '@mezon-tutors/db';
+import { ETrialLessonStatus, ESubscriptionEnrollmentStatus, EPaymentStatus, Prisma, Role } from '@mezon-tutors/db';
 import dayjs = require('dayjs');
 import type {
   MyLessonApiCategory,
@@ -19,6 +19,8 @@ const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const MY_LESSONS_CALENDAR_TZ = 'Asia/Ho_Chi_Minh';
+
 type TrialLessonBookingWithTutor = Prisma.TrialLessonBookingGetPayload<{
   include: {
     tutor: {
@@ -35,12 +37,17 @@ export class MyLessonsService {
   constructor(private readonly prisma: PrismaService) {}
 
   private toUtc(input: string | Date) {
-    return (dayjs as any)(input).utc();
+    return (dayjs)(input).utc();
   }
 
-  private getUtcHour(input: string | Date): number {
-    const dt = this.toUtc(input);
+  private getCalendarHour(input: string | Date): number {
+    const dt = (dayjs)(input).tz(MY_LESSONS_CALENDAR_TZ);
     return dt.hour() + dt.minute() / 60;
+  }
+
+  private isLessonEndAfterNow(lesson: { startAt: Date; durationMinutes: number }): boolean {
+    const end = (dayjs)(lesson.startAt).add(lesson.durationMinutes, 'minute');
+    return end.isAfter((dayjs)());
   }
 
   async getOverview(studentMezonUserId: string, weekStartDate?: string): Promise<MyLessonsApiResponse> {
@@ -53,6 +60,10 @@ export class MyLessonsService {
     const lessons = await this.prisma.trialLessonBooking.findMany({
       where: {
         studentId,
+        status: {
+          in: [ETrialLessonStatus.CONFIRMED, ETrialLessonStatus.COMPLETED],
+        },
+        paymentStatus: EPaymentStatus.SUCCEEDED,
       },
       include: {
         tutor: {
@@ -68,32 +79,50 @@ export class MyLessonsService {
     });
 
     const upcomingLessons = lessons
-      .filter((lesson) => lesson.status === ETrialLessonStatus.CONFIRMED)
+      .filter(
+        (lesson) =>
+          lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson),
+      )
       .map((lesson) => this.toLessonApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
     const previousLessons = lessons
-      .filter((lesson) => lesson.status === ETrialLessonStatus.COMPLETED)
+      .filter(
+        (lesson) =>
+          lesson.status === ETrialLessonStatus.COMPLETED ||
+          (lesson.status === ETrialLessonStatus.CONFIRMED && !this.isLessonEndAfterNow(lesson)),
+      )
       .map((lesson) => this.toLessonApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
 
-    const upcomingLessonRows = lessons.filter((lesson) => lesson.status === ETrialLessonStatus.CONFIRMED);
+    const upcomingLessonRows = lessons.filter(
+      (lesson) =>
+        lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson),
+    );
     const calendarBaseDate = this.resolveCalendarBaseDate(upcomingLessonRows, weekStartDate);
-    const calendarLessons = this.filterLessonsByWeek(upcomingLessonRows, calendarBaseDate, weekStartDate)
-      .map((lesson) => this.toLessonApiItem(lesson))
+    const calendarTrialRows = this.filterLessonsByWeek(
+      lessons.filter(
+        (l) =>
+          l.status === ETrialLessonStatus.CONFIRMED ||
+          l.status === ETrialLessonStatus.COMPLETED,
+      ),
+      calendarBaseDate,
+      weekStartDate,
+    );
+    const calendarLessons = calendarTrialRows
+      .map((lesson) => this.toLessonCalendarApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
 
     const weekYmd =
       weekStartDate ??
-      (dayjs as any)(this.getWeekStart(calendarBaseDate)).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD');
+      (dayjs)(this.getWeekStart(calendarBaseDate)).tz(MY_LESSONS_CALENDAR_TZ).format('YYYY-MM-DD');
 
     const { weekStart, weekEnd } = this.getDisplayWeekRange(calendarBaseDate, weekStartDate);
 
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
         studentId,
-        status: {
-          in: [ESubscriptionEnrollmentStatus.ACTIVE, ESubscriptionEnrollmentStatus.PENDING_PAYMENT],
-        },
+        status: ESubscriptionEnrollmentStatus.ACTIVE,
+        paymentStatus: EPaymentStatus.SUCCEEDED,
       },
       include: {
         tutor: {
@@ -121,9 +150,21 @@ export class MyLessonsService {
           return;
         }
         subscriptionBounds.push(range);
-        const item = this.enrollmentOccurrenceToLessonItem(enrollment, range.startAt, range.endAt, idx);
+        const occEnd = (dayjs)(range.endAt);
+        const slotStatus: MyLessonApiItem['status'] = occEnd.isAfter((dayjs)())
+          ? 'upcoming'
+          : 'completed';
+        const item = this.enrollmentOccurrenceToLessonItem(
+          enrollment,
+          range.startAt,
+          range.endAt,
+          idx,
+          slotStatus,
+        );
         subscriptionCalendarItems.push(item);
-        subscriptionUpcomingItems.push(item);
+        if (slotStatus === 'upcoming') {
+          subscriptionUpcomingItems.push(item);
+        }
       });
     }
 
@@ -135,7 +176,7 @@ export class MyLessonsService {
     );
 
     return {
-      ...this.buildCalendarMeta(upcomingLessonRows, calendarBaseDate, weekStartDate, subscriptionBounds),
+      ...this.buildCalendarMeta(calendarTrialRows, calendarBaseDate, weekStartDate, subscriptionBounds),
       calendar_lessons: mergedCalendar,
       upcoming_lessons: mergedUpcoming,
       previous_lessons: previousLessons,
@@ -148,11 +189,11 @@ export class MyLessonsService {
     weekStartDate?: string
   ): { weekStart: Date; weekEnd: Date } {
     if (weekStartDate) {
-      const parsed = (dayjs as any)(weekStartDate).tz('Asia/Ho_Chi_Minh').startOf('day');
+      const parsed = (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
       return { weekStart: parsed.toDate(), weekEnd: parsed.add(7, 'day').toDate() };
     }
     const weekStart = this.getWeekStart(baseDate);
-    return { weekStart, weekEnd: this.toUtc(weekStart).add(7, 'day').toDate() };
+    return { weekStart, weekEnd: (dayjs)(weekStart).add(7, 'day').toDate() };
   }
 
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
@@ -171,9 +212,10 @@ export class MyLessonsService {
     },
     startAt: Date,
     endAt: Date,
-    slotIdx: number
+    slotIdx: number,
+    calendarStatus: MyLessonApiItem['status'],
   ): MyLessonApiItem {
-    const ymd = (dayjs as any)(startAt).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD');
+    const ymd = (dayjs)(startAt).tz(MY_LESSONS_CALENDAR_TZ).format('YYYY-MM-DD');
     const subj = enrollment.tutor.subject?.trim();
     return {
       id: `sub-${enrollment.id}-${slotIdx}-${ymd}`,
@@ -185,12 +227,12 @@ export class MyLessonsService {
       tutor_avatar: enrollment.tutor.avatar || enrollment.tutor.user.avatar,
       tutor_mezon_user_id: enrollment.tutor.user.mezonUserId,
       category: this.buildCategoryKey(enrollment.tutor.subject, enrollment.tutor.subject),
-      status: 'upcoming',
+      status: calendarStatus,
       date_label: this.formatDateLabel(startAt),
       time_label: this.formatTimeLabel(startAt, endAt),
       day_index: this.toCalendarDayIndex(startAt),
-      start_hour: this.getUtcHour(startAt),
-      end_hour: this.getUtcHour(endAt),
+      start_hour: this.getCalendarHour(startAt),
+      end_hour: this.getCalendarHour(endAt),
     };
   }
 
@@ -209,6 +251,20 @@ export class MyLessonsService {
     }
 
     return null;
+  }
+
+  private toLessonCalendarApiItem(lesson: TrialLessonBookingWithTutor): MyLessonApiItem | null {
+    const base = this.toLessonApiItem(lesson);
+    if (!base) {
+      return null;
+    }
+    if (
+      lesson.status === ETrialLessonStatus.CONFIRMED &&
+      !this.isLessonEndAfterNow(lesson)
+    ) {
+      return { ...base, status: 'completed' };
+    }
+    return base;
   }
 
   private toLessonApiItem(lesson: TrialLessonBookingWithTutor): MyLessonApiItem | null {
@@ -233,8 +289,8 @@ export class MyLessonsService {
       date_label: this.formatDateLabel(lesson.startAt),
       time_label: this.formatTimeLabel(lesson.startAt, endAt),
       day_index: this.toCalendarDayIndex(lesson.startAt),
-      start_hour: this.getUtcHour(lesson.startAt),
-      end_hour: this.getUtcHour(endAt),
+      start_hour: this.getCalendarHour(lesson.startAt),
+      end_hour: this.getCalendarHour(endAt),
     };
   }
 
@@ -258,7 +314,10 @@ export class MyLessonsService {
 
       if (!existing) {
         const isCompleted = lesson.status === ETrialLessonStatus.COMPLETED;
-        const nextLessonAt = lesson.status === ETrialLessonStatus.CONFIRMED ? lesson.startAt : null;
+        const nextLessonAt =
+          lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson)
+            ? lesson.startAt
+            : null;
 
         tutorMap.set(lesson.tutor.id, {
           name: this.getTutorName(lesson.tutor),
@@ -281,6 +340,7 @@ export class MyLessonsService {
 
       if (
         lesson.status === ETrialLessonStatus.CONFIRMED &&
+        this.isLessonEndAfterNow(lesson) &&
         (!existing.nextLessonAt || lesson.startAt < existing.nextLessonAt)
       ) {
         existing.nextLessonAt = lesson.startAt;
@@ -355,11 +415,11 @@ export class MyLessonsService {
   }
 
   private formatDateLabel(date: Date): string {
-    return this.toUtc(date).format('ddd, MMM DD');
+    return (dayjs)(date).tz(MY_LESSONS_CALENDAR_TZ).format('ddd, MMM DD');
   }
 
   private formatTime(date: Date): string {
-    return this.toUtc(date).format('HH:mm');
+    return (dayjs)(date).tz(MY_LESSONS_CALENDAR_TZ).format('HH:mm');
   }
 
   private formatTimeLabel(start: Date, end: Date): string {
@@ -367,8 +427,8 @@ export class MyLessonsService {
   }
 
   private toCalendarDayIndex(date: Date): number {
-    const utcDay = this.toUtc(date).day();
-    return utcDay === 0 ? 6 : utcDay - 1;
+    const dow = (dayjs)(date).tz(MY_LESSONS_CALENDAR_TZ).day();
+    return dow === 0 ? 6 : dow - 1;
   }
 
   private normalizeAvailabilityDay(dayOfWeek: number): number {
@@ -389,13 +449,13 @@ export class MyLessonsService {
 
   private resolveCalendarBaseDate(upcomingLessonRows: TrialLessonBookingWithTutor[], weekStartDate?: string): Date {
     if (weekStartDate) {
-      const parsed = this.toUtc(weekStartDate);
+      const parsed = (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
       if (parsed.isValid()) {
         return parsed.toDate();
       }
     }
-    
-    return this.toUtc(new Date()).toDate();
+
+    return (dayjs)().tz(MY_LESSONS_CALENDAR_TZ).toDate();
   }
 
   private filterLessonsByWeek(lessons: TrialLessonBookingWithTutor[], baseDate: Date, weekStartDate?: string): TrialLessonBookingWithTutor[] {
@@ -403,12 +463,12 @@ export class MyLessonsService {
     let weekEnd: Date;
     
     if (weekStartDate) {
-      const parsed = (dayjs as any)(weekStartDate).tz('Asia/Ho_Chi_Minh').startOf('day');
+      const parsed = (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
       weekStart = parsed.toDate();
       weekEnd = parsed.add(7, 'day').toDate();
     } else {
       weekStart = this.getWeekStart(baseDate);
-      weekEnd = this.toUtc(weekStart).add(7, 'day').toDate();
+      weekEnd = (dayjs)(weekStart).add(7, 'day').toDate();
     }
 
     return lessons.filter((lesson) => lesson.startAt >= weekStart && lesson.startAt < weekEnd);
@@ -423,16 +483,16 @@ export class MyLessonsService {
     MyLessonsApiResponse,
     'calendar_title' | 'week_days' | 'week_hours' | 'current_day_index' | 'current_hour'
   > {
-    const now = this.toUtc(new Date());
-    const currentHour = now.hour();
+    const now = (dayjs)().tz(MY_LESSONS_CALENDAR_TZ);
+    const currentHour = now.hour() + now.minute() / 60;
 
     let weekStart: Date;
     let weekDays: MyLessonWeekDayApiItem[];
-    
+
     if (weekStartDate) {
-      const parsed = (dayjs as any)(weekStartDate).tz('Asia/Ho_Chi_Minh').startOf('day');
+      const parsed = (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
       weekStart = parsed.toDate();
-      
+
       weekDays = Array.from({ length: 7 }, (_, index) => {
         const day = parsed.add(index, 'day');
         return {
@@ -444,24 +504,23 @@ export class MyLessonsService {
       weekStart = this.getWeekStart(baseDate);
       weekDays = this.buildWeekDays(weekStart);
     }
-    
-    const weekEnd = this.toUtc(weekStart).add(7, 'day');
+
+    const weekEndMs = (dayjs)(weekStart).add(7, 'day').valueOf();
 
     const [startHour, endHour] = this.resolveHourRange(
       upcomingLessonRows,
-      currentHour,
+      Math.floor(currentHour),
       subscriptionBounds
     );
     const weekHours = Array.from({ length: endHour - startHour + 1 }, (_, index) => startHour + index);
 
-    const nowTimestamp = now.valueOf();
-    const weekStartTimestamp = this.toUtc(weekStart).valueOf();
-    const weekEndTimestamp = weekEnd.valueOf();
-    const isCurrentWeek = nowTimestamp >= weekStartTimestamp && nowTimestamp < weekEndTimestamp;
+    const nowMs = now.valueOf();
+    const weekStartMs = weekStart.getTime();
+    const isCurrentWeek = nowMs >= weekStartMs && nowMs < weekEndMs;
     const currentDayIndex = isCurrentWeek ? this.toCalendarDayIndex(now.toDate()) : undefined;
 
     return {
-      calendar_title: this.toUtc(baseDate).format('MMMM YYYY'),
+      calendar_title: (dayjs)(weekStart).tz(MY_LESSONS_CALENDAR_TZ).format('MMMM YYYY'),
       week_days: weekDays,
       week_hours: weekHours,
       current_day_index: currentDayIndex,
@@ -470,12 +529,14 @@ export class MyLessonsService {
   }
 
   private getWeekStart(date: Date): Date {
-    return this.toUtc(date).startOf('day').subtract(this.toCalendarDayIndex(date), 'day').toDate();
+    const d = (dayjs)(date).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
+    const idx = this.toCalendarDayIndex(date);
+    return d.subtract(idx, 'day').toDate();
   }
 
   private buildWeekDays(weekStart: Date): MyLessonWeekDayApiItem[] {
     return Array.from({ length: 7 }, (_, index) => {
-      const day = this.toUtc(weekStart).add(index, 'day');
+      const day = (dayjs)(weekStart).tz(MY_LESSONS_CALENDAR_TZ).add(index, 'day');
 
       return {
         short_label: day.format('ddd'),
@@ -504,15 +565,15 @@ export class MyLessonsService {
     if (hasTrials) {
       for (const lesson of upcomingLessonRows) {
         const endAt = this.toUtc(lesson.startAt).add(lesson.durationMinutes, 'minutes').toDate();
-        minHour = Math.min(minHour, this.getUtcHour(lesson.startAt));
-        maxHour = Math.max(maxHour, this.getUtcHour(endAt));
+        minHour = Math.min(minHour, this.getCalendarHour(lesson.startAt));
+        maxHour = Math.max(maxHour, this.getCalendarHour(endAt));
       }
     }
 
     if (hasExtras) {
       for (const b of extraBounds!) {
-        minHour = Math.min(minHour, this.getUtcHour(b.startAt));
-        maxHour = Math.max(maxHour, this.getUtcHour(b.endAt));
+        minHour = Math.min(minHour, this.getCalendarHour(b.startAt));
+        maxHour = Math.max(maxHour, this.getCalendarHour(b.endAt));
       }
     }
 
@@ -536,9 +597,9 @@ export class MyLessonsService {
   }
 
   private emptyResponse(weekStartDate?: string): MyLessonsApiResponse {
-    const baseDate = weekStartDate 
-      ? this.toUtc(weekStartDate).toDate()
-      : this.resolveCalendarBaseDate([]);
+    const baseDate = weekStartDate
+      ? (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day').toDate()
+      : this.resolveCalendarBaseDate([], weekStartDate);
 
     return {
       ...this.buildCalendarMeta([], baseDate, weekStartDate, undefined),

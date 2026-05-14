@@ -1,9 +1,5 @@
 import type {
   FullTutorApplication,
-  IdentityVerification,
-  IdentityVerificationStatus,
-  ProfessionalDocument,
-  ProfessionalDocumentStatus,
   TutorAdminNote,
   TutorApplicationMetrics,
   TutorProfile,
@@ -19,17 +15,6 @@ export type CreateAdminNotePayload = {
   reviewerId: string;
   reviewerName: string;
   content: string;
-};
-
-export type UpdateProfessionalDocumentStatusPayload = {
-  status: ProfessionalDocumentStatus;
-};
-
-export type UpdateIdentityVerificationStatusPayload = {
-  status: IdentityVerificationStatus;
-  nameMatch: boolean;
-  notExpired: boolean;
-  photoClarity: boolean;
 };
 
 export const adminTutorApplicationApi = {
@@ -61,26 +46,6 @@ export const adminTutorApplicationApi = {
 
   createAdminNote(payload: CreateAdminNotePayload): Promise<TutorAdminNote> {
     return apiClient.post<TutorAdminNote>(`${BASE}/tutor-admin-notes`, payload);
-  },
-
-  updateProfessionalDocumentStatus(
-    id: string,
-    payload: UpdateProfessionalDocumentStatusPayload,
-  ): Promise<ProfessionalDocument> {
-    return apiClient.patch<ProfessionalDocument>(
-      `${BASE}/professional-documents/${id}/status`,
-      payload,
-    );
-  },
-
-  updateIdentityVerificationStatus(
-    id: string,
-    payload: UpdateIdentityVerificationStatusPayload,
-  ): Promise<IdentityVerification> {
-    return apiClient.patch<IdentityVerification>(
-      `${BASE}/identity-verification/${id}/status`,
-      payload,
-    );
   },
 };
 
@@ -154,44 +119,6 @@ export const useCreateAdminNote = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: adminTutorApplicationQueryKey.detail(variables.tutorId),
-      });
-    },
-  });
-};
-
-export const useUpdateProfessionalDocumentStatus = (tutorId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: UpdateProfessionalDocumentStatusPayload;
-    }) =>
-      adminTutorApplicationApi.updateProfessionalDocumentStatus(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: adminTutorApplicationQueryKey.detail(tutorId),
-      });
-    },
-  });
-};
-
-export const useUpdateIdentityVerificationStatus = (tutorId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: UpdateIdentityVerificationStatusPayload;
-    }) =>
-      adminTutorApplicationApi.updateIdentityVerificationStatus(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: adminTutorApplicationQueryKey.detail(tutorId),
       });
     },
   });

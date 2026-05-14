@@ -1,21 +1,16 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { CalendarCard, type CalendarEvent, formatCalendarTitle, formatWeekDays, MobileCalendar, type MobileCalendarItem } from '@/components/calendar';
-import { buildFallbackWeekDays, getFallbackWeekHours, formatHour24, ROUTES } from '@mezon-tutors/shared';
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import utc from 'dayjs/plugin/utc';
-import { useTranslations, useLocale } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { formatCalendarTitle, formatWeekDays } from '@/components/calendar';
+import { DashboardScheduleCalendar } from '@/components/schedule';
+import { buildFallbackWeekDays, ROUTES } from '@mezon-tutors/shared';
+import { useLocale, useTranslations } from 'next-intl';
 import type { LessonItem, MyLessonsCalendarMeta } from '@/services';
 import { userAtom } from '@/store/auth.atom';
 import ScheduleEventModal from '@/views/main/my-schedule/components/ScheduleEventModal';
 import { SendMessageModal } from '@/components/common/SendMessageModal';
 import MyLessonsEventCard from './MyLessonsEventCard';
 import { useAtomValue } from 'jotai';
-
-dayjs.extend(customParseFormat);
-dayjs.extend(utc);
 
 type MyLessonsCalendarCardProps = {
   lessons: LessonItem[];
@@ -35,112 +30,66 @@ export default function MyLessonsCalendarCard({
   isCurrentWeek,
 }: MyLessonsCalendarCardProps) {
   const t = useTranslations('MyLessons');
+  const tModal = useTranslations('Dashboard.scheduleEventModal');
+  const tDash = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
   const user = useAtomValue(userAtom);
-  const [isMobile, setIsMobile] = useState(false);
   const [pickedLesson, setPickedLesson] = useState<LessonItem | null>(null);
   const [eventAnchorRect, setEventAnchorRect] = useState<DOMRect | null>(null);
   const [messageOpen, setMessageOpen] = useState(false);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const formattedTitle = formatCalendarTitle(calendar.title, locale);
-  const calendarDate = dayjs.utc(calendar.title, 'MMMM YYYY', true);
-  const yearLabel = calendarDate.isValid() ? calendarDate.format('YYYY') : dayjs.utc().format('YYYY');
 
-  const displayWeekDays = formatWeekDays(
-    calendar.weekDays.length ? calendar.weekDays : buildFallbackWeekDays(),
-    locale
+  const displayWeekDays = useMemo(
+    () =>
+      formatWeekDays(
+        calendar.weekDays.length ? calendar.weekDays : buildFallbackWeekDays(),
+        locale,
+      ),
+    [calendar.weekDays, locale],
   );
-  const displayWeekHours = calendar.weekHours.length ? calendar.weekHours : getFallbackWeekHours();
 
-  const events: CalendarEvent<LessonItem>[] = lessons.map((lesson) => ({
-    id: lesson.id,
-    dayIndex: lesson.dayIndex,
-    startHour: lesson.startHour,
-    endHour: lesson.endHour,
-    data: lesson,
-  }));
-
-  const mobileItems: MobileCalendarItem[] = useMemo(() => {
-    return lessons.map((lesson) => ({
-      id: lesson.id,
-      dayIndex: lesson.dayIndex,
-      title: lesson.subject,
-      person: {
-        name: lesson.tutor,
-        avatar: lesson.tutorAvatar,
+  const lessonModalDetailRows = useMemo(() => {
+    if (!pickedLesson) return undefined;
+    const minutes = Math.max(0, Math.round((pickedLesson.endHour - pickedLesson.startHour) * 60));
+    const lessonType =
+      pickedLesson.source === 'subscription' ? tDash('lessonTypePlan') : tDash('lessonTypeTrial');
+    return [
+      { label: tModal('detailSubject'), value: pickedLesson.subject },
+      { label: tModal('detailCategory'), value: pickedLesson.category },
+      { label: tModal('detailLessonType'), value: lessonType },
+      { label: tModal('detailDuration'), value: tModal('durationMinutes', { minutes }) },
+      {
+        label: tModal('detailStatus'),
+        value: pickedLesson.status === 'completed' ? tDash('completedBadge') : tModal('statusUpcoming'),
       },
-      timeLabel: `${formatHour24(lesson.startHour)} - ${formatHour24(lesson.endHour)}`,
-      category: lesson.subject,
-      onCardPress: () => {
-        setPickedLesson(lesson);
-        setEventAnchorRect(null);
-      },
-    }));
-  }, [lessons]);
+    ];
+  }, [pickedLesson, tModal, tDash]);
 
   const tutorPeerFirstName = pickedLesson?.tutor.trim().split(/\s+/)[0] ?? '';
 
-  const calendarBody = isMobile ? (
-    <div className="w-full">
-      <MobileCalendar
-        type="myLessons"
-        calendar={{
-          title: calendar.title,
-          weekDays: calendar.weekDays.length ? calendar.weekDays : buildFallbackWeekDays(),
-          currentDayIndex: calendar.currentDayIndex,
-        }}
-        items={mobileItems}
-        defaultAvatarUrl="https://i.pravatar.cc/300"
-        onPrevWeek={onPrevWeek}
-        onNextWeek={onNextWeek}
-        enableCategoryFilter
-        categoryAllLabel={t('mobile.allLessons')}
-        categoryLabel={t('mobile.lessons')}
-        emptyMessage={t('mobile.noLessonsForDay')}
-      />
-    </div>
-  ) : (
-    <div className="w-full">
-      <CalendarCard
-        type="myLessons"
-        weekDays={displayWeekDays}
-        weekHours={displayWeekHours}
-        events={events}
-        currentDayIndex={calendar.currentDayIndex}
-        currentHour={calendar.currentHour}
-        enableGapCollapse
-        readonly
-        onEventClick={(ev, rect) => {
-          setPickedLesson(ev.data);
-          setEventAnchorRect(rect);
-        }}
-        renderEvent={(event) => <MyLessonsEventCard lesson={event.data} />}
-        presetData={{
-          title: formattedTitle,
-          weekLabel: t('calendar.switchWeek'),
-          monthLabel: t('calendar.switchMonth'),
-          showMonthNav: true,
-          companyLabel: t('calendar.company', { year: yearLabel }),
-          onPrevWeek,
-          onNextWeek,
-          showTodayButton: true,
-          todayButtonDisabled: isCurrentWeek,
-          onGoToToday,
-        }}
-      />
-    </div>
-  );
-
   return (
     <>
-      {calendarBody}
+      <DashboardScheduleCalendar<LessonItem>
+        title={formattedTitle}
+        weekDays={displayWeekDays}
+        events={lessons}
+        currentDayIndex={calendar.currentDayIndex}
+        currentHour={calendar.currentHour}
+        isCurrentWeek={isCurrentWeek}
+        onPrevWeek={onPrevWeek}
+        onNextWeek={onNextWeek}
+        onGoToToday={onGoToToday}
+        labels={{
+          today: t('calendar.today'),
+          weekBadge: t('schedule.calendar.week'),
+        }}
+        renderEvent={(lesson) => <MyLessonsEventCard lesson={lesson} />}
+        onEventClick={(lesson, rect) => {
+          setPickedLesson(lesson);
+          setEventAnchorRect(rect);
+        }}
+      />
 
       <ScheduleEventModal
         open={pickedLesson !== null && !messageOpen}
@@ -155,6 +104,9 @@ export default function MyLessonsCalendarCard({
         peerName={pickedLesson?.tutor ?? ''}
         dateLabel={pickedLesson?.dateLabel ?? ''}
         timeLabel={pickedLesson?.timeLabel ?? ''}
+        avatarUrl={pickedLesson?.tutorAvatar}
+        avatarAlt={pickedLesson?.tutor}
+        detailRows={lessonModalDetailRows}
         viewProfileHref={pickedLesson ? ROUTES.TUTOR.DETAIL(pickedLesson.tutorId) : undefined}
         onSendMessage={() => setMessageOpen(true)}
       />

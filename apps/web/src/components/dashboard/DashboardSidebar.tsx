@@ -18,7 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import { userAtom } from '@/store/auth.atom';
 import { authService } from '@/services';
-import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_ROLE_TITLES, type DashboardRole, type DashboardMenuIconKey } from '@mezon-tutors/shared';
+import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_ROLE_TITLES, type DashboardRole, type DashboardMenuIconKey, isDashboardSidebarLinkActive } from '@mezon-tutors/shared';
 
 const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
@@ -84,9 +84,8 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
     }
   };
 
-  const isActive = (item: DashboardMenuItem) => {
-    return item.type === "link" && item.href === pathname;
-  };
+  const isActive = (item: DashboardMenuItem) =>
+    isDashboardSidebarLinkActive(item, pathname);
 
   return (
     <aside className="fixed left-0 top-16 bottom-0 z-40 hidden w-64 min-w-64 flex-col border-r border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] md:flex">

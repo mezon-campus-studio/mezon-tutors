@@ -155,13 +155,23 @@ export const trialLessonBookingApi = {
 
   async getMyTrialLessonBookingRequests(params?: {
     status?: TrialLessonBookingRequestStatusFilter
+    statusIn?: TrialLessonBookingRequestStatusFilter[]
     page?: number
     limit?: number
   }): Promise<TrialLessonBookingRequestsResponse> {
+    const query: Record<string, string | number | undefined> = {
+      page: params?.page,
+      limit: params?.limit,
+    };
+    if (params?.statusIn?.length) {
+      query.statusIn = params.statusIn.join(',');
+    } else if (params?.status) {
+      query.status = params.status;
+    }
     const response = await apiClient.get<PaginatedResponse<TrialLessonBookingRequestItem>>(
       '/trial-lesson-bookings/my-requests',
-      { params }
-    )
+      { params: query }
+    );
     const page = response.data
     if (!page) {
       return {
@@ -215,16 +225,20 @@ export function useCreateTrialLessonBookingMutation() {
 export function useGetMyTrialLessonBookingRequests(
   params?: {
     status?: TrialLessonBookingRequestStatusFilter
+    statusIn?: TrialLessonBookingRequestStatusFilter[]
     page?: number
     limit?: number
   },
   enabled = true
 ) {
+  const statusKey = params?.statusIn?.length
+    ? params.statusIn.join(',')
+    : (params?.status ?? 'all');
   return useQuery({
-    queryKey: trialLessonBookingQueryKey.myRequests(params?.status, params?.page, params?.limit),
+    queryKey: trialLessonBookingQueryKey.myRequests(statusKey, params?.page, params?.limit),
     queryFn: () => trialLessonBookingApi.getMyTrialLessonBookingRequests(params),
     enabled,
-  })
+  });
 }
 
 export function useGetTrialLessonBookingDetail(bookingId: string, enabled = true) {

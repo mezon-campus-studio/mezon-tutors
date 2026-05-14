@@ -438,9 +438,8 @@ export class SubscriptionService {
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
         tutorId: tutor.id,
-        status: {
-          in: [ESubscriptionEnrollmentStatus.ACTIVE, ESubscriptionEnrollmentStatus.PENDING_PAYMENT],
-        },
+        status: ESubscriptionEnrollmentStatus.ACTIVE,
+        paymentStatus: EPaymentStatus.SUCCEEDED,
       },
       include: {
         student: {
