@@ -1,0 +1,315 @@
+{
+  "about": {
+    "sectionEyebrow": "Step {step}",
+    "headerTitle": "Tutor Registration",
+    "draftSaved": "Draft saved at {time}",
+    "saveExit": "Save & Exit",
+    "stepLabel": "Step 1: About",
+    "progressPercentLabel": "{percent}% Complete",
+    "title": "Tell us about yourself",
+    "subtitle": "Start by providing your basic information to help students get to know you. This information will be visible on your public profile.",
+    "stepsLabel": "Profile setup",
+    "nextLabel": "Next: Profile photo",
+    "fields": {
+      "firstNameLabel": "First name",
+      "lastNameLabel": "Last name",
+      "emailLabel": "Email address",
+      "countryLabel": "Country of birth",
+      "phoneLabel": "Phone number (Optional)",
+      "subjectLabel": "Subject you teach",
+      "subjectHelper": "You can add more subjects later in your profile settings.",
+      "languagesLabel": "Languages spoken",
+      "languageLabel": "Language",
+      "proficiencyLabel": "Proficiency"
+    },
+    "placeholders": {
+      "firstName": "e.g. Michael",
+      "lastName": "e.g. Scott",
+      "email": "michael.scott@example.com",
+      "country": "Select country",
+      "phone": "+84 912 345 678",
+      "subject": "Select a subject",
+      "language": "Select language",
+      "proficiency": "Choose your proficiency level"
+    },
+    "addAnotherLanguage": "+ Add another language",
+    "removeLanguage": "Remove language row",
+    "continue": "Continue to Step 2",
+    "privacyTitle": "Your privacy is our priority",
+    "privacyDescription": "We don't share your private contact information with students until you've accepted a lesson request. Your email and phone number are kept secure.",
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailInvalid": "Invalid email address",
+      "countryRequired": "Country is required",
+      "countryFromList": "Please select a country from the list",
+      "phoneRequired": "Phone is required",
+      "phoneInvalid": "Invalid phone number",
+      "subjectRequired": "Subject is required",
+      "subjectFromList": "Please select a subject from the list",
+      "languagesRequired": "Languages are required",
+      "languagesFromList": "Please select a language from the list",
+      "proficiencyRequired": "Proficiency is required",
+      "proficiencyFromList": "Please select a proficiency level from the list"
+    }
+  },
+  "shell": {
+    "applicationEyebrow": "Tutor application",
+    "back": "Back",
+    "saveExit": "Save & Exit",
+    "savingExit": "Saving…",
+    "draftSaved": "Draft saved at {time}",
+    "stepper": {
+      "about": "About",
+      "photo": "Photo",
+      "certification": "Credentials",
+      "video": "Video",
+      "availability": "Schedule"
+    }
+  },
+  "photo": {
+    "headerTitle": "Tutor Registration",
+    "draftSaved": "Draft saved at {time}",
+    "saveExit": "Save & Exit",
+    "stepLabel": "Step 2: Profile photo",
+    "progressPercentLabel": "{percent}% Complete",
+    "nextLabel": "Next: Certification & Education",
+    "avatar": {
+      "label": "Avatar",
+      "title": "Your profile photo",
+      "subtitle": "We will use your current Mezon avatar for your tutor profile.",
+      "syncedNote": "This avatar is synced from Mezon.",
+      "manualSyncNote": "You can update it and manually sync from Mezon after approval."
+    },
+    "title": "Upload your profile photo",
+    "subtitle": "A professional, friendly photo helps you get up to 5x more students and builds immediate trust.",
+    "cardTitle": "Tell us about yourself",
+    "cardSubtitle": "Add a headline and a short intro so students can get to know you better. This information will be visible on your public profile.",
+    "avatarPlaceholder": "IMG",
+    "uploadButton": "Upload Photo",
+    "uploadHint": "Supported formats: JPG, PNG. Max size: 5MB.",
+    "tipsTitle": "What makes a great photo?",
+    "identity": {
+      "title": "Update Identity Documents",
+      "subtitle": "Upload your ID card, national ID, or passport to verify your identity.",
+      "emptyState": "No identity photo",
+      "uploadButton": "Upload identity photo",
+      "tipsTitle": "Tips for Taking Identity Document Photos",
+      "tips": {
+        "clear": {
+          "title": "Clear Photo",
+          "description": "Make sure the text and numbers on the document are clearly visible and not blurry."
+        },
+        "noReflection": {
+          "title": "No Glare or Reflection",
+          "description": "Avoid lighting reflections that may obscure information on the document."
+        },
+        "fullDocument": {
+          "title": "Show the Entire Document",
+          "description": "Capture all four corners of the document within the frame."
+        },
+        "validDocument": {
+          "title": "Valid Document",
+          "description": "Use a valid ID card, national ID, or passport that has not expired."
+        }
+      }
+    },
+    "fields": {
+      "headlineLabel": "Profile headline",
+      "headlinePlaceholder": "e.g. Passionate math tutor",
+      "motivateLabel": "What motivates you to teach?",
+      "motivatePlaceholder": "Share what drives you to help students",
+      "introduceLabel": "Introduce yourself to students",
+      "introducePlaceholder": "Briefly describe your experience and teaching style"
+    },
+    "tips": {
+      "centered": {
+        "title": "Centered & Close-up",
+        "description": "Face should be centered and fill about 60% of the frame."
+      },
+      "lighting": {
+        "title": "Good Lighting",
+        "description": "Ensure your face is clearly lit. Avoid harsh shadows or backlighting."
+      },
+      "expression": {
+        "title": "Friendly Expression",
+        "description": "A warm smile makes you more approachable to potential students."
+      },
+      "background": {
+        "title": "Neutral Background",
+        "description": "Solid or simple backgrounds work best to keep focus on you."
+      }
+    },
+    "back": "Back",
+    "saveContinue": "Save and Continue",
+    "validation": {
+      "headlineRequired": "Profile headline is required",
+      "motivateRequired": "What motivates you is required",
+      "introduceRequired": "Introduction is required",
+      "photoRequired": "Profile photo is required",
+      "photoInvalidType": "Photo must be JPG or PNG",
+      "photoInvalidSize": "Photo must be smaller than {max}MB",
+      "photoUploadFailed": "Upload failed, please try again",
+      "identityUploadFailed": "Upload failed, please try again",
+      "identityRequired": "Identity photo is required",
+      "identityInvalidType": "Identity photo must be JPG or PNG",
+      "identityInvalidSize": "Identity photo must be smaller than {max}MB"
+    }
+  },
+  "certification": {
+    "headerTitle": "Tutor Registration",
+    "draftSaved": "Draft saved at {time}",
+    "saveExit": "Save & Exit",
+    "stepLabel": "Step 3: Certification & Education",
+    "progressPercentLabel": "{percent}% Complete",
+    "currentLabel": "Current: Certification & Education",
+    "progressPercent": 75,
+    "teachingTitle": "Teaching Certification",
+    "teaching": {
+      "certificateLabel": "Select Certificate",
+      "certificatePlaceholder": "e.g. TEFL, TESOL, CELTA",
+      "certificateOther": "Other",
+      "customCertificateLabel": "Certificate Name",
+      "customCertificatePlaceholder": "Enter your certificate name",
+      "yearLabel": "Year of Completion",
+      "yearPlaceholder": "YYYY",
+      "noResults": "No results found",
+      "uploadTitle": "Upload your certificate",
+      "uploadPrompt": "Click to upload or drag and drop",
+      "uploadHint": "PDF, JPG or PNG (max. 5MB)",
+      "reviewTitle": "Manual Review",
+      "reviewDescription": "All certificates are manually verified by our team within 48 hours. Please ensure the document is clear and shows your full name and completion date."
+    },
+    "educationTitle": "Higher Education",
+    "education": {
+      "universityLabel": "University / Institution",
+      "universityPlaceholder": "Enter university name",
+      "degreeLabel": "Degree Type",
+      "degreePlaceholder": "Select degree",
+      "specializationLabel": "Specialization / Major",
+      "specializationPlaceholder": "e.g. Computer Science, Linguistics",
+      "uploadTitle": "Upload your diploma",
+      "uploadPrompt": "Click to upload diploma copy",
+      "uploadHint": "PDF, JPG or PNG (max. 5MB)"
+    },
+    "back": "Back",
+    "continue": "Continue to Video Step",
+    "validation": {
+      "certificateTypeRequired": "Certificate type is required",
+      "customCertificateNameRequired": "Certificate name is required",
+      "certificateRequired": "Certificate is required",
+      "yearRequired": "Year is required",
+      "yearInvalid": "Year must be YYYY",
+      "universityRequired": "University is required",
+      "degreeRequired": "Degree is required",
+      "specializationRequired": "Specialization is required",
+      "certificateFileRequired": "Certificate file is required",
+      "certificateFileInvalidType": "Certificate file must be PDF, JPG or PNG",
+      "certificateFileTooLarge": "Certificate file must be smaller than {max}MB",
+      "certificateUploadFailed": "Certificate upload failed, please try again",
+      "educationFileRequired": "Diploma file is required",
+      "educationFileInvalidType": "Diploma file must be PDF, JPG or PNG",
+      "educationFileTooLarge": "Diploma file must be smaller than {max}MB",
+      "educationUploadFailed": "Diploma upload failed, please try again"
+    }
+  },
+  "video": {
+    "headerTitle": "Tutor Registration",
+    "draftSaved": "Draft saved at {time}",
+    "saveExit": "Save & Exit",
+    "stepLabel": "Step 4: Video introduction",
+    "progressPercentLabel": "{percent}% Complete",
+    "progressPercent": 75,
+    "title": "Video introduction",
+    "subtitle": "Introduce yourself to students with a short video to increase your profile visibility by up to 3x.",
+    "previewPlaceholder": "Paste a valid YouTube or Vimeo link below to preview your video here.",
+    "tabs": {
+      "record": "Record video",
+      "pasteLink": "Paste link"
+    },
+    "video": {
+      "cta": "Click to start recording",
+      "durationLabel": "2:00 max"
+    },
+    "link": {
+      "label": "Or paste YouTube/Vimeo link",
+      "placeholder": "https://youtube.com/watch?v=...",
+      "addButton": "Add"
+    },
+    "bestPracticesTitle": "Video Best Practices",
+    "bestPractices": [
+      "Keep it between 1-2 minutes long",
+      "Record in a quiet, well-lit space",
+      "Introduce your experience and teaching style"
+    ],
+    "avoidTitle": "Avoid These",
+    "avoidItems": [
+      "Recording with a messy background",
+      "Sharing personal contact details",
+      "Music that's louder than your voice"
+    ],
+    "errors": {
+      "emptyLink": "Please paste a YouTube or Vimeo link.",
+      "invalidLink": "Video link must be a valid YouTube or Vimeo URL.",
+      "tooLong": "Video must be 2 minutes or shorter.",
+      "missingBeforeContinue": "Please add a video under 2 minutes before continuing."
+    },
+    "back": "Back",
+    "continue": "Continue to 5"
+  },
+  "availability": {
+    "headerTitle": "Tutor Portal",
+    "draftSaved": "Draft saved at {time}",
+    "saveExit": "Save & Exit",
+    "stepLabel": "Step 5: Availability & Pricing",
+    "progressPercentLabel": "{percent}% Complete",
+    "progressPercent": 85,
+    "title": "Availability & Pricing",
+    "subtitle": "Set your weekly schedule and your hourly tutoring rate to finish your profile.",
+    "rateCardTitle": "Hourly Rate",
+    "rate": {
+      "question": "How much do you want to charge per hour?",
+      "currencyLabel": "USD / hr",
+      "recommended": "Recommended: at least {min} for your subjects."
+    },
+    "availabilityCardTitle": "Weekly Availability",
+    "availability": {
+      "tabs": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "presetTabs": {
+        "standard": "Standard",
+        "custom": "Custom"
+      },
+      "from": "From",
+      "to": "To",
+      "addSlot": "Add availability slot",
+      "hour": "Hour",
+      "minute": "Minute"
+    },
+    "back": "Back",
+    "continue": "Review & Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "validation": {
+      "hourlyRateRequired": "Hourly rate is required.",
+      "hourlyRateInvalidFormat": "Hourly rate must be a valid number (up to 2 decimal places).",
+      "hourlyRateGreaterThanZero": "Hourly rate must be greater than 0.",
+      "hourlyRateTooLow": "Price must be at least {min}.",
+      "weeklySlotsRequired": "Please add at least one weekly availability slot before continuing.",
+      "timeRequired": "Start time and end time are required.",
+      "minuteStepInvalid": "Minutes must be 00 or 30 (30-minute step).",
+      "endTimeMustBeAfterStartTime": "End time must be after start time.",
+      "duplicateSlot": "The same time slot was added twice on {day}. Please remove the duplicate.",
+      "overlappingSlot": "Time slots on {day} overlap with each other. Please adjust the times.",
+      "currencyConversionFailed": "Failed to convert currency. Please try again later."
+    }
+  }
+}
