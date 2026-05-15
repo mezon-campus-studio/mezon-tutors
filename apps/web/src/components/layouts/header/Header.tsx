@@ -44,10 +44,16 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const { currency, setCurrency, currencyOptions } = useCurrency();
   const navItems = useMemo(() => {
-    const base = [
+    const base: Array<{ label: string; href: string; requiresAuth: boolean }> = [
       { label: t("findTutors"), href: ROUTES.TUTOR.INDEX, requiresAuth: false },
-      { label: t("becomeTutor"), href: ROUTES.BECOME_TUTOR.INDEX, requiresAuth: false },
     ];
+    if (user?.role !== "TUTOR") {
+      base.push({
+        label: t("becomeTutor"),
+        href: ROUTES.BECOME_TUTOR.INDEX,
+        requiresAuth: false,
+      });
+    }
     const roleNav: Array<{ label: string; href: string; requiresAuth: boolean }> = [];
     if (user?.role === "STUDENT") {
       roleNav.push({

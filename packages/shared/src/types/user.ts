@@ -9,3 +9,8 @@ export type BaseUser = z.infer<typeof BaseUserSchema>;
 export interface User extends BaseUser {
   id: string;
 }
+
+export type TrustShowcaseAvatarDto = {
+  id: string;
+  url: string;
+};

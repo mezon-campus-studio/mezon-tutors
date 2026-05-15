@@ -21,9 +21,10 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Badge, Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { useTrustShowcaseAvatars } from "@/services/user/user.api";
 
 const SLIDE_DURATION_MS = 6000;
 
@@ -32,7 +33,16 @@ const TRUST_AVATARS = [
   { id: "a2", initials: "HL", gradient: "from-purple-500 to-fuchsia-500" },
   { id: "a3", initials: "PV", gradient: "from-fuchsia-500 to-rose-500" },
   { id: "a4", initials: "DM", gradient: "from-indigo-500 to-violet-500" },
-];
+] as const;
+
+type TrustAvatarDisplay =
+  | { kind: "image"; key: string; url: string }
+  | {
+      kind: "initials";
+      key: string;
+      initials: string;
+      gradient: string;
+    };
 
 const SLIDE_KEYS = ["schedule", "mezon", "pricing", "verified"] as const;
 type SlideKey = (typeof SLIDE_KEYS)[number];
@@ -51,6 +61,26 @@ export default function HomeHeroSection() {
   const underlineGradientId = useId().replace(/:/g, "");
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const { data: trustShowcaseAvatars } = useTrustShowcaseAvatars();
+
+  const trustAvatarStrip = useMemo((): TrustAvatarDisplay[] => {
+    const fallbacks: TrustAvatarDisplay[] = TRUST_AVATARS.map((a) => ({
+      kind: "initials",
+      key: a.id,
+      initials: a.initials,
+      gradient: a.gradient,
+    }));
+    if (!trustShowcaseAvatars?.length) {
+      return fallbacks;
+    }
+    return [0, 1, 2, 3].map((i) => {
+      const remote = trustShowcaseAvatars[i];
+      if (remote?.url) {
+        return { kind: "image", key: remote.id, url: remote.url };
+      }
+      return fallbacks[i]!;
+    });
+  }, [trustShowcaseAvatars]);
 
   useEffect(() => {
     if (isPaused) return;
@@ -215,15 +245,35 @@ export default function HomeHeroSection() {
 
           <div className="flex max-w-md flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/55 p-4 shadow-[0_20px_50px_-28px_rgba(91,33,182,0.18)] backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both] sm:flex-row sm:items-center sm:gap-5 sm:p-5">
             <div className="flex -space-x-2.5">
-              {TRUST_AVATARS.map((avatar) => (
+              {trustAvatarStrip.map((avatar, index) => (
                 <div
-                  key={avatar.id}
-                  className={`relative flex size-10 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${avatar.gradient} text-[11px] font-bold text-white shadow-md ring-1 ring-black/5 transition-transform duration-300 hover:z-10 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
+                  key={avatar.key}
+                  style={{ zIndex: index + 1 }}
+                  className={cn(
+                    "relative flex size-10 shrink-0 overflow-hidden rounded-full border-[3px] border-white shadow-md ring-1 ring-black/5 transition-transform duration-300 hover:z-20 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                    avatar.kind === "initials" &&
+                      `items-center justify-center bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${avatar.gradient} text-[11px] font-bold text-foreground`,
+                    avatar.kind === "image" && "bg-slate-100",
+                  )}
                 >
-                  {avatar.initials}
+                  {avatar.kind === "image" ? (
+                    <img
+                      src={avatar.url}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    avatar.initials
+                  )}
                 </div>
               ))}
-              <div className="flex size-10 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,#ede9fe,#fae8ff)] text-[10px] font-bold text-violet-800 shadow-md ring-1 ring-violet-200/60">
+              <div
+                style={{ zIndex: 50 }}
+                className="relative flex size-10 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,#ede9fe,#fae8ff)] text-[10px] font-bold text-violet-800 shadow-md ring-1 ring-violet-200/60"
+              >
                 +25k
               </div>
             </div>

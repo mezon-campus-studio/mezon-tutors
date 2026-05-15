@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { InfoIcon, MessageCircleMoreIcon } from 'lucide-react';
 import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL, MEZON_URL } from '@mezon-tutors/shared';
 import { Button, Card, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import { userAtom } from '@/store/auth.atom';
 import { useMezonLight } from '@/providers';
 import {
@@ -140,11 +141,19 @@ export default function GlobalChatBubble() {
     return null;
   }
 
+  const ctaGradientClass =
+    'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50';
+
   return (
     <>
-      <div className="fixed right-6 bottom-6 z-40">
+      <div className="fixed z-40 right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-6">
         <Button
-          className="h-12 w-12 rounded-full p-0 shadow-md"
+          size="icon-lg"
+          className={cn(
+            'size-14 shrink-0 rounded-full border-0 p-0',
+            ctaGradientClass,
+            'focus-visible:ring-2 focus-visible:ring-violet-400/50',
+          )}
           onClick={() => setOpen(true)}
           aria-label={t('chatButton')}
         >
@@ -152,132 +161,154 @@ export default function GlobalChatBubble() {
         </Button>
       </div>
 
-      <Dialog
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <DialogContent className="h-[min(90vh,620px)] max-w-[95vw] sm:max-w-5xl pt-12">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between px-4">
-              <DialogTitle className="text-4xl leading-0 font-bold text-primary">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          showCloseButton
+          className={cn(
+            'flex max-h-[min(90vh,680px)] w-[calc(100%-1.25rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:max-w-4xl',
+            'rounded-2xl border border-violet-100/90 bg-white ring-violet-200/30',
+          )}
+        >
+          <DialogHeader className="shrink-0 space-y-1 border-b border-violet-100/80 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_55%)] px-5 pb-4 pt-10 sm:px-6 sm:pb-5 sm:pt-11">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+              {t('eyebrow')}
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <DialogTitle className="text-left text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
                 {t('title')}
               </DialogTitle>
               <Button
-                variant="outline"
-                size="lg"
-                className="text-xl p-4 font-semibold"
+                size="sm"
+                className={cn(
+                  'h-10 w-full shrink-0 rounded-full border-0 px-5 text-sm font-semibold text-white sm:w-auto',
+                  ctaGradientClass,
+                  'focus-visible:ring-2 focus-visible:ring-violet-400/50',
+                )}
                 onClick={() => window.open(MEZON_CHAT_URL, '_blank', 'noopener,noreferrer')}
               >
                 {t('openMezon')}
               </Button>
             </div>
-            <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[280px_1fr]">
-              <Card className="min-h-0 p-3">
-                <div className="space-y-2">
-                  <p className="text-lg font-semibold">{t('listTitle')}</p>
-                  {channels.length === 0 ? (
-                    <p className="text-md text-muted-foreground">{t('emptyList')}</p>
-                  ) : null}
-                  <div className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
-                    {channels.map((item) => (
-                      <Button
-                        key={item.channelId}
-                        variant={
-                          selectedChannel?.channelId === item.channelId ? 'default' : 'outline'
-                        }
-                        className="w-full justify-start text-lg p-4"
-                        onClick={() => setSelectedChannelId(item.channelId)}
+          </DialogHeader>
+
+          <div className="grid min-h-[min(320px,45vh)] flex-1 gap-0 md:min-h-0 md:grid-cols-[minmax(0,260px)_1fr] md:divide-x md:divide-violet-100/80">
+            <Card className="min-h-0 rounded-none border-0 py-3 shadow-none ring-0 md:rounded-none">
+              <div className="flex h-full min-h-0 flex-col gap-3 px-4 sm:px-5">
+                <p className="text-sm font-semibold text-slate-900">{t('listTitle')}</p>
+                {channels.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t('emptyList')}</p>
+                ) : null}
+                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5 md:max-h-[min(52vh,420px)]">
+                  {channels.map((item) => (
+                    <Button
+                      key={item.channelId}
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        'h-auto min-h-10 w-full justify-start rounded-xl border-slate-200 px-3 py-2.5 text-left text-sm font-medium whitespace-normal text-slate-800 hover:border-violet-200 hover:bg-violet-50/80 hover:text-violet-900',
+                        selectedChannel?.channelId === item.channelId &&
+                          cn('border-transparent text-white', ctaGradientClass, 'hover:text-white'),
+                      )}
+                      onClick={() => setSelectedChannelId(item.channelId)}
+                    >
+                      {item.peerName}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="min-h-0 rounded-none border-0 py-3 shadow-none ring-0 md:rounded-none">
+              {!selectedChannel ? (
+                <div className="flex h-full min-h-[240px] items-center justify-center px-4 text-sm text-slate-500 sm:px-6">
+                  {t('emptyConversation')}
+                </div>
+              ) : (
+                <div className="flex h-full min-h-0 flex-col gap-3 px-4 pb-4 sm:px-6 sm:pb-5">
+                  <p className="text-base font-bold text-slate-900">{selectedChannel.peerName}</p>
+
+                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-xl border border-violet-100/80 bg-slate-50/60 p-3 sm:p-4">
+                    {fakeMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          'max-w-[85%] rounded-2xl px-3 py-2 text-sm blur-[1.5px] opacity-70 sm:max-w-[75%]',
+                          message.sender === mySenderRole
+                            ? cn('ml-auto text-white', ctaGradientClass)
+                            : 'bg-white text-slate-700 ring-1 ring-violet-100/80',
+                        )}
                       >
-                        {item.peerName}
-                      </Button>
+                        {message.content}
+                      </div>
+                    ))}
+
+                    {runtimeMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          'ml-auto max-w-[85%] rounded-2xl px-3 py-2 text-sm text-white sm:max-w-[75%]',
+                          ctaGradientClass,
+                        )}
+                      >
+                        {message.content}
+                      </div>
                     ))}
                   </div>
-                </div>
-              </Card>
 
-              <Card className="min-h-0 p-3">
-                {!selectedChannel ? (
-                  <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                    {t('emptyConversation')}
-                  </div>
-                ) : (
-                  <div className="flex h-full min-h-0 flex-col gap-3">
-                    <p className="text-lg font-semibold">{selectedChannel.peerName}</p>
-
-                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
-                      {fakeMessages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm blur-[1.5px] opacity-70 ${
-                            message.sender === mySenderRole
-                              ? 'ml-auto bg-primary text-primary-foreground'
-                              : 'bg-muted text-foreground'
-                          }`}
-                        >
-                          {message.content}
-                        </div>
-                      ))}
-
-                      {runtimeMessages.map((message) => (
-                        <div
-                          key={message.id}
-                          className="ml-auto max-w-[75%] rounded-2xl bg-primary px-3 py-2 text-md text-primary-foreground"
-                        >
-                          {message.content}
-                        </div>
-                      ))}
+                  <div className="rounded-2xl border border-violet-200/50 bg-violet-50/70 p-3 sm:p-4">
+                    <div className="mb-2 flex items-center gap-2 text-violet-800">
+                      <InfoIcon className="size-4 shrink-0 sm:size-5" />
+                      <span className="text-sm font-semibold sm:text-base">{t('noticeTitle')}</span>
                     </div>
-
-                    <div className="rounded-xl border border-blue-300/45 bg-muted/60 p-3">
-                      <div className="mb-1 flex items-center gap-2 text-amber-600">
-                        <InfoIcon className="size-6" />
-                        <span className="text-lg font-semibold">{t('noticeTitle')}</span>
-                      </div>
-                      <p className="text-md text-muted-foreground">
-                        {t('noticePrefix')}{' '}
-                        <a
-                          href={MEZON_URL}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-primary"
-                        >
-                          {t('noticeLink')}
-                        </a>
-                        <br />
-                        {t('noticeOpenChatPrefix')}{' '}
-                        <a
-                          href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-primary"
-                        >
-                          {t('noticeOpenChatLink')}
-                        </a>{' '}
-                        {t('noticeOpenChatSuffix')}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <textarea
-                        ref={textareaRef}
-                        rows={MIN_ROWS}
-                        value={messageContent}
-                        onChange={handleChange}
-                        placeholder={t('inputPlaceholder')}
-                        className="max-h-24 w-full resize-none rounded-2xl border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-                      />
-                      <Button
-                        onClick={handleSend}
-                        disabled={isSending || !messageContent.trim()}
-                        className="text-lg"
+                    <p className="text-sm leading-relaxed text-slate-600">
+                      {t('noticePrefix')}{' '}
+                      <a
+                        href={MEZON_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-violet-700 underline-offset-2 hover:text-violet-900 hover:underline"
                       >
-                        {isSending ? t('sending') : t('send')}
-                      </Button>
-                    </div>
+                        {t('noticeLink')}
+                      </a>
+                      <br />
+                      {t('noticeOpenChatPrefix')}{' '}
+                      <a
+                        href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-violet-700 underline-offset-2 hover:text-violet-900 hover:underline"
+                      >
+                        {t('noticeOpenChatLink')}
+                      </a>{' '}
+                      {t('noticeOpenChatSuffix')}
+                    </p>
                   </div>
-                )}
-              </Card>
-            </div>
+
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      ref={textareaRef}
+                      rows={MIN_ROWS}
+                      value={messageContent}
+                      onChange={handleChange}
+                      placeholder={t('inputPlaceholder')}
+                      className="max-h-24 min-h-10 w-full resize-none rounded-xl border border-violet-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus-visible:border-violet-300 focus-visible:ring-2 focus-visible:ring-violet-400/25"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSend}
+                      disabled={isSending || !messageContent.trim()}
+                      className={cn(
+                        'h-10 shrink-0 rounded-full px-5 font-semibold',
+                        ctaGradientClass,
+                        'disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none',
+                      )}
+                    >
+                      {isSending ? t('sending') : t('send')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
           </div>
         </DialogContent>
       </Dialog>

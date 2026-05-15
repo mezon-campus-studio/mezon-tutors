@@ -17,3 +17,4 @@ export * from "./subscription/subscription.api";
 export * from "./subscription/subscription.qkey";
 export * from "./admin-tutor-application/admin-tutor-application.api";
 export * from "./admin-tutor-application/admin-tutor-application.qkey";
+export * from "./user/user.api";
