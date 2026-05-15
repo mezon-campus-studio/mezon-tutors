@@ -31,6 +31,7 @@ export interface SubscriptionWeeklySlotDto {
   dayOfWeek: number
   startTime: string
   durationMinutes: number
+  date?: string
 }
 
 export interface CreateSubscriptionEnrollmentSlotDto {

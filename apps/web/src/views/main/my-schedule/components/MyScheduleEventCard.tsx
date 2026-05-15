@@ -64,7 +64,7 @@ export default function MyScheduleEventCard({ event }: MyScheduleEventCardProps)
         {event.isCompleted ? (
           <Badge
             variant="outline"
-            className="h-4 shrink-0 px-1.5 py-0 text-[8px] font-bold uppercase leading-none text-slate-600 sm:h-5 sm:text-[9px]"
+            className="h-4 shrink-0 px-1.5 py-0 text-[8px] font-bold uppercase leading-none text-success border-success sm:h-5 sm:text-[9px]"
           >
             {t('completedBadge')}
           </Badge>

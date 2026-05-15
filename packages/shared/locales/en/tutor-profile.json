@@ -85,6 +85,7 @@
       "subtitle": "Upload your ID card, national ID, or passport to verify your identity.",
       "emptyState": "No identity photo",
       "uploadButton": "Upload identity photo",
+      "uploading": "Uploading…",
       "tipsTitle": "Tips for Taking Identity Document Photos",
       "tips": {
         "clear": {
@@ -185,6 +186,7 @@
     },
     "back": "Back",
     "continue": "Continue to Video Step",
+    "uploading": "Uploading…",
     "validation": {
       "certificateTypeRequired": "Certificate type is required",
       "customCertificateNameRequired": "Certificate name is required",
@@ -225,7 +227,8 @@
     "link": {
       "label": "Or paste YouTube/Vimeo link",
       "placeholder": "https://youtube.com/watch?v=...",
-      "addButton": "Add"
+      "addButton": "Add",
+      "checking": "Checking video…"
     },
     "bestPracticesTitle": "Video Best Practices",
     "bestPractices": [

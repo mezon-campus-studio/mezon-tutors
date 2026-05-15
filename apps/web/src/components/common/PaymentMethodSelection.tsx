@@ -9,10 +9,13 @@ export type PaymentMethodOption = {
   id: string;
   title: string;
   subtitle: string;
+  disabled?: boolean;
 };
 export type PaymentMethodId = "vnpay" | "paypal";
 
 const PAYMENT_METHOD_IDS: PaymentMethodId[] = ["vnpay", "paypal"];
+
+const DISABLED_PAYMENT_METHOD_IDS = new Set<PaymentMethodId>(["paypal"]);
 
 const METHOD_ACCENT: Record<PaymentMethodId, string> = {
   vnpay: "from-violet-500 to-purple-500",
@@ -49,6 +52,7 @@ export function PaymentMethodSelection({
         id: methodId,
         title: t(`paymentMethods.${methodId}.title`),
         subtitle: t(`paymentMethods.${methodId}.subtitle`),
+        disabled: DISABLED_PAYMENT_METHOD_IDS.has(methodId),
       })),
     [t],
   );
@@ -91,47 +95,59 @@ export function PaymentMethodSelection({
 
       <div className="space-y-2.5 px-5 py-4">
         {paymentMethods.map((method) => {
-          const active = selectedMethodId === method.id;
+          const methodId = method.id as PaymentMethodId;
+          const isDisabled = Boolean(method.disabled);
+          const active = !isDisabled && selectedMethodId === method.id;
           const accent =
-            METHOD_ACCENT[method.id as PaymentMethodId] ??
-            "from-violet-500 to-purple-500";
+            METHOD_ACCENT[methodId] ?? "from-violet-500 to-purple-500";
           return (
             <button
               key={method.id}
               type="button"
-              className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
-                active
-                  ? "border-violet-300 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] shadow-sm shadow-violet-200/40"
-                  : "border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30"
+              disabled={isDisabled}
+              className={`group relative flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
+                isDisabled
+                  ? "cursor-not-allowed border-slate-100 bg-slate-50/80 opacity-70"
+                  : active
+                    ? "cursor-pointer border-violet-300 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] shadow-sm shadow-violet-200/40"
+                    : "cursor-pointer border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30"
               }`}
-              onClick={() => setSelectedMethodId(method.id as PaymentMethodId)}
+              onClick={() => {
+                if (!isDisabled) {
+                  setSelectedMethodId(methodId);
+                }
+              }}
             >
               <div
                 className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm transition-all ${
-                  active
-                    ? `bg-gradient-to-br ${accent} shadow-violet-300/40`
-                    : "bg-slate-100 text-slate-500 shadow-none group-hover:bg-violet-100 group-hover:text-violet-700"
+                  isDisabled
+                    ? "bg-slate-200 text-slate-400 shadow-none"
+                    : active
+                      ? `bg-gradient-to-br ${accent} shadow-violet-300/40`
+                      : "bg-slate-100 text-slate-500 shadow-none group-hover:bg-violet-100 group-hover:text-violet-700"
                 }`}
               >
                 <CreditCard className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <p
-                  className={`truncate text-sm font-extrabold ${active ? "text-violet-900" : "text-slate-900"}`}
+                  className={`truncate text-sm font-extrabold ${isDisabled ? "text-slate-500" : active ? "text-violet-900" : "text-slate-900"}`}
                 >
                   {method.title}
                 </p>
                 <p
-                  className={`truncate text-xs ${active ? "text-violet-600" : "text-slate-500"}`}
+                  className={`truncate text-xs ${isDisabled ? "text-slate-400" : active ? "text-violet-600" : "text-slate-500"}`}
                 >
-                  {method.subtitle}
+                  {isDisabled ? tPanel("methodUnavailable") : method.subtitle}
                 </p>
               </div>
               <div
                 className={`flex size-5 shrink-0 items-center justify-center rounded-full transition-all ${
-                  active
-                    ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)]"
-                    : "bg-white ring-1 ring-slate-200"
+                  isDisabled
+                    ? "bg-slate-100 ring-1 ring-slate-200"
+                    : active
+                      ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)]"
+                      : "bg-white ring-1 ring-slate-200"
                 }`}
               >
                 {active ? (

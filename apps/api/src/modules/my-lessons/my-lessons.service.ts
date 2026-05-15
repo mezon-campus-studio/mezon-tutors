@@ -9,7 +9,9 @@ import type {
   MyLessonsApiResponse,
 } from '@mezon-tutors/shared';
 import {
-  subscriptionWeeklySlotsToOccurrencesInTimezone,
+  subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotsOccurrencesForWeek,
+  subscriptionSlotsUseConcreteDates,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -116,8 +118,6 @@ export class MyLessonsService {
       weekStartDate ??
       (dayjs)(this.getWeekStart(calendarBaseDate)).tz(MY_LESSONS_CALENDAR_TZ).format('YYYY-MM-DD');
 
-    const { weekStart, weekEnd } = this.getDisplayWeekRange(calendarBaseDate, weekStartDate);
-
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
         studentId,
@@ -140,15 +140,9 @@ export class MyLessonsService {
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
-      const occ = subscriptionWeeklySlotsToOccurrencesInTimezone(weekYmd, slots);
-      slots.forEach((slot, idx) => {
-        const range = occ[idx];
-        if (!range) {
-          return;
-        }
-        if (range.startAt < weekStart || range.startAt >= weekEnd) {
-          return;
-        }
+      const inWeek = subscriptionSlotsOccurrencesForWeek(weekYmd, slots, MY_LESSONS_CALENDAR_TZ);
+      for (const occ of inWeek) {
+        const range = { startAt: occ.startAt, endAt: occ.endAt };
         subscriptionBounds.push(range);
         const occEnd = (dayjs)(range.endAt);
         const slotStatus: MyLessonApiItem['status'] = occEnd.isAfter((dayjs)())
@@ -158,14 +152,29 @@ export class MyLessonsService {
           enrollment,
           range.startAt,
           range.endAt,
-          idx,
+          occ.slotIndex,
           slotStatus,
         );
         subscriptionCalendarItems.push(item);
-        if (slotStatus === 'upcoming') {
-          subscriptionUpcomingItems.push(item);
-        }
-      });
+      }
+
+      const now = (dayjs)();
+      const upcomingOccs = subscriptionSlotsUseConcreteDates(slots)
+        ? subscriptionConcreteOccurrencesSorted(slots, MY_LESSONS_CALENDAR_TZ).filter((o) =>
+            (dayjs)(o.endAt).isAfter(now),
+          )
+        : inWeek.filter((o) => (dayjs)(o.endAt).isAfter(now));
+
+      for (const occ of upcomingOccs) {
+        const item = this.enrollmentOccurrenceToLessonItem(
+          enrollment,
+          occ.startAt,
+          occ.endAt,
+          occ.slotIndex,
+          'upcoming',
+        );
+        subscriptionUpcomingItems.push(item);
+      }
     }
 
     const mergedCalendar = [...calendarLessons, ...subscriptionCalendarItems].sort(
@@ -182,18 +191,6 @@ export class MyLessonsService {
       previous_lessons: previousLessons,
       tutors: this.buildTutorItems(lessons),
     };
-  }
-
-  private getDisplayWeekRange(
-    baseDate: Date,
-    weekStartDate?: string
-  ): { weekStart: Date; weekEnd: Date } {
-    if (weekStartDate) {
-      const parsed = (dayjs)(weekStartDate).tz(MY_LESSONS_CALENDAR_TZ).startOf('day');
-      return { weekStart: parsed.toDate(), weekEnd: parsed.add(7, 'day').toDate() };
-    }
-    const weekStart = this.getWeekStart(baseDate);
-    return { weekStart, weekEnd: (dayjs)(weekStart).add(7, 'day').toDate() };
   }
 
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {

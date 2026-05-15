@@ -6,15 +6,18 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Input, TimePicker, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@/components/ui';
-import { 
-  Wallet, 
-  Calendar, 
-  Plus, 
-  Trash2, 
-  ArrowRight,
-  AlertCircle 
-} from 'lucide-react';
+import {
+  Button,
+  Input,
+  TimePicker,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  toast,
+} from '@/components/ui';
+import { Wallet, Calendar, Plus, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
 import { BecomeTutorSection, BecomeTutorShell } from '../_shared/BecomeTutorShell';
 import {
   tutorProfileAvailabilityAtom,
@@ -26,9 +29,9 @@ import {
   tutorProfileLastSavedAtAtom,
   markStepCompletedAtom,
 } from '@/store';
-import { 
-  DAY_KEYS, 
-  formatLastSavedTime, 
+import {
+  DAY_KEYS,
+  formatLastSavedTime,
   HOURLY_RATE_REGEX,
   DEFAULT_AVAILABILITY_SLOT,
   DEFAULT_AVATAR_URL,
@@ -44,7 +47,11 @@ import {
   VerificationStatus,
   convertToAllCurrencies,
 } from '@mezon-tutors/shared';
-import { useSubmitTutorProfileMutation, tutorProfileQueryKey, useGetCurrencyRates } from '@/services';
+import {
+  useSubmitTutorProfileMutation,
+  tutorProfileQueryKey,
+  useGetCurrencyRates,
+} from '@/services';
 import type { SubmitTutorProfileDto, TimeSlot } from '@mezon-tutors/shared';
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.AVAILABILITY;
@@ -63,7 +70,9 @@ export default function AvailabilityPage() {
   const photo = useAtomValue(tutorProfilePhotoAtom);
   const certification = useAtomValue(tutorProfileCertificationAtom);
   const video = useAtomValue(tutorProfileVideoAtom);
-  const [tutorProfileAvailability, setTutorProfileAvailability] = useAtom(tutorProfileAvailabilityAtom);
+  const [tutorProfileAvailability, setTutorProfileAvailability] = useAtom(
+    tutorProfileAvailabilityAtom
+  );
   const submitMutation = useSubmitTutorProfileMutation();
   const queryClient = useQueryClient();
   const resetAfterSubmit = useSetAtom(resetTutorProfileAfterSubmitAtom);
@@ -73,13 +82,13 @@ export default function AvailabilityPage() {
   const availabilityCardRef = useRef<HTMLDivElement>(null);
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [hourlyRateFieldFocused, setHourlyRateFieldFocused] = useState(false);
 
   const form = useForm<AvailabilityFormValues>({
     defaultValues: {
       hourlyRate: tutorProfileAvailability.hourlyRate ?? '',
       currency: tutorProfileAvailability.currency ?? ECurrency.VND,
-      slotsByDay: tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
+      slotsByDay:
+        tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
     },
     mode: 'onChange',
   });
@@ -99,9 +108,15 @@ export default function AvailabilityPage() {
     reset({
       hourlyRate: tutorProfileAvailability.hourlyRate ?? '',
       currency: tutorProfileAvailability.currency ?? ECurrency.VND,
-      slotsByDay: tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
+      slotsByDay:
+        tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
     });
-  }, [tutorProfileAvailability.hourlyRate, tutorProfileAvailability.currency, tutorProfileAvailability.slotsByDay, reset]);
+  }, [
+    tutorProfileAvailability.hourlyRate,
+    tutorProfileAvailability.currency,
+    tutorProfileAvailability.slotsByDay,
+    reset,
+  ]);
 
   const handleHourlyRateChange = (value: string) => {
     setValue('hourlyRate', value);
@@ -132,9 +147,7 @@ export default function AvailabilityPage() {
   const selectedCurrency = watch('currency') ?? ECurrency.VND;
   const { data: currentRates } = useGetCurrencyRates(selectedCurrency);
   const daySlots = slotsByDayForm?.[dayKey] ?? [];
-  
 
-  
   const formatRecommendedAmount = (amount: number) => {
     return formatToCurrency(selectedCurrency, amount);
   };
@@ -177,10 +190,10 @@ export default function AvailabilityPage() {
 
     for (const day of DAY_KEYS) {
       const daySlots = slotsByDay[day] ?? [];
-      
+
       for (let i = 0; i < daySlots.length; i++) {
         const slot = daySlots[i];
-        
+
         if (!slot.startTime || !slot.endTime) {
           setError('slotsByDay', { type: 'manual', message: t('validation.timeRequired') });
           availabilityCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -202,9 +215,9 @@ export default function AvailabilityPage() {
         }
 
         if (startMinutes >= endMinutes) {
-          setError('slotsByDay', { 
-            type: 'manual', 
-            message: t('validation.endTimeMustBeAfterStartTime') 
+          setError('slotsByDay', {
+            type: 'manual',
+            message: t('validation.endTimeMustBeAfterStartTime'),
           });
           availabilityCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return false;
@@ -218,19 +231,22 @@ export default function AvailabilityPage() {
           if (slot.startTime === otherSlot.startTime && slot.endTime === otherSlot.endTime) {
             setError('slotsByDay', {
               type: 'manual',
-              message: t('validation.duplicateSlot', { day: t(`availability.tabs.${DAY_KEYS.indexOf(day)}`) }),
+              message: t('validation.duplicateSlot', {
+                day: t(`availability.tabs.${DAY_KEYS.indexOf(day)}`),
+              }),
             });
             availabilityCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
           }
 
-          const isOverlapping = 
-            (startMinutes < otherEndMinutes && endMinutes > otherStartMinutes);
+          const isOverlapping = startMinutes < otherEndMinutes && endMinutes > otherStartMinutes;
 
           if (isOverlapping) {
             setError('slotsByDay', {
               type: 'manual',
-              message: t('validation.overlappingSlot', { day: t(`availability.tabs.${DAY_KEYS.indexOf(day)}`) }),
+              message: t('validation.overlappingSlot', {
+                day: t(`availability.tabs.${DAY_KEYS.indexOf(day)}`),
+              }),
             });
             availabilityCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
@@ -247,7 +263,7 @@ export default function AvailabilityPage() {
     const hourlyRate = form.getValues('hourlyRate');
     const currency = form.getValues('currency');
     const slotsByDay = form.getValues('slotsByDay') ?? {};
-    
+
     if (!hourlyRate || !HOURLY_RATE_REGEX.test(hourlyRate.trim()) || Number(hourlyRate) <= 0) {
       return;
     }
@@ -310,11 +326,7 @@ export default function AvailabilityPage() {
     };
 
     try {
-      const convertedPrices = convertToAllCurrencies(
-        payload.pricePerHour,
-        currency,
-        currentRates
-      );
+      const convertedPrices = convertToAllCurrencies(payload.pricePerHour, currency, currentRates);
 
       payload.prices = {
         usd: Number(convertedPrices.usd.toFixed(2)),
@@ -323,7 +335,7 @@ export default function AvailabilityPage() {
       };
 
       markStepCompleted(CURRENT_STEP);
-      
+
       await submitMutation.mutateAsync(payload);
       queryClient.setQueryData(tutorProfileQueryKey.myTutorProfile(), {
         hasProfile: true,
@@ -356,11 +368,17 @@ export default function AvailabilityPage() {
       onContinue={handleSubmit(handleContinue)}
       continueDisabled={submitMutation.isPending}
     >
-      <BecomeTutorSection eyebrow="Pricing" title={t('rateCardTitle')} description={t('rate.question')}>
+      <BecomeTutorSection
+        eyebrow="Pricing"
+        title={t('rateCardTitle')}
+        description={t('rate.question')}
+      >
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="flex h-12 flex-1 items-center rounded-xl border border-slate-200 bg-slate-50/60 px-4 transition-colors focus-within:border-violet-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-200/60">
-              <span className="mr-2 text-base font-bold text-violet-600">{getCurrencySymbol(selectedCurrency)}</span>
+              <span className="mr-2 text-base font-bold text-violet-600">
+                {getCurrencySymbol(selectedCurrency)}
+              </span>
               <Controller
                 control={control}
                 name="hourlyRate"
@@ -389,15 +407,9 @@ export default function AvailabilityPage() {
                 render={({ field: { value, onChange } }) => (
                   <Input
                     className="flex-1 border-0 bg-transparent p-0 text-base font-bold focus-visible:ring-0"
-                    placeholder={formatCurrencyAmountInputDisplay(selectedCurrency, "0")}
+                    placeholder={formatCurrencyAmountInputDisplay(selectedCurrency, '0')}
                     inputMode="decimal"
-                    value={
-                      hourlyRateFieldFocused
-                        ? value
-                        : formatCurrencyAmountInputDisplay(selectedCurrency, value)
-                    }
-                    onFocus={() => setHourlyRateFieldFocused(true)}
-                    onBlur={() => setHourlyRateFieldFocused(false)}
+                    value={formatCurrencyAmountInputDisplay(selectedCurrency, value)}
                     onChange={(e) => {
                       const next = toCanonicalCurrencyAmountInput(e.target.value, selectedCurrency);
                       onChange(next);
@@ -424,7 +436,10 @@ export default function AvailabilityPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.values(ECurrency).map((currency) => (
-                      <SelectItem key={currency} value={currency}>
+                      <SelectItem
+                        key={currency}
+                        value={currency}
+                      >
                         {currency}
                       </SelectItem>
                     ))}
@@ -449,7 +464,11 @@ export default function AvailabilityPage() {
         </div>
       </BecomeTutorSection>
 
-      <BecomeTutorSection eyebrow="Availability" title={t('availabilityCardTitle')} contentRef={availabilityCardRef}>
+      <BecomeTutorSection
+        eyebrow="Availability"
+        title={t('availabilityCardTitle')}
+        contentRef={availabilityCardRef}
+      >
         <div className="mb-5 flex flex-wrap gap-1.5 rounded-full border border-violet-100 bg-violet-50/40 p-1">
           {dayTabs.map((label, index) => {
             const isActive = selectedDayIndex === index;
@@ -472,7 +491,10 @@ export default function AvailabilityPage() {
 
         <div className="space-y-3">
           {daySlots.map((slot, index) => (
-            <div key={index} className="flex flex-wrap items-end gap-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-3">
+            <div
+              key={index}
+              className="flex flex-wrap items-end gap-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-3"
+            >
               <div className="min-w-[120px] flex-1 space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                   {t('availability.from')}

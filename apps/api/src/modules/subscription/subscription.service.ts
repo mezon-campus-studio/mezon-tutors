@@ -13,8 +13,10 @@ import {
   VerificationStatus,
 } from '@mezon-tutors/db';
 import {
+  DEFAULT_TIMEZONE,
   ECurrency,
   PLATFORM_FEE_PERCENTAGE,
+  buildMonthlySubscriptionSlotJson,
   jsDayToDbDayOfWeek,
   parseYyyyMmDdToLocalDate,
   timeToMinutes,
@@ -24,7 +26,7 @@ import {
   type SubscriptionWeeklySlotDto,
   type TutorSubscriptionPlanDto,
   type TutorSubscriptionWeekOccurrenceDto,
-  subscriptionWeeklySlotsToOccurrencesInTimezone,
+  subscriptionSlotsOccurrencesForWeek,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
@@ -381,13 +383,20 @@ export class SubscriptionService {
       throw new ServiceUnavailableException('VNPay is not configured; cannot create payment');
     }
 
+    const expandedSlots = buildMonthlySubscriptionSlotJson(
+      dto.slots,
+      normalized,
+      SUBSCRIPTION_MONTHLY_WEEKS,
+      DEFAULT_TIMEZONE
+    ) as SubscriptionWeeklySlotDto[];
+
     const created = await this.prisma.subscriptionEnrollment.create({
       data: {
         studentId: studentUserId,
         tutorId: dto.tutorId,
         lessonsPerWeek: dto.lessonsPerWeek,
         status: ESubscriptionEnrollmentStatus.PENDING_PAYMENT,
-        weeklySlots: normalized as unknown as Prisma.InputJsonValue,
+        weeklySlots: expandedSlots as unknown as Prisma.InputJsonValue,
         currency: selectedCurrency,
         grossAmount,
         platformFee,
@@ -420,7 +429,7 @@ export class SubscriptionService {
 
     return this.serializeEnrollmentRow(
       updated as unknown as SubscriptionEnrollmentSerializeRow,
-      normalized
+      expandedSlots
     );
   }
 
@@ -455,15 +464,15 @@ export class SubscriptionService {
     const out: TutorSubscriptionWeekOccurrenceDto[] = [];
     for (const e of enrollments) {
       const slots = this.parseWeeklySlots(e.weeklySlots);
-      const times = subscriptionWeeklySlotsToOccurrencesInTimezone(weekStartYmd, slots);
-      slots.forEach((slot, idx) => {
-        const t = times[idx];
-        if (!t) {
-          return;
+      const times = subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, DEFAULT_TIMEZONE);
+      for (const t of times) {
+        const slot = slots[t.slotIndex];
+        if (!slot) {
+          continue;
         }
         out.push({
           scheduleKind: 'subscription',
-          id: `sub-${e.id}-${idx}`,
+          id: `sub-${e.id}-${t.slotIndex}`,
           enrollmentId: e.id,
           studentId: e.student.id,
           studentMezonUserId: e.student.mezonUserId,
@@ -473,7 +482,7 @@ export class SubscriptionService {
           startAt: t.startAt.toISOString(),
           durationMinutes: slot.durationMinutes,
         });
-      });
+      }
     }
     return out;
   }

@@ -21,7 +21,6 @@ export class ApiError extends Error {
   }
 }
 
-
 let refreshPromise: Promise<string> | null = null;
 const store = getDefaultStore();
 
@@ -65,11 +64,11 @@ apiClient.interceptors.response.use(
     return body;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as (
-      InternalAxiosRequestConfig & {
-        _retry?: boolean;
-      }
-    ) | undefined;
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & {
+          _retry?: boolean;
+        })
+      | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (isAuthRefreshRequest(originalRequest)) {
