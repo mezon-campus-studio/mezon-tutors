@@ -7,7 +7,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-import { Button, Input, Label, YearPicker, Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxEmpty } from "@/components/ui";
+import { Input, Label, YearPicker, Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxEmpty, Spinner } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { BadgeCheck, Wallet, Info, Upload, FileText } from "lucide-react";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
 import { CLOUDINARY_FOLDER, formatLastSavedTime, MAX_FILE_SIZE_MB, TEACHING_CERTIFICATES, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
@@ -22,7 +23,8 @@ export default function CertificationPage() {
   const router = useRouter();
   const [certification, setCertification] = useAtom(tutorProfileCertificationAtom);
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
-  const [isUploading, setIsUploading] = useState(false);
+  const [teachingUploading, setTeachingUploading] = useState(false);
+  const [educationUploading, setEducationUploading] = useState(false);
   const lastSavedAt = useAtomValue(tutorProfileLastSavedAtAtom);
   const setLastSavedAt = useSetAtom(tutorProfileLastSavedAtAtom);
   const teachingCardRef = useRef<HTMLDivElement>(null);
@@ -118,26 +120,29 @@ export default function CertificationPage() {
     teachingUploadSeqRef.current += 1;
     const seq = teachingUploadSeqRef.current;
     const previousPublicId = certificationMerged.teachingCertificate?.file?.publicId;
+    setTeachingUploading(true);
 
     const reader = new FileReader();
+    reader.onerror = () => {
+      if (teachingUploadSeqRef.current === seq) setTeachingUploading(false);
+    };
     reader.onload = async () => {
-      const dataUrl = reader.result as string;
-      setCertification((prev) => ({ 
-        ...prev, 
-        teachingCertificate: { 
-          ...prev.teachingCertificate, 
-          file: { 
-            ...(prev.teachingCertificate?.file || {}), 
-            dataUrl, 
-            uploadedUrl: null, 
-            fileName: file.name 
-          } 
-        } 
-      }));
-      setLastSavedAt(new Date().toISOString());
-
       try {
-        setIsUploading(true);
+        const dataUrl = reader.result as string;
+        setCertification((prev) => ({ 
+          ...prev, 
+          teachingCertificate: { 
+            ...prev.teachingCertificate, 
+            file: { 
+              ...(prev.teachingCertificate?.file || {}), 
+              dataUrl, 
+              uploadedUrl: null, 
+              fileName: file.name 
+            } 
+          } 
+        }));
+        setLastSavedAt(new Date().toISOString());
+
         const uploadedFile = await cloudinaryService.uploadFileWithSignature(file, CLOUDINARY_FOLDER.TUTOR_CERTIFICATE, "auto");
         if (teachingUploadSeqRef.current !== seq) return;
         setCertification((prev) => ({ 
@@ -159,7 +164,7 @@ export default function CertificationPage() {
         if (teachingUploadSeqRef.current !== seq) return;
         form.setError("teachingCertificateFile", { type: "manual", message: t("validation.certificateUploadFailed") });
       } finally {
-        if (teachingUploadSeqRef.current === seq) setIsUploading(false);
+        if (teachingUploadSeqRef.current === seq) setTeachingUploading(false);
       }
     };
     reader.readAsDataURL(file);
@@ -179,26 +184,29 @@ export default function CertificationPage() {
     educationUploadSeqRef.current += 1;
     const seq = educationUploadSeqRef.current;
     const previousPublicId = certificationMerged.higherEducation?.file?.publicId;
+    setEducationUploading(true);
 
     const reader = new FileReader();
+    reader.onerror = () => {
+      if (educationUploadSeqRef.current === seq) setEducationUploading(false);
+    };
     reader.onload = async () => {
-      const dataUrl = reader.result as string;
-      setCertification((prev) => ({ 
-        ...prev, 
-        higherEducation: { 
-          ...prev.higherEducation, 
-          file: { 
-            ...(prev.higherEducation?.file || {}), 
-            dataUrl, 
-            uploadedUrl: null, 
-            fileName: file.name 
-          } 
-        } 
-      }));
-      setLastSavedAt(new Date().toISOString());
-
       try {
-        setIsUploading(true);
+        const dataUrl = reader.result as string;
+        setCertification((prev) => ({ 
+          ...prev, 
+          higherEducation: { 
+            ...prev.higherEducation, 
+            file: { 
+              ...(prev.higherEducation?.file || {}), 
+              dataUrl, 
+              uploadedUrl: null, 
+              fileName: file.name 
+            } 
+          } 
+        }));
+        setLastSavedAt(new Date().toISOString());
+
         const uploadedFile = await cloudinaryService.uploadFileWithSignature(file, CLOUDINARY_FOLDER.TUTOR_DIPLOMA, "auto");
         if (educationUploadSeqRef.current !== seq) return;
         setCertification((prev) => ({ 
@@ -220,7 +228,7 @@ export default function CertificationPage() {
         if (educationUploadSeqRef.current !== seq) return;
         form.setError("educationFile", { type: "manual", message: t("validation.educationUploadFailed") });
       } finally {
-        if (educationUploadSeqRef.current === seq) setIsUploading(false);
+        if (educationUploadSeqRef.current === seq) setEducationUploading(false);
       }
     };
     reader.readAsDataURL(file);
@@ -228,7 +236,7 @@ export default function CertificationPage() {
 
   const onSubmit = async (values: CertificationFormValues) => {
     const { teachingCertificateFile: _tcf, educationFile: _ef, certificateType, ...textFields } = values;
-    if (isUploading) return;
+    if (teachingUploading || educationUploading) return;
 
     if (!certificationMerged.teachingCertificate.file.uploadedUrl) {
       form.setError("teachingCertificateFile", { type: "manual", message: t("validation.certificateUploadFailed") });
@@ -278,12 +286,25 @@ export default function CertificationPage() {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     promptText: string,
     hintText: string,
+    isUploading = false,
   ) => (
     <button
       type="button"
-      onClick={() => document.getElementById(id)?.click()}
-      className="group flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 p-6 transition-all hover:border-violet-300 hover:bg-violet-50/60"
+      onClick={() => {
+        if (isUploading) return;
+        document.getElementById(id)?.click();
+      }}
+      className={cn(
+        "group relative flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 p-6 transition-all hover:border-violet-300 hover:bg-violet-50/60",
+        isUploading && "cursor-wait border-violet-300 bg-violet-50/50",
+      )}
     >
+      {isUploading ? (
+        <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/80 backdrop-blur-[2px]">
+          <Spinner className="size-8 text-violet-600" />
+          <p className="text-xs font-semibold text-violet-800">{t("uploading")}</p>
+        </div>
+      ) : null}
       <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
         {fileName ? <FileText className="size-5" /> : <Upload className="size-5" />}
       </div>
@@ -321,7 +342,7 @@ export default function CertificationPage() {
       currentStep={CURRENT_STEP}
       onBack={() => router.push("/become-tutor/photo")}
       onContinue={handleSubmit(onSubmit, onValidationError)}
-      continueDisabled={isUploading}
+      continueDisabled={teachingUploading || educationUploading}
     >
       <BecomeTutorSection
         eyebrow="Teaching"
@@ -426,6 +447,7 @@ export default function CertificationPage() {
               handleTeachingFileChange,
               t("teaching.uploadPrompt"),
               t("teaching.uploadHint"),
+              teachingUploading,
             )}
             {errors.teachingCertificateFile && (
               <p className="text-xs text-rose-600">
@@ -528,6 +550,7 @@ export default function CertificationPage() {
               handleEducationFileChange,
               t("education.uploadPrompt"),
               t("education.uploadHint"),
+              educationUploading,
             )}
             {errors.educationFile && (
               <p className="text-xs text-rose-600">

@@ -55,6 +55,12 @@ class AuthService {
     return apiClient.get<MeResponse>("/auth/me");
   }
 
+  async syncMezonProfileWithCode(code: string, state: string): Promise<ExchangeResponse> {
+    const data = await apiClient.post<ExchangeResponse>('/auth/mezon/sync-profile', { code, state });
+    this.store.set(accessTokenAtom, data.accessToken);
+    return data;
+  }
+
   async refreshToken(): Promise<{ accessToken: string }> {
     const data = await apiClient.post<{ accessToken: string }>("/auth/refresh");
     this.store.set(accessTokenAtom, data.accessToken);

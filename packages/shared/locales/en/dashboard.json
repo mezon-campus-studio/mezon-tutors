@@ -15,7 +15,16 @@
       "tutorApplications": "Tutor applications",
       "dashboard": "Dashboard",
       "logout": "Logout",
-      "fallbackTitle": "Dashboard"
+      "fallbackTitle": "Dashboard",
+      "syncMezon": {
+        "label": "Sync from Mezon",
+        "syncing": "Syncing…",
+        "successTitle": "Profile updated",
+        "successDescription": "Your name and avatar now match your Mezon account.",
+        "errorTitle": "Sync failed",
+        "errorDescription": "Something went wrong. Try again or sign in with Mezon again.",
+        "popupBlocked": "Allow pop-ups for this site to continue with Mezon."
+      }
     },
     "bookingRequests": {
       "eyebrow": "Tutor workspace",

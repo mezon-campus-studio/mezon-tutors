@@ -10,9 +10,11 @@ import {
   userAtom,
 } from "@/store/auth.atom";
 import { accessTokenAtom } from "@/store/token.atom";
+import {
+  MEZONLY_OAUTH_ACTION_KEY,
+  MEZON_OAUTH_RESULT_CHANNEL,
+} from "@mezon-tutors/shared";
 import { Button } from "../ui";
-
-const OAUTH_CHANNEL = "mezon-oauth-result";
 
 type MezonAuthMessage =
   | {
@@ -112,7 +114,7 @@ export function LoginButton({ label }: LoginButtonProps) {
     window.addEventListener("message", handleMessage);
 
     try {
-      const channel = new BroadcastChannel(OAUTH_CHANNEL);
+      const channel = new BroadcastChannel(MEZON_OAUTH_RESULT_CHANNEL);
       channel.onmessage = (event: MessageEvent) => {
         processOAuthPayload(event.data as MezonAuthMessage);
       };
@@ -148,6 +150,7 @@ export function LoginButton({ label }: LoginButtonProps) {
       }
 
       popupRef.current = popup;
+      localStorage.setItem(MEZONLY_OAUTH_ACTION_KEY, "login");
       const url = await authService.getAuthUrl();
       popup.location.href = url;
 

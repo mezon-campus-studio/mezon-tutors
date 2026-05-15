@@ -15,7 +15,16 @@
       "tutorApplications": "Hồ sơ gia sư",
       "dashboard": "Bảng điều khiển",
       "logout": "Đăng xuất",
-      "fallbackTitle": "Bảng điều khiển"
+      "fallbackTitle": "Bảng điều khiển",
+      "syncMezon": {
+        "label": "Đồng bộ từ Mezon",
+        "syncing": "Đang đồng bộ…",
+        "successTitle": "Đã cập nhật hồ sơ",
+        "successDescription": "Tên và ảnh đại diện đã khớp với tài khoản Mezon của bạn.",
+        "errorTitle": "Đồng bộ thất bại",
+        "errorDescription": "Đã có lỗi xảy ra. Thử lại hoặc đăng nhập Mezon lại.",
+        "popupBlocked": "Hãy cho phép cửa sổ pop-up trên trang này để tiếp tục với Mezon."
+      }
     },
     "bookingRequests": {
       "eyebrow": "Khu vực gia sư",

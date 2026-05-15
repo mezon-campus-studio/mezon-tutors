@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@mezon-tutors/db';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -97,6 +103,45 @@ export class AuthService {
     return {
       ...data,
       avatar: data.avatar ?? null,
+    };
+  }
+
+  async syncProfileFromMezonWithCode(userId: string, code: string, state?: string) {
+    const tokenData = await this.exchangeCodeForToken(code, state);
+    const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.mezonUserId !== mezonUser.user_id) {
+      throw new ForbiddenException('Mezon account does not match the signed-in user');
+    }
+
+    const username = mezonUser.username || user.username;
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        username,
+        avatar: mezonUser.avatar ?? '',
+        email: mezonUser.email,
+      },
+    });
+
+    const tokens = await this.generateTokens(updated);
+
+    return {
+      user: {
+        id: updated.id,
+        mezonUserId: updated.mezonUserId,
+        username: updated.username,
+        role: updated.role,
+        avatar: updated.avatar,
+        email: mezonUser.email ?? null,
+      },
+      tokens,
+      idToken: tokenData.id_token ?? null,
     };
   }
 

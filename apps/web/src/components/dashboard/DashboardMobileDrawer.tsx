@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
+import { DashboardMezonSyncButton } from "./DashboardMezonSyncButton";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { userAtom } from "@/store/auth.atom";
 
@@ -146,6 +147,7 @@ export default function DashboardMobileDrawer({
                 </p>
               </div>
             </div>
+            <DashboardMezonSyncButton className="mt-3" onSuccessAction={onCloseAction} />
           </div>
         ) : null}
 

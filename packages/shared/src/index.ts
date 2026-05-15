@@ -46,6 +46,7 @@ export * from './constants/review';
 export * from './constants/mezon';
 export * from './constants/currency';
 export * from './constants/notification';
+export * from './constants/mezon-oauth';
 
 // Utils
 export * from './utils/utils';

@@ -23,7 +23,7 @@ import {
   formatLastSavedTime,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
-import { Button, Input, Label } from "@/components/ui";
+import { Button, Input, Label, Spinner } from "@/components/ui";
 import { cloudinaryService } from "@/services";
 import {
   markStepCompletedAtom,
@@ -55,6 +55,7 @@ export default function PhotoPage() {
       null,
   );
   const [isUploading, setIsUploading] = useState(false);
+  const identityUploadSeqRef = useRef(0);
   const lastSavedAt = useAtomValue(tutorProfileLastSavedAtAtom);
   const setLastSavedAt = useSetAtom(tutorProfileLastSavedAtAtom);
 
@@ -187,24 +188,31 @@ export default function PhotoPage() {
     }
 
     setValue("identityPhotoFile", file);
+    identityUploadSeqRef.current += 1;
+    const seq = identityUploadSeqRef.current;
     const previousPublicId = tutorProfilePhoto.identity?.publicId;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = reader.result as string;
-      setTutorProfilePhoto((prev) => ({
-        ...prev,
-        identity: { ...prev.identity, dataUrl },
-      }));
-      setPreviewIdentityUrl(dataUrl);
-      setLastSavedAt(new Date().toISOString());
+    setIsUploading(true);
 
+    const reader = new FileReader();
+    reader.onerror = () => {
+      if (identityUploadSeqRef.current === seq) setIsUploading(false);
+    };
+    reader.onload = async () => {
       try {
-        setIsUploading(true);
+        const dataUrl = reader.result as string;
+        setTutorProfilePhoto((prev) => ({
+          ...prev,
+          identity: { ...prev.identity, dataUrl },
+        }));
+        setPreviewIdentityUrl(dataUrl);
+        setLastSavedAt(new Date().toISOString());
+
         const uploadedFile = await cloudinaryService.uploadFileWithSignature(
           file,
           CLOUDINARY_FOLDER.TUTOR_IDENTITY,
           "image",
         );
+        if (identityUploadSeqRef.current !== seq) return;
         setTutorProfilePhoto((prev) => ({
           ...prev,
           identity: {
@@ -218,12 +226,13 @@ export default function PhotoPage() {
         }
         await form.trigger("identityPhotoFile");
       } catch {
+        if (identityUploadSeqRef.current !== seq) return;
         form.setError("identityPhotoFile", {
           type: "manual",
           message: t("validation.identityUploadFailed"),
         });
       } finally {
-        setIsUploading(false);
+        if (identityUploadSeqRef.current === seq) setIsUploading(false);
       }
     };
     reader.readAsDataURL(file);
@@ -329,7 +338,10 @@ export default function PhotoPage() {
         contentRef={identityCardRef}
       >
         <div className="flex flex-col items-center gap-4">
-          <div className="aspect-[16/10] w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#ffffff)]">
+          <div
+            className="relative aspect-[16/10] w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#ffffff)]"
+            aria-busy={isUploading}
+          >
             {previewIdentityUrl ? (
               <img
                 src={previewIdentityUrl}
@@ -346,6 +358,14 @@ export default function PhotoPage() {
                 </p>
               </div>
             )}
+            {isUploading ? (
+              <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 bg-white/75 backdrop-blur-[2px]">
+                <Spinner className="size-10 text-violet-600" />
+                <p className="text-xs font-semibold text-violet-800">
+                  {t("identity.uploading")}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <div className="flex flex-col items-center gap-2">
@@ -362,8 +382,12 @@ export default function PhotoPage() {
               disabled={isUploading}
               className="group h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
             >
-              <Upload className="mr-1.5 size-4" />
-              {t("identity.uploadButton")}
+              {isUploading ? (
+                <Spinner className="mr-1.5 size-4 text-white" />
+              ) : (
+                <Upload className="mr-1.5 size-4" />
+              )}
+              {isUploading ? t("identity.uploading") : t("identity.uploadButton")}
             </Button>
             <p className="text-center text-xs text-slate-500">
               {t("uploadHint")}

@@ -20,7 +20,7 @@ import {
   parseVimeoId,
   parseYouTubeId,
 } from "@mezon-tutors/shared";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Spinner } from "@/components/ui";
 import {
   markStepCompletedAtom,
   tutorProfileLastSavedAtAtom,
@@ -48,6 +48,7 @@ export default function VideoPage() {
   const [durationError, setDurationError] = useState<string | null>(null);
   const videoInputSectionRef = useRef<HTMLDivElement | null>(null);
   const [lastSavedAt, setLastSavedAt] = useAtom(tutorProfileLastSavedAtAtom);
+  const [isCheckingVideo, setIsCheckingVideo] = useState(false);
 
   const form = useForm<VideoFormValues>({
     defaultValues: {
@@ -98,39 +99,45 @@ export default function VideoPage() {
       return;
     }
 
+    setIsCheckingVideo(true);
     try {
-      const res = await fetch(
-        `https://noembed.com/embed?url=${encodeURIComponent(trimmed)}`,
-      );
-      if (res.ok) {
-        const data = (await res.json()) as { duration?: number };
-        const durationSeconds =
-          typeof data.duration === "number" ? data.duration : null;
+      try {
+        const res = await fetch(
+          `https://noembed.com/embed?url=${encodeURIComponent(trimmed)}`,
+        );
+        if (res.ok) {
+          const data = (await res.json()) as { duration?: number };
+          const durationSeconds =
+            typeof data.duration === "number" ? data.duration : null;
 
-        if (durationSeconds !== null) {
-          setVideoDuration(durationSeconds);
-          if (durationSeconds > 120) {
-            setDurationError(t("errors.tooLong"));
-            setVideoState((prev) => ({
-              ...prev,
-              videoLink: trimmed,
-              videoId: null,
-            }));
-            return;
+          if (durationSeconds !== null) {
+            setVideoDuration(durationSeconds);
+            if (durationSeconds > 120) {
+              setDurationError(t("errors.tooLong"));
+              setVideoState((prev) => ({
+                ...prev,
+                videoLink: trimmed,
+                videoId: null,
+              }));
+              return;
+            }
           }
         }
-      }
-    } catch {}
+      } catch {}
 
-    setVideoState((prev) => ({
-      ...prev,
-      videoLink: trimmed,
-      videoId: nextId,
-    }));
-    setLastSavedAt(new Date().toISOString());
+      setVideoState((prev) => ({
+        ...prev,
+        videoLink: trimmed,
+        videoId: nextId,
+      }));
+      setLastSavedAt(new Date().toISOString());
+    } finally {
+      setIsCheckingVideo(false);
+    }
   };
 
   const handleContinue = (_values: VideoFormValues) => {
+    if (isCheckingVideo) return;
     if (!videoId) {
       setDurationError(t("errors.missingBeforeContinue"));
       const section = videoInputSectionRef.current;
@@ -159,6 +166,7 @@ export default function VideoPage() {
       currentStep={CURRENT_STEP}
       onBack={() => router.push("/become-tutor/certification")}
       onContinue={handleSubmit(handleContinue)}
+      continueDisabled={isCheckingVideo}
     >
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2" ref={videoInputSectionRef}>
@@ -170,6 +178,7 @@ export default function VideoPage() {
             <div
               className="relative w-full overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#fdf2f8)]"
               style={{ aspectRatio: "16/9", minHeight: "200px" }}
+              aria-busy={isCheckingVideo}
             >
               {videoId ? (
                 <iframe
@@ -193,6 +202,14 @@ export default function VideoPage() {
                   </p>
                 </div>
               )}
+              {isCheckingVideo ? (
+                <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 bg-white/75 backdrop-blur-[2px]">
+                  <Spinner className="size-10 text-violet-600" />
+                  <p className="text-xs font-semibold text-violet-800">
+                    {t("link.checking")}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </BecomeTutorSection>
 
@@ -206,15 +223,21 @@ export default function VideoPage() {
                     className="h-11 flex-1 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
                     placeholder={t("link.placeholder")}
                     value={value}
+                    disabled={isCheckingVideo}
                     onChange={(e) => onChange(e.target.value)}
                   />
                 )}
               />
               <Button
+                type="button"
                 onClick={handleSubmit(handleAddLink)}
+                disabled={isCheckingVideo}
                 className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
               >
-                {t("link.addButton")}
+                {isCheckingVideo ? (
+                  <Spinner className="mr-1.5 size-4 text-white" />
+                ) : null}
+                {isCheckingVideo ? t("link.checking") : t("link.addButton")}
               </Button>
             </div>
             {durationError ? (
