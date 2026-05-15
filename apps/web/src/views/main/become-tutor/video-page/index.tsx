@@ -1,6 +1,6 @@
 "use client";
 
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
   AlertCircle,
   Check,
@@ -11,12 +11,11 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   BECOME_TUTOR_STEPS,
   calculateStepProgress,
-  formatLastSavedTime,
   parseVimeoId,
   parseYouTubeId,
 } from "@mezon-tutors/shared";
@@ -39,7 +38,7 @@ type VideoFormValues = {
 };
 
 export default function VideoPage() {
-  const t = useTranslations("TutorProfile.Video");
+  const t = useTranslations("BecomeTutor.video");
   const router = useRouter();
   const [videoState, setVideoState] = useAtom(tutorProfileVideoAtom);
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
@@ -47,8 +46,8 @@ export default function VideoPage() {
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [durationError, setDurationError] = useState<string | null>(null);
   const videoInputSectionRef = useRef<HTMLDivElement | null>(null);
-  const [lastSavedAt, setLastSavedAt] = useAtom(tutorProfileLastSavedAtAtom);
   const [isCheckingVideo, setIsCheckingVideo] = useState(false);
+  const setLastSavedAt = useSetAtom(tutorProfileLastSavedAtAtom);
 
   const form = useForm<VideoFormValues>({
     defaultValues: {
@@ -57,12 +56,7 @@ export default function VideoPage() {
     mode: "onChange",
   });
 
-  const { control, handleSubmit } = form;
-
-  const draftSavedLabel =
-    lastSavedAt && formatLastSavedTime(lastSavedAt)
-      ? t("draftSaved", { time: formatLastSavedTime(lastSavedAt) })
-      : "";
+  const { control, handleSubmit, getValues } = form;
 
   const bestPractices = t.raw("bestPractices") as string[];
   const avoidItems = t.raw("avoidItems") as string[];
@@ -136,6 +130,15 @@ export default function VideoPage() {
     }
   };
 
+  const handleSaveExit = useCallback(async () => {
+    const raw = (getValues("videoLink") ?? "").trim();
+    setVideoState((prev) => ({
+      ...prev,
+      videoLink: raw,
+    }));
+    setLastSavedAt(new Date().toISOString());
+  }, [getValues, setLastSavedAt, setVideoState]);
+
   const handleContinue = (_values: VideoFormValues) => {
     if (isCheckingVideo) return;
     if (!videoId) {
@@ -155,8 +158,7 @@ export default function VideoPage() {
   return (
     <BecomeTutorShell
       headerTitle={t("title")}
-      saveExitLabel={t("back")}
-      draftSavedLabel={draftSavedLabel || undefined}
+      onSaveExit={handleSaveExit}
       stepLabel={t("stepLabel")}
       progressPercent={PROGRESS_PERCENT}
       progressLabel={t("progressPercentLabel", { percent: PROGRESS_PERCENT })}

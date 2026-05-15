@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useSetAtom } from 'jotai';
@@ -15,6 +16,7 @@ import {
   tutorProfileVideoAtom,
   tutorProfileAvailabilityAtom,
   isEditingRejectedProfileAtom,
+  resetTutorProfileAfterSubmitAtom,
 } from '@/store';
 
 type StatusMeta = {
@@ -86,6 +88,13 @@ export default function FinalPage() {
   const setVideo = useSetAtom(tutorProfileVideoAtom);
   const setAvailability = useSetAtom(tutorProfileAvailabilityAtom);
   const setIsEditingRejected = useSetAtom(isEditingRejectedProfileAtom);
+  const resetAfterSubmit = useSetAtom(resetTutorProfileAfterSubmitAtom);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('become-tutor:clear-draft') !== '1') return;
+    sessionStorage.removeItem('become-tutor:clear-draft');
+    resetAfterSubmit();
+  }, [resetAfterSubmit]);
 
   const handleLoadProfile = async () => {
     const { data: result } = await fetchProfile();
@@ -215,7 +224,7 @@ export default function FinalPage() {
   }
 
   if (!data?.hasProfile) {
-    return null;
+    router.replace('/become-tutor');
   }
 
   const status = data?.verificationStatus;

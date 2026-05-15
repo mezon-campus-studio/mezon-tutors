@@ -1,13 +1,11 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { redirect } from 'next/navigation';
-import { userAtom, isLoadingAtom } from '@/store';
+import { isLoadingAtom } from '@/store';
 import { BecomeTutorGuide } from '@/views/main/become-tutor/guide';
 import { Spinner } from '@/components/ui';
 
 export default function BecomeTutorPage() {
-  const user = useAtomValue(userAtom);
   const isLoading = useAtomValue(isLoadingAtom);
 
   if (isLoading) {
@@ -16,10 +14,6 @@ export default function BecomeTutorPage() {
         <Spinner className="h-8 w-8 text-primary" />
       </div>
     );
-  }
-
-  if (user) {
-    redirect('/become-tutor/about');
   }
 
   return <BecomeTutorGuide />;

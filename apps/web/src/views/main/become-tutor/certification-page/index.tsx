@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-import { Input, Label, YearPicker, Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxEmpty, Spinner } from "@/components/ui";
-import { cn } from "@/lib/utils";
-import { BadgeCheck, Wallet, Info, Upload, FileText } from "lucide-react";
+import { Input, Label, YearPicker } from "@/components/ui";
+import { BadgeCheck, Wallet, Info } from "lucide-react";
+import UploadFile from "@/components/common/UploadFile";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
-import { CLOUDINARY_FOLDER, formatLastSavedTime, MAX_FILE_SIZE_MB, TEACHING_CERTIFICATES, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
+import { CLOUDINARY_FOLDER, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
 import { cloudinaryService } from "@/services";
 import { BecomeTutorSection, BecomeTutorShell } from "../_shared/BecomeTutorShell";
 
@@ -19,13 +19,14 @@ const CURRENT_STEP = BECOME_TUTOR_STEPS.CERTIFICATION;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
 
 export default function CertificationPage() {
-  const t = useTranslations("TutorProfile.Certification");
+  const t = useTranslations("BecomeTutor.certification");
   const router = useRouter();
   const [certification, setCertification] = useAtom(tutorProfileCertificationAtom);
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const [teachingUploading, setTeachingUploading] = useState(false);
   const [educationUploading, setEducationUploading] = useState(false);
   const lastSavedAt = useAtomValue(tutorProfileLastSavedAtAtom);
+  const [isUploading, setIsUploading] = useState(false);
   const setLastSavedAt = useSetAtom(tutorProfileLastSavedAtAtom);
   const teachingCardRef = useRef<HTMLDivElement>(null);
   const educationCardRef = useRef<HTMLDivElement | null>(null);
@@ -78,11 +79,9 @@ export default function CertificationPage() {
 
   type CertificationFormValues = z.infer<typeof certificationSchema>;
 
-  const draftSavedLabel = lastSavedAt && formatLastSavedTime(lastSavedAt) ? t("draftSaved", { time: formatLastSavedTime(lastSavedAt) }) : "";
-
   const form = useForm<CertificationFormValues>({
     defaultValues: {
-      certificateType: certificationMerged.teachingCertificate.name || TEACHING_CERTIFICATES[0] || "",
+      certificateType: certificationMerged.teachingCertificate.name || "",
       teachingYear: certificationMerged.teachingCertificate.year || '',
       university: certificationMerged.higherEducation.university || '',
       degree: certificationMerged.higherEducation.degree || '',
@@ -95,21 +94,9 @@ export default function CertificationPage() {
     reValidateMode: "onChange",
   });
 
-  const { control, handleSubmit, setFocus, register, formState: { errors }, setValue } = form;
+  const { control, handleSubmit, setFocus, register, getValues, formState: { errors }, setValue } = form;
 
-  useEffect(() => {
-    const currentName = certificationMerged.teachingCertificate.name;
-    if (currentName) {
-      setValue('certificateType', currentName);
-    } else {
-      setValue('certificateType', TEACHING_CERTIFICATES[0]);
-    }
-  }, [certificationMerged.teachingCertificate.name, setValue]);
-
-  const handleTeachingFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleTeachingFileChange = async (file: File) => {
     const bytesLimit = MAX_FILE_SIZE_MB * 1024 * 1024;
     if (file.size > bytesLimit) {
       form.setError("teachingCertificateFile", { type: "manual", message: t("validation.certificateFileTooLarge", { max: MAX_FILE_SIZE_MB }) });
@@ -170,10 +157,7 @@ export default function CertificationPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleEducationFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleEducationFileChange = async (file: File) => {
     const bytesLimit = MAX_FILE_SIZE_MB * 1024 * 1024;
     if (file.size > bytesLimit) {
       form.setError("educationFile", { type: "manual", message: t("validation.educationFileTooLarge", { max: MAX_FILE_SIZE_MB }) });
@@ -280,59 +264,31 @@ export default function CertificationPage() {
     if (focusableFields.has(firstError)) setFocus(firstError);
   };
 
-  const renderUploadZone = (
-    id: string,
-    fileName: string | null | undefined,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    promptText: string,
-    hintText: string,
-    isUploading = false,
-  ) => (
-    <button
-      type="button"
-      onClick={() => {
-        if (isUploading) return;
-        document.getElementById(id)?.click();
-      }}
-      className={cn(
-        "group relative flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/30 p-6 transition-all hover:border-violet-300 hover:bg-violet-50/60",
-        isUploading && "cursor-wait border-violet-300 bg-violet-50/50",
-      )}
-    >
-      {isUploading ? (
-        <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 rounded-2xl bg-white/80 backdrop-blur-[2px]">
-          <Spinner className="size-8 text-violet-600" />
-          <p className="text-xs font-semibold text-violet-800">{t("uploading")}</p>
-        </div>
-      ) : null}
-      <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
-        {fileName ? <FileText className="size-5" /> : <Upload className="size-5" />}
-      </div>
-      <div className="text-center">
-        <p className="text-sm font-semibold text-slate-900">{promptText}</p>
-        <p className="text-xs text-slate-500">{hintText}</p>
-      </div>
-      {fileName ? (
-        <span className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold text-violet-700">
-          <FileText className="size-3 shrink-0" />
-          <span className="truncate">{fileName}</span>
-        </span>
-      ) : null}
-      <input
-        type="file"
-        id={id}
-        accept={ACCEPT_FILE_TYPES}
-        onChange={onChange}
-        className="hidden"
-      />
-    </button>
-  );
+  const handleSaveExit = useCallback(async () => {
+    if (isUploading) return;
+    const values = getValues();
+    setCertification((prev) => ({
+      ...prev,
+      teachingCertificate: {
+        ...prev.teachingCertificate,
+        name: values.certificateType,
+        year: values.teachingYear,
+      },
+      higherEducation: {
+        ...prev.higherEducation,
+        university: values.university,
+        degree: values.degree,
+        specialization: values.specialization,
+      },
+    }));
+    setLastSavedAt(new Date().toISOString());
+  }, [getValues, isUploading, setCertification, setLastSavedAt]);
+
 
   return (
     <BecomeTutorShell
       headerTitle={t("headerTitle")}
-      saveExitLabel={t("saveExit")}
-      draftSavedLabel={draftSavedLabel || undefined}
+      onSaveExit={handleSaveExit}
       stepLabel={t("stepLabel")}
       progressPercent={PROGRESS_PERCENT}
       progressLabel={t("progressPercentLabel", { percent: PROGRESS_PERCENT })}
@@ -360,53 +316,17 @@ export default function CertificationPage() {
         <form className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label
+                htmlFor="certificateType"
+                className="text-xs font-semibold text-slate-700"
+              >
                 {t("teaching.certificateLabel")}
               </Label>
-              <Controller
-                name="certificateType"
-                control={control}
-                render={({ field }) => {
-                  const query = (field.value || "").trim().toLowerCase();
-                  const filteredCertificates = query
-                    ? TEACHING_CERTIFICATES.filter((cert) =>
-                        cert.toLowerCase().includes(query),
-                      )
-                    : TEACHING_CERTIFICATES;
-
-                  return (
-                    <Combobox
-                      value={field.value}
-                      onValueChange={(value) => {
-                        if (value) {
-                          field.onChange(value);
-                        }
-                      }}
-                    >
-                      <ComboboxInput
-                        className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-                        placeholder={t("teaching.certificatePlaceholder")}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                      <ComboboxContent>
-                        <ComboboxList>
-                          {filteredCertificates.length > 0 ? (
-                            filteredCertificates.map((cert) => (
-                              <ComboboxItem key={cert} value={cert}>
-                                {cert}
-                              </ComboboxItem>
-                            ))
-                          ) : (
-                            <ComboboxEmpty>
-                              {t("teaching.noResults")}
-                            </ComboboxEmpty>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
-                  );
-                }}
+              <Input
+                id="certificateType"
+                placeholder={t("teaching.certificatePlaceholder")}
+                {...register("certificateType")}
+                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
               />
               {errors.certificateType && (
                 <p className="text-xs text-rose-600">
@@ -441,19 +361,19 @@ export default function CertificationPage() {
             <Label className="text-xs font-semibold text-slate-700">
               {t("teaching.uploadTitle")}
             </Label>
-            {renderUploadZone(
-              "teachingFile",
-              certificationMerged.teachingCertificate.file.fileName,
-              handleTeachingFileChange,
-              t("teaching.uploadPrompt"),
-              t("teaching.uploadHint"),
-              teachingUploading,
-            )}
-            {errors.teachingCertificateFile && (
-              <p className="text-xs text-rose-600">
-                {errors.teachingCertificateFile.message}
-              </p>
-            )}
+            <UploadFile
+              variant="file"
+              accept={ACCEPT_FILE_TYPES}
+              fileName={certificationMerged.teachingCertificate.file.fileName}
+              isUploading={teachingUploading}
+              onFile={handleTeachingFileChange}
+              emptyLabel={t("teaching.uploadPrompt")}
+              dropHereLabel={t("teaching.dropHere")}
+              hint={t("teaching.uploadHint")}
+              uploadingLabel={t("teaching.uploading")}
+              uploadLabel={t("teaching.uploadPrompt")}
+              error={errors.teachingCertificateFile?.message}
+            />
             <div className="flex items-start gap-2 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] p-3">
               <Info className="mt-0.5 size-4 shrink-0 text-violet-600" />
               <div className="leading-tight">
@@ -544,19 +464,19 @@ export default function CertificationPage() {
             <Label className="text-xs font-semibold text-slate-700">
               {t("education.uploadTitle")}
             </Label>
-            {renderUploadZone(
-              "educationFile",
-              certificationMerged.higherEducation.file.fileName,
-              handleEducationFileChange,
-              t("education.uploadPrompt"),
-              t("education.uploadHint"),
-              educationUploading,
-            )}
-            {errors.educationFile && (
-              <p className="text-xs text-rose-600">
-                {errors.educationFile.message}
-              </p>
-            )}
+            <UploadFile
+              variant="file"
+              accept={ACCEPT_FILE_TYPES}
+              fileName={certificationMerged.higherEducation.file.fileName}
+              isUploading={educationUploading}
+              onFile={handleEducationFileChange}
+              emptyLabel={t("education.uploadPrompt")}
+              dropHereLabel={t("education.dropHere")}
+              hint={t("education.uploadHint")}
+              uploadingLabel={t("education.uploading")}
+              uploadLabel={t("education.uploadPrompt")}
+              error={errors.educationFile?.message}
+            />
           </div>
         </form>
       </BecomeTutorSection>

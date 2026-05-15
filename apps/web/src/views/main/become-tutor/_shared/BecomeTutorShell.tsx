@@ -13,8 +13,13 @@ import {
   Video,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
+import { useAtomValue } from "jotai";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { formatLastSavedTime, ROUTES } from "@mezon-tutors/shared";
 import { Button } from "@/components/ui";
+import { tutorProfileLastSavedAtAtom } from "@/store";
 
 const STEPS = [
   { id: "about", number: 1, icon: UserCircle, accent: "from-violet-500 to-purple-500" },
@@ -26,8 +31,7 @@ const STEPS = [
 
 type BecomeTutorShellProps = {
   headerTitle: string;
-  saveExitLabel: string;
-  draftSavedLabel?: string;
+  saveExitLabel?: string;
   stepLabel: string;
   progressPercent: number;
   progressLabel: string;
@@ -39,12 +43,13 @@ type BecomeTutorShellProps = {
   onContinue: () => void;
   continueDisabled?: boolean;
   currentStep?: number;
+  onSaveExit?: () => void | Promise<void>;
+  saveExitHref?: string;
 };
 
 export function BecomeTutorShell({
   headerTitle,
   saveExitLabel,
-  draftSavedLabel,
   stepLabel,
   progressPercent,
   progressLabel,
@@ -56,9 +61,35 @@ export function BecomeTutorShell({
   onContinue,
   continueDisabled = false,
   currentStep,
+  onSaveExit,
+  saveExitHref = ROUTES.BECOME_TUTOR.INDEX,
 }: BecomeTutorShellProps) {
-  const tStepper = useTranslations("TutorProfile.Stepper");
+  const tShell = useTranslations("BecomeTutor.shell");
+  const tStepper = useTranslations("BecomeTutor.shell.stepper");
+  const router = useRouter();
+  const lastSavedAt = useAtomValue(tutorProfileLastSavedAtAtom);
+  const [isSavingExit, setIsSavingExit] = useState(false);
   const activeStep = currentStep ?? Math.round(progressPercent / 20) + 1;
+
+  const draftTime =
+    lastSavedAt && formatLastSavedTime(lastSavedAt)
+      ? formatLastSavedTime(lastSavedAt)
+      : "";
+  const draftSavedLabel = draftTime ? tShell("draftSaved", { time: draftTime }) : "";
+
+  const exitLabel = saveExitLabel ?? tShell("saveExit");
+
+  const handleSaveExit = async () => {
+    setIsSavingExit(true);
+    try {
+      await onSaveExit?.();
+      router.push(saveExitHref);
+    } catch {
+      /* ignore */
+    } finally {
+      setIsSavingExit(false);
+    }
+  };
 
   return (
     <main className="relative min-h-screen">
@@ -78,7 +109,7 @@ export function BecomeTutorShell({
                   </div>
                   <div className="leading-tight">
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-                      Tutor application
+                      {tShell("applicationEyebrow")}
                     </p>
                     <h1 className="text-base font-extrabold text-slate-900 sm:text-lg">
                       {headerTitle}
@@ -93,11 +124,14 @@ export function BecomeTutorShell({
                     </p>
                   ) : null}
                   <Button
+                    type="button"
                     variant="outline"
-                    className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                    disabled={isSavingExit}
+                    onClick={() => void handleSaveExit()}
+                    className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-60"
                   >
                     <Save className="mr-1 size-3.5" />
-                    {saveExitLabel}
+                    {isSavingExit ? tShell("savingExit") : exitLabel}
                   </Button>
                 </div>
               </div>
@@ -117,7 +151,6 @@ export function BecomeTutorShell({
                     const Icon = step.icon;
                     const isCompleted = step.number < activeStep;
                     const isActive = step.number === activeStep;
-                    const isUpcoming = step.number > activeStep;
                     const isLast = index === STEPS.length - 1;
 
                     return (
@@ -197,7 +230,7 @@ export function BecomeTutorShell({
                   className="h-10 rounded-full border-slate-200 px-5 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:text-sm"
                 >
                   <ArrowLeft className="mr-1 size-3.5" />
-                  {backLabel ?? "Back"}
+                  {backLabel ?? tShell("back")}
                 </Button>
               ) : (
                 <span />

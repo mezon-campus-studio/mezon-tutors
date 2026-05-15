@@ -10,14 +10,22 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
+  BECOME_TUTOR_STEPS,
   GUIDE_HIGHLIGHTS,
   GUIDE_STEPS,
+  getStepRoute,
   type GuideHighlight,
   type GuideHighlightIconKey,
   type GuideStep,
 } from "@mezon-tutors/shared";
+import { useAtomValue } from "jotai";
+import Link from "next/link";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { Badge } from "@/components/ui";
+import { isAuthenticatedAtom, isLoadingAtom } from "@/store";
+
+const CTA_PRIMARY_CLASS =
+  "group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] px-6 text-sm font-semibold tracking-wide text-white shadow-md shadow-violet-300/40 transition-all duration-300 hover:shadow-lg hover:shadow-violet-400/50 active:scale-[0.97]";
 
 const HIGHLIGHT_ICON_BY_KEY: Record<GuideHighlightIconKey, typeof Wallet> = {
   setOwnRate: Wallet,
@@ -44,7 +52,7 @@ function GuideStepCard({ step, index }: { step: GuideStep; index: number }) {
   return (
     <div className="relative flex flex-1 flex-col items-center gap-3 rounded-3xl bg-white px-5 py-6 ring-1 ring-violet-100 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-violet-200/40">
       <div className="absolute -top-3 right-5 rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600 shadow-sm ring-1 ring-violet-100">
-        Step {step.number}
+        {t("stepBadge", { step: step.number })}
       </div>
       <div
         className={`flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-lg shadow-violet-300/40`}
@@ -102,6 +110,9 @@ function GuideHighlightCard({ item }: { item: GuideHighlight }) {
 
 export function BecomeTutorGuide() {
   const t = useTranslations("BecomeTutorGuide");
+  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const isAuthLoading = useAtomValue(isLoadingAtom);
+  const aboutStepHref = getStepRoute(BECOME_TUTOR_STEPS.ABOUT);
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -126,13 +137,13 @@ export function BecomeTutorGuide() {
           <div className="px-6 pt-12 pb-8 text-center sm:px-12 sm:pt-16 sm:pb-12">
             <Badge className="mx-auto mb-5 h-auto rounded-full border border-violet-200/70 bg-white px-3.5 py-1.5 text-xs font-semibold text-violet-700 shadow-sm shadow-violet-100/50 animate-in fade-in slide-in-from-bottom-3 duration-700">
               <Sparkles className="mr-1.5 size-3.5" />
-              For tutors
+              {t("badgeForTutors")}
             </Badge>
 
             <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl">
               {t("title")}{" "}
               <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
-                in 3 steps
+                {t("titleHighlight")}
               </span>
             </h1>
 
@@ -147,10 +158,24 @@ export function BecomeTutorGuide() {
             </div>
 
             <div className="mt-10 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both]">
-              <LoginButton label={t("loginNow")} />
+              {isAuthLoading ? (
+                <div
+                  className="h-9 w-[min(100%,280px)] max-w-[280px] animate-pulse rounded-full bg-violet-100"
+                  role="status"
+                  aria-busy
+                  aria-label={t("authLoadingAria")}
+                />
+              ) : isAuthenticated ? (
+                <Link href={aboutStepHref} className={CTA_PRIMARY_CLASS}>
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  <span className="relative">{t("startTutorProfile")}</span>
+                </Link>
+              ) : (
+                <LoginButton label={t("loginNow")} />
+              )}
               <p className="inline-flex items-center gap-1.5 text-xs text-slate-500">
                 <CheckCircle2 className="size-3.5 text-emerald-500" />
-                {t("ctaNote")}
+                {!isAuthLoading && isAuthenticated ? t("ctaNoteLoggedIn") : t("ctaNote")}
               </p>
             </div>
           </div>
