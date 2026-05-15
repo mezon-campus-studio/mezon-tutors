@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
 import { cookies } from "next/headers";
+import { DEFAULT_LOCALE } from "@/i18n/request";
 import "./globals.css";
 import { Footer, Header } from "@/components/layouts";
 import { AppProvider } from "@/providers";
@@ -27,9 +27,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requestedLocale = await getLocale();
   const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
-  const locale = cookieLocale ?? requestedLocale;
+  const locale =
+    cookieLocale === "vi" || cookieLocale === "en" ? cookieLocale : DEFAULT_LOCALE;
   return (
     <html
       lang={locale}

@@ -1,6 +1,8 @@
 import { getRequestConfig, RequestConfig } from "next-intl/server";
 import { cookies } from "next/headers";
 
+export const DEFAULT_LOCALE = "vi" as const;
+
 const SUPPORTED_LOCALES = ["vi", "en"] as const;
 
 type MessageLoaderConfig = {
@@ -13,6 +15,7 @@ type MessageLoaderConfig = {
     | "TrialLessonCheckout"
     | "SubscriptionCheckout"
     | "BecomeTutorGuide"
+    | "BecomeTutor"
     | "Dashboard"
     | "MyLessons"
     | "MySchedule"
@@ -31,6 +34,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "TutorProfile", file: "tutor-profile" },
   { messageKey: "Tutors", file: "tutors" },
   { messageKey: "BecomeTutorGuide", file: "become-tutor-guide" },
+  { messageKey: "BecomeTutor", file: "become-tutor" },
   { messageKey: "Dashboard", file: "dashboard", pick: (payload) => payload.Dashboard },
   { messageKey: "MyLessons", file: "my-lessons" },
   { messageKey: "MySchedule", file: "my-schedule" },
@@ -65,7 +69,7 @@ export default getRequestConfig(async (): Promise<RequestConfig> => {
 
   const locale = SUPPORTED_LOCALES.includes(cookieLocale as (typeof SUPPORTED_LOCALES)[number])
     ? cookieLocale!
-    : "vi";
+    : DEFAULT_LOCALE;
 
   const messages = Object.fromEntries(
     await Promise.all(
