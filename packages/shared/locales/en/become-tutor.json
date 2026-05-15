@@ -15,7 +15,7 @@
       "lastNameLabel": "Last name",
       "emailLabel": "Email address",
       "countryLabel": "Country of birth",
-      "phoneLabel": "Phone number (Optional)",
+      "phoneLabel": "Phone number",
       "subjectLabel": "Subject you teach",
       "subjectHelper": "You can add more subjects later in your profile settings.",
       "languagesLabel": "Languages spoken",
@@ -87,12 +87,14 @@
     "cardSubtitle": "Add a headline and a short intro so students can get to know you better. This information will be visible on your public profile.",
     "avatarPlaceholder": "IMG",
     "uploadButton": "Upload Photo",
-    "uploadHint": "Supported formats: JPG, PNG. Max size: 5MB.",
+    "uploadHint": "Supported formats: JPG, PNG. Max size: 5MB. Drag and drop or click to upload.",
     "tipsTitle": "What makes a great photo?",
     "identity": {
       "title": "Update Identity Documents",
       "subtitle": "Upload your ID card, national ID, or passport to verify your identity.",
       "emptyState": "No identity photo",
+      "dropHere": "Drop image here",
+      "uploading": "Uploading...",
       "uploadButton": "Upload identity photo",
       "tipsTitle": "Tips for Taking Identity Document Photos",
       "tips": {
@@ -166,8 +168,8 @@
     "progressPercent": 75,
     "teachingTitle": "Teaching Certification",
     "teaching": {
-      "certificateLabel": "Select Certificate",
-      "certificatePlaceholder": "e.g. TEFL, TESOL, CELTA",
+      "certificateLabel": "Certificate name",
+      "certificatePlaceholder": "e.g. TEFL, TESOL, CELTA, DELF, HSK, JLPT, TOPIK",
       "certificateOther": "Other",
       "customCertificateLabel": "Certificate Name",
       "customCertificatePlaceholder": "Enter your certificate name",
@@ -177,6 +179,8 @@
       "uploadTitle": "Upload your certificate",
       "uploadPrompt": "Click to upload or drag and drop",
       "uploadHint": "PDF, JPG or PNG (max. 5MB)",
+      "dropHere": "Drop file here",
+      "uploading": "Uploading…",
       "reviewTitle": "Manual Review",
       "reviewDescription": "All certificates are manually verified by our team within 48 hours. Please ensure the document is clear and shows your full name and completion date."
     },
@@ -185,23 +189,25 @@
       "universityLabel": "University / Institution",
       "universityPlaceholder": "Enter university name",
       "degreeLabel": "Degree Type",
-      "degreePlaceholder": "Select degree",
+      "degreePlaceholder": "e.g. Bachelor's, Master's, PhD, Associate's",
       "specializationLabel": "Specialization / Major",
       "specializationPlaceholder": "e.g. Computer Science, Linguistics",
       "uploadTitle": "Upload your diploma",
       "uploadPrompt": "Click to upload diploma copy",
-      "uploadHint": "PDF, JPG or PNG (max. 5MB)"
+      "uploadHint": "PDF, JPG or PNG (max. 5MB)",
+      "dropHere": "Drop file here",
+      "uploading": "Uploading…"
     },
     "back": "Back",
     "continue": "Continue to Video Step",
     "validation": {
-      "certificateTypeRequired": "Certificate type is required",
+      "certificateTypeRequired": "Please enter your certificate name",
       "customCertificateNameRequired": "Certificate name is required",
       "certificateRequired": "Certificate is required",
       "yearRequired": "Year is required",
       "yearInvalid": "Year must be YYYY",
       "universityRequired": "University is required",
-      "degreeRequired": "Degree is required",
+      "degreeRequired": "Please enter your degree type",
       "specializationRequired": "Specialization is required",
       "certificateFileRequired": "Certificate file is required",
       "certificateFileInvalidType": "Certificate file must be PDF, JPG or PNG",
@@ -309,7 +315,8 @@
       "endTimeMustBeAfterStartTime": "End time must be after start time.",
       "duplicateSlot": "The same time slot was added twice on {day}. Please remove the duplicate.",
       "overlappingSlot": "Time slots on {day} overlap with each other. Please adjust the times.",
-      "currencyConversionFailed": "Failed to convert currency. Please try again later."
+      "currencyConversionFailed": "Failed to convert currency. Please try again later.",
+      "submitFailed": "Failed to submit your application. Please try again."
     }
   }
 }

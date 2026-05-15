@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -17,11 +17,10 @@ import {
   SelectValue,
   toast,
 } from '@/components/ui';
-import { Wallet, Calendar, Plus, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
 import { BecomeTutorSection, BecomeTutorShell } from '../_shared/BecomeTutorShell';
 import {
   tutorProfileAvailabilityAtom,
-  resetTutorProfileAfterSubmitAtom,
   tutorProfileAboutAtom,
   tutorProfilePhotoAtom,
   tutorProfileCertificationAtom,
@@ -31,7 +30,6 @@ import {
 } from '@/store';
 import {
   DAY_KEYS,
-  formatLastSavedTime,
   HOURLY_RATE_REGEX,
   DEFAULT_AVAILABILITY_SLOT,
   DEFAULT_AVATAR_URL,
@@ -64,7 +62,7 @@ type AvailabilityFormValues = {
 };
 
 export default function AvailabilityPage() {
-  const t = useTranslations('TutorProfile.Availability');
+  const t = useTranslations('BecomeTutor.availability');
   const router = useRouter();
   const about = useAtomValue(tutorProfileAboutAtom);
   const photo = useAtomValue(tutorProfilePhotoAtom);
@@ -75,8 +73,6 @@ export default function AvailabilityPage() {
   );
   const submitMutation = useSubmitTutorProfileMutation();
   const queryClient = useQueryClient();
-  const resetAfterSubmit = useSetAtom(resetTutorProfileAfterSubmitAtom);
-  const lastSavedAt = useAtomValue(tutorProfileLastSavedAtAtom);
   const setLastSavedAt = useSetAtom(tutorProfileLastSavedAtAtom);
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const availabilityCardRef = useRef<HTMLDivElement>(null);
@@ -99,8 +95,10 @@ export default function AvailabilityPage() {
     reset,
     setValue,
     watch,
+    getValues,
     setError,
     clearErrors,
+    trigger,
     formState: { errors },
   } = form;
 
@@ -134,13 +132,20 @@ export default function AvailabilityPage() {
     setValue('currency', currency);
     setTutorProfileAvailability((prev) => ({ ...prev, currency }));
     setLastSavedAt(new Date().toISOString());
-    form.trigger('hourlyRate');
+    clearErrors('hourlyRate');
+    void trigger('hourlyRate');
   };
 
-  const draftSavedLabel =
-    lastSavedAt && formatLastSavedTime(lastSavedAt)
-      ? t('draftSaved', { time: formatLastSavedTime(lastSavedAt) })
-      : '';
+  const handleSaveExit = useCallback(async () => {
+    const v = getValues();
+    setTutorProfileAvailability((prev) => ({
+      ...prev,
+      hourlyRate: v.hourlyRate,
+      currency: v.currency,
+      slotsByDay: v.slotsByDay,
+    }));
+    setLastSavedAt(new Date().toISOString());
+  }, [getValues, setLastSavedAt, setTutorProfileAvailability]);
 
   const dayKey = DAY_KEYS[selectedDayIndex];
   const slotsByDayForm = watch('slotsByDay');
@@ -327,27 +332,32 @@ export default function AvailabilityPage() {
 
     try {
       const convertedPrices = convertToAllCurrencies(payload.pricePerHour, currency, currentRates);
-
       payload.prices = {
         usd: Number(convertedPrices.usd.toFixed(2)),
         vnd: Math.round(convertedPrices.vnd),
         php: Number(convertedPrices.php.toFixed(2)),
       };
-
-      markStepCompleted(CURRENT_STEP);
-
-      await submitMutation.mutateAsync(payload);
-      queryClient.setQueryData(tutorProfileQueryKey.myTutorProfile(), {
-        hasProfile: true,
-        verificationStatus: VerificationStatus.PENDING,
-        profile: null, // Will be fetched when needed
-      });
-      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.myTutorProfile() });
-      resetAfterSubmit();
-      router.push('/become-tutor/final');
-    } catch (error) {
+    } catch {
       toast.error(t('validation.currencyConversionFailed'));
+      return;
     }
+
+    try {
+      await submitMutation.mutateAsync(payload);
+    } catch {
+      toast.error(t('validation.submitFailed'));
+      return;
+    }
+
+    markStepCompleted(CURRENT_STEP);
+    queryClient.setQueryData(tutorProfileQueryKey.myTutorProfile(), {
+      hasProfile: true,
+      verificationStatus: VerificationStatus.PENDING,
+      profile: null,
+    });
+    queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.myTutorProfile() });
+    sessionStorage.setItem('become-tutor:clear-draft', '1');
+    router.replace('/become-tutor/final');
   };
 
   const dayTabs = t.raw('availability.tabs') as string[];
@@ -355,8 +365,7 @@ export default function AvailabilityPage() {
   return (
     <BecomeTutorShell
       headerTitle={t('title')}
-      saveExitLabel={t('back')}
-      draftSavedLabel={draftSavedLabel || undefined}
+      onSaveExit={handleSaveExit}
       stepLabel={t('stepLabel')}
       progressPercent={PROGRESS_PERCENT}
       progressLabel={t('progressPercentLabel', { percent: PROGRESS_PERCENT })}
@@ -384,6 +393,7 @@ export default function AvailabilityPage() {
                 name="hourlyRate"
                 rules={{
                   validate: (value) => {
+                    const currency = getValues('currency') ?? ECurrency.VND;
                     const trimmed = value.trim();
                     if (!trimmed) {
                       return t('validation.hourlyRateRequired');
@@ -395,10 +405,10 @@ export default function AvailabilityPage() {
                     if (numValue <= 0) {
                       return t('validation.hourlyRateGreaterThanZero');
                     }
-                    const minPrice = MIN_PRICE[selectedCurrency];
+                    const minPrice = MIN_PRICE[currency];
                     if (numValue < minPrice) {
                       return t('validation.hourlyRateTooLow', {
-                        min: formatToCurrency(selectedCurrency, minPrice),
+                        min: formatToCurrency(currency, minPrice),
                       });
                     }
                     return true;

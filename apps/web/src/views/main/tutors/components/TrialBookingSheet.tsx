@@ -285,9 +285,26 @@ export function TrialBookingSheet({
       const exists = timeSlots.some((slot) => slot.id === current);
       const isPast = pastSlotIds.has(current);
       const isOccupied = occupiedSlotIds.has(current);
-      return exists && !isPast && !isOccupied ? current : "";
+      if (!exists || isPast || isOccupied) {
+        return "";
+      }
+
+      if (duration > SLOT_INTERVAL_MINUTES) {
+        const nextMinutes = timeToMinutes(current) + SLOT_INTERVAL_MINUTES;
+        const nextTime = `${String(Math.floor(nextMinutes / 60)).padStart(2, "0")}:${String(
+          nextMinutes % 60,
+        ).padStart(2, "0")}`;
+        const hasConsecutiveSlot = timeSlots.some(
+          (slot) => slot.startTime === nextTime,
+        );
+        if (!hasConsecutiveSlot) {
+          return "";
+        }
+      }
+
+      return current;
     });
-  }, [timeSlots, pastSlotIds, occupiedSlotIds]);
+  }, [duration, timeSlots, pastSlotIds, occupiedSlotIds]);
 
   useEffect(() => {
     if (!open) {
@@ -327,8 +344,7 @@ export function TrialBookingSheet({
       return [];
     }
 
-    const endMinutes =
-      timeToMinutes(selectedTime.startTime) + SLOT_INTERVAL_MINUTES;
+    const endMinutes = timeToMinutes(selectedTime.startTime) + duration;
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(
       endMinutes % 60,
     ).padStart(2, "0")}`;
@@ -341,7 +357,7 @@ export function TrialBookingSheet({
         label: `${selectedDateString} . ${selectedTime.startTime} - ${endTime}`,
       },
     ];
-  }, [selectedDateString, selectedTime]);
+  }, [duration, selectedDateString, selectedTime]);
 
   const handleScheduleSelectionChange = (slots: SelectedScheduleSlot[]) => {
     const selected = slots[0];
@@ -367,13 +383,12 @@ export function TrialBookingSheet({
       month: "short",
       day: "numeric",
     }).format(date);
-    const endMinutes =
-      timeToMinutes(selectedTime.startTime) + SLOT_INTERVAL_MINUTES;
+    const endMinutes = timeToMinutes(selectedTime.startTime) + duration;
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(
       endMinutes % 60,
     ).padStart(2, "0")}`;
     return `${dayLabel} · ${selectedTime.startTime} - ${endTime}`;
-  }, [selectedDateString, selectedTime, t]);
+  }, [duration, selectedDateString, selectedTime, t]);
 
   const handleConfirm = async () => {
     if (!selectedTime || isBookingLocked) {
@@ -452,6 +467,7 @@ export function TrialBookingSheet({
               className="min-h-0 flex-1"
               availableSlots={scheduleAvailableSlots}
               selectionMode="single"
+              lessonDurationMinutes={duration}
               value={selectedScheduleSlots}
               onChange={handleScheduleSelectionChange}
               onWeekChange={({ weekOffset: nextWeekOffset }) => {

@@ -13,7 +13,7 @@ type TimePickerProps = {
 };
 
 export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePickerProps) {
-  const t = useTranslations('TutorProfile.Availability.availability');
+  const t = useTranslations('BecomeTutor.availability.availability');
   const [isOpen, setIsOpen] = useState(false);
   const [hours, minutes] = value.split(':');
   const [inputValue, setInputValue] = useState(value);

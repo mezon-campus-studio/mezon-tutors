@@ -16,7 +16,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
-import { DashboardMezonSyncButton } from "./DashboardMezonSyncButton";
+import { MezonSyncButton } from "./MezonSyncButton";
 import { userAtom } from '@/store/auth.atom';
 import { authService } from '@/services';
 import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_ROLE_TITLES, type DashboardRole, type DashboardMenuIconKey, isDashboardSidebarLinkActive } from '@mezon-tutors/shared';
@@ -114,7 +114,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
             </p>
           </div>
         </div>
-        <DashboardMezonSyncButton className="mt-3" />
+        <MezonSyncButton className="mt-3" />
       </div>
 
       <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-5">

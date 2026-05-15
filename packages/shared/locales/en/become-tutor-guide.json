@@ -1,8 +1,14 @@
 {
+  "badgeForTutors": "For tutors",
   "title": "How to get started",
+  "titleHighlight": "in 3 steps",
+  "stepBadge": "Step {step}",
   "subtitle": "Your journey to becoming a global educator is simple and transparent.",
   "loginNow": "Create a tutor profile now",
+  "startTutorProfile": "Start creating your tutor profile",
   "ctaNote": "Sign in now to start your tutor application.",
+  "ctaNoteLoggedIn": "Continue with the following steps to complete your tutor profile.",
+  "authLoadingAria": "Checking sign-in status",
   "steps": {
     "signUp": {
       "title": "Sign up",

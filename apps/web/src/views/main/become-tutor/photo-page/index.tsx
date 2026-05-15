@@ -7,11 +7,10 @@ import {
   GraduationCap,
   Image as ImageIcon,
   Sun,
-  Upload,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -20,10 +19,11 @@ import {
   calculateStepProgress,
   CLOUDINARY_FOLDER,
   DEFAULT_AVATAR_URL,
-  formatLastSavedTime,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
-import { Button, Input, Label, Spinner } from "@/components/ui";
+import { Input, Label } from "@/components/ui";
+import { cn } from "@/lib/utils";
+import UploadFile from "@/components/common/UploadFile";
 import { cloudinaryService } from "@/services";
 import {
   markStepCompletedAtom,
@@ -35,12 +35,13 @@ import {
   BecomeTutorSection,
   BecomeTutorShell,
 } from "../_shared/BecomeTutorShell";
+import { MezonSyncButton } from "@/components/dashboard";
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.PHOTO;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
 
 export default function PhotoPage() {
-  const t = useTranslations("TutorProfile.Photo");
+  const t = useTranslations("BecomeTutor.photo");
   const router = useRouter();
   const identityCardRef = useRef<HTMLDivElement | null>(null);
   const formCardRef = useRef<HTMLDivElement | null>(null);
@@ -138,6 +139,7 @@ export default function PhotoPage() {
     handleSubmit,
     setFocus,
     register,
+    getValues,
     formState: { errors },
     setValue,
   } = form;
@@ -170,73 +172,92 @@ export default function PhotoPage() {
     tutorProfilePhoto.photo?.uploadedUrl,
   ]);
 
-  const handleIdentityPhotoChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processIdentityPhotoFile = useCallback(
+    async (file: File) => {
+      const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      const mimeOk = file.type.startsWith("image/");
 
-    const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-    if (file.size > bytesLimit) {
-      form.setError("identityPhotoFile", {
-        type: "manual",
-        message: t("validation.identityInvalidSize", {
-          max: MAX_IMAGE_SIZE_MB,
-        }),
-      });
-      return;
-    }
-
-    setValue("identityPhotoFile", file);
-    identityUploadSeqRef.current += 1;
-    const seq = identityUploadSeqRef.current;
-    const previousPublicId = tutorProfilePhoto.identity?.publicId;
-    setIsUploading(true);
-
-    const reader = new FileReader();
-    reader.onerror = () => {
-      if (identityUploadSeqRef.current === seq) setIsUploading(false);
-    };
-    reader.onload = async () => {
-      try {
-        const dataUrl = reader.result as string;
-        setTutorProfilePhoto((prev) => ({
-          ...prev,
-          identity: { ...prev.identity, dataUrl },
-        }));
-        setPreviewIdentityUrl(dataUrl);
-        setLastSavedAt(new Date().toISOString());
-
-        const uploadedFile = await cloudinaryService.uploadFileWithSignature(
-          file,
-          CLOUDINARY_FOLDER.TUTOR_IDENTITY,
-          "image",
-        );
-        if (identityUploadSeqRef.current !== seq) return;
-        setTutorProfilePhoto((prev) => ({
-          ...prev,
-          identity: {
-            ...prev.identity,
-            uploadedUrl: uploadedFile.secureUrl,
-            publicId: uploadedFile.publicId,
-          },
-        }));
-        if (previousPublicId && previousPublicId !== uploadedFile.publicId) {
-          void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
-        }
-        await form.trigger("identityPhotoFile");
-      } catch {
-        if (identityUploadSeqRef.current !== seq) return;
+      if (!allowedImageExt.has(ext) || !mimeOk) {
         form.setError("identityPhotoFile", {
           type: "manual",
-          message: t("validation.identityUploadFailed"),
+          message: t("validation.identityInvalidType"),
         });
-      } finally {
-        if (identityUploadSeqRef.current === seq) setIsUploading(false);
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-  };
+
+      if (file.size > bytesLimit) {
+        form.setError("identityPhotoFile", {
+          type: "manual",
+          message: t("validation.identityInvalidSize", {
+            max: MAX_IMAGE_SIZE_MB,
+          }),
+        });
+        return;
+      }
+
+      form.clearErrors("identityPhotoFile");
+      setValue("identityPhotoFile", file);
+      identityUploadSeqRef.current += 1;
+      const seq = identityUploadSeqRef.current;
+      const previousPublicId = tutorProfilePhoto.identity?.publicId;
+      setIsUploading(true);
+
+      const reader = new FileReader();
+      reader.onerror = () => {
+        if (identityUploadSeqRef.current === seq) setIsUploading(false);
+      };
+      reader.onload = async () => {
+        try {
+          const dataUrl = reader.result as string;
+          setTutorProfilePhoto((prev) => ({
+            ...prev,
+            identity: { ...prev.identity, dataUrl },
+          }));
+          setPreviewIdentityUrl(dataUrl);
+          setLastSavedAt(new Date().toISOString());
+
+          const uploadedFile = await cloudinaryService.uploadFileWithSignature(
+            file,
+            CLOUDINARY_FOLDER.TUTOR_IDENTITY,
+            "image",
+          );
+          if (identityUploadSeqRef.current !== seq) return;
+          setTutorProfilePhoto((prev) => ({
+            ...prev,
+            identity: {
+              ...prev.identity,
+              uploadedUrl: uploadedFile.secureUrl,
+              publicId: uploadedFile.publicId,
+            },
+          }));
+          if (previousPublicId && previousPublicId !== uploadedFile.publicId) {
+            void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
+          }
+          await form.trigger("identityPhotoFile");
+        } catch {
+          if (identityUploadSeqRef.current !== seq) return;
+          form.setError("identityPhotoFile", {
+            type: "manual",
+            message: t("validation.identityUploadFailed"),
+          });
+        } finally {
+          if (identityUploadSeqRef.current === seq) setIsUploading(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+    [
+      allowedImageExt,
+      form,
+      setLastSavedAt,
+      setTutorProfilePhoto,
+      setValue,
+      t,
+      tutorProfilePhoto.identity?.publicId,
+    ],
+  );
+
 
   const onSaveContinue = async (values: PhotoFormValues) => {
     const { identityPhotoFile: _identityPhotoFile, ...textValues } = values;
@@ -279,10 +300,18 @@ export default function PhotoPage() {
       setFocus(firstError);
   };
 
-  const draftSavedLabel =
-    lastSavedAt && formatLastSavedTime(lastSavedAt)
-      ? t("draftSaved", { time: formatLastSavedTime(lastSavedAt) })
-      : "";
+  const handleSaveExit = useCallback(async () => {
+    if (isUploading) return;
+    const values = getValues();
+    setTutorProfilePhoto((prev) => ({
+      ...prev,
+      headline: values.headline,
+      motivate: values.motivate,
+      introduce: values.introduce,
+    }));
+    setLastSavedAt(new Date().toISOString());
+  }, [getValues, isUploading, setLastSavedAt, setTutorProfilePhoto]);
+
   const avatarPreviewUrl =
     tutorProfilePhoto.photo?.uploadedUrl || DEFAULT_AVATAR_URL;
 
@@ -296,8 +325,7 @@ export default function PhotoPage() {
   return (
     <BecomeTutorShell
       headerTitle={t("headerTitle")}
-      saveExitLabel={t("saveExit")}
-      draftSavedLabel={draftSavedLabel || undefined}
+      onSaveExit={handleSaveExit}
       stepLabel={t("stepLabel")}
       progressPercent={PROGRESS_PERCENT}
       progressLabel={t("progressPercentLabel", { percent: PROGRESS_PERCENT })}
@@ -305,7 +333,7 @@ export default function PhotoPage() {
       backLabel={t("back")}
       continueLabel={t("saveContinue")}
       currentStep={CURRENT_STEP}
-      onBack={() => router.push("/become-tutor")}
+      onBack={() => router.push("/become-tutor/about")}
       onContinue={handleSubmit(onSaveContinue, onValidationError)}
       continueDisabled={isUploading}
     >
@@ -324,6 +352,9 @@ export default function PhotoPage() {
               />
             </div>
           </div>
+          <div>
+            <MezonSyncButton className="mt-3" />
+          </div>
           <div className="space-y-1 text-center text-xs text-slate-500">
             <p>{t("avatar.syncedNote")}</p>
             <p>{t("avatar.manualSyncNote")}</p>
@@ -337,68 +368,19 @@ export default function PhotoPage() {
         description={t("identity.subtitle")}
         contentRef={identityCardRef}
       >
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="relative aspect-[16/10] w-full max-w-2xl overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#ffffff)]"
-            aria-busy={isUploading}
-          >
-            {previewIdentityUrl ? (
-              <img
-                src={previewIdentityUrl}
-                alt="Identity"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-slate-400">
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-600">
-                  <ImageIcon className="size-6" />
-                </div>
-                <p className="px-4 text-center text-xs sm:text-sm">
-                  {t("identity.emptyState")}
-                </p>
-              </div>
-            )}
-            {isUploading ? (
-              <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 bg-white/75 backdrop-blur-[2px]">
-                <Spinner className="size-10 text-violet-600" />
-                <p className="text-xs font-semibold text-violet-800">
-                  {t("identity.uploading")}
-                </p>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <input
-              type="file"
-              id="identityPhoto"
-              accept={ACCEPT_IMAGE_TYPES}
-              onChange={handleIdentityPhotoChange}
-              className="hidden"
-            />
-            <Button
-              type="button"
-              onClick={() => document.getElementById("identityPhoto")?.click()}
-              disabled={isUploading}
-              className="group h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
-            >
-              {isUploading ? (
-                <Spinner className="mr-1.5 size-4 text-white" />
-              ) : (
-                <Upload className="mr-1.5 size-4" />
-              )}
-              {isUploading ? t("identity.uploading") : t("identity.uploadButton")}
-            </Button>
-            <p className="text-center text-xs text-slate-500">
-              {t("uploadHint")}
-            </p>
-            {errors.identityPhotoFile && (
-              <p className="text-center text-xs text-rose-600">
-                {errors.identityPhotoFile.message}
-              </p>
-            )}
-          </div>
-        </div>
+        <UploadFile
+          variant="image"
+          accept={ACCEPT_IMAGE_TYPES}
+          previewUrl={previewIdentityUrl}
+          isUploading={isUploading}
+          onFile={processIdentityPhotoFile}
+          uploadLabel={t("identity.uploadButton")}
+          uploadingLabel={t("identity.uploading")}
+          emptyLabel={t("identity.emptyState")}
+          dropHereLabel={t("identity.dropHere")}
+          hint={t("uploadHint")}
+          error={errors.identityPhotoFile?.message}
+        />
 
         <div className="mt-6 space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-violet-500">

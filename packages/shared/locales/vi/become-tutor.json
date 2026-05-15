@@ -15,7 +15,7 @@
       "lastNameLabel": "Họ",
       "emailLabel": "Email",
       "countryLabel": "Quốc gia sinh ra",
-      "phoneLabel": "Số điện thoại (không bắt buộc)",
+      "phoneLabel": "Số điện thoại",
       "subjectLabel": "Môn bạn dạy",
       "subjectHelper": "Bạn có thể thêm nhiều môn khác sau trong phần cài đặt hồ sơ.",
       "languagesLabel": "Ngôn ngữ sử dụng",
@@ -87,13 +87,15 @@
     "cardSubtitle": "Thêm tiêu đề và vài dòng giới thiệu để học viên hiểu rõ hơn về bạn. Thông tin này sẽ hiển thị trên hồ sơ công khai.",
     "avatarPlaceholder": "Ảnh",
     "uploadButton": "Tải ảnh lên",
-    "uploadHint": "Định dạng hỗ trợ: JPG, PNG. Dung lượng tối đa: 5MB.",
+    "uploadHint": "Định dạng hỗ trợ: JPG, PNG. Dung lượng tối đa: 5MB. Kéo thả hoặc nhấn để tải lên.",
     "tipsTitle": "Thế nào là một bức ảnh đẹp?",
     "identity": {
       "title": "Cập nhật giấy tờ tùy thân",
       "subtitle": "Tải lên CCCD/CMND/Hộ chiếu để xác minh danh tính.",
       "emptyState": "Chưa có ảnh giấy tờ",
-      "uploadButton": "Tải ảnh identity",
+      "dropHere": "Thả ảnh vào đây",
+      "uploading": "Đang tải lên...",
+      "uploadButton": "Tải ảnh CCCD/CMND/Hộ chiếu",
       "tipsTitle": "Mẹo chụp giấy tờ tùy thân",
       "tips": {
         "clear": {
@@ -166,8 +168,8 @@
     "progressPercent": 75,
     "teachingTitle": "Chứng chỉ giảng dạy",
     "teaching": {
-      "certificateLabel": "Loại chứng chỉ",
-      "certificatePlaceholder": "VD: TEFL, TESOL, CELTA",
+      "certificateLabel": "Tên chứng chỉ",
+      "certificatePlaceholder": "VD: TEFL, TESOL, DELF, HSK, JLPT, TOPIK, CELTA",
       "certificateOther": "Khác",
       "customCertificateLabel": "Tên chứng chỉ",
       "customCertificatePlaceholder": "Nhập tên chứng chỉ của bạn",
@@ -177,6 +179,8 @@
       "uploadTitle": "Tải lên chứng chỉ",
       "uploadPrompt": "Nhấn để tải lên hoặc kéo thả tệp",
       "uploadHint": "PDF, JPG hoặc PNG (tối đa 5MB)",
+      "dropHere": "Thả tệp vào đây",
+      "uploading": "Đang tải lên…",
       "reviewTitle": "Kiểm duyệt thủ công",
       "reviewDescription": "Tất cả chứng chỉ sẽ được đội ngũ của chúng tôi kiểm tra thủ công trong vòng 48 giờ. Hãy đảm bảo tài liệu rõ nét và hiển thị đầy đủ họ tên cùng ngày hoàn thành."
     },
@@ -190,18 +194,20 @@
       "specializationPlaceholder": "VD: Khoa học máy tính, Ngôn ngữ học",
       "uploadTitle": "Tải lên bằng cấp",
       "uploadPrompt": "Nhấn để tải bản sao bằng tốt nghiệp",
-      "uploadHint": "PDF, JPG hoặc PNG (tối đa 5MB)"
+      "uploadHint": "PDF, JPG hoặc PNG (tối đa 5MB)",
+      "dropHere": "Thả tệp vào đây",
+      "uploading": "Đang tải lên…"
     },
     "back": "Quay lại",
     "continue": "Tiếp tục tới bước video",
     "validation": {
-      "certificateTypeRequired": "Vui lòng chọn loại chứng chỉ",
+      "certificateTypeRequired": "Vui lòng nhập tên chứng chỉ",
       "customCertificateNameRequired": "Vui lòng nhập tên chứng chỉ",
       "certificateRequired": "Vui lòng nhập chứng chỉ",
       "yearRequired": "Vui lòng nhập năm",
       "yearInvalid": "Năm phải đúng định dạng YYYY",
       "universityRequired": "Vui lòng nhập trường đại học",
-      "degreeRequired": "Vui lòng chọn loại bằng",
+      "degreeRequired": "Vui lòng nhập loại bằng",
       "specializationRequired": "Vui lòng nhập chuyên ngành",
       "certificateFileRequired": "Vui lòng tải lên file chứng chỉ",
       "certificateFileInvalidType": "File chứng chỉ chỉ hỗ trợ PDF, JPG hoặc PNG",
@@ -309,7 +315,8 @@
       "duplicateSlot": "Khung giờ trùng lặp trong ngày {day}. Vui lòng xóa hoặc chỉnh sửa.",
       "overlappingSlot": "Các khung giờ trong ngày {day} bị trùng giờ. Vui lòng điều chỉnh lại.",
       "minuteStepInvalid": "Giờ bắt đầu và kết thúc phải là :00 hoặc :30.",
-      "currencyConversionFailed": "Không thể chuyển đổi tiền tệ. Vui lòng thử lại sau."
+      "currencyConversionFailed": "Không thể chuyển đổi tiền tệ. Vui lòng thử lại sau.",
+      "submitFailed": "Không thể gửi hồ sơ. Vui lòng thử lại."
     }
   }
 }

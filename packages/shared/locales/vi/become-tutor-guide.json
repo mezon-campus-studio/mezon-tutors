@@ -1,8 +1,14 @@
 {
+  "badgeForTutors": "Dành cho gia sư",
   "title": "Làm thế nào để bắt đầu",
+  "titleHighlight": "trong 3 bước",
+  "stepBadge": "Bước {step}",
   "subtitle": "Hành trình trở thành gia sư toàn cầu rất đơn giản và minh bạch.",
   "loginNow": "Tạo hồ sơ gia sư ngay bây giờ",
+  "startTutorProfile": "Bắt đầu tạo hồ sơ gia sư",
   "ctaNote": "Đăng nhập ngay để bắt đầu đăng ký trở thành gia sư.",
+  "ctaNoteLoggedIn": "Tiếp tục các bước sau để hoàn tất hồ sơ gia sư của bạn.",
+  "authLoadingAria": "Đang kiểm tra trạng thái đăng nhập",
   "steps": {
     "signUp": {
       "title": "Đăng ký",

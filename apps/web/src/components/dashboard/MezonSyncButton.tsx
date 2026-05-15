@@ -33,15 +33,15 @@ type MezonSyncMessage =
     }
   | { type: "MEZON_SYNC_ERROR"; error?: string };
 
-type DashboardMezonSyncButtonProps = {
+type MezonSyncButtonProps = {
   className?: string;
   onSuccessAction?: () => void;
 };
 
-export function DashboardMezonSyncButton({
+export function MezonSyncButton({
   className,
   onSuccessAction,
-}: DashboardMezonSyncButtonProps) {
+}: MezonSyncButtonProps) {
   const t = useTranslations("Dashboard");
   const setUser = useSetAtom(userAtom);
   const setAccessToken = useSetAtom(accessTokenAtom);

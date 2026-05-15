@@ -5,7 +5,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { Spinner } from '@/components/ui';
 import { useGetMyProfile } from '@/services';
-import { userAtom, isLoadingAtom, isEditingRejectedProfileAtom, tutorProfileCurrentStepAtom } from '@/store';
+import {
+  userAtom,
+  isLoadingAtom,
+  isEditingRejectedProfileAtom,
+  tutorProfileCurrentStepAtom,
+  tutorProfileStepStatusesAtom,
+} from '@/store';
 import { getStepRoute } from '@mezon-tutors/shared';
 
 interface BecomeTutorGuardProps {
@@ -19,6 +25,7 @@ export function BecomeTutorGuard({ children }: BecomeTutorGuardProps) {
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const isEditingRejected = useAtomValue(isEditingRejectedProfileAtom);
   const currentStep = useAtomValue(tutorProfileCurrentStepAtom);
+  const stepStatuses = useAtomValue(tutorProfileStepStatusesAtom);
   const { data, isLoading: isProfileLoading } = useGetMyProfile({ enabled: !!user });
 
   useEffect(() => {
@@ -39,12 +46,24 @@ export function BecomeTutorGuard({ children }: BecomeTutorGuardProps) {
     }
 
     const isRootPage = pathname === '/become-tutor';
-    
+    const hasAnyStepCompleted = Object.values(stepStatuses).some((s) => s === 'completed');
+
     if (isRootPage && (!hasProfile || isEditingRejected)) {
-      const targetRoute = getStepRoute(currentStep);
-      router.replace(targetRoute);
+      if (isEditingRejected || hasAnyStepCompleted) {
+        router.replace(getStepRoute(currentStep));
+      }
     }
-  }, [data, isProfileLoading, pathname, user, isAuthLoading, isEditingRejected, currentStep, router]);
+  }, [
+    data,
+    isProfileLoading,
+    pathname,
+    user,
+    isAuthLoading,
+    isEditingRejected,
+    currentStep,
+    stepStatuses,
+    router,
+  ]);
 
   if (isAuthLoading) {
     return (

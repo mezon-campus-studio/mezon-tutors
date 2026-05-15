@@ -127,6 +127,7 @@ type ScheduleCellType =
   | 'empty'
   | 'emptyPast'
   | 'futureAvailable'
+  | 'futureAvailableMuted'
   | 'pastAvailable'
   | 'selected'
   | 'pastSelected';
@@ -135,8 +136,9 @@ function getScheduleCellType(input: {
   isAvailable: boolean;
   isSelected: boolean;
   isPast: boolean;
+  isSelectable: boolean;
 }): ScheduleCellType {
-  const { isAvailable, isSelected, isPast } = input;
+  const { isAvailable, isSelected, isPast, isSelectable } = input;
   if (!isAvailable) {
     return isPast ? 'emptyPast' : 'empty';
   }
@@ -146,6 +148,9 @@ function getScheduleCellType(input: {
   if (isSelected) {
     return 'selected';
   }
+  if (!isSelectable) {
+    return 'futureAvailableMuted';
+  }
   return 'futureAvailable';
 }
 
@@ -154,6 +159,8 @@ function getScheduleCellClassName(type: ScheduleCellType): string {
     type === 'empty' && 'bg-muted/25',
     type === 'emptyPast' && 'bg-muted',
     type === 'futureAvailable' && 'cursor-pointer bg-primary hover:bg-primary/70',
+    type === 'futureAvailableMuted' &&
+      'cursor-not-allowed bg-primary/40 ring-1 ring-inset ring-primary/25 saturate-75',
     type === 'selected' && 'cursor-pointer bg-[#e7d65c] shadow-inner',
     type === 'pastAvailable' &&
       'cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30',
@@ -222,27 +229,58 @@ export function ScheduleSelection({
     );
   }, [gridIntervalMinutes]);
 
-  const availableCellSet = useMemo(() => {
-    const set = new Set<string>();
+  const { visibleAvailableCellSet, selectableCellSet } = useMemo(() => {
+    const visibleAvailableCellSet = new Set<string>();
     for (const slot of availableSlots) {
       const start = parseTimeToMinutes(slot.startTime);
       const end = parseTimeToMinutes(
-        normalizeEndTime(slot.startTime, slot.endTime, lessonDurationMinutes)
+        normalizeEndTime(slot.startTime, slot.endTime, gridIntervalMinutes)
       );
+      for (let minute = start; minute < end; minute += gridIntervalMinutes) {
+        visibleAvailableCellSet.add(`${slot.date}|${minutesToTime(minute)}`);
+      }
+    }
+
+    if (lessonDurationMinutes <= gridIntervalMinutes) {
+      return {
+        visibleAvailableCellSet,
+        selectableCellSet: visibleAvailableCellSet,
+      };
+    }
+
+    const selectableCellSet = new Set<string>();
+    for (const key of visibleAvailableCellSet) {
+      const [date, startTime] = key.split('|');
+      const start = parseTimeToMinutes(startTime);
+      let hasConsecutiveSlots = true;
       for (
         let minute = start;
-        minute + lessonDurationMinutes <= end;
+        minute < start + lessonDurationMinutes;
         minute += gridIntervalMinutes
       ) {
+        if (!visibleAvailableCellSet.has(`${date}|${minutesToTime(minute)}`)) {
+          hasConsecutiveSlots = false;
+          break;
+        }
+      }
+      if (hasConsecutiveSlots) {
+        selectableCellSet.add(key);
+      }
+    }
+    return { visibleAvailableCellSet, selectableCellSet };
+  }, [availableSlots, gridIntervalMinutes, lessonDurationMinutes]);
+
+  const selectedSet = useMemo(() => {
+    const set = new Set<string>();
+    for (const slot of selectedSlots) {
+      const start = parseTimeToMinutes(slot.startTime);
+      const end = parseTimeToMinutes(slot.endTime);
+      for (let minute = start; minute < end; minute += gridIntervalMinutes) {
         set.add(`${slot.date}|${minutesToTime(minute)}`);
       }
     }
     return set;
-  }, [availableSlots, lessonDurationMinutes, gridIntervalMinutes]);
-
-  const selectedSet = useMemo(() => {
-    return new Set(selectedSlots.map((slot) => toSlotKey(slot)));
-  }, [selectedSlots]);
+  }, [selectedSlots, gridIntervalMinutes]);
 
   const emitChange = (next: SelectedScheduleSlot[]) => {
     if (!value) {
@@ -259,7 +297,7 @@ export function ScheduleSelection({
     for (const day of weekDates) {
       for (const startTime of timeRows) {
         const key = `${day.id}|${startTime}`;
-        if (!availableCellSet.has(key)) continue;
+        if (!selectableCellSet.has(key)) continue;
         const cellDate = parseYmd(day.id);
         const [hourText, minuteText] = startTime.split(':');
         cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
@@ -278,14 +316,14 @@ export function ScheduleSelection({
 
     for (const startTime of timeRows) {
       for (const day of weekDates) {
-        if (availableCellSet.has(`${day.id}|${startTime}`)) {
+        if (visibleAvailableCellSet.has(`${day.id}|${startTime}`)) {
           return startTime;
         }
       }
     }
 
     return null;
-  }, [availableCellSet, timeRows, weekDates]);
+  }, [selectableCellSet, timeRows, visibleAvailableCellSet, weekDates]);
 
   const scrollBodyRef = useRef<HTMLDivElement>(null);
 
@@ -301,7 +339,7 @@ export function ScheduleSelection({
 
   const handleCellSelect = (date: string, startTime: string) => {
     const key = `${date}|${startTime}`;
-    if (!availableCellSet.has(key)) {
+    if (!selectableCellSet.has(key)) {
       return;
     }
 
@@ -448,14 +486,20 @@ export function ScheduleSelection({
               </div>
               {weekDates.map((day) => {
                 const key = `${day.id}|${startTime}`;
-                const isAvailable = availableCellSet.has(key);
+                const isAvailable = visibleAvailableCellSet.has(key);
+                const isSelectable = selectableCellSet.has(key);
                 const isSelected = selectedSet.has(key);
                 const cellDate = parseYmd(day.id);
                 const [hourText, minuteText] = startTime.split(':');
                 cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
                 const isPast = cellDate <= new Date();
-                const disabled = !isAvailable || isPast;
-                const cellType = getScheduleCellType({ isAvailable, isSelected, isPast });
+                const disabled = isPast || !isSelectable;
+                const cellType = getScheduleCellType({
+                  isAvailable,
+                  isSelected,
+                  isPast,
+                  isSelectable,
+                });
 
                 return (
                   <button

@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { ShieldCheck, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -15,11 +15,11 @@ import {
   ELanguage,
   EProficiencyLevel,
   ESubject,
-  formatLastSavedTime,
   joinLanguagesArray,
   joinProficienciesArray,
   parseLanguagesString,
   parseProficienciesString,
+  ROUTES,
   VIETNAM_PHONE_REGEX,
 } from "@mezon-tutors/shared";
 import {
@@ -59,7 +59,8 @@ export function buildLanguageEntries(languages: string, proficiencies: string) {
 }
 
 export default function AboutPage() {
-  const t = useTranslations("TutorProfile.About");
+  const t = useTranslations("BecomeTutor.about");
+  const tp = useTranslations("BecomeTutor.about.placeholders");
   const tCountry = useTranslations("Tutors.Filter.Country");
   const tSubject = useTranslations("Tutors.Filter.Subject");
   const tLanguage = useTranslations("Tutors.Filter.Language");
@@ -68,7 +69,7 @@ export default function AboutPage() {
   const router = useRouter();
   const [about, setAbout] = useAtom(tutorProfileAboutAtom);
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
-  const [lastSavedAt, setLastSavedAt] = useAtom(tutorProfileLastSavedAtAtom);
+  const [, setLastSavedAt] = useAtom(tutorProfileLastSavedAtAtom);
 
   const aboutSchema = useMemo(
     () =>
@@ -165,11 +166,6 @@ export default function AboutPage() {
 
   type AboutFormValues = z.infer<typeof aboutSchema>;
 
-  const draftSavedLabel =
-    lastSavedAt && formatLastSavedTime(lastSavedAt)
-      ? t("draftSaved", { time: formatLastSavedTime(lastSavedAt) })
-      : "";
-
   const initialEntries = buildLanguageEntries(
     about.languages,
     about.proficiencies,
@@ -227,8 +223,20 @@ export default function AboutPage() {
     });
     setLastSavedAt(new Date().toISOString());
     markStepCompleted(CURRENT_STEP);
-    router.push("/become-tutor/photo");
+    router.push(ROUTES.BECOME_TUTOR.PHOTO);
   };
+
+  const handleSaveExit = useCallback(async () => {
+    const values = form.getValues();
+    const entries = values.languageEntries.filter((e) => e.language && e.proficiency);
+    const { languageEntries: _le, ...rest } = values;
+    setAbout({
+      ...rest,
+      languages: joinLanguagesArray(entries.map((e) => e.language)),
+      proficiencies: joinProficienciesArray(entries.map((e) => e.proficiency)),
+    });
+    setLastSavedAt(new Date().toISOString());
+  }, [form, setAbout, setLastSavedAt]);
 
   const onValidationError = (errors: Record<string, unknown>) => {
     formCardRef.current?.scrollIntoView({
@@ -242,8 +250,7 @@ export default function AboutPage() {
   return (
     <BecomeTutorShell
       headerTitle={t("headerTitle")}
-      saveExitLabel={t("saveExit")}
-      draftSavedLabel={draftSavedLabel || undefined}
+      onSaveExit={handleSaveExit}
       stepLabel={t("stepLabel")}
       progressPercent={PROGRESS_PERCENT}
       progressLabel={t("progressPercentLabel", { percent: PROGRESS_PERCENT })}
@@ -253,7 +260,7 @@ export default function AboutPage() {
       onContinue={handleSubmit(onSubmit, onValidationError)}
     >
       <BecomeTutorSection
-        eyebrow="Step 1"
+        eyebrow={t("sectionEyebrow", { step: CURRENT_STEP })}
         title={t("title")}
         description={t("subtitle")}
         contentRef={formCardRef}
@@ -269,7 +276,7 @@ export default function AboutPage() {
               </Label>
               <Input
                 id="firstName"
-                placeholder={t("fields.firstNamePlaceholder")}
+                placeholder={tp("firstName")}
                 {...register("firstName")}
                 className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
               />
@@ -283,7 +290,7 @@ export default function AboutPage() {
               </Label>
               <Input
                 id="lastName"
-                placeholder={t("fields.lastNamePlaceholder")}
+                placeholder={tp("lastName")}
                 {...register("lastName")}
                 className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
               />
@@ -300,7 +307,7 @@ export default function AboutPage() {
             <Input
               id="email"
               type="email"
-              placeholder={t("fields.emailPlaceholder")}
+              placeholder={tp("email")}
               {...register("email")}
               className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
             />
@@ -320,9 +327,9 @@ export default function AboutPage() {
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                      <SelectValue placeholder={t("fields.countryPlaceholder")}>
+                      <SelectValue placeholder={tp("country")}>
                         {(value) =>
-                          value ? tCountry(value) : t("fields.countryPlaceholder")
+                          value ? tCountry(value) : tp("country")
                         }
                       </SelectValue>
                     </SelectTrigger>
@@ -348,7 +355,7 @@ export default function AboutPage() {
               </Label>
               <Input
                 id="phone"
-                placeholder={t("fields.phonePlaceholder")}
+                placeholder={tp("phone")}
                 {...register("phone")}
                 className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
               />
@@ -368,10 +375,8 @@ export default function AboutPage() {
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm">
-                    <SelectValue placeholder={t("fields.subjectPlaceholder")}>
-                      {(value) =>
-                        value ? tSubject(value) : t("fields.subjectPlaceholder")
-                      }
+                    <SelectValue placeholder={tp("subject")}>
+                      {(value) => (value ? tSubject(value) : tp("subject"))}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -402,7 +407,7 @@ export default function AboutPage() {
                 onClick={() => append({ language: "", proficiency: "" })}
                 className="rounded-full bg-violet-100 px-3 py-1 text-[11px] font-bold text-violet-700 transition hover:bg-violet-200"
               >
-                + {t("addAnotherLanguage")}
+                {t("addAnotherLanguage")}
               </button>
             </div>
             {fields.map((field, index) => (
@@ -421,12 +426,12 @@ export default function AboutPage() {
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-white text-sm">
                           <SelectValue
-                            placeholder={t("fields.languagesPlaceholder")}
+                            placeholder={tp("language")}
                           >
                             {(value) =>
                               value
                                 ? tLanguage(value)
-                                : t("fields.languagesPlaceholder")
+                                : tp("language")
                             }
                           </SelectValue>
                         </SelectTrigger>
@@ -454,12 +459,12 @@ export default function AboutPage() {
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-11! w-full rounded-xl border-slate-200 bg-white text-sm">
                           <SelectValue
-                            placeholder={t("fields.proficiencyPlaceholder")}
+                            placeholder={tp("proficiency")}
                           >
                             {(value) =>
                               value
                                 ? tProficiency(value)
-                                : t("fields.proficiencyPlaceholder")
+                                : tp("proficiency")
                             }
                           </SelectValue>
                         </SelectTrigger>
@@ -480,6 +485,7 @@ export default function AboutPage() {
                     variant="outline"
                     onClick={() => remove(index)}
                     className="h-11 rounded-xl border-rose-200 px-3 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
+                    aria-label={t("removeLanguage")}
                   >
                     <Trash2 className="size-4" />
                   </Button>
