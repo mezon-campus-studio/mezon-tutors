@@ -17,7 +17,8 @@
     "bookingCreated": "Buổi học thử mới",
     "paymentSucceeded": "Thanh toán thành công",
     "systemAnnouncement": "Thông báo hệ thống",
-    "lessonStartingSoon": "Buổi học sắp bắt đầu"
+    "lessonStartingSoon": "Buổi học sắp bắt đầu",
+    "tutorEarningsReleased": "Tiền đã về ví"
   },
   "templates": {
     "bookingCreated": "{studentName} đã thanh toán buổi học thử với bạn. Xem lịch và chuẩn bị dạy nhé.",
@@ -26,6 +27,7 @@
     "paymentSucceeded": "Thanh toán cho mã đặt lịch {bookingCode} đã thành công.",
     "paymentFailed": "Thanh toán cho mã đặt lịch {bookingCode} thất bại. Vui lòng thử lại.",
     "systemAnnouncement": "{message}",
-    "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 15 phút nữa."
+    "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 10 phút nữa.",
+    "tutorEarningsReleased": "{amount} từ {lessonKind, select, trial {buổi học thử} subscription {buổi học gói đăng ký} other {buổi học}} đã được chuyển vào số dư khả dụng trong ví của bạn."
   }
 }

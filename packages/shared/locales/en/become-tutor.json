@@ -177,7 +177,7 @@
       "yearPlaceholder": "YYYY",
       "noResults": "No results found",
       "uploadTitle": "Upload your certificate",
-      "uploadPrompt": "Click to upload or drag and drop",
+      "uploadPrompt": "Click to upload",
       "uploadHint": "PDF, JPG or PNG (max. 5MB)",
       "dropHere": "Drop file here",
       "uploading": "Uploading…",
@@ -240,7 +240,8 @@
     "link": {
       "label": "Or paste YouTube/Vimeo link",
       "placeholder": "https://youtube.com/watch?v=...",
-      "addButton": "Add"
+      "addButton": "Add",
+      "checking": "Checking video..."
     },
     "bestPracticesTitle": "Video Best Practices",
     "bestPractices": [

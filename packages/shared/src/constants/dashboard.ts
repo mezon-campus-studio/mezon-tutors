@@ -8,6 +8,7 @@ export type DashboardMenuIconKey =
   | 'tutorApplications'
   | 'students'
   | 'payments'
+  | 'wallet'
   | 'reports'
   | 'dashboard';
 export type DashboardMenuLabelKey =
@@ -18,6 +19,7 @@ export type DashboardMenuLabelKey =
   | 'tutorApplications'
   | 'students'
   | 'payments'
+  | 'wallet'
   | 'reports'
   | 'dashboard';
 
@@ -63,6 +65,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     iconKey: 'calendar',
     href: ROUTES.DASHBOARD.MY_SCHEDULE,
     roles: ['TUTOR'],
+  },
+  {
+    key: 'wallet',
+    type: 'link',
+    labelKey: 'wallet',
+    iconKey: 'wallet',
+    href: ROUTES.DASHBOARD.WALLET,
+    roles: ['STUDENT', 'TUTOR'],
   },
   {
     key: 'tutor-applications',
@@ -131,6 +141,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-lessons') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);
+  }
+  if (item.key === 'wallet') {
+    return pathname.startsWith(ROUTES.DASHBOARD.WALLET);
   }
   return false;
 }

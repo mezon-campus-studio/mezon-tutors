@@ -22,6 +22,8 @@ import { WebhookModule } from './modules/webhook/webhook.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MezonBotModule } from './modules/mezon-bot/mezon-bot.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settlement.module';
 import { AppService } from './app.service';
 
 @Module({
@@ -56,6 +58,8 @@ import { AppService } from './app.service';
     NotificationModule,
     MezonBotModule,
     SubscriptionModule,
+    WalletModule,
+    LessonSettlementModule,
   ],
   controllers: [HealthController],
   providers: [

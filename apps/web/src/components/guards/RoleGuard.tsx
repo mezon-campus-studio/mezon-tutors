@@ -89,6 +89,13 @@ export function RolePathRedirect() {
       if (role !== "STUDENT") {
         router.replace(home);
       }
+      return;
+    }
+
+    if (pathname.startsWith("/dashboard/wallet")) {
+      if (role !== "STUDENT" && role !== "TUTOR") {
+        router.replace(home);
+      }
     }
   }, [isAuthLoading, pathname, router, user]);
 

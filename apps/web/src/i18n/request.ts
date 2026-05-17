@@ -19,6 +19,7 @@ type MessageLoaderConfig = {
     | "Dashboard"
     | "MyLessons"
     | "MySchedule"
+    | "Wallet"
     | "Notifications"
     | "Admin"
     | "AdminTutorApplicationDetail";
@@ -38,6 +39,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Dashboard", file: "dashboard", pick: (payload) => payload.Dashboard },
   { messageKey: "MyLessons", file: "my-lessons" },
   { messageKey: "MySchedule", file: "my-schedule" },
+  { messageKey: "Wallet", file: "wallet", pick: (payload) => payload.Wallet },
   {
     messageKey: "TrialLessonCheckout",
     file: "trial-lesson-checkout",

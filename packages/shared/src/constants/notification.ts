@@ -9,12 +9,14 @@ export const NOTIFICATION_I18N_KEYS = {
     paymentFailed: 'templates.paymentFailed',
     systemAnnouncement: 'templates.systemAnnouncement',
     lessonStartingSoon: 'templates.lessonStartingSoon',
+    tutorEarningsReleased: 'templates.tutorEarningsReleased',
   },
   titles: {
     bookingCreated: 'titles.bookingCreated',
     paymentSucceeded: 'titles.paymentSucceeded',
     systemAnnouncement: 'titles.systemAnnouncement',
     lessonStartingSoon: 'titles.lessonStartingSoon',
+    tutorEarningsReleased: 'titles.tutorEarningsReleased',
   },
 } as const
 

@@ -1,0 +1,180 @@
+{
+  "Wallet": {
+    "eyebrow": "Tài chính",
+    "title": "Ví",
+    "subtitleStudent": "Theo dõi thanh toán và chi tiêu cho buổi học tại một nơi.",
+    "subtitleTutor": "Trung tâm thu nhập creator — số dư, rút tiền và hoạt động.",
+    "balanceCard": {
+      "studentLabel": "Số dư ví",
+      "studentSpentLabel": "Tổng đã chi",
+      "studentRefundedLabel": "Tổng đã hoàn",
+      "tutorAvailableLabel": "Số dư khả dụng",
+      "tutorPendingLabel": "Đang chờ giải ngân",
+      "studentPendingLabel": "Đang chờ thanh toán",
+      "currency": "VND",
+      "secured": "Bảo mật bởi Mezonly",
+      "studentWalletInactiveTitle": "Ví chưa được kích hoạt",
+      "studentWalletInactiveHint": "Ví sẽ mở khi có tiền hoàn vào tài khoản. Trước đó bạn vẫn thanh toán buổi học qua cổng thanh toán."
+    },
+    "metrics": {
+      "monthActivity": {
+        "title": "Tháng này",
+        "studentHelper": "Số tiền đã thanh toán",
+        "tutorCreditHelper": "Tiền nhận vào",
+        "tutorDebitHelper": "Tiền chi / rút"
+      },
+      "totalEarned": {
+        "title": "Tổng thu nhập",
+        "helper": "Thu nhập gia sư tích lũy"
+      },
+      "totalRefunded": {
+        "title": "Tổng đã hoàn",
+        "helper": "Tiền hoàn vào ví"
+      },
+      "totalSpent": {
+        "title": "Tổng đã chi",
+        "helper": "Thanh toán buổi học qua cổng"
+      },
+      "monthRefunds": {
+        "title": "Hoàn tiền tháng này",
+        "helper": "Đã cộng vào ví"
+      },
+      "monthReceived": {
+        "title": "Thu nhập tháng này",
+        "helper": "Tiền vào ví trong tháng"
+      },
+      "monthWithdrawn": {
+        "title": "Đã rút tháng này",
+        "helper": "Rút tiền và ghi nợ trong tháng"
+      },
+      "totalReceived": {
+        "title": "Tổng đã nhận",
+        "helper": "Tổng thu nhập tích lũy trong ví"
+      },
+      "totalWithdrawn": {
+        "title": "Đã rút",
+        "helper": "Đã chuyển thành công"
+      },
+      "transactions": {
+        "title": "Giao dịch",
+        "helper": "Đã ghi trong ví"
+      },
+      "pendingWithdrawals": {
+        "title": "Đang chờ rút",
+        "helper": "Chờ xử lý"
+      }
+    },
+    "actions": {
+      "withdraw": "Yêu cầu rút tiền"
+    },
+    "tabs": {
+      "transactions": "Giao dịch",
+      "withdrawals": "Lịch sử rút"
+    },
+    "transactions": {
+      "emptyTitle": "Chưa có giao dịch",
+      "emptyDescription": "Khi bạn thanh toán hoặc nhận thu nhập, giao dịch sẽ hiển thị tại đây.",
+      "credit": "Nhận",
+      "debit": "Chi"
+    },
+    "withdrawals": {
+      "emptyTitle": "Chưa có yêu cầu rút",
+      "emptyDescription": "Gửi yêu cầu rút khi số dư khả dụng đã sẵn sàng.",
+      "bank": "Tài khoản ngân hàng",
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "APPROVED": "Đã duyệt",
+        "PROCESSING": "Đang xử lý",
+        "COMPLETED": "Hoàn tất",
+        "REJECTED": "Từ chối"
+      }
+    },
+    "types": {
+      "BOOKING_PAYMENT": "Thanh toán buổi học",
+      "RELEASE": "Giải ngân",
+      "WITHDRAWAL": "Rút tiền",
+      "REFUND": "Hoàn tiền",
+      "PLATFORM_FEE": "Phí nền tảng",
+      "LESSON_PAYMENT": "Buổi học thử",
+      "SUBSCRIPTION_PAYMENT": "Gói đăng ký"
+    },
+    "student": {
+      "hero": {
+        "statusActive": "Ví đang hoạt động",
+        "activityTitle": "Tổng cộng",
+        "chartSpend": "Đã chi",
+        "chartRefund": "Hoàn tiền",
+        "actionTutors": "Tìm gia sư",
+        "actionLessons": "Buổi học của tôi"
+      },
+      "insight": {
+        "securityHint": "Thanh toán và hoàn tiền được bảo vệ trên Mezonly.",
+        "monthlyTitle": "Tóm tắt tháng",
+        "pendingTitle": "Đang chờ thanh toán"
+      },
+      "bento": {
+        "title": "Tổng quan tài chính",
+        "subtitle": "Các chỉ số quan trọng"
+      },
+      "transactions": {
+        "title": "Lịch sử giao dịch",
+        "subtitle": "Thanh toán và hoạt động ví",
+        "filterAll": "Tất cả",
+        "filterCredit": "Tiền vào",
+        "filterDebit": "Tiền ra"
+      }
+    },
+    "tutor": {
+      "hero": {
+        "statusActive": "Thu nhập đang hoạt động",
+        "withdrawableLabel": "Có thể rút ngay",
+        "withdrawCta": "Rút tiền",
+        "trendTitle": "Tháng này",
+        "chartEarned": "Thu nhập",
+        "chartWithdrawn": "Đã rút"
+      },
+      "insight": {
+        "pendingPayoutsTitle": "Chờ giải ngân",
+        "pendingPayoutsHint": "Thu nhập từ buổi học chờ chuyển vào số dư.",
+        "withdrawalQueueTitle": "Yêu cầu rút",
+        "withdrawalQueueHint": "Các lệnh rút đang chờ xử lý trên trang này.",
+        "securityHint": "Rút tiền được bảo vệ và kiểm duyệt trên Mezonly.",
+        "accountHealthTitle": "Tình trạng tài khoản",
+        "accountHealthGood": "Thu nhập đang chảy bình thường",
+        "accountHealthIdle": "Chưa có hoạt động"
+      },
+      "bento": {
+        "title": "Tổng quan thu nhập",
+        "subtitle": "Hiệu suất nhanh",
+        "pendingBalanceTitle": "Số dư chờ",
+        "pendingBalanceHelper": "Chờ giải ngân từ buổi học hoàn thành",
+        "activityHelper": "Giao dịch đã ghi trong ví"
+      },
+      "activity": {
+        "title": "Hoạt động",
+        "subtitle": "Thu nhập, rút tiền và lịch sử chi trả",
+        "searchPlaceholder": "Tìm hoạt động…",
+        "export": "Xuất file",
+        "filterAll": "Tất cả",
+        "filterEarnings": "Thu nhập",
+        "filterOutgoing": "Chi ra",
+        "filterWithdrawals": "Rút tiền"
+      }
+    },
+    "withdrawDialog": {
+      "title": "Yêu cầu rút tiền",
+      "description": "Tiền sẽ chuyển vào tài khoản ngân hàng sau khi được duyệt. Tối thiểu 10.000 VND.",
+      "amount": "Số tiền (VND)",
+      "bankName": "Tên ngân hàng",
+      "accountNumber": "Số tài khoản",
+      "accountName": "Chủ tài khoản",
+      "cancel": "Hủy",
+      "submit": "Gửi yêu cầu",
+      "submitting": "Đang gửi…",
+      "successTitle": "Đã gửi yêu cầu",
+      "successDescription": "Chúng tôi sẽ xử lý yêu cầu rút tiền của bạn sớm nhất có thể.",
+      "errorTitle": "Không gửi được",
+      "errorFallback": "Vui lòng kiểm tra số dư và thử lại."
+    }
+  }
+}

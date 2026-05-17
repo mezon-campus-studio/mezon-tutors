@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import { DEFAULT_TIMEZONE } from '../constants/my-schedule'
+import { ESubscriptionLessonSlotStatus } from '../enums/subscription-lesson-slot'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -11,6 +12,7 @@ export type SubscriptionWeeklySlotLike = {
   startTime: string
   durationMinutes: number
   date?: string
+  status?: ESubscriptionLessonSlotStatus | string
 }
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -50,6 +52,7 @@ export function buildMonthlySubscriptionSlotJson(
         startTime: base.startTime,
         durationMinutes: base.durationMinutes,
         date: slotDate,
+        status: base.status ?? ESubscriptionLessonSlotStatus.SCHEDULED,
       })
     }
   }

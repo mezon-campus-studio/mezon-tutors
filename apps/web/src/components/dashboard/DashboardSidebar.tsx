@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  Wallet,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import { MezonSyncButton } from "./MezonSyncButton";
@@ -29,6 +30,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   tutorApplications: FileCheck,
   students: GraduationCap,
   payments: CreditCard,
+  wallet: Wallet,
   reports: LineChart,
   dashboard: LayoutDashboard,
 };
@@ -41,6 +43,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   tutorApplications: "from-sky-500 to-blue-500",
   students: "from-emerald-500 to-teal-500",
   payments: "from-amber-500 to-yellow-500",
+  wallet: "from-amber-500 to-orange-500",
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
 };

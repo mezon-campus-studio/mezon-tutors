@@ -1,4 +1,5 @@
 import type { ECurrency } from "../enums/currency"
+import type { ESubscriptionLessonSlotStatus } from "../enums/subscription-lesson-slot"
 
 export interface TutorSubscriptionPlanPriceDto {
   baseCurrency: ECurrency
@@ -32,6 +33,7 @@ export interface SubscriptionWeeklySlotDto {
   startTime: string
   durationMinutes: number
   date?: string
+  status?: ESubscriptionLessonSlotStatus
 }
 
 export interface CreateSubscriptionEnrollmentSlotDto {
