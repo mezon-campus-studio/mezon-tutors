@@ -17,7 +17,8 @@
     "bookingCreated": "New trial lesson booking",
     "paymentSucceeded": "Payment successful",
     "systemAnnouncement": "System announcement",
-    "lessonStartingSoon": "Lesson starting soon"
+    "lessonStartingSoon": "Lesson starting soon",
+    "tutorEarningsReleased": "Earnings available"
   },
   "templates": {
     "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
@@ -26,6 +27,7 @@
     "paymentSucceeded": "Your payment for booking {bookingCode} was successful.",
     "paymentFailed": "Your payment for booking {bookingCode} failed. Please try again.",
     "systemAnnouncement": "{message}",
-    "lessonStartingSoon": "Your lesson will start in about 15 minutes."
+    "lessonStartingSoon": "Your lesson will start in about 10 minutes.",
+    "tutorEarningsReleased": "{amount} from your {lessonKind, select, trial {trial lesson} subscription {subscription lesson} other {lesson}} is now available in your wallet."
   }
 }

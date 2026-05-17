@@ -102,6 +102,24 @@ enum ESubscriptionEnrollmentStatus {
   CANCELLED
 }
 
+enum ESubscriptionLessonSlotStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum ELessonSettlementKind {
+  TRIAL_LESSON
+  SUBSCRIPTION_SLOT
+}
+
+enum ELessonSettlementJobStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 /// Application users table mapped to `users`
 model User {
   id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -424,6 +442,7 @@ model Transaction {
   walletId                  String                     @map("wallet_id") @db.Uuid
   bookingId                 String?                    @map("booking_id") @db.Uuid
   subscriptionEnrollmentId  String?                    @map("subscription_enrollment_id") @db.Uuid
+  subscriptionSlotIndex     Int?                       @map("subscription_slot_index")
   withdrawalId              String?                    @map("withdrawal_id") @db.Uuid
   type                      EWalletTransactionType
   amount                    BigInt
@@ -439,8 +458,28 @@ model Transaction {
   @@index([walletId, createdAt])
   @@index([bookingId])
   @@index([subscriptionEnrollmentId])
+  @@index([subscriptionEnrollmentId, subscriptionSlotIndex, type])
   @@index([withdrawalId])
   @@map("transactions")
+}
+
+model LessonSettlementJob {
+  id             String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind           ELessonSettlementKind
+  bookingId      String?                    @map("booking_id") @db.Uuid
+  enrollmentId   String?                    @map("enrollment_id") @db.Uuid
+  slotIndex      Int?                       @map("slot_index")
+  runAt          DateTime                   @map("run_at")
+  status         ELessonSettlementJobStatus   @default(PENDING)
+  attempts       Int                        @default(0)
+  lastError      String?                    @map("last_error") @db.Text
+  processedAt    DateTime?                  @map("processed_at")
+  dedupeKey      String                     @unique @map("dedupe_key") @db.VarChar(120)
+  createdAt      DateTime                   @default(now()) @map("created_at")
+  updatedAt      DateTime                   @updatedAt @map("updated_at")
+
+  @@index([status, runAt])
+  @@map("lesson_settlement_jobs")
 }
 
 model Withdrawal {

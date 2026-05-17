@@ -177,7 +177,7 @@
       "yearPlaceholder": "YYYY",
       "noResults": "Không tìm thấy kết quả",
       "uploadTitle": "Tải lên chứng chỉ",
-      "uploadPrompt": "Nhấn để tải lên hoặc kéo thả tệp",
+      "uploadPrompt": "Nhấn để tải lên",
       "uploadHint": "PDF, JPG hoặc PNG (tối đa 5MB)",
       "dropHere": "Thả tệp vào đây",
       "uploading": "Đang tải lên…",
@@ -240,7 +240,8 @@
     "link": {
       "label": "Hoặc dán liên kết YouTube/Vimeo",
       "placeholder": "https://youtube.com/watch?v=...",
-      "addButton": "Thêm"
+      "addButton": "Thêm",
+      "checking": "Đang kiểm tra video..."
     },
     "bestPracticesTitle": "Mẹo quay video hiệu quả",
     "bestPractices": [

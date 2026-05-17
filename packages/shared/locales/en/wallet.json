@@ -1,0 +1,180 @@
+{
+  "Wallet": {
+    "eyebrow": "Finance",
+    "title": "Wallet",
+    "subtitleStudent": "Track lesson payments and spending in one place.",
+    "subtitleTutor": "Your creator earnings hub — balances, payouts, and activity.",
+    "balanceCard": {
+      "studentLabel": "Wallet balance",
+      "studentSpentLabel": "Total spent",
+      "studentRefundedLabel": "Total refunded",
+      "tutorAvailableLabel": "Available balance",
+      "tutorPendingLabel": "Pending release",
+      "studentPendingLabel": "Pending payment",
+      "currency": "VND",
+      "secured": "Secured by Mezonly",
+      "studentWalletInactiveTitle": "Wallet not active yet",
+      "studentWalletInactiveHint": "Your wallet opens when a refund is credited. Pay for lessons at checkout until then."
+    },
+    "metrics": {
+      "monthActivity": {
+        "title": "This month",
+        "studentHelper": "Amount paid for lessons",
+        "tutorCreditHelper": "Credits received",
+        "tutorDebitHelper": "Debits & withdrawals"
+      },
+      "totalEarned": {
+        "title": "Lifetime earned",
+        "helper": "All-time tutor earnings"
+      },
+      "totalRefunded": {
+        "title": "Total refunded",
+        "helper": "Refund credits received in wallet"
+      },
+      "totalSpent": {
+        "title": "Total spent",
+        "helper": "Paid for lessons via checkout"
+      },
+      "monthRefunds": {
+        "title": "Refunds this month",
+        "helper": "Credited to your wallet"
+      },
+      "monthReceived": {
+        "title": "Received this month",
+        "helper": "Earnings credited this month"
+      },
+      "monthWithdrawn": {
+        "title": "Withdrawn this month",
+        "helper": "Payouts and debits this month"
+      },
+      "totalReceived": {
+        "title": "Total received",
+        "helper": "All-time earnings in your wallet"
+      },
+      "totalWithdrawn": {
+        "title": "Total withdrawn",
+        "helper": "Successfully paid out"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "helper": "Recorded in your wallet"
+      },
+      "pendingWithdrawals": {
+        "title": "Pending payouts",
+        "helper": "Awaiting processing"
+      }
+    },
+    "actions": {
+      "withdraw": "Request withdrawal"
+    },
+    "tabs": {
+      "transactions": "Transactions",
+      "withdrawals": "Withdrawals"
+    },
+    "transactions": {
+      "emptyTitle": "No transactions yet",
+      "emptyDescription": "When you complete a payment or receive earnings, they will appear here.",
+      "credit": "Credit",
+      "debit": "Debit"
+    },
+    "withdrawals": {
+      "emptyTitle": "No withdrawal requests",
+      "emptyDescription": "Request a payout when your available balance is ready.",
+      "bank": "Bank account",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "PROCESSING": "Processing",
+        "COMPLETED": "Completed",
+        "REJECTED": "Rejected"
+      }
+    },
+    "types": {
+      "BOOKING_PAYMENT": "Lesson payment",
+      "RELEASE": "Funds released",
+      "WITHDRAWAL": "Withdrawal",
+      "REFUND": "Refund",
+      "PLATFORM_FEE": "Platform fee",
+      "LESSON_PAYMENT": "Trial lesson",
+      "SUBSCRIPTION_PAYMENT": "Subscription plan"
+    },
+    "student": {
+      "hero": {
+        "statusActive": "Wallet active",
+        "activityTitle": "Totals",
+        "chartSpend": "Spent",
+        "chartRefund": "Refunds",
+        "actionTutors": "Find tutors",
+        "actionLessons": "My lessons"
+      },
+      "insight": {
+        "securityHint": "Payments and refunds are protected on Mezonly.",
+        "monthlyTitle": "Monthly snapshot",
+        "pendingTitle": "Pending checkout"
+      },
+      "bento": {
+        "title": "Financial overview",
+        "subtitle": "Key metrics at a glance"
+      },
+      "transactions": {
+        "title": "Transaction history",
+        "subtitle": "Payments and wallet activity",
+        "filterAll": "All",
+        "filterCredit": "Incoming",
+        "filterDebit": "Outgoing"
+      }
+    },
+    "tutor": {
+      "hero": {
+        "statusActive": "Earnings active",
+        "withdrawableLabel": "Withdrawable now",
+        "withdrawCta": "Withdraw funds",
+        "trendTitle": "This month",
+        "chartEarned": "Earned",
+        "chartWithdrawn": "Withdrawn"
+      },
+      "insight": {
+        "pendingPayoutsTitle": "Pending release",
+        "pendingPayoutsHint": "Earnings from lessons awaiting release to your balance.",
+        "withdrawalQueueTitle": "Payout requests",
+        "withdrawalQueueHint": "Withdrawals waiting for processing on this page.",
+        "securityHint": "Payouts are protected and reviewed on Mezonly.",
+        "accountHealthTitle": "Account health",
+        "accountHealthGood": "Earnings flowing normally",
+        "accountHealthIdle": "No activity yet"
+      },
+      "bento": {
+        "title": "Earnings overview",
+        "subtitle": "Performance at a glance",
+        "pendingBalanceTitle": "Pending balance",
+        "pendingBalanceHelper": "Awaiting release from completed lessons",
+        "activityHelper": "Wallet transactions recorded"
+      },
+      "activity": {
+        "title": "Activity feed",
+        "subtitle": "Earnings, withdrawals, and payout history",
+        "searchPlaceholder": "Search activity…",
+        "export": "Export",
+        "filterAll": "All",
+        "filterEarnings": "Earnings",
+        "filterOutgoing": "Outgoing",
+        "filterWithdrawals": "Withdrawals"
+      }
+    },
+    "withdrawDialog": {
+      "title": "Request withdrawal",
+      "description": "Funds will be sent to your bank account after review. Minimum 10,000 VND.",
+      "amount": "Amount (VND)",
+      "bankName": "Bank name",
+      "accountNumber": "Account number",
+      "accountName": "Account holder name",
+      "cancel": "Cancel",
+      "submit": "Submit request",
+      "submitting": "Submitting…",
+      "successTitle": "Request submitted",
+      "successDescription": "We will process your withdrawal as soon as possible.",
+      "errorTitle": "Could not submit",
+      "errorFallback": "Please check your balance and try again."
+    }
+  }
+}

@@ -1,9 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { ENotificationType, Prisma } from '@mezon-tutors/db'
+import { ECurrency, ENotificationType, Prisma } from '@mezon-tutors/db'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { GetMyNotificationsDto } from './dto/get-my-notifications.dto'
-import { NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
+import { ECurrency as SharedCurrency, formatToCurrency, NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
+import { MezonBotService } from '../mezon-bot/mezon-bot.service'
 
 type MyNotificationItem = {
   id: string
@@ -23,7 +24,10 @@ type PrismaTx = Prisma.TransactionClient
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name)
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mezonBotService: MezonBotService
+  ) {}
 
   async createForUser(userId: string, data: CreateNotificationDto, tx?: PrismaTx): Promise<void> {
     await this.createForMany([userId], data, tx)
@@ -232,5 +236,70 @@ export class NotificationService {
         )
       }
     })
+  }
+
+  async notifyTutorEarningsReleased(params: {
+    tutorUserId: string
+    amount: bigint
+    currency?: ECurrency
+    lessonKind: 'trial' | 'subscription'
+    bookingId?: string
+    enrollmentId?: string
+    slotIndex?: number
+    dedupeKey: string
+  }): Promise<void> {
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: params.tutorUserId },
+      select: { mezonUserId: true },
+    })
+    if (!tutor) {
+      this.logger.warn(`Tutor user not found for earnings notification (${params.dedupeKey})`)
+      return
+    }
+
+    const currency = (params.currency ?? ECurrency.VND) as SharedCurrency
+    const amountFormatted = formatToCurrency(currency, Number(params.amount))
+    const title = 'Earnings available'
+    const content =
+      params.lessonKind === 'trial'
+        ? `${amountFormatted} from your trial lesson is now available in your wallet.`
+        : `${amountFormatted} from your subscription lesson is now available in your wallet.`
+
+    try {
+      await this.createForUser(params.tutorUserId, {
+        title,
+        content,
+        type: ENotificationType.PAYMENT,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.tutorEarningsReleased,
+        i18nParams: { amount: amountFormatted, lessonKind: params.lessonKind },
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.tutorEarningsReleased,
+          titleI18nParams: {},
+          lessonKind: params.lessonKind,
+          bookingId: params.bookingId,
+          enrollmentId: params.enrollmentId,
+          slotIndex: params.slotIndex,
+        },
+        dedupeKey: params.dedupeKey,
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Failed to create web notification (${params.dedupeKey}): ${detail}`)
+    }
+
+    if (!tutor.mezonUserId?.trim()) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping earnings release DM')
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(tutor.mezonUserId, { t: content })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Failed to send Mezon DM for earnings release (${params.dedupeKey}): ${detail}`)
+    }
   }
 }

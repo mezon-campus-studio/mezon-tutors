@@ -14,6 +14,7 @@ import {
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
+import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
 import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 
@@ -45,7 +46,8 @@ export class WebhookService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly lessonSettlementService: LessonSettlementService
   ) {}
 
   async buildTrialLessonVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
@@ -319,6 +321,7 @@ export class WebhookService {
         bookingId: booking.id,
         tutorProfileId: booking.tutorId,
       });
+      await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id);
     }
 
     return {
@@ -434,6 +437,12 @@ export class WebhookService {
         updated: didUpdateEnrollment,
       };
     });
+
+    if (processed.updated && isSucceeded) {
+      await this.lessonSettlementService.scheduleSubscriptionEnrollmentSettlements(
+        enrollment.id
+      );
+    }
 
     return {
       kind: 'subscription',

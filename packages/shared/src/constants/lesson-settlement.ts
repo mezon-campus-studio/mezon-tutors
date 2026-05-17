@@ -1,0 +1,1 @@
+export const LESSON_SETTLEMENT_GRACE_MINUTES = 5;

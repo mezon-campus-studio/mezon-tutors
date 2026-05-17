@@ -9,6 +9,9 @@ import type {
   MyLessonsApiResponse,
 } from '@mezon-tutors/shared';
 import {
+  ESubscriptionLessonSlotStatus,
+  isSubscriptionSlotCompleted,
+  normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
@@ -88,11 +91,7 @@ export class MyLessonsService {
       .map((lesson) => this.toLessonApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
     const previousLessons = lessons
-      .filter(
-        (lesson) =>
-          lesson.status === ETrialLessonStatus.COMPLETED ||
-          (lesson.status === ETrialLessonStatus.CONFIRMED && !this.isLessonEndAfterNow(lesson)),
-      )
+      .filter((lesson) => lesson.status === ETrialLessonStatus.COMPLETED)
       .map((lesson) => this.toLessonApiItem(lesson))
       .filter((item): item is MyLessonApiItem => item !== null);
 
@@ -137,6 +136,7 @@ export class MyLessonsService {
     const subscriptionBounds: { startAt: Date; endAt: Date }[] = [];
     const subscriptionCalendarItems: MyLessonApiItem[] = [];
     const subscriptionUpcomingItems: MyLessonApiItem[] = [];
+    const subscriptionPreviousItems: MyLessonApiItem[] = [];
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
@@ -144,36 +144,43 @@ export class MyLessonsService {
       for (const occ of inWeek) {
         const range = { startAt: occ.startAt, endAt: occ.endAt };
         subscriptionBounds.push(range);
-        const occEnd = (dayjs)(range.endAt);
-        const slotStatus: MyLessonApiItem['status'] = occEnd.isAfter((dayjs)())
-          ? 'upcoming'
-          : 'completed';
+        const slot = slots[occ.slotIndex];
+        const calendarStatus = this.subscriptionSlotToLessonStatus(slot?.status);
+        if (!calendarStatus) {
+          continue;
+        }
         const item = this.enrollmentOccurrenceToLessonItem(
           enrollment,
           range.startAt,
           range.endAt,
           occ.slotIndex,
-          slotStatus,
+          calendarStatus,
         );
         subscriptionCalendarItems.push(item);
       }
 
-      const now = (dayjs)();
-      const upcomingOccs = subscriptionSlotsUseConcreteDates(slots)
-        ? subscriptionConcreteOccurrencesSorted(slots, MY_LESSONS_CALENDAR_TZ).filter((o) =>
-            (dayjs)(o.endAt).isAfter(now),
-          )
-        : inWeek.filter((o) => (dayjs)(o.endAt).isAfter(now));
+      const allOccs = subscriptionSlotsUseConcreteDates(slots)
+        ? subscriptionConcreteOccurrencesSorted(slots, MY_LESSONS_CALENDAR_TZ)
+        : inWeek;
 
-      for (const occ of upcomingOccs) {
+      for (const occ of allOccs) {
+        const slot = slots[occ.slotIndex];
+        const lessonStatus = this.subscriptionSlotToLessonStatus(slot?.status);
+        if (!lessonStatus) {
+          continue;
+        }
         const item = this.enrollmentOccurrenceToLessonItem(
           enrollment,
           occ.startAt,
           occ.endAt,
           occ.slotIndex,
-          'upcoming',
+          lessonStatus,
         );
-        subscriptionUpcomingItems.push(item);
+        if (lessonStatus === 'upcoming') {
+          subscriptionUpcomingItems.push(item);
+        } else if (lessonStatus === 'completed') {
+          subscriptionPreviousItems.push(item);
+        }
       }
     }
 
@@ -183,12 +190,15 @@ export class MyLessonsService {
     const mergedUpcoming = [...upcomingLessons, ...subscriptionUpcomingItems].sort(
       (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
     );
+    const mergedPrevious = [...previousLessons, ...subscriptionPreviousItems].sort(
+      (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
+    );
 
     return {
       ...this.buildCalendarMeta(calendarTrialRows, calendarBaseDate, weekStartDate, subscriptionBounds),
       calendar_lessons: mergedCalendar,
       upcoming_lessons: mergedUpcoming,
-      previous_lessons: previousLessons,
+      previous_lessons: mergedPrevious,
       tutors: this.buildTutorItems(lessons),
     };
   }
@@ -198,6 +208,18 @@ export class MyLessonsService {
       return [];
     }
     return value as unknown as SubscriptionWeeklySlotDto[];
+  }
+
+  private subscriptionSlotToLessonStatus(
+    slotStatus: string | undefined
+  ): MyLessonApiItem['status'] | null {
+    if (normalizeSubscriptionSlotStatus(slotStatus) === ESubscriptionLessonSlotStatus.CANCELLED) {
+      return null;
+    }
+    if (isSubscriptionSlotCompleted(slotStatus)) {
+      return 'completed';
+    }
+    return 'upcoming';
   }
 
   private enrollmentOccurrenceToLessonItem(
@@ -251,17 +273,7 @@ export class MyLessonsService {
   }
 
   private toLessonCalendarApiItem(lesson: TrialLessonBookingWithTutor): MyLessonApiItem | null {
-    const base = this.toLessonApiItem(lesson);
-    if (!base) {
-      return null;
-    }
-    if (
-      lesson.status === ETrialLessonStatus.CONFIRMED &&
-      !this.isLessonEndAfterNow(lesson)
-    ) {
-      return { ...base, status: 'completed' };
-    }
-    return base;
+    return this.toLessonApiItem(lesson);
   }
 
   private toLessonApiItem(lesson: TrialLessonBookingWithTutor): MyLessonApiItem | null {
