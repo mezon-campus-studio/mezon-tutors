@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { formatToCurrency, ECurrency } from '@mezon-tutors/shared';
 import {
@@ -9,17 +9,20 @@ import {
   type WalletStatsApiResponse,
 } from '@mezon-tutors/shared';
 import { Skeleton } from '@/components/ui';
+import WalletPayoutBankCard from '../components/WalletPayoutBankCard';
 
 type StudentWalletInsightPanelProps = {
   details: WalletDetailsApiResponse | undefined;
   stats: WalletStatsApiResponse | undefined;
   isPending?: boolean;
+  onManageBankClick: () => void;
 };
 
 export default function StudentWalletInsightPanel({
   details,
   stats,
   isPending,
+  onManageBankClick,
 }: StudentWalletInsightPanelProps) {
   const t = useTranslations('Wallet.student.insight');
   const tCard = useTranslations('Wallet.balanceCard');
@@ -29,8 +32,8 @@ export default function StudentWalletInsightPanel({
     return (
       <aside className="flex flex-col gap-3">
         <Skeleton className="h-28 rounded-2xl" />
-        <Skeleton className="h-36 rounded-2xl" />
         <Skeleton className="h-24 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
       </aside>
     );
   }
@@ -60,21 +63,6 @@ export default function StudentWalletInsightPanel({
         </dl>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="text-xs font-medium text-slate-600">{tMetrics('transactions.title')}</p>
-            <p className="mt-1 text-2xl font-extrabold tabular-nums text-slate-900">
-              {studentStats?.transactionCount ?? 0}
-            </p>
-          </div>
-          <div className="flex size-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
-            <Sparkles className="size-4" />
-          </div>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">{tMetrics('transactions.helper')}</p>
-      </div>
-
       {hasPendingPayment ? (
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4">
           <div className="flex gap-2.5">
@@ -89,6 +77,11 @@ export default function StudentWalletInsightPanel({
           </div>
         </div>
       ) : null}
+
+      <WalletPayoutBankCard
+        bank={details.payoutBankAccount ?? null}
+        onManageBankClick={onManageBankClick}
+      />
     </aside>
   );
 }

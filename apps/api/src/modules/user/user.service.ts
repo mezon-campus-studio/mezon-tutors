@@ -65,7 +65,7 @@ export class UserService {
   }): Promise<User> {
     const { mezonUserId, username, avatar, email } = params;
 
-    return this.prisma.user.upsert({
+    const user = await this.prisma.user.upsert({
       where: { mezonUserId },
       update: {
         username,
@@ -80,5 +80,13 @@ export class UserService {
         email,
       },
     });
+
+    await this.prisma.wallet.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: { userId: user.id },
+    });
+
+    return user;
   }
 }

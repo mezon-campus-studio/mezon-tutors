@@ -9,7 +9,7 @@ export class LessonSettlementSchedulerService {
 
   constructor(private readonly lessonSettlementService: LessonSettlementService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: DEFAULT_TIMEZONE })
+  @Cron(CronExpression.EVERY_MINUTE, { timeZone: DEFAULT_TIMEZONE })
   async processDueSettlementJobs(): Promise<void> {
     try {
       await this.lessonSettlementService.processDueJobs();

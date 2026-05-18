@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import {
   ArrowDownToLine,
-  ArrowUpRight,
   Banknote,
   Clock4,
   History,
@@ -115,11 +114,19 @@ export default function TutorWalletBentoStats({
         />
         <BentoTile
           className="md:col-span-2"
+          label={t('pendingWithdrawals.title')}
+          value={formatToCurrency(ECurrency.VND, metrics.pendingWithdrawal)}
+          helper={t('pendingWithdrawals.helper')}
+          icon={<Clock4 className="size-5 text-violet-600" />}
+          valueClassName="text-violet-800"
+        />
+        <BentoTile
+          className="md:col-span-2"
           label={t('monthWithdrawn.title')}
           value={formatToCurrency(ECurrency.VND, metrics.monthWithdrawn)}
           helper={t('monthWithdrawn.helper')}
-          icon={<ArrowDownToLine className="size-5 text-orange-600" />}
-          valueClassName="text-orange-700"
+          icon={<ArrowDownToLine className="size-5 text-amber-600" />}
+          valueClassName="text-amber-700"
         />
         <BentoTile
           className="md:col-span-2"
@@ -128,14 +135,6 @@ export default function TutorWalletBentoStats({
           helper={t('totalWithdrawn.helper')}
           icon={<History className="size-5 text-rose-600" />}
           valueClassName="text-rose-700"
-        />
-        <BentoTile
-          className="md:col-span-2"
-          label={t('transactions.title')}
-          value={String(metrics.transactionCount)}
-          helper={tSection('activityHelper')}
-          icon={<ArrowUpRight className="size-5 text-violet-600" />}
-          valueClassName="text-violet-800"
         />
       </div>
     </section>

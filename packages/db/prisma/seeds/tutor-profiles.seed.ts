@@ -160,6 +160,12 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
       },
     });
 
+    await prisma.wallet.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id },
+      update: {},
+    });
+
     const tutorProfileData = {
       firstName,
       lastName,

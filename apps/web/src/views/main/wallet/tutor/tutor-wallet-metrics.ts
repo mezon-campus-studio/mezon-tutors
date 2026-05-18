@@ -4,6 +4,7 @@ import { isTutorWalletStats } from '@mezon-tutors/shared';
 export type TutorWalletMetrics = {
   available: number;
   pendingRelease: number;
+  pendingWithdrawal: number;
   withdrawable: number;
   monthReceived: number;
   monthWithdrawn: number;
@@ -20,10 +21,12 @@ export function getTutorWalletMetrics(
   const tutorStats = isTutorWalletStats(stats) ? stats : undefined;
   const available = details?.availableBalance ?? 0;
   const pendingRelease = details?.pendingBalance ?? 0;
+  const pendingWithdrawal = details?.pendingWithdrawal ?? 0;
 
   return {
-    available,
+    available: available + pendingWithdrawal,
     pendingRelease,
+    pendingWithdrawal,
     withdrawable: available,
     monthReceived: tutorStats?.monthReceived ?? 0,
     monthWithdrawn: tutorStats?.monthWithdrawn ?? 0,

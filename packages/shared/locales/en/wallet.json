@@ -136,12 +136,10 @@
       "insight": {
         "pendingPayoutsTitle": "Pending release",
         "pendingPayoutsHint": "Earnings from lessons awaiting release to your balance.",
+        "pendingWithdrawalTitle": "Pending withdrawal",
+        "pendingWithdrawalHint": "Reserved from your balance while a payout request is reviewed.",
         "withdrawalQueueTitle": "Payout requests",
-        "withdrawalQueueHint": "Withdrawals waiting for processing on this page.",
-        "securityHint": "Payouts are protected and reviewed on Mezonly.",
-        "accountHealthTitle": "Account health",
-        "accountHealthGood": "Earnings flowing normally",
-        "accountHealthIdle": "No activity yet"
+        "withdrawalQueueHint": "Withdrawals waiting for processing on this page."
       },
       "bento": {
         "title": "Earnings overview",
@@ -161,20 +159,76 @@
         "filterWithdrawals": "Withdrawals"
       }
     },
+    "payoutBank": {
+      "cardTitle": "Bank account",
+      "cardEmptyHint": "Add your bank details for refunds and payouts.",
+      "cardAddCta": "Add bank account",
+      "cardEdit": "Update bank account"
+    },
+    "payoutBankDialog": {
+      "title": "Payout bank account",
+      "description": "Used for refunds and tutor payouts. You can update it anytime.",
+      "bankName": "Bank name",
+      "bankNamePlaceholder": "e.g. Vietcombank, Techcombank",
+      "accountNumber": "Account number",
+      "accountNumberPlaceholder": "Digits only, 6–50 characters",
+      "accountName": "Account holder name",
+      "accountNamePlaceholder": "As shown on your bank account",
+      "securityNote": "Your bank details are stored securely and only used for payouts or refunds.",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "submitting": "Saving…",
+      "successTitle": "Bank account saved",
+      "successDescription": "Your payout details are ready for the next withdrawal.",
+      "errorTitle": "Could not save",
+      "errorFallback": "Please check your details and try again.",
+      "validation": {
+        "bankNameRequired": "Bank name is required",
+        "bankNameMin": "Bank name must be at least 2 characters",
+        "bankNameMax": "Bank name must be at most 100 characters",
+        "accountNumberRequired": "Account number is required",
+        "accountNumberDigits": "Account number must contain digits only",
+        "accountNumberMin": "Account number must be at least 6 digits",
+        "accountNumberMax": "Account number must be at most 50 digits",
+        "accountNameRequired": "Account holder name is required",
+        "accountNameMin": "Account holder name must be at least 2 characters",
+        "accountNameMax": "Account holder name must be at most 255 characters",
+        "accountNameInvalid": "Use letters only (no numbers or special characters)"
+      }
+    },
     "withdrawDialog": {
       "title": "Request withdrawal",
-      "description": "Funds will be sent to your bank account after review. Minimum 10,000 VND.",
-      "amount": "Amount (VND)",
+      "description": "Funds will be sent to your bank account after review.",
+      "availableLabel": "Available to withdraw",
+      "amount": "Withdrawal amount",
+      "amountPlaceholder": "Enter amount in VND",
+      "withdrawMax": "Withdraw all",
+      "bankEdit": "Edit",
+      "bankDoneEdit": "Done",
+      "bankRequiredHint": "Add your payout bank account below or save it in the wallet sidebar first.",
+      "bankSectionTitle": "Payout account",
       "bankName": "Bank name",
+      "bankNamePlaceholder": "e.g. Vietcombank, Techcombank",
       "accountNumber": "Account number",
+      "accountNumberPlaceholder": "Digits only, 6–50 characters",
       "accountName": "Account holder name",
+      "accountNamePlaceholder": "As shown on your bank account",
+      "securityNote": "Withdrawal requests are reviewed before funds are transferred.",
+      "insufficientTitle": "Not enough balance",
+      "insufficientHint": "Minimum withdrawal is 10,000 VND. Earn more to request a payout.",
       "cancel": "Cancel",
       "submit": "Submit request",
       "submitting": "Submitting…",
       "successTitle": "Request submitted",
       "successDescription": "We will process your withdrawal as soon as possible.",
       "errorTitle": "Could not submit",
-      "errorFallback": "Please check your balance and try again."
+      "errorFallback": "Please check your balance and try again.",
+      "validation": {
+        "amountRequired": "Amount is required",
+        "amountDigits": "Amount must be a whole number",
+        "amountMin": "Minimum withdrawal is 10,000 VND",
+        "amountMax": "Amount cannot exceed your available balance ({max})"
+      }
     }
   }
 }
