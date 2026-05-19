@@ -1,8 +1,6 @@
 import {
   PLATFORM_FEE_PERCENTAGE,
   timeToMinutes,
-  utcDateToHHmm,
-  utcDateToMinutes,
   type PaginatedResponse,
 } from '@mezon-tutors/shared'
 import {
@@ -15,6 +13,11 @@ import {
 import { ECurrency, EPaymentStatus, ETrialLessonStatus, VerificationStatus } from '@mezon-tutors/db'
 import { Prisma } from '@mezon-tutors/db'
 import dayjs = require('dayjs')
+import utc = require('dayjs/plugin/utc')
+import timezone = require('dayjs/plugin/timezone')
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 import { PrismaService } from '../../prisma/prisma.service'
 import { AppConfigService } from '../../shared/services/app-config.service'
 import { VnpayService } from '../vnpay/vnpay.service'
@@ -199,7 +202,11 @@ export class TrialLessonBookingService {
             avatar: true,
             subject: true,
             headline: true,
-            timezone: true,
+            user: {
+              select: {
+                timezone: true,
+              },
+            },
           },
         },
         student: {
@@ -237,7 +244,7 @@ export class TrialLessonBookingService {
         avatarUrl: booking.tutor.avatar,
         subject: booking.tutor.subject,
         headline: booking.tutor.headline,
-        timezone: booking.tutor.timezone,
+        timezone: booking.tutor.user?.timezone ?? 'UTC',
       },
       student: {
         id: booking.student.id,
@@ -248,7 +255,7 @@ export class TrialLessonBookingService {
     }
   }
 
-  async getAcceptedByTutorAndDate(tutorId: string, date: string) {
+  async getAcceptedByTutorAndDate(tutorId: string, date: string, timezoneName: string) {
     const tutor = await this.prisma.tutorProfile.findUnique({
       where: { id: tutorId },
       select: { id: true },
@@ -258,7 +265,8 @@ export class TrialLessonBookingService {
       throw new NotFoundException(`Tutor with ID ${tutorId} not found`)
     }
 
-    const dayStart = dayjs(`${date}T00:00:00Z`)
+    const dayStartLocal = dayjs.tz(`${date} 00:00`, timezoneName || 'UTC')
+    const dayStart = dayStartLocal.utc()
     if (!dayStart.isValid()) {
       throw new BadRequestException('Invalid date')
     }
@@ -288,7 +296,7 @@ export class TrialLessonBookingService {
     return {
       items: bookings.map((booking) => ({
         id: booking.id,
-        startTime: utcDateToHHmm(booking.startAt),
+        startAt: booking.startAt.toISOString(),
         durationMinutes: booking.durationMinutes,
       })),
     }
@@ -313,11 +321,17 @@ export class TrialLessonBookingService {
       where: { id: dto.tutorId },
       include: {
         trialLessonPrice: true,
+        user: {
+          select: {
+            timezone: true,
+          },
+        },
       } as unknown as Prisma.TutorProfileInclude,
     }) as unknown as {
       id: string
       verificationStatus: VerificationStatus
       trialLessonPrice?: { usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } | null
+      user?: { timezone: string } | null
     } | null
 
     if (!tutor || tutor.verificationStatus !== VerificationStatus.APPROVED) {
@@ -338,13 +352,20 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Cannot book lesson in the past')
     }
 
-    const startMinutes = utcDateToMinutes(startAt.toDate())
+    // Convert absolute start time to tutor's local timezone
+    const tutorTimezone = tutor.user?.timezone ?? 'UTC'
+    const startAtTutorLocal = startAt.tz(tutorTimezone)
+
+    // In database, dayOfWeek represents: Monday = 0, ..., Sunday = 6
+    // dayjs.day() returns 0 for Sunday, 1 for Monday, etc.
+    const tutorDayOfWeek = (startAtTutorLocal.day() + 6) % 7
+    const startMinutes = startAtTutorLocal.hour() * 60 + startAtTutorLocal.minute()
     const endMinutes = startMinutes + dto.durationMinutes
 
     const availability = await this.prisma.tutorAvailability.findMany({
       where: {
         tutorId: tutor.id,
-        dayOfWeek: dto.dayOfWeek,
+        dayOfWeek: tutorDayOfWeek,
         isActive: true,
       },
       orderBy: { startTime: 'asc' },
@@ -360,8 +381,10 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Selected time is not available for this tutor')
     }
 
-    const dayStart = startAt.startOf('day')
-    const dayEnd = dayStart.add(1, 'day')
+    // Query existing bookings within 24 hours around requested time (handling timezone shifts securely)
+    const queryRangeStart = startAt.subtract(1, 'day').toDate()
+    const queryRangeEnd = startAt.add(1, 'day').toDate()
+
     const existingBookings = await this.prisma.trialLessonBooking.findMany({
       where: {
         tutorId: tutor.id,
@@ -369,8 +392,8 @@ export class TrialLessonBookingService {
           in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
         },
         startAt: {
-          gte: dayStart.toDate(),
-          lt: dayEnd.toDate(),
+          gte: queryRangeStart,
+          lt: queryRangeEnd,
         },
       },
       select: {
@@ -380,10 +403,13 @@ export class TrialLessonBookingService {
       },
     })
 
+    const newStart = startAt.toDate()
+    const newEnd = startAt.add(dto.durationMinutes, 'minute').toDate()
+
     const hasOverlap = existingBookings.some((booking) => {
-      const bookedStartMinutes = utcDateToMinutes(booking.startAt)
-      const bookedEndMinutes = bookedStartMinutes + booking.durationMinutes
-      return startMinutes < bookedEndMinutes && endMinutes > bookedStartMinutes
+      const bookedStart = booking.startAt
+      const bookedEnd = new Date(bookedStart.getTime() + booking.durationMinutes * 60 * 1000)
+      return newStart < bookedEnd && newEnd > bookedStart
     })
 
     if (hasOverlap) {

@@ -258,6 +258,7 @@ export interface TutorAboutDto extends VerifiedTutorProfileDto {
 
 export interface TutorScheduleDto {
   availability: TutorDetailAvailabilitySlotDto[]
+  timezone?: string
 }
 
 export interface TutorReviewsDto {

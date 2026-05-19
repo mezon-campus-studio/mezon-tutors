@@ -13,12 +13,10 @@ import {
   VerificationStatus,
 } from '@mezon-tutors/db';
 import {
-  DEFAULT_TIMEZONE,
   ECurrency,
   PLATFORM_FEE_PERCENTAGE,
   buildMonthlySubscriptionSlotJson,
   jsDayToDbDayOfWeek,
-  parseYyyyMmDdToLocalDate,
   timeToMinutes,
   type SubscriptionEligibilityDto,
   type SubscriptionEnrollmentDetailDto,
@@ -32,6 +30,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
+import dayjs = require('dayjs');
+import utc = require('dayjs/plugin/utc');
+import timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const SUBSCRIPTION_MONTHLY_WEEKS = 4;
 const PRESET_LESSONS_MIN = 1;
@@ -333,6 +337,18 @@ export class SubscriptionService {
 
     const planPrice = trialToPresetMonthlyPriceRow(trial, dto.lessonsPerWeek);
 
+    const tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { id: dto.tutorId },
+      select: {
+        user: {
+          select: {
+            timezone: true,
+          },
+        },
+      },
+    });
+    const tutorTimezone = tutorProfile?.user?.timezone ?? 'UTC';
+
     if (dto.slots.length !== dto.lessonsPerWeek) {
       throw new BadRequestException('Slot count must match lessons per week');
     }
@@ -344,8 +360,11 @@ export class SubscriptionService {
     const normalized: SubscriptionWeeklySlotDto[] = [];
     const seen = new Set<string>();
     for (const s of dto.slots) {
-      const d = parseYyyyMmDdToLocalDate(s.date);
-      const dbDay = jsDayToDbDayOfWeek(d.getDay());
+      const d = dayjs.tz(`${s.date} 00:00`, tutorTimezone);
+      if (!d.isValid()) {
+        throw new BadRequestException('Invalid slot date');
+      }
+      const dbDay = jsDayToDbDayOfWeek(d.day());
       const startM = timeToMinutes(s.startTime);
       const endM = timeToMinutes(s.endTime);
       if (endM <= startM) {
@@ -387,7 +406,7 @@ export class SubscriptionService {
       dto.slots,
       normalized,
       SUBSCRIPTION_MONTHLY_WEEKS,
-      DEFAULT_TIMEZONE
+      tutorTimezone
     ) as SubscriptionWeeklySlotDto[];
 
     const created = await this.prisma.subscriptionEnrollment.create({
@@ -435,7 +454,8 @@ export class SubscriptionService {
 
   async listTutorWeekOccurrences(
     tutorUserId: string,
-    weekStartYmd: string
+    weekStartYmd: string,
+    timezoneName = 'UTC'
   ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
     const tutor = await this.prisma.tutorProfile.findUnique({
       where: { userId: tutorUserId },
@@ -464,7 +484,7 @@ export class SubscriptionService {
     const out: TutorSubscriptionWeekOccurrenceDto[] = [];
     for (const e of enrollments) {
       const slots = this.parseWeeklySlots(e.weeklySlots);
-      const times = subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, DEFAULT_TIMEZONE);
+      const times = subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, timezoneName);
       for (const t of times) {
         const slot = slots[t.slotIndex];
         if (!slot) {

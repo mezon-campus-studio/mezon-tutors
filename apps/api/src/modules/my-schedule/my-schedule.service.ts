@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ETrialLessonStatus, EPaymentStatus, ESubscriptionEnrollmentStatus } from '@mezon-tutors/db';
-import { DEFAULT_TIMEZONE, subscriptionSlotsOccurrencesForWeek } from '@mezon-tutors/shared';
+import {
+  ETrialLessonStatus,
+  EPaymentStatus,
+  ESubscriptionEnrollmentStatus,
+} from '@mezon-tutors/db';
+import { subscriptionSlotsOccurrencesForWeek } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import timezone = require('dayjs/plugin/timezone');
 import utc = require('dayjs/plugin/utc');
@@ -45,18 +49,18 @@ export class MyScheduleService {
     return `${hh}:${mm}`;
   }
 
-  async getMySchedule(tutorMezonUserId?: string, weekStartDate?: string) {
+  async getMySchedule(tutorMezonUserId?: string, weekStartDate?: string, timezoneName = 'UTC') {
     const emptyResponse = { availability: [], lessons: [] };
 
     if (!tutorMezonUserId) return emptyResponse;
 
     const user = await this.prisma.user.findUnique({
       where: { mezonUserId: tutorMezonUserId },
-      select: { 
+      select: {
         id: true,
         tutorProfile: {
-          select: { id: true }
-        }
+          select: { id: true },
+        },
       },
     });
     if (!user?.tutorProfile) return emptyResponse;
@@ -65,9 +69,9 @@ export class MyScheduleService {
 
     let monday: dayjs.Dayjs;
     if (weekStartDate) {
-      monday = dayjs(weekStartDate).tz(DEFAULT_TIMEZONE).startOf('day');
+      monday = dayjs.tz(weekStartDate, timezoneName).startOf('day');
     } else {
-      const now = dayjs();
+      const now = dayjs().tz(timezoneName);
       const dayOfWeek = now.day();
       const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       monday = now.subtract(mondayOffset, 'day').startOf('day');
@@ -132,7 +136,7 @@ export class MyScheduleService {
     }));
 
     const trialLessonEvents: ScheduleEvent[] = bookings.map((booking) => {
-      const startsAt = dayjs(booking.startAt).tz(DEFAULT_TIMEZONE);
+      const startsAt = dayjs(booking.startAt).tz(timezoneName);
       const endsAt = startsAt.add(booking.durationMinutes, 'minute');
       const dayIndex = startsAt.day() === 0 ? 6 : startsAt.day() - 1;
 
@@ -158,37 +162,41 @@ export class MyScheduleService {
     });
 
     const weekStartYmd = monday.format('YYYY-MM-DD');
-    const subscriptionLessonEvents: ScheduleEvent[] = subscriptionEnrollments.flatMap((enrollment) => {
-      const raw = enrollment.weeklySlots;
-      const slots = Array.isArray(raw)
-        ? (raw as { dayOfWeek: number; startTime: string; durationMinutes: number; date?: string }[])
-        : [];
-      return subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, DEFAULT_TIMEZONE).map((occ) => {
-        const startsAt = dayjs(occ.startAt).tz(DEFAULT_TIMEZONE);
-        const endsAt = startsAt.add(
-          slots[occ.slotIndex]?.durationMinutes ?? 60,
-          'minute',
-        );
-        const dayIndex = startsAt.day() === 0 ? 6 : startsAt.day() - 1;
-        return {
-          id: `sub-${enrollment.id}-${occ.slotIndex}`,
-          dayIndex,
-          startHour: this.toDecimalHour(startsAt),
-          endHour: this.toDecimalHour(endsAt),
-          status: 'upcoming' as const,
-          title: 'Subscription',
-          studentName: enrollment.student.username,
-          timeLabel: `${startsAt.format('HH:mm')} - ${endsAt.format('HH:mm')}`,
-        };
-      });
-    });
+    const subscriptionLessonEvents: ScheduleEvent[] = subscriptionEnrollments.flatMap(
+      (enrollment) => {
+        const raw = enrollment.weeklySlots;
+        const slots = Array.isArray(raw)
+          ? (raw as {
+              dayOfWeek: number;
+              startTime: string;
+              durationMinutes: number;
+              date?: string;
+            }[])
+          : [];
+        return subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, timezoneName).map((occ) => {
+          const startsAt = dayjs(occ.startAt).tz(timezoneName);
+          const endsAt = startsAt.add(slots[occ.slotIndex]?.durationMinutes ?? 60, 'minute');
+          const dayIndex = startsAt.day() === 0 ? 6 : startsAt.day() - 1;
+          return {
+            id: `sub-${enrollment.id}-${occ.slotIndex}`,
+            dayIndex,
+            startHour: this.toDecimalHour(startsAt),
+            endHour: this.toDecimalHour(endsAt),
+            status: 'upcoming' as const,
+            title: 'Subscription',
+            studentName: enrollment.student.username,
+            timeLabel: `${startsAt.format('HH:mm')} - ${endsAt.format('HH:mm')}`,
+          };
+        });
+      }
+    );
 
     const lessonEvents: ScheduleEvent[] = [...trialLessonEvents, ...subscriptionLessonEvents].sort(
       (a, b) => {
         if (a.dayIndex !== b.dayIndex) return a.dayIndex - b.dayIndex;
         if (a.startHour !== b.startHour) return a.startHour - b.startHour;
         return a.endHour - b.endHour;
-      },
+      }
     );
 
     const availabilityEvents: ScheduleEvent[] = availability.flatMap((slot) => {
