@@ -18,6 +18,8 @@ import { AuthService } from './auth.service';
 import { MezonCallbackQueryDto } from './dto/mezon-callback-query.dto';
 import { MezonExchangeDto } from './dto/mezon-exchange.dto';
 import { SyncMezonProfileDto } from './dto/sync-mezon-profile.dto';
+import { MezonChannelAppLoginDto } from './dto/mezon-channel-app-login.dto';
+import { MezonChannelAppService } from './services/mezon-channel-app.service';
 
 const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const OAUTH_STATE_COOKIE = 'oauth_state';
@@ -29,7 +31,8 @@ const OAUTH_STATE_MAX_AGE = 1000 * 60 * 10;
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly appConfig: AppConfigService
+    private readonly appConfig: AppConfigService,
+    private readonly mezonChannelAppService: MezonChannelAppService
   ) {}
 
   private getRefreshCookieOptions(): CookieOptions {
@@ -98,6 +101,23 @@ export class AuthController {
     this.clearOAuthStateCookie(res);
 
     const result = await this.authService.handleMezonCallback(code, state);
+
+    res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
+
+    return {
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+      idToken: result.idToken,
+    };
+  }
+
+  @Post('channel-app/login')
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
+  async channelAppLogin(
+    @Body() body: MezonChannelAppLoginDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.mezonChannelAppService.authenticateFromBase64Hash(body.hashData);
 
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 

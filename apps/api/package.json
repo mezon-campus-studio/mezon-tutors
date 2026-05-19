@@ -28,6 +28,7 @@
     "class-validator": "^0.14.1",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
+    "crypto": "^1.0.1",
     "dayjs": "^1.11.13",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
