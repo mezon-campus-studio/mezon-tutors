@@ -20,20 +20,31 @@ async function bootstrap() {
   const corsOrigins =
     configService.corsOrigins
       ?.split(',')
-      .map((o) => o.trim())
+      .map((o) => o.trim().replace(/\/$/, ''))
       .filter(Boolean) ?? [];
-  const allowOrigin =
-    corsOrigins.length > 0
-      ? corsOrigins
-      : configService.nodeEnv !== 'production'
-        ? true
-        : [];
+  const frontendOrigin = configService.frontendUrl.replace(/\/$/, '');
+
+  let allowOrigin: boolean | string[];
+  if (corsOrigins.length > 0) {
+    allowOrigin = [...new Set([...corsOrigins, frontendOrigin])];
+  } else if (configService.nodeEnv !== 'production') {
+    allowOrigin = true;
+  } else {
+    allowOrigin = [frontendOrigin];
+    console.warn(
+      `[CORS] CORS_ORIGINS unset in production; allowing only FRONTEND_URL: ${frontendOrigin}`
+    );
+  }
+
+  if (configService.nodeEnv === 'production') {
+    console.info(`[CORS] Allowed origins: ${JSON.stringify(allowOrigin)}`);
+  }
 
   app.enableCors({
     origin: allowOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   });
 
   app.setGlobalPrefix('api');
