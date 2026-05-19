@@ -3,6 +3,7 @@ import { getDefaultStore } from "jotai";
 import { accessTokenAtom } from "@/store/token.atom";
 import { useQuery } from "@tanstack/react-query";
 import { storage } from "../storage/storage.service";
+import { base64EncodeUtf8 } from "@/lib/mezon-channel-app";
 
 export type AuthUser = {
   id?: string;
@@ -40,6 +41,15 @@ class AuthService {
   async getAuthUrl(): Promise<string> {
     const res = await apiClient.get<AuthUrlResponse>("/auth/url");
     return res.url;
+  }
+
+  async loginWithChannelAppHash(rawHashData: string): Promise<ExchangeResponse> {
+    const data = await apiClient.post<ExchangeResponse>(
+      "/auth/channel-app/login",
+      { hashData: base64EncodeUtf8(rawHashData) }
+    );
+    this.store.set(accessTokenAtom, data.accessToken);
+    return data;
   }
 
   async exchangeCode(code: string, state: string): Promise<ExchangeResponse> {

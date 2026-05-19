@@ -7,6 +7,7 @@ import { UserModule } from '../user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
+import { MezonChannelAppService } from './services/mezon-channel-app.service'
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, MezonChannelAppService],
   exports: [AuthService, JwtModule, PassportModule, JwtStrategy],
 })
 export class AuthModule {}
