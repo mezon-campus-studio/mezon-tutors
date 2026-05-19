@@ -2037,6 +2037,7 @@ __metadata:
     class-validator: "npm:^0.14.1"
     cloudinary: "npm:^2.9.0"
     cookie-parser: "npm:^1.4.7"
+    crypto: "npm:^1.0.1"
     dayjs: "npm:^1.11.13"
     helmet: "npm:^8.1.0"
     jsonwebtoken: "npm:^9.0.3"
@@ -6359,6 +6360,13 @@ __metadata:
   dependencies:
     type-fest: "npm:^1.0.1"
   checksum: 10/cd5d7ae13803de53680aaed4c732f67209af5988cbeec5f6b29082020347c2d8849ca921b2008be7d6bd1d9d198c3c3697e7441d6d0d3da1bf51e9e4d2032149
+  languageName: node
+  linkType: hard
+
+"crypto@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "crypto@npm:1.0.1"
+  checksum: 10/087fe3165bd94c333a49e6ed66a0193911f63eac38a24f379b3001a5fe260a59c413646e53a0f67875ba13902b2686d81dc703cb2c147a4ec727dcdc04e5645e
   languageName: node
   linkType: hard
 
