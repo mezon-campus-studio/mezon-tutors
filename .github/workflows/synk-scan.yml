@@ -1,0 +1,118 @@
+name: Snyk Security Scan
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  snyk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack and use project Yarn version
+        run: |
+          corepack enable
+          corepack prepare yarn@4.11.0 --activate
+
+      - name: Install dependencies
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+        run: yarn install --mode=skip-build
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Snyk test (warning only - phase 1)
+        id: snyk_scan
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --all-projects --severity-threshold=high --json > snyk-results.json
+
+      - name: Warn when vulnerabilities found
+        if: steps.snyk_scan.outcome == 'failure'
+        run: echo "::warning::Snyk found High/Critical vulnerabilities (phase 1 warning-only)."
+
+      - name: Snyk vulnerabilities table (Markdown)
+        if: always()
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const outPath = path.join(process.cwd(), 'snyk-results.json');
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+
+          if (!summaryPath) {
+            console.log('GITHUB_STEP_SUMMARY is not set; skipping report.');
+            process.exit(0);
+          }
+
+          let data;
+          try {
+            const raw = fs.readFileSync(outPath, 'utf8');
+            data = JSON.parse(raw);
+          } catch (e) {
+            fs.appendFileSync(summaryPath, '## Snyk vulnerabilities table\n- No `snyk-results.json` found or JSON is invalid.\n');
+            process.exit(0);
+          }
+
+          const projects = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+          const rows = [];
+
+          for (const proj of projects) {
+            const file = proj.displayTargetFile || proj.path || proj.projectName || '';
+            const vulns = Array.isArray(proj.vulnerabilities) ? proj.vulnerabilities : [];
+            for (const v of vulns) {
+              const severity = (v.severity || '').toString().toUpperCase();
+              const id = v.id ? v.id.toString() : '';
+              const desc = (v.title || v.moduleName || '').toString().replace(/\r?\n/g, ' ').replace(/\|/g, '\\|').trim();
+              const fixedInRaw = v.fixedIn;
+              const fixedIn = Array.isArray(fixedInRaw)
+                ? fixedInRaw.join(', ')
+                : (fixedInRaw ? fixedInRaw.toString() : '-');
+              const fixedInEscaped = fixedIn.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|').trim();
+              if (!severity && !id && !desc) continue;
+              rows.push({
+                severity,
+                  tool: 'Snyk',
+                file,
+                desc,
+                id,
+                fixedIn: fixedInEscaped,
+              });
+            }
+          }
+
+          // Keep summary short; still useful for PR review.
+          const maxRows = 60;
+          const shown = rows.slice(0, maxRows);
+          const truncated = rows.length > maxRows;
+
+          let md = [];
+          md.push('## Snyk vulnerabilities table');
+          md.push('');
+          md.push('| Severity | Tool | File | Description | ID | FixedIn |');
+          md.push('|---|---|---|---|---|---|');
+          for (const r of shown) {
+            const fixedIn = (r.fixedIn && r.fixedIn !== '') ? r.fixedIn : '-';
+            md.push(`| ${r.severity} | ${r.tool} | ${r.file} | ${r.desc} | ${r.id} | ${fixedIn} |`);
+          }
+          if (truncated) md.push(`\n> Truncated to first ${maxRows} rows (total: ${rows.length}).\n`);
+          md.push('');
+
+          fs.appendFileSync(summaryPath, md.join('\n'));
+          NODE
+
+      - name: Add scan summary
+        if: always()
+        run: |
+          echo "## Snyk scan result" >> $GITHUB_STEP_SUMMARY
+          echo "- Mode: warning only (phase 1)" >> $GITHUB_STEP_SUMMARY
+          echo "- Workflow does not block PR yet." >> $GITHUB_STEP_SUMMARY
