@@ -159,7 +159,6 @@ export class TutorProfileService {
         experience: dto.specialization,
         motivate: dto.motivate,
         headline: dto.headline,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         ratingAverage: 0,
         verificationStatus: VerificationStatus.PENDING,
       } as unknown as Prisma.TutorProfileCreateInput,
@@ -547,6 +546,7 @@ export class TutorProfileService {
         user: {
           select: {
             mezonUserId: true;
+            timezone: true;
           };
         };
       };
@@ -566,6 +566,7 @@ export class TutorProfileService {
         user: {
           select: {
             mezonUserId: true,
+            timezone: true,
           },
         },
       } as unknown as Prisma.TutorProfileInclude,
@@ -680,6 +681,7 @@ export class TutorProfileService {
         user: {
           select: {
             mezonUserId: true,
+            timezone: true,
           },
         },
       } as unknown as Prisma.TutorProfileInclude,

@@ -128,6 +128,7 @@ model User {
   avatar                 String
   role                   Role                    @default(STUDENT)
   email                  String
+  timezone               String                  @default("UTC")
   createdAt              DateTime                @default(now()) @map("created_at")
   tutorProfile           TutorProfile?
   trialLessonBookings    TrialLessonBooking[]
@@ -196,7 +197,6 @@ model TutorProfile {
   totalStudents      Int                @default(0) @map("total_students")
   ratingCount        Int                @default(0) @map("rating_count")
   ratingAverage      Decimal            @default(0) @map("rating_average") @db.Decimal(3, 2)
-  timezone           String             @default("UTC")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 

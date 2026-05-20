@@ -1,16 +1,21 @@
-'use client';
+"use client";
 
-import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils';
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui";
+import {
+  FALLBACK_TIMEZONE,
+  formatUtcOffsetLabel,
+  nowInTimezone,
+} from "@/lib/timezone";
+import { cn } from "@/lib/utils";
 
 const SLOT_MINUTES = 30;
 const DAY_COUNT = 7;
 const MINUTES_PER_DAY = 24 * 60;
 
-type SelectionMode = 'single' | 'multiple';
+type SelectionMode = "single" | "multiple";
 
 export type ScheduleSlotInput = {
   date: string;
@@ -32,13 +37,18 @@ export interface ScheduleSelectionProps {
   value?: SelectedScheduleSlot[];
   defaultValue?: SelectedScheduleSlot[];
   onChange?: (slots: SelectedScheduleSlot[]) => void;
-  onWeekChange?: (payload: { weekOffset: number; startDate: string; endDate: string }) => void;
+  onWeekChange?: (payload: {
+    weekOffset: number;
+    startDate: string;
+    endDate: string;
+  }) => void;
   className?: string;
   gridClassName?: string;
   maxBodyHeight?: string;
   fillAvailableHeight?: boolean;
   gridIntervalMinutes?: number;
   lessonDurationMinutes?: number;
+  timezone?: string;
 }
 
 type WeekDate = {
@@ -47,7 +57,7 @@ type WeekDate = {
 };
 
 function pad2(num: number): string {
-  return String(num).padStart(2, '0');
+  return String(num).padStart(2, "0");
 }
 
 function formatYmd(date: Date): string {
@@ -55,7 +65,7 @@ function formatYmd(date: Date): string {
 }
 
 function parseYmd(ymd: string): Date {
-  const [yearText, monthText, dayText] = ymd.split('-');
+  const [yearText, monthText, dayText] = ymd.split("-");
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
@@ -63,7 +73,7 @@ function parseYmd(ymd: string): Date {
 }
 
 function parseTimeToMinutes(time: string): number {
-  const [hourText, minuteText] = time.split(':');
+  const [hourText, minuteText] = time.split(":");
   const hour = Number(hourText);
   const minute = Number(minuteText);
   return hour * 60 + minute;
@@ -82,6 +92,24 @@ function getWeekStartMonday(now = new Date()): Date {
   return monday;
 }
 
+function toCellTimestamp(
+  date: string,
+  startTime: string,
+  timezone: string,
+): number {
+  const fullDate = parseYmd(date);
+  const [hourText, minuteText] = startTime.split(":");
+  return nowInTimezone(timezone)
+    .year(fullDate.getFullYear())
+    .month(fullDate.getMonth())
+    .date(fullDate.getDate())
+    .hour(Number(hourText))
+    .minute(Number(minuteText))
+    .second(0)
+    .millisecond(0)
+    .valueOf();
+}
+
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -91,7 +119,7 @@ function addDays(date: Date, days: number): Date {
 function normalizeEndTime(
   startTime: string,
   endTime: string | undefined,
-  defaultDurationMinutes: number
+  defaultDurationMinutes: number,
 ): string {
   if (endTime) {
     return endTime;
@@ -99,18 +127,29 @@ function normalizeEndTime(
   return minutesToTime(parseTimeToMinutes(startTime) + defaultDurationMinutes);
 }
 
-function buildSlotLabel(date: string, startTime: string, endTime: string): string {
+function buildSlotLabel(
+  date: string,
+  startTime: string,
+  endTime: string,
+): string {
   const fullDate = parseYmd(date);
-  const left = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
+  const left = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
   }).format(fullDate);
   return `${left} . ${startTime} - ${endTime}`;
 }
 
-function toSelectedSlot(slot: ScheduleSlotInput, defaultDurationMinutes: number): SelectedScheduleSlot {
-  const endTime = normalizeEndTime(slot.startTime, slot.endTime, defaultDurationMinutes);
+function toSelectedSlot(
+  slot: ScheduleSlotInput,
+  defaultDurationMinutes: number,
+): SelectedScheduleSlot {
+  const endTime = normalizeEndTime(
+    slot.startTime,
+    slot.endTime,
+    defaultDurationMinutes,
+  );
   return {
     date: slot.date,
     startTime: slot.startTime,
@@ -124,13 +163,13 @@ function toSlotKey(slot: { date: string; startTime: string }): string {
 }
 
 type ScheduleCellType =
-  | 'empty'
-  | 'emptyPast'
-  | 'futureAvailable'
-  | 'futureAvailableMuted'
-  | 'pastAvailable'
-  | 'selected'
-  | 'pastSelected';
+  | "empty"
+  | "emptyPast"
+  | "futureAvailable"
+  | "futureAvailableMuted"
+  | "pastAvailable"
+  | "selected"
+  | "pastSelected";
 
 function getScheduleCellType(input: {
   isAvailable: boolean;
@@ -140,38 +179,39 @@ function getScheduleCellType(input: {
 }): ScheduleCellType {
   const { isAvailable, isSelected, isPast, isSelectable } = input;
   if (!isAvailable) {
-    return isPast ? 'emptyPast' : 'empty';
+    return isPast ? "emptyPast" : "empty";
   }
   if (isPast) {
-    return isSelected ? 'pastSelected' : 'pastAvailable';
+    return isSelected ? "pastSelected" : "pastAvailable";
   }
   if (isSelected) {
-    return 'selected';
+    return "selected";
   }
   if (!isSelectable) {
-    return 'futureAvailableMuted';
+    return "futureAvailableMuted";
   }
-  return 'futureAvailable';
+  return "futureAvailable";
 }
 
 function getScheduleCellClassName(type: ScheduleCellType): string {
   return cn(
-    type === 'empty' && 'bg-muted/25',
-    type === 'emptyPast' && 'bg-muted',
-    type === 'futureAvailable' && 'cursor-pointer bg-primary hover:bg-primary/70',
-    type === 'futureAvailableMuted' &&
-      'cursor-not-allowed bg-primary/40 ring-1 ring-inset ring-primary/25 saturate-75',
-    type === 'selected' && 'cursor-pointer bg-[#e7d65c] shadow-inner',
-    type === 'pastAvailable' &&
-      'cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30',
-    type === 'pastSelected' &&
-      'cursor-not-allowed bg-[#e7d65c]/45 opacity-90 ring-2 ring-inset ring-primary/40'
+    type === "empty" && "bg-muted/25",
+    type === "emptyPast" && "bg-muted",
+    type === "futureAvailable" &&
+      "cursor-pointer bg-primary hover:bg-primary/70",
+    type === "futureAvailableMuted" &&
+      "cursor-not-allowed bg-primary/40 ring-1 ring-inset ring-primary/25 saturate-75",
+    type === "selected" && "cursor-pointer bg-[#e7d65c] shadow-inner",
+    type === "pastAvailable" &&
+      "cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30",
+    type === "pastSelected" &&
+      "cursor-not-allowed bg-[#e7d65c]/45 opacity-90 ring-2 ring-inset ring-primary/40",
   );
 }
 
 export function ScheduleSelection({
   availableSlots,
-  selectionMode = 'single',
+  selectionMode = "single",
   maxSelections,
   value,
   defaultValue = [],
@@ -179,16 +219,24 @@ export function ScheduleSelection({
   onWeekChange,
   className,
   gridClassName,
-  maxBodyHeight = '520px',
+  maxBodyHeight = "520px",
   fillAvailableHeight = false,
   gridIntervalMinutes = SLOT_MINUTES,
   lessonDurationMinutes = SLOT_MINUTES,
+  timezone = FALLBACK_TIMEZONE,
 }: ScheduleSelectionProps) {
-  const t = useTranslations('Common.ScheduleSelection');
+  const t = useTranslations("Common.ScheduleSelection");
+  const clientTimezoneLabel = useMemo(() => {
+    return formatUtcOffsetLabel(timezone);
+  }, [timezone]);
   const [weekOffset, setWeekOffset] = useState(0);
-  const [internalValue, setInternalValue] = useState<SelectedScheduleSlot[]>(defaultValue);
-  const now = useMemo(() => new Date(), []);
-  const baseWeekStart = useMemo(() => getWeekStartMonday(now), [now]);
+  const [internalValue, setInternalValue] =
+    useState<SelectedScheduleSlot[]>(defaultValue);
+  const baseWeekStart = useMemo(() => {
+    const now = nowInTimezone(timezone);
+    const asDate = new Date(now.year(), now.month(), now.date());
+    return getWeekStartMonday(asDate);
+  }, [timezone]);
 
   const selectedSlots = value ?? internalValue;
 
@@ -213,19 +261,19 @@ export function ScheduleSelection({
 
   const weekRangeLabel = useMemo(() => {
     if (!weekDates.length) {
-      return '';
+      return "";
     }
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
     return `${formatter.format(weekDates[0].date)} - ${formatter.format(weekDates[DAY_COUNT - 1].date)}`;
   }, [weekDates]);
 
   const timeRows = useMemo(() => {
-    return Array.from({ length: MINUTES_PER_DAY / gridIntervalMinutes }).map((_, index) =>
-      minutesToTime(index * gridIntervalMinutes)
+    return Array.from({ length: MINUTES_PER_DAY / gridIntervalMinutes }).map(
+      (_, index) => minutesToTime(index * gridIntervalMinutes),
     );
   }, [gridIntervalMinutes]);
 
@@ -234,7 +282,7 @@ export function ScheduleSelection({
     for (const slot of availableSlots) {
       const start = parseTimeToMinutes(slot.startTime);
       const end = parseTimeToMinutes(
-        normalizeEndTime(slot.startTime, slot.endTime, gridIntervalMinutes)
+        normalizeEndTime(slot.startTime, slot.endTime, gridIntervalMinutes),
       );
       for (let minute = start; minute < end; minute += gridIntervalMinutes) {
         visibleAvailableCellSet.add(`${slot.date}|${minutesToTime(minute)}`);
@@ -250,7 +298,7 @@ export function ScheduleSelection({
 
     const selectableCellSet = new Set<string>();
     for (const key of visibleAvailableCellSet) {
-      const [date, startTime] = key.split('|');
+      const [date, startTime] = key.split("|");
       const start = parseTimeToMinutes(startTime);
       let hasConsecutiveSlots = true;
       for (
@@ -290,7 +338,7 @@ export function ScheduleSelection({
   };
 
   const scrollTargetRowStartTime = useMemo(() => {
-    const nowMs = Date.now();
+    const nowMs = nowInTimezone(timezone).valueOf();
     let bestTs = Number.POSITIVE_INFINITY;
     let bestRow: string | null = null;
 
@@ -298,10 +346,7 @@ export function ScheduleSelection({
       for (const startTime of timeRows) {
         const key = `${day.id}|${startTime}`;
         if (!selectableCellSet.has(key)) continue;
-        const cellDate = parseYmd(day.id);
-        const [hourText, minuteText] = startTime.split(':');
-        cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
-        const ts = cellDate.getTime();
+        const ts = toCellTimestamp(day.id, startTime, timezone);
         if (ts <= nowMs) continue;
         if (ts < bestTs) {
           bestTs = ts;
@@ -323,7 +368,13 @@ export function ScheduleSelection({
     }
 
     return null;
-  }, [selectableCellSet, timeRows, visibleAvailableCellSet, weekDates]);
+  }, [
+    selectableCellSet,
+    timeRows,
+    timezone,
+    visibleAvailableCellSet,
+    weekDates,
+  ]);
 
   const scrollBodyRef = useRef<HTMLDivElement>(null);
 
@@ -332,10 +383,10 @@ export function ScheduleSelection({
       return;
     }
     const rowEl = scrollBodyRef.current.querySelector<HTMLElement>(
-      `[data-schedule-row="${CSS.escape(scrollTargetRowStartTime)}"]`
+      `[data-schedule-row="${CSS.escape(scrollTargetRowStartTime)}"]`,
     );
-    rowEl?.scrollIntoView({ block: 'center', behavior: 'auto' });
-  }, [scrollTargetRowStartTime, weekOffset, availableSlots, gridIntervalMinutes, lessonDurationMinutes]);
+    rowEl?.scrollIntoView({ block: "center", behavior: "auto" });
+  }, [scrollTargetRowStartTime]);
 
   const handleCellSelect = (date: string, startTime: string) => {
     const key = `${date}|${startTime}`;
@@ -343,16 +394,14 @@ export function ScheduleSelection({
       return;
     }
 
-    const nowDate = new Date();
-    const [hourText, minuteText] = startTime.split(':');
-    const cellDate = parseYmd(date);
-    cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
-    if (cellDate <= nowDate) {
+    const nowMs = nowInTimezone(timezone).valueOf();
+    const cellTs = toCellTimestamp(date, startTime, timezone);
+    if (cellTs <= nowMs) {
       return;
     }
 
     const newSlot = toSelectedSlot({ date, startTime }, lessonDurationMinutes);
-    if (selectionMode === 'single') {
+    if (selectionMode === "single") {
       emitChange([newSlot]);
       return;
     }
@@ -367,52 +416,62 @@ export function ScheduleSelection({
     }
     emitChange(
       [...selectedSlots, newSlot].sort((a, b) =>
-        `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`)
-      )
+        `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+      ),
     );
   };
 
-  const bodyScrollStyle = fillAvailableHeight ? undefined : { maxHeight: maxBodyHeight };
+  const bodyScrollStyle = fillAvailableHeight
+    ? undefined
+    : { maxHeight: maxBodyHeight };
 
   return (
     <div
       className={cn(
-        'rounded-2xl border bg-background p-3 sm:p-4',
-        fillAvailableHeight ? 'flex min-h-0 flex-1 flex-col gap-3' : 'space-y-3',
-        className
+        "rounded-2xl border bg-background p-3 sm:p-4",
+        fillAvailableHeight
+          ? "flex min-h-0 flex-1 flex-col gap-3"
+          : "space-y-3",
+        className,
       )}
     >
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-base text-muted-foreground">
           <div className="flex items-center gap-2">
             <span
-              className={cn('size-3 rounded-full', getScheduleCellClassName('futureAvailable'))}
+              className={cn(
+                "size-3 rounded-full",
+                getScheduleCellClassName("futureAvailable"),
+              )}
             />
-            <span className="font-medium">{t('status.available')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={cn('size-3 rounded-full', getScheduleCellClassName('pastAvailable'))}
-            />
-            <span className="font-medium">{t('status.pastAvailable')}</span>
+            <span className="font-medium">{t("status.available")}</span>
           </div>
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                'size-3 rounded-full border border-border',
-                getScheduleCellClassName('empty')
+                "size-3 rounded-full",
+                getScheduleCellClassName("pastAvailable"),
               )}
             />
-            <span className="font-medium">{t('status.notAvailable')}</span>
+            <span className="font-medium">{t("status.pastAvailable")}</span>
           </div>
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                'size-3 rounded-full border border-primary/20',
-                getScheduleCellClassName('selected')
+                "size-3 rounded-full border border-border",
+                getScheduleCellClassName("empty"),
               )}
             />
-            <span className="font-medium">{t('status.bookedByYou')}</span>
+            <span className="font-medium">{t("status.notAvailable")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "size-3 rounded-full border border-primary/20",
+                getScheduleCellClassName("selected"),
+              )}
+            />
+            <span className="font-medium">{t("status.bookedByYou")}</span>
           </div>
         </div>
 
@@ -424,7 +483,7 @@ export function ScheduleSelection({
             onClick={() => setWeekOffset(0)}
           >
             <CalendarIcon className="size-4" />
-            {t('today')}
+            {t("today")}
           </Button>
           <div className="flex items-center gap-2">
             <Button
@@ -435,7 +494,9 @@ export function ScheduleSelection({
             >
               <ChevronLeftIcon className="size-5" />
             </Button>
-            <span className="w-full text-center text-base font-semibold">{weekRangeLabel}</span>
+            <span className="w-full text-center text-base font-semibold">
+              {weekRangeLabel}
+            </span>
             <Button
               size="icon-sm"
               variant="ghost"
@@ -450,15 +511,15 @@ export function ScheduleSelection({
       <div
         ref={scrollBodyRef}
         className={cn(
-          'min-h-0 overflow-auto rounded-xl border bg-background',
-          fillAvailableHeight && 'flex-1 basis-0'
+          "min-h-0 overflow-auto rounded-xl border bg-background",
+          fillAvailableHeight && "flex-1 basis-0",
         )}
         style={bodyScrollStyle}
       >
-        <div className={cn('min-w-[860px]', gridClassName)}>
+        <div className={cn("min-w-[860px]", gridClassName)}>
           <div className="sticky top-0 z-20 grid grid-cols-[84px_repeat(7,minmax(0,1fr))] border-b bg-background">
             <div className="sticky left-0 z-30 flex items-center justify-center border-r bg-background px-2 py-2 text-base font-semibold text-muted-foreground">
-              UTC+7
+              {clientTimezoneLabel}
             </div>
             {weekDates.map((day) => (
               <div
@@ -466,7 +527,7 @@ export function ScheduleSelection({
                 className="border-r px-1 py-2 text-center last:border-r-0"
               >
                 <p className="text-sx font-bold text-primary">
-                  {new Intl.DateTimeFormat('en-US', { weekday: 'short' })
+                  {new Intl.DateTimeFormat("en-US", { weekday: "short" })
                     .format(day.date)
                     .toUpperCase()}
                 </p>
@@ -489,10 +550,9 @@ export function ScheduleSelection({
                 const isAvailable = visibleAvailableCellSet.has(key);
                 const isSelectable = selectableCellSet.has(key);
                 const isSelected = selectedSet.has(key);
-                const cellDate = parseYmd(day.id);
-                const [hourText, minuteText] = startTime.split(':');
-                cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
-                const isPast = cellDate <= new Date();
+                const nowMs = nowInTimezone(timezone).valueOf();
+                const isPast =
+                  toCellTimestamp(day.id, startTime, timezone) <= nowMs;
                 const disabled = isPast || !isSelectable;
                 const cellType = getScheduleCellType({
                   isAvailable,
@@ -508,16 +568,18 @@ export function ScheduleSelection({
                     onClick={() => handleCellSelect(day.id, startTime)}
                     disabled={disabled}
                     className={cn(
-                      'relative isolate h-10 overflow-hidden border-r transition-colors last:border-r-0 disabled:opacity-100 disabled:saturate-100',
-                      getScheduleCellClassName(cellType)
+                      "relative isolate h-10 overflow-hidden border-r transition-colors last:border-r-0 disabled:opacity-100 disabled:saturate-100",
+                      getScheduleCellClassName(cellType),
                     )}
                     aria-label={buildSlotLabel(
                       day.id,
                       startTime,
-                      minutesToTime(parseTimeToMinutes(startTime) + lessonDurationMinutes)
+                      minutesToTime(
+                        parseTimeToMinutes(startTime) + lessonDurationMinutes,
+                      ),
                     )}
                   >
-                    {cellType === 'pastAvailable' ? (
+                    {cellType === "pastAvailable" ? (
                       <span
                         aria-hidden
                         className="pointer-events-none absolute inset-0 z-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_3px,rgb(0_0_0/0.08)_3px,rgb(0_0_0/0.08)_6px)] dark:bg-[repeating-linear-gradient(-45deg,transparent,transparent_3px,rgb(255_255_255/0.12)_3px,rgb(255_255_255/0.12)_6px)]"

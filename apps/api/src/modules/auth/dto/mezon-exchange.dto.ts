@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class MezonExchangeDto {
   @ApiProperty({
@@ -15,5 +15,13 @@ export class MezonExchangeDto {
   @IsString()
   @IsNotEmpty()
   state!: string;
+
+  @ApiPropertyOptional({
+    description: 'Timezone of the user detected from browser',
+    example: 'Asia/Ho_Chi_Minh',
+  })
+  @IsString()
+  @IsOptional()
+  timezone?: string;
 }
 

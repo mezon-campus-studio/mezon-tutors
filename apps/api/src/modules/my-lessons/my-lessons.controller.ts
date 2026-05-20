@@ -15,8 +15,9 @@ export class MyLessonsController {
   async getOverview(
     @Req() req: Request,
     @Query('week_start_date') weekStartDate?: string,
+    @Query('timezone') timezone?: string
   ) {
     const user = req.user as AuthUserPayload;
-    return this.myLessonsService.getOverview(user.mezonUserId, weekStartDate);
+    return this.myLessonsService.getOverview(user.mezonUserId, weekStartDate, timezone);
   }
 }

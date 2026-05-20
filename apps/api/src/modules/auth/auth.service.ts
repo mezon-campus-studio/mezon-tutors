@@ -106,7 +106,7 @@ export class AuthService {
     };
   }
 
-  async syncProfileFromMezonWithCode(userId: string, code: string, state?: string) {
+  async syncProfileFromMezonWithCode(userId: string, code: string, state?: string, timezone?: string) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
 
@@ -126,6 +126,7 @@ export class AuthService {
         username,
         avatar: mezonUser.avatar ?? '',
         email: mezonUser.email,
+        ...((!user.timezone || user.timezone === 'UTC') && timezone ? { timezone } : {}),
       },
     });
 
@@ -145,7 +146,7 @@ export class AuthService {
     };
   }
 
-  async findOrCreateUserFromMezon(mezonUser: MezonUserInfo): Promise<User> {
+  async findOrCreateUserFromMezon(mezonUser: MezonUserInfo, timezone?: string): Promise<User> {
     const mezonUserId = mezonUser.user_id;
     const username = mezonUser.username || `user-${mezonUserId.substring(0, 8)}`;
 
@@ -154,6 +155,7 @@ export class AuthService {
       username,
       avatar: mezonUser.avatar,
       email: mezonUser.email,
+      timezone,
     });
   }
 
@@ -304,10 +306,10 @@ export class AuthService {
     };
   }
 
-  async handleMezonCallback(code: string, state?: string) {
+  async handleMezonCallback(code: string, state?: string, timezone?: string) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
-    const user = await this.findOrCreateUserFromMezon(mezonUser);
+    const user = await this.findOrCreateUserFromMezon(mezonUser, timezone);
     const tokens = await this.generateTokens(user);
 
     const result = {
