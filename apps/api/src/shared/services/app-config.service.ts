@@ -44,7 +44,13 @@ const envSchema = z.object({
   MEZON_APP_SECRET: z
     .string()
     .optional()
-    .transform((value) => (value?.trim() ? value.trim() : undefined)),
+    .transform((value) => {
+      if (!value?.trim()) return undefined;
+      return value
+        .split(',')
+        .map((secret) => secret.trim())
+        .filter(Boolean);
+    }),
 
   // Email (Resend)
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
@@ -204,8 +210,12 @@ export class AppConfigService {
     };
   }
 
-  get mezonAppSecret(): string {
-    return this.env.MEZON_APP_SECRET ?? this.env.CLIENT_SECRET;
+  get mezonAppSecrets(): string[] {
+    const secrets = this.env.MEZON_APP_SECRET;
+    if (secrets?.length) {
+      return secrets;
+    }
+    return [this.env.CLIENT_SECRET];
   }
 
   get cloudinaryConfig() {
