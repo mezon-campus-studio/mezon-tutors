@@ -37,8 +37,8 @@ export class MezonChannelAppService {
   }
 
   async authenticateLaunch(decoded: string) {
-    const appSecret = this.appConfig.mezonAppSecret;
-    if (!validateMezonHash(appSecret, decoded)) {
+    const appSecrets = this.appConfig.mezonAppSecrets;
+    if (!validateMezonHash(appSecrets, decoded)) {
       throw new UnauthorizedException('Invalid Mezon Channel App hash');
     }
 
