@@ -1,15 +1,12 @@
-"use client";
+'use client';
 
-import type {
-  TutorAboutDto,
-  TutorDetailAvailabilitySlotDto,
-} from "@mezon-tutors/shared";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
-import {
-  type ScheduleSlotInput,
-  ScheduleViewer,
-} from "@/components/common/ScheduleViewer";
+import type { TutorAboutDto, TutorDetailAvailabilitySlotDto } from '@mezon-tutors/shared';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
+import { type ScheduleSlotInput, ScheduleViewer } from '@/components/common/ScheduleViewer';
 
 type TutorScheduleTabProps = {
   tutor: TutorAboutDto & {
@@ -17,14 +14,13 @@ type TutorScheduleTabProps = {
   };
 };
 
-function getDateForDayOfWeek(
-  dbDayOfWeek: number,
-  weekOffset: number = 0,
-): string {
-  const jsDay = (dbDayOfWeek + 1) % 7;
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-  const today = new Date();
-  const currentDay = today.getDay();
+function getDateForDayOfWeek(dbDayOfWeek: number, timezoneName: string, weekOffset = 0): string {
+  const jsDay = (dbDayOfWeek + 1) % 7;
+  const today = dayjs().tz(timezoneName).startOf('day');
+  const currentDay = today.day();
 
   let daysToAdd = jsDay - currentDay;
   if (daysToAdd < 0) {
@@ -32,19 +28,13 @@ function getDateForDayOfWeek(
   }
   daysToAdd += weekOffset * 7;
 
-  const targetDate = new Date(today);
-  targetDate.setDate(today.getDate() + daysToAdd);
-
-  const year = targetDate.getFullYear();
-  const month = String(targetDate.getMonth() + 1).padStart(2, "0");
-  const day = String(targetDate.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return today.add(daysToAdd, 'day').format('YYYY-MM-DD');
 }
 
 function generateAvailableSlots(
   availability: TutorDetailAvailabilitySlotDto[],
-  weeksAhead: number = 4,
+  timezoneName: string,
+  weeksAhead = 4
 ): ScheduleSlotInput[] {
   const slots: ScheduleSlotInput[] = [];
 
@@ -53,7 +43,7 @@ function generateAvailableSlots(
       if (!slot.isActive) continue;
 
       slots.push({
-        date: getDateForDayOfWeek(slot.dayOfWeek, weekOffset),
+        date: getDateForDayOfWeek(slot.dayOfWeek, timezoneName, weekOffset),
         startTime: slot.startTime,
         endTime: slot.endTime,
       });
@@ -64,11 +54,12 @@ function generateAvailableSlots(
 }
 
 export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
-  const t = useTranslations("Tutors.Detail");
+  const t = useTranslations('Tutors.Detail');
+  const scheduleTimezone = tutor.timezone || 'UTC';
 
   const availableSlots = useMemo(
-    () => generateAvailableSlots(tutor.availability),
-    [tutor.availability],
+    () => generateAvailableSlots(tutor.availability, scheduleTimezone),
+    [tutor.availability, scheduleTimezone]
   );
 
   const hasAvailability = tutor.availability?.length > 0;
@@ -77,16 +68,12 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     return (
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-            {t("scheduleTitle")}
-          </h2>
-          <p className="text-sm text-gray-600">
-            {t("scheduleHint", { timezone: tutor.timezone })}
-          </p>
+          <h2 className="text-xl font-extrabold text-gray-900 mb-2">{t('scheduleTitle')}</h2>
+          <p className="text-sm text-gray-600">{t('scheduleHint', { timezone: tutor.timezone })}</p>
         </div>
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-          <p className="text-center text-gray-600">{t("scheduleEmpty")}</p>
+          <p className="text-center text-gray-600">{t('scheduleEmpty')}</p>
         </div>
       </div>
     );
@@ -95,17 +82,13 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-          {t("scheduleTitle")}
-        </h2>
-        <p className="text-sm text-gray-600">
-          {t("scheduleHint", { timezone: tutor.timezone })}
-        </p>
+        <h2 className="text-xl font-extrabold text-gray-900 mb-2">{t('scheduleTitle')}</h2>
+        <p className="text-sm text-gray-600">{t('scheduleHint', { timezone: tutor.timezone })}</p>
       </div>
 
       <ScheduleViewer
         availableSlots={availableSlots}
-        timezone={tutor.timezone || "UTC+7"}
+        timezone={scheduleTimezone}
       />
     </div>
   );

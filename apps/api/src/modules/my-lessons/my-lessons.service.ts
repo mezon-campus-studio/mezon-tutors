@@ -155,7 +155,13 @@ export class MyLessonsService {
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
-      const inWeek = subscriptionSlotsOccurrencesForWeek(weekYmd, slots, timezoneName);
+      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
+      const inWeek = subscriptionSlotsOccurrencesForWeek(
+        weekYmd,
+        slots,
+        timezoneName,
+        tutorTimezone
+      );
       for (const occ of inWeek) {
         const range = { startAt: occ.startAt, endAt: occ.endAt };
         subscriptionBounds.push(range);
@@ -176,7 +182,7 @@ export class MyLessonsService {
       }
 
       const allOccs = subscriptionSlotsUseConcreteDates(slots)
-        ? subscriptionConcreteOccurrencesSorted(slots, timezoneName)
+        ? subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
         : inWeek;
 
       for (const occ of allOccs) {

@@ -140,6 +140,7 @@ export class AuthService {
         role: updated.role,
         avatar: updated.avatar,
         email: mezonUser.email ?? null,
+        timezone: updated.timezone ?? null,
       },
       tokens,
       idToken: tokenData.id_token ?? null,
@@ -303,6 +304,7 @@ export class AuthService {
       role: user.role,
       avatar: user.avatar || null,
       email: user.email ?? null,
+      timezone: user.timezone ?? null,
     };
   }
 
@@ -320,6 +322,7 @@ export class AuthService {
         role: user.role,
         avatar: user.avatar,
         email: mezonUser.email ?? null,
+        timezone: user.timezone ?? null,
       },
       tokens,
       idToken: tokenData.id_token ?? null,

@@ -7,7 +7,10 @@ import { Button } from "@/components/ui";
 import {
   FALLBACK_TIMEZONE,
   formatUtcOffsetLabel,
+  formatWeekdayShort,
+  getWeekStartMondayInTimezone,
   nowInTimezone,
+  parseYmdInTimezone,
 } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
@@ -52,24 +55,12 @@ export interface ScheduleSelectionProps {
 }
 
 type WeekDate = {
-  date: Date;
   id: string;
+  dayOfMonth: number;
 };
 
 function pad2(num: number): string {
   return String(num).padStart(2, "0");
-}
-
-function formatYmd(date: Date): string {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-function parseYmd(ymd: string): Date {
-  const [yearText, monthText, dayText] = ymd.split("-");
-  const year = Number(yearText);
-  const month = Number(monthText);
-  const day = Number(dayText);
-  return new Date(year, month - 1, day);
 }
 
 function parseTimeToMinutes(time: string): number {
@@ -83,37 +74,18 @@ function minutesToTime(minutes: number): string {
   return `${pad2(Math.floor(minutes / 60))}:${pad2(minutes % 60)}`;
 }
 
-function getWeekStartMonday(now = new Date()): Date {
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const jsDay = today.getDay(); // 0:Sun...6:Sat
-  const distanceToMonday = jsDay === 0 ? 6 : jsDay - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - distanceToMonday);
-  return monday;
-}
-
 function toCellTimestamp(
   date: string,
   startTime: string,
   timezone: string,
 ): number {
-  const fullDate = parseYmd(date);
   const [hourText, minuteText] = startTime.split(":");
-  return nowInTimezone(timezone)
-    .year(fullDate.getFullYear())
-    .month(fullDate.getMonth())
-    .date(fullDate.getDate())
+  return parseYmdInTimezone(date, timezone)
     .hour(Number(hourText))
     .minute(Number(minuteText))
     .second(0)
     .millisecond(0)
     .valueOf();
-}
-
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
 }
 
 function normalizeEndTime(
@@ -131,19 +103,16 @@ function buildSlotLabel(
   date: string,
   startTime: string,
   endTime: string,
+  timezone: string,
 ): string {
-  const fullDate = parseYmd(date);
-  const left = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(fullDate);
+  const left = formatWeekdayShort(date, timezone);
   return `${left} . ${startTime} - ${endTime}`;
 }
 
 function toSelectedSlot(
   slot: ScheduleSlotInput,
   defaultDurationMinutes: number,
+  timezone: string,
 ): SelectedScheduleSlot {
   const endTime = normalizeEndTime(
     slot.startTime,
@@ -154,7 +123,7 @@ function toSelectedSlot(
     date: slot.date,
     startTime: slot.startTime,
     endTime,
-    label: buildSlotLabel(slot.date, slot.startTime, endTime),
+    label: buildSlotLabel(slot.date, slot.startTime, endTime, timezone),
   };
 }
 
@@ -232,19 +201,18 @@ export function ScheduleSelection({
   const [weekOffset, setWeekOffset] = useState(0);
   const [internalValue, setInternalValue] =
     useState<SelectedScheduleSlot[]>(defaultValue);
-  const baseWeekStart = useMemo(() => {
-    const now = nowInTimezone(timezone);
-    const asDate = new Date(now.year(), now.month(), now.date());
-    return getWeekStartMonday(asDate);
-  }, [timezone]);
+  const baseWeekStart = useMemo(
+    () => getWeekStartMondayInTimezone(timezone),
+    [timezone],
+  );
 
   const selectedSlots = value ?? internalValue;
 
   const weekDates = useMemo<WeekDate[]>(() => {
-    const start = addDays(baseWeekStart, weekOffset * DAY_COUNT);
+    const start = baseWeekStart.add(weekOffset * DAY_COUNT, "day");
     return Array.from({ length: DAY_COUNT }).map((_, index) => {
-      const date = addDays(start, index);
-      return { date, id: formatYmd(date) };
+      const date = start.add(index, "day");
+      return { id: date.format("YYYY-MM-DD"), dayOfMonth: date.date() };
     });
   }, [baseWeekStart, weekOffset]);
 
@@ -267,9 +235,16 @@ export function ScheduleSelection({
       day: "numeric",
       month: "short",
       year: "numeric",
+      timeZone: timezone,
     });
-    return `${formatter.format(weekDates[0].date)} - ${formatter.format(weekDates[DAY_COUNT - 1].date)}`;
-  }, [weekDates]);
+    const start = parseYmdInTimezone(weekDates[0].id, timezone)
+      .hour(12)
+      .toDate();
+    const end = parseYmdInTimezone(weekDates[DAY_COUNT - 1].id, timezone)
+      .hour(12)
+      .toDate();
+    return `${formatter.format(start)} - ${formatter.format(end)}`;
+  }, [weekDates, timezone]);
 
   const timeRows = useMemo(() => {
     return Array.from({ length: MINUTES_PER_DAY / gridIntervalMinutes }).map(
@@ -400,7 +375,11 @@ export function ScheduleSelection({
       return;
     }
 
-    const newSlot = toSelectedSlot({ date, startTime }, lessonDurationMinutes);
+    const newSlot = toSelectedSlot(
+      { date, startTime },
+      lessonDurationMinutes,
+      timezone,
+    );
     if (selectionMode === "single") {
       emitChange([newSlot]);
       return;
@@ -527,11 +506,11 @@ export function ScheduleSelection({
                 className="border-r px-1 py-2 text-center last:border-r-0"
               >
                 <p className="text-sx font-bold text-primary">
-                  {new Intl.DateTimeFormat("en-US", { weekday: "short" })
-                    .format(day.date)
+                  {parseYmdInTimezone(day.id, timezone)
+                    .format("ddd")
                     .toUpperCase()}
                 </p>
-                <p className="text-base font-semibold">{day.date.getDate()}</p>
+                <p className="text-base font-semibold">{day.dayOfMonth}</p>
               </div>
             ))}
           </div>
@@ -577,6 +556,7 @@ export function ScheduleSelection({
                       minutesToTime(
                         parseTimeToMinutes(startTime) + lessonDurationMinutes,
                       ),
+                      timezone,
                     )}
                   >
                     {cellType === "pastAvailable" ? (

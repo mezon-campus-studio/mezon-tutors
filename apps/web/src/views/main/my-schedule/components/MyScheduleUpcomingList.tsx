@@ -2,6 +2,8 @@
 
 import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { CalendarPlus, Clock4, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -12,7 +14,11 @@ import { mapTutorBookingStatusToUi } from '../../trial-bookings';
 
 type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];
+  timezoneName: string;
 };
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const getInitials = (name?: string) => {
   if (!name) return 'S';
@@ -26,10 +32,14 @@ const getInitials = (name?: string) => {
   );
 };
 
-export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingListProps) {
+export default function MyScheduleUpcomingList({
+  items,
+  timezoneName,
+}: MyScheduleUpcomingListProps) {
   const t = useTranslations('Dashboard.mySchedule.upcoming');
   const tSchedule = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
+  const nowInTimezone = dayjs().tz(timezoneName);
 
   return (
     <aside className="flex min-h-0 w-full flex-col gap-4 pb-24 pr-1 sm:pr-2">
@@ -67,10 +77,10 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
         <div className="max-h-[min(80vh,760px)] min-h-0 space-y-4 overflow-y-auto overflow-x-hidden pb-2 [scrollbar-width:thin]">
           {items.map((item) => {
             const isSubscription = item.scheduleKind === 'subscription';
-            const start = dayjs(item.startAt).locale(locale);
+            const start = dayjs.utc(item.startAt).tz(timezoneName).locale(locale);
             const end = start.add(item.durationMinutes, 'minute');
             const isCompleted =
-              end.isBefore(dayjs()) || mapTutorBookingStatusToUi(item.status) === 'completed';
+              end.isBefore(nowInTimezone) || mapTutorBookingStatusToUi(item.status) === 'completed';
             return (
               <div
                 key={item.id}
@@ -136,7 +146,7 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
                 <div
                   className={cn(
                     'flex flex-wrap items-center gap-3 border-t border-violet-100/80 pt-4',
-                    !isSubscription && 'justify-between',
+                    !isSubscription && 'justify-between'
                   )}
                 >
                   <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
@@ -152,7 +162,10 @@ export default function MyScheduleUpcomingList({ items }: MyScheduleUpcomingList
 
                 {!isSubscription ? (
                   <div className="mt-auto flex shrink-0">
-                    <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)} className="w-full">
+                    <Link
+                      href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}
+                      className="w-full"
+                    >
                       <Button
                         variant="outline"
                         className="h-10 w-full rounded-full border-slate-200 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800"

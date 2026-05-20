@@ -3,13 +3,12 @@
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { useAtomValue } from "jotai";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { useUserTimezone } from "@/hooks";
 import { useGetMyLessonsOverview } from "@/services/my-lessons/my-lessons.api";
-import { userAtom } from "@/store";
 import MyLessonsCalendarSection from "./components/MyLessonsCalendarSection";
 import MyLessonsHeader from "./components/MyLessonsHeader";
 import MyLessonsPanel from "./components/MyLessonsPanel";
@@ -23,9 +22,7 @@ dayjs.extend(timezone);
 export default function MyLessonsPage() {
   const t = useTranslations("MyLessons");
   const router = useRouter();
-  const user = useAtomValue(userAtom);
-  const userTimezone =
-    user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = useUserTimezone();
   const [activeTab, setActiveTab] = useState<MyLessonsTab>("calendar");
   const [selectedDate, setSelectedDate] = useState(dayjs().tz(userTimezone));
 
