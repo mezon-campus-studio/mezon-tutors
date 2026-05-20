@@ -1,8 +1,10 @@
 "use client";
 
 import {
-  buildTimeSlotsForDay,
   ROUTES,
+  utcWeeklySlotsToCalendarInstances,
+  expandCalendarSlotToSteps,
+  getWeekMondayInTimezone,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -62,17 +64,6 @@ function getInitialWeekBounds(timezoneName: string): {
     start: monday.format("YYYY-MM-DD"),
     end: monday.add(6, "day").format("YYYY-MM-DD"),
   };
-}
-
-function eachYmdInRange(startYmd: string, endYmd: string): string[] {
-  const out: string[] = [];
-  let cur = dayjs(startYmd, "YYYY-MM-DD");
-  const end = dayjs(endYmd, "YYYY-MM-DD");
-  while (cur.valueOf() <= end.valueOf()) {
-    out.push(cur.format("YYYY-MM-DD"));
-    cur = cur.add(1, "day");
-  }
-  return out;
 }
 
 function slotKey(s: { date: string; startTime: string }): string {
@@ -146,57 +137,33 @@ export default function SubscriptionPlanSchedulePage() {
     }
 
     const today = startOfTodayInTimezone(userTimezone);
-    const weekStart = parseYmdInTimezone(weekBounds.start, userTimezone);
-    const results: Array<{ date: string; startTime: string; endTime: string }> =
-      [];
+    const baseMonday = getWeekMondayInTimezone(userTimezone);
+    const selectedMonday = parseYmdInTimezone(weekBounds.start, userTimezone);
+    const weekOffset = selectedMonday.diff(baseMonday, "week");
 
-    for (const dateString of eachYmdInRange(weekBounds.start, weekBounds.end)) {
-      const absDate = parseYmdInTimezone(dateString, userTimezone);
-      if (absDate.isBefore(today, "day")) {
-        continue;
-      }
+    const utcSlots = rows.map((slot) => ({
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      isActive: slot.isActive,
+    }));
 
-      const dayOffset = absDate.diff(weekStart, "day");
-      if (dayOffset < 0 || dayOffset > 6) {
-        continue;
-      }
+    const instances = utcWeeklySlotsToCalendarInstances(
+      utcSlots,
+      userTimezone,
+      weekOffset,
+    );
 
-      const daySlots = buildTimeSlotsForDay(
-        rows,
-        dayOffset,
-        SUBSCRIPTION_GRID_INTERVAL_MINUTES,
-        SUBSCRIPTION_LESSON_MINUTES,
-      );
-
-      for (const daySlot of daySlots) {
-        const tutorStartAbs = dayjs.tz(
-          `${dateString} ${daySlot.startTime}`,
-          "YYYY-MM-DD HH:mm",
-          tutorTimezone,
-        );
-        const tutorEndAbs = tutorStartAbs.add(
+    return instances
+      .filter((instance) => !parseYmdInTimezone(instance.date, userTimezone).isBefore(today, "day"))
+      .flatMap((instance) =>
+        expandCalendarSlotToSteps(
+          instance,
+          SUBSCRIPTION_GRID_INTERVAL_MINUTES,
           SUBSCRIPTION_LESSON_MINUTES,
-          "minute",
-        );
-        const clientStart = tutorStartAbs.tz(userTimezone);
-        const clientEnd = tutorEndAbs.tz(userTimezone);
-
-        results.push({
-          date: clientStart.format("YYYY-MM-DD"),
-          startTime: clientStart.format("HH:mm"),
-          endTime: clientEnd.format("HH:mm"),
-        });
-      }
-    }
-
-    return results;
-  }, [
-    schedule?.availability,
-    tutorTimezone,
-    userTimezone,
-    weekBounds.end,
-    weekBounds.start,
-  ]);
+        ),
+      );
+  }, [schedule?.availability, userTimezone, weekBounds.start]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {

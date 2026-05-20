@@ -39,6 +39,7 @@ export class TutorAvailabilityService {
         isActive: slot.isActive,
       })),
       timezone: tutor.user?.timezone ?? 'UTC',
+      availabilityStoredInUtc: true,
     }
   }
 }

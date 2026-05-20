@@ -18,6 +18,7 @@ import {
   buildMonthlySubscriptionSlotJson,
   jsDayToDbDayOfWeek,
   timeToMinutes,
+  tutorLocalSlotFitsUtcAvailability,
   type SubscriptionEligibilityDto,
   type SubscriptionEnrollmentDetailDto,
   type SubscriptionEnrollmentDto,
@@ -364,7 +365,6 @@ export class SubscriptionService {
       if (!d.isValid()) {
         throw new BadRequestException('Invalid slot date');
       }
-      const dbDay = jsDayToDbDayOfWeek(d.day());
       const startM = timeToMinutes(s.startTime);
       const endM = timeToMinutes(s.endTime);
       if (endM <= startM) {
@@ -374,9 +374,18 @@ export class SubscriptionService {
       if (durationMinutes !== SUBSCRIPTION_SLOT_DURATION_MINUTES) {
         throw new BadRequestException('Each subscription slot must be 60 minutes');
       }
-      if (!this.slotFitsAvailability(availability, dbDay, s.startTime, durationMinutes)) {
+      if (
+        !tutorLocalSlotFitsUtcAvailability(
+          s.date,
+          s.startTime,
+          durationMinutes,
+          tutorTimezone,
+          availability,
+        )
+      ) {
         throw new BadRequestException('Slot outside tutor availability');
       }
+      const dbDay = jsDayToDbDayOfWeek(d.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
         throw new BadRequestException('Duplicate weekly slot');

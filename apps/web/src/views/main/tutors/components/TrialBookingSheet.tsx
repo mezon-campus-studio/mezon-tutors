@@ -8,6 +8,8 @@ import {
   jsDayToDbDayOfWeek,
   type TrialTimeSlot,
   timeToMinutes,
+  utcWeeklySlotsToCalendarInstances,
+  expandCalendarSlotToSteps,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import { useAtomValue } from "jotai";
@@ -31,7 +33,6 @@ import {
 } from "@/components/ui";
 import { useCurrency, useUserTimezone } from "@/hooks";
 import {
-  FALLBACK_TIMEZONE,
   formatWallClockTime12h,
   formatWeekdayShort,
   getWeekStartMondayInTimezone,
@@ -48,26 +49,6 @@ import { isAuthenticatedAtom } from "@/store/auth.atom";
 function parseTimeParts(hhmm: string): { hour: number; minute: number } {
   const [h, m] = hhmm.split(":").map(Number);
   return { hour: h ?? 0, minute: m ?? 0 };
-}
-
-function expandRangeToSteps(
-  start: string,
-  end: string,
-  stepMinutes: number,
-): string[] {
-  const [startH, startMin] = start.split(":").map(Number);
-  const [endH, endMin] = end.split(":").map(Number);
-  const startM = (startH ?? 0) * 60 + (startMin ?? 0);
-  const endM = (endH ?? 0) * 60 + (endMin ?? 0);
-  if (endM <= startM) return [];
-
-  const out: string[] = [];
-  for (let m = startM; m + stepMinutes <= endM; m += stepMinutes) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    out.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
-  }
-  return out;
 }
 
 function periodFromHourMinute(hour: number): EPeriod {
@@ -124,9 +105,6 @@ export function TrialBookingSheet({
 
   const { data: schedule, isPending: isAvailabilityPending } =
     useGetTutorAvailability(tutor.id, open && Boolean(tutor.id));
-  const scheduleTimezone =
-    (schedule as (typeof schedule & { timezone?: string }) | undefined)
-      ?.timezone ?? FALLBACK_TIMEZONE;
   const userTimezone = useUserTimezone();
 
   const baseWeekStart = useMemo(
@@ -171,59 +149,21 @@ export function TrialBookingSheet({
   }, [selectedDateString, userTimezone]);
   const shiftedSlots = useMemo(() => {
     const rows = schedule?.availability ?? [];
-    const clientTimezone = userTimezone;
+    const calendarInstances = utcWeeklySlotsToCalendarInstances(
+      rows.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      })),
+      userTimezone,
+      weekOffset,
+    );
 
-
-    const startOfWeek = baseWeekStart.add(weekOffset * DAYS_IN_WEEK, "day");
-
-    const results: Array<{ date: string; startTime: string; endTime: string }> =
-      [];
-
-    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const absDate = startOfWeek.add(dayOffset, "day");
-      const dateString = absDate.format("YYYY-MM-DD");
-
-      const dayOfWeek = dayOffset;
-      const activeSlotsForDay = rows.filter(
-        (slot) => slot.isActive && slot.dayOfWeek === dayOfWeek,
-      );
-
-      for (const slot of activeSlotsForDay) {
-        const starts = expandRangeToSteps(
-          slot.startTime,
-          slot.endTime,
-          SLOT_INTERVAL_MINUTES,
-        );
-        for (const start of starts) {
-          const tutorStartAbs = dayjs.tz(
-            `${dateString} ${start}`,
-            scheduleTimezone,
-          );
-          const tutorEndAbs = tutorStartAbs.add(
-            SLOT_INTERVAL_MINUTES,
-            "minute",
-          );
-
-          const clientStart = tutorStartAbs.tz(clientTimezone);
-          const clientEnd = tutorEndAbs.tz(clientTimezone);
-
-          results.push({
-            date: clientStart.format("YYYY-MM-DD"),
-            startTime: clientStart.format("HH:mm"),
-            endTime: clientEnd.format("HH:mm"),
-          });
-        }
-      }
-    }
-
-    return results;
-  }, [
-    schedule?.availability,
-    scheduleTimezone,
-    baseWeekStart,
-    weekOffset,
-    userTimezone,
-  ]);
+    return calendarInstances.flatMap((instance) =>
+      expandCalendarSlotToSteps(instance, SLOT_INTERVAL_MINUTES, duration),
+    );
+  }, [schedule?.availability, userTimezone, weekOffset, duration]);
 
   const timeSlots = useMemo(() => {
     const matching = shiftedSlots.filter(

@@ -44,12 +44,14 @@ import {
   MIN_PRICE,
   VerificationStatus,
   convertToAllCurrencies,
+  weeklySlotsInTimezoneToUtc,
 } from '@mezon-tutors/shared';
 import {
   useSubmitTutorProfileMutation,
   tutorProfileQueryKey,
   useGetCurrencyRates,
 } from '@/services';
+import { useUserTimezone } from '@/hooks';
 import type { SubmitTutorProfileDto, TimeSlot } from '@mezon-tutors/shared';
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.AVAILABILITY;
@@ -64,6 +66,7 @@ type AvailabilityFormValues = {
 export default function AvailabilityPage() {
   const t = useTranslations('BecomeTutor.availability');
   const router = useRouter();
+  const tutorTimezone = useUserTimezone();
   const about = useAtomValue(tutorProfileAboutAtom);
   const photo = useAtomValue(tutorProfilePhotoAtom);
   const certification = useAtomValue(tutorProfileCertificationAtom);
@@ -291,18 +294,20 @@ export default function AvailabilityPage() {
         proficiency: proficiencies[i] ?? '',
       }));
 
-    const availability: SubmitTutorProfileDto['availability'] = [];
+    const localAvailability: SubmitTutorProfileDto['availability'] = [];
     Object.entries(slotsByDay).forEach(([dayKey, slots]) => {
       const dayIndex = DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number]);
       if (dayIndex === -1) return;
       for (const slot of slots) {
-        availability.push({
+        localAvailability.push({
           dayOfWeek: dayIndex,
           startTime: slot.startTime,
           endTime: slot.endTime,
         });
       }
     });
+
+    const availability = weeklySlotsInTimezoneToUtc(localAvailability, tutorTimezone);
 
     const payload: SubmitTutorProfileDto = {
       firstName: about.firstName,
