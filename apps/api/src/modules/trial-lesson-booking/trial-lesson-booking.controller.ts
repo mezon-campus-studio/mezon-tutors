@@ -27,8 +27,12 @@ export class TrialLessonBookingController {
   constructor(private readonly trialLessonBookingService: TrialLessonBookingService) {}
 
   @Get('occupied')
-  async getOccupiedByTutorAndDate(@Query('tutorId') tutorId: string, @Query('date') date: string) {
-    return this.trialLessonBookingService.getAcceptedByTutorAndDate(tutorId, date)
+  async getOccupiedByTutorAndDate(
+    @Query('tutorId') tutorId: string,
+    @Query('date') date: string,
+    @Query('timezone') timezone: string
+  ) {
+    return this.trialLessonBookingService.getAcceptedByTutorAndDate(tutorId, date, timezone)
   }
 
   @UseGuards(JwtAuthGuard)

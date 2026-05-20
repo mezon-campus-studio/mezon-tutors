@@ -58,7 +58,7 @@ export class TutorApplicationMapper {
       totalStudents: profile.totalStudents,
       ratingCount: profile.ratingCount,
       ratingAverage: Number(profile.ratingAverage),
-      timezone: profile.timezone ?? '',
+      timezone: profile.user?.timezone ?? 'UTC',
       email: profile.email || profile.user?.email || '',
       phone: profile.phone ?? '',
       createdAt: profile.createdAt,

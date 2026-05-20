@@ -14,6 +14,7 @@ export class MyScheduleController {
   async getMySchedule(
     @Req() req: Request,
     @Query('week_start_date') weekStartDate?: string,
+    @Query('timezone') timezone?: string
   ) {
     if (weekStartDate) {
       const parsed = dayjs(weekStartDate);
@@ -23,6 +24,6 @@ export class MyScheduleController {
     }
 
     const user = req.user as AuthUserPayload;
-    return this.myScheduleService.getMySchedule(user.mezonUserId, weekStartDate);
+    return this.myScheduleService.getMySchedule(user.mezonUserId, weekStartDate, timezone);
   }
 }

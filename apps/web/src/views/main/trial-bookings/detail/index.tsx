@@ -2,6 +2,8 @@
 
 import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import {
   ArrowLeft,
   CalendarDays,
@@ -18,6 +20,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
+import { useAtomValue } from 'jotai';
+import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
 import {
   Avatar,
   AvatarFallback,
@@ -29,11 +33,15 @@ import {
   useGetMyTrialLessonBookingRequests,
   type TrialLessonBookingRequestItem,
 } from '@/services';
+import { userAtom } from '@/store';
 import BookingRequestStatusBadge from '../components/BookingRequestStatusBadge';
 
 type BookingRequestDetailViewProps = {
   bookingId: string;
 };
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const getInitials = (name?: string) => {
   if (!name) return 'S';
@@ -52,6 +60,11 @@ export default function BookingRequestDetailView({
   const tList = useTranslations('Dashboard.bookingRequests');
   const router = useRouter();
   const locale = useLocale();
+  const user = useAtomValue(userAtom);
+  const userTimezone = resolveUserTimezone(
+    user?.timezone,
+    detectBrowserTimezone(),
+  );
 
   const { data, isLoading } = useGetMyTrialLessonBookingRequests({
     page: 1,
@@ -63,10 +76,14 @@ export default function BookingRequestDetailView({
     [data, bookingId],
   );
 
-  const start = booking ? dayjs(booking.startAt).locale(locale) : null;
+  const start = booking
+    ? dayjs.utc(booking.startAt).tz(userTimezone).locale(locale)
+    : null;
   const end =
     start && booking ? start.add(booking.durationMinutes, 'minute') : null;
-  const created = booking ? dayjs(booking.createdAt).locale(locale) : null;
+  const created = booking
+    ? dayjs.utc(booking.createdAt).tz(userTimezone).locale(locale)
+    : null;
 
   if (isLoading) {
     return (

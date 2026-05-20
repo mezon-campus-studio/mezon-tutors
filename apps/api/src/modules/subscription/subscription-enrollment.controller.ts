@@ -9,20 +9,20 @@ import {
   Query,
   Req,
   UseGuards,
-} from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
-import type { Request } from 'express'
-import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
+import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type {
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
   TutorSubscriptionWeekOccurrenceDto,
-} from '@mezon-tutors/shared'
-import { SubscriptionService } from './subscription.service'
-import { getRequestClientIp } from '../../common/utils/request-ip.util'
-import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto'
+} from '@mezon-tutors/shared';
+import { SubscriptionService } from './subscription.service';
+import { getRequestClientIp } from '../../common/utils/request-ip.util';
+import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
 
 @Controller('subscription-enrollments')
 @ApiTags('Subscription enrollments')
@@ -35,8 +35,8 @@ export class SubscriptionEnrollmentController {
     @Req() req: Request,
     @Query('tutorId', ParseUUIDPipe) tutorId: string
   ): Promise<SubscriptionEligibilityDto> {
-    const user = req.user as AuthUserPayload
-    return this.subscriptionService.getEligibility(user.sub, tutorId)
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.getEligibility(user.sub, tutorId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -45,22 +45,23 @@ export class SubscriptionEnrollmentController {
     @Req() req: Request,
     @Body() body: CreateSubscriptionEnrollmentBodyDto
   ): Promise<SubscriptionEnrollmentDto> {
-    const user = req.user as AuthUserPayload
-    return this.subscriptionService.createEnrollment(user.sub, body, getRequestClientIp(req))
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.createEnrollment(user.sub, body, getRequestClientIp(req));
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('tutor/week-occurrences')
   async tutorWeekOccurrences(
     @Req() req: Request,
-    @Query('week_start_date') weekStartDate: string
+    @Query('week_start_date') weekStartDate: string,
+    @Query('timezone') timezone?: string
   ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
-    const v = weekStartDate?.trim() ?? ''
+    const v = weekStartDate?.trim() ?? '';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) {
-      throw new BadRequestException('Invalid week_start_date')
+      throw new BadRequestException('Invalid week_start_date');
     }
-    const user = req.user as AuthUserPayload
-    return this.subscriptionService.listTutorWeekOccurrences(user.sub, v)
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.listTutorWeekOccurrences(user.sub, v, timezone);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -69,7 +70,7 @@ export class SubscriptionEnrollmentController {
     @Req() req: Request,
     @Param('id', ParseUUIDPipe) id: string
   ): Promise<SubscriptionEnrollmentDetailDto> {
-    const user = req.user as AuthUserPayload
-    return this.subscriptionService.getEnrollmentDetail(user.sub, id)
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.getEnrollmentDetail(user.sub, id);
   }
 }

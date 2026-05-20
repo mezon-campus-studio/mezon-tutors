@@ -100,7 +100,7 @@ export class AuthController {
 
     this.clearOAuthStateCookie(res);
 
-    const result = await this.authService.handleMezonCallback(code, state);
+    const result = await this.authService.handleMezonCallback(code, state, body.timezone);
 
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 
@@ -182,7 +182,7 @@ export class AuthController {
     }
 
     const jwtUser = req.user as { sub: string };
-    const result = await this.authService.syncProfileFromMezonWithCode(jwtUser.sub, code, state);
+    const result = await this.authService.syncProfileFromMezonWithCode(jwtUser.sub, code, state, body.timezone);
 
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 

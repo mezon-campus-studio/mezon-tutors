@@ -2,9 +2,13 @@
 
 import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { useAtomValue } from 'jotai';
 import { Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
 import {
   Avatar,
   AvatarFallback,
@@ -13,6 +17,7 @@ import {
   Skeleton,
 } from '@/components/ui';
 import type { TrialLessonBookingRequestItem } from '@/services';
+import { userAtom } from '@/store';
 import BookingRequestStatusBadge from './BookingRequestStatusBadge';
 
 type BookingRequestsTableProps = {
@@ -20,6 +25,9 @@ type BookingRequestsTableProps = {
   isLoading?: boolean;
   isFetching?: boolean;
 };
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const getInitials = (name?: string) => {
   if (!name) return 'S';
@@ -31,8 +39,13 @@ const getInitials = (name?: string) => {
     .join('') || 'S';
 };
 
-const formatStartAt = (startAt: string, durationMinutes: number, locale: string) => {
-  const start = dayjs(startAt).locale(locale);
+const formatStartAt = (
+  startAt: string,
+  durationMinutes: number,
+  locale: string,
+  timezoneName: string,
+) => {
+  const start = dayjs(startAt).tz(timezoneName).locale(locale);
   const end = start.add(durationMinutes, 'minute');
   if (!start.isValid()) {
     return { date: '—', time: '—' };
@@ -49,6 +62,11 @@ export default function BookingRequestsTable({
 }: BookingRequestsTableProps) {
   const t = useTranslations('Dashboard.bookingRequests.table');
   const locale = useLocale();
+  const user = useAtomValue(userAtom);
+  const userTimezone = resolveUserTimezone(
+    user?.timezone,
+    detectBrowserTimezone(),
+  );
 
   if (isLoading) {
     return (
@@ -98,6 +116,7 @@ export default function BookingRequestsTable({
                 item.startAt,
                 item.durationMinutes,
                 locale,
+                userTimezone,
               );
               return (
                 <tr key={item.id} className="bg-white transition-colors hover:bg-violet-50/40">
@@ -120,7 +139,10 @@ export default function BookingRequestsTable({
                           {item.studentName}
                         </span>
                         <span className="text-xs text-slate-500">
-                          {dayjs(item.createdAt).locale(locale).format('MMM DD, YYYY')}
+                          {dayjs(item.createdAt)
+                            .tz(userTimezone)
+                            .locale(locale)
+                            .format('MMM DD, YYYY')}
                         </span>
                       </div>
                     </div>

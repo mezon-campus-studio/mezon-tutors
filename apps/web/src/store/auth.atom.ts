@@ -10,6 +10,7 @@ export type AuthUser = {
   avatar?: string | null;
   role?: string | null;
   idToken?: string | null;
+  timezone?: string | null;
 };
 
 export type AuthUserSource = {
@@ -21,6 +22,7 @@ export type AuthUserSource = {
   avatar?: string | null;
   role?: string | null;
   idToken?: string | null;
+  timezone?: string | null;
 };
 
 export function toAuthUser(source: AuthUserSource): AuthUser {
@@ -32,6 +34,7 @@ export function toAuthUser(source: AuthUserSource): AuthUser {
     avatar: source.avatar ?? null,
     role: source.role ?? null,
     idToken: source.idToken ?? null,
+    timezone: source.timezone ?? null,
   };
 }
 

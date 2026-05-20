@@ -62,22 +62,35 @@ export class UserService {
     username: string;
     avatar?: string | null;
     email: string;
+    timezone?: string;
   }): Promise<User> {
-    const { mezonUserId, username, avatar, email } = params;
+    const { mezonUserId, username, avatar, email, timezone } = params;
 
-    return this.prisma.user.upsert({
+    const existing = await this.prisma.user.findUnique({
       where: { mezonUserId },
-      update: {
-        username,
-        avatar: avatar ?? '',
-        email,
-      },
-      create: {
+      select: { id: true, timezone: true },
+    });
+
+    if (existing) {
+      return this.prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          username,
+          avatar: avatar ?? '',
+          email,
+          ...((!existing.timezone || existing.timezone === 'UTC') && timezone ? { timezone } : {}),
+        },
+      });
+    }
+
+    return this.prisma.user.create({
+      data: {
         mezonUserId,
         username,
         avatar: avatar ?? '',
         role: Role.STUDENT,
         email,
+        timezone: timezone ?? 'UTC',
       },
     });
   }

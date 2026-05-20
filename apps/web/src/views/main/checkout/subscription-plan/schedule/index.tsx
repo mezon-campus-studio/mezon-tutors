@@ -1,11 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  buildTimeSlotsForDay,
+  jsDayToDbDayOfWeek,
+  minutesToTime,
+  ROUTES,
+  timeToMinutes,
+} from "@mezon-tutors/shared";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { useAtomValue } from "jotai";
 import { AlertCircle, Calendar, Clock, X } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ScheduleSelection,
   type SelectedScheduleSlot,
@@ -22,8 +32,8 @@ import {
   toast,
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useCurrency } from "@/hooks";
+import { cn } from "@/lib/utils";
 import {
   useCreateSubscriptionEnrollmentMutation,
   useGetSubscriptionEligibility,
@@ -31,53 +41,33 @@ import {
   useGetTutorAvailability,
 } from "@/services";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
-import {
-  buildTimeSlotsForDay,
-  jsDayToDbDayOfWeek,
-  minutesToTime,
-  parseYyyyMmDdToLocalDate,
-  ROUTES,
-  timeToMinutes,
-} from "@mezon-tutors/shared";
 
 const SUBSCRIPTION_GRID_INTERVAL_MINUTES = 60;
 const SUBSCRIPTION_LESSON_MINUTES = 60;
 
-function pad2(num: number): string {
-  return String(num).padStart(2, "0");
-}
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-function formatYmd(date: Date): string {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
-}
-
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}
-
-function getWeekStartMonday(now = new Date()): Date {
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const jsDay = today.getDay();
-  const distanceToMonday = jsDay === 0 ? 6 : jsDay - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - distanceToMonday);
-  return monday;
-}
-
-function getInitialWeekBounds(): { start: string; end: string } {
-  const monday = getWeekStartMonday();
-  return { start: formatYmd(monday), end: formatYmd(addDays(monday, 6)) };
+function getInitialWeekBounds(timezoneName: string): {
+  start: string;
+  end: string;
+} {
+  const now = dayjs().tz(timezoneName);
+  const mondayOffset = now.day() === 0 ? 6 : now.day() - 1;
+  const monday = now.subtract(mondayOffset, "day").startOf("day");
+  return {
+    start: monday.format("YYYY-MM-DD"),
+    end: monday.add(6, "day").format("YYYY-MM-DD"),
+  };
 }
 
 function eachYmdInRange(startYmd: string, endYmd: string): string[] {
   const out: string[] = [];
-  let cur = parseYyyyMmDdToLocalDate(startYmd);
-  const end = parseYyyyMmDdToLocalDate(endYmd);
-  while (cur.getTime() <= end.getTime()) {
-    out.push(formatYmd(cur));
-    cur = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 1);
+  let cur = dayjs(startYmd, "YYYY-MM-DD");
+  const end = dayjs(endYmd, "YYYY-MM-DD");
+  while (cur.valueOf() <= end.valueOf()) {
+    out.push(cur.format("YYYY-MM-DD"));
+    cur = cur.add(1, "day");
   }
   return out;
 }
@@ -100,20 +90,30 @@ export default function SubscriptionPlanSchedulePage() {
   }, [lessonsPerWeekRaw]);
   const isAuth = useAtomValue(isAuthenticatedAtom);
   const { currency } = useCurrency();
-  const [weekBounds, setWeekBounds] = useState(getInitialWeekBounds);
-  const [selectedSlots, setSelectedSlots] = useState<SelectedScheduleSlot[]>([]);
-
-  const { data: plans, isPending: isPlansLoading } = useGetSubscriptionPlansByTutor(
-    tutorId,
-    Boolean(tutorId)
+  const [weekBounds, setWeekBounds] = useState(() =>
+    getInitialWeekBounds("UTC"),
   );
+  const [selectedSlots, setSelectedSlots] = useState<SelectedScheduleSlot[]>(
+    [],
+  );
+
+  const { data: plans, isPending: isPlansLoading } =
+    useGetSubscriptionPlansByTutor(tutorId, Boolean(tutorId));
   const plan = useMemo(
     () => plans?.find((p) => p.lessonsPerWeek === lessonsPerWeek) ?? null,
-    [plans, lessonsPerWeek]
+    [plans, lessonsPerWeek],
   );
 
   const { data: schedule } = useGetTutorAvailability(tutorId, Boolean(tutorId));
-  const { data: eligibility } = useGetSubscriptionEligibility(tutorId, Boolean(tutorId) && isAuth);
+  const { data: eligibility } = useGetSubscriptionEligibility(
+    tutorId,
+    Boolean(tutorId) && isAuth,
+  );
+  const scheduleTimezone = schedule?.timezone ?? "UTC";
+
+  useEffect(() => {
+    setWeekBounds(getInitialWeekBounds(scheduleTimezone));
+  }, [scheduleTimezone]);
 
   const createEnrollment = useCreateSubscriptionEnrollmentMutation();
 
@@ -129,45 +129,57 @@ export default function SubscriptionPlanSchedulePage() {
     if (!rows.length) {
       return [];
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return eachYmdInRange(weekBounds.start, weekBounds.end).flatMap((dateString) => {
-      const fullDate = parseYyyyMmDdToLocalDate(dateString);
-      const normalized = new Date(fullDate.getFullYear(), fullDate.getMonth(), fullDate.getDate());
-      if (normalized.getTime() < today.getTime()) {
-        return [];
-      }
-      const dayOfWeek = jsDayToDbDayOfWeek(fullDate.getDay());
-      const daySlots = buildTimeSlotsForDay(
-        rows,
-        dayOfWeek,
-        SUBSCRIPTION_GRID_INTERVAL_MINUTES,
-        SUBSCRIPTION_LESSON_MINUTES
-      );
-      return daySlots.map((slot) => {
-        const endTime = minutesToTime(timeToMinutes(slot.startTime) + SUBSCRIPTION_LESSON_MINUTES);
-        return {
-          date: dateString,
-          startTime: slot.startTime,
-          endTime,
-        };
-      });
-    });
-  }, [schedule?.availability, weekBounds.end, weekBounds.start]);
+    const today = dayjs().tz(scheduleTimezone).startOf("day");
+    return eachYmdInRange(weekBounds.start, weekBounds.end).flatMap(
+      (dateString) => {
+        const fullDate = dayjs.tz(`${dateString} 00:00`, scheduleTimezone);
+        if (!fullDate.isValid() || fullDate.valueOf() < today.valueOf()) {
+          return [];
+        }
+        const dayOfWeek = jsDayToDbDayOfWeek(fullDate.day());
+        const daySlots = buildTimeSlotsForDay(
+          rows,
+          dayOfWeek,
+          SUBSCRIPTION_GRID_INTERVAL_MINUTES,
+          SUBSCRIPTION_LESSON_MINUTES,
+        );
+        return daySlots.map((slot) => {
+          const endTime = minutesToTime(
+            timeToMinutes(slot.startTime) + SUBSCRIPTION_LESSON_MINUTES,
+          );
+          return {
+            date: dateString,
+            startTime: slot.startTime,
+            endTime,
+          };
+        });
+      },
+    );
+  }, [
+    schedule?.availability,
+    scheduleTimezone,
+    weekBounds.end,
+    weekBounds.start,
+  ]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
       setWeekBounds({ start: payload.startDate, end: payload.endDate });
     },
-    []
+    [],
   );
 
   useEffect(() => {
-    setSelectedSlots([]);
+    if (tutorId && lessonsPerWeek && weekBounds.start) {
+      setSelectedSlots([]);
+    }
   }, [lessonsPerWeek, tutorId, weekBounds.start]);
 
   const canSubmit = Boolean(
-    isAuth && eligibility?.eligible && plan && selectedSlots.length === lessonsPerWeek
+    isAuth &&
+      eligibility?.eligible &&
+      plan &&
+      selectedSlots.length === lessonsPerWeek,
   );
 
   const handleSubmit = async () => {
@@ -207,7 +219,13 @@ export default function SubscriptionPlanSchedulePage() {
             <CardTitle className="text-base">{t("missingParams")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link className={cn(buttonVariants({ variant: "outline" }), "inline-flex")} href={ROUTES.TUTOR.INDEX}>
+            <Link
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "inline-flex",
+              )}
+              href={ROUTES.TUTOR.INDEX}
+            >
               {t("backTutors")}
             </Link>
           </CardContent>
@@ -233,7 +251,13 @@ export default function SubscriptionPlanSchedulePage() {
             <CardTitle className="text-base">{t("noPlansForTutor")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link className={cn(buttonVariants({ variant: "outline" }), "inline-flex")} href={ROUTES.TUTOR.INDEX}>
+            <Link
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "inline-flex",
+              )}
+              href={ROUTES.TUTOR.INDEX}
+            >
               {t("backTutors")}
             </Link>
           </CardContent>
@@ -251,7 +275,10 @@ export default function SubscriptionPlanSchedulePage() {
           </CardHeader>
           <CardContent>
             <Link
-              className={cn(buttonVariants({ variant: "outline" }), "inline-flex")}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "inline-flex",
+              )}
               href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutorId)}`}
             >
               {t("backPlans")}
@@ -270,8 +297,12 @@ export default function SubscriptionPlanSchedulePage() {
 
       <div className="mx-auto max-w-3/4 px-4 py-8 sm:px-6">
         <div className="mb-6 space-y-1">
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("pickCount", { n: lessonsPerWeek })}</p>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+            {t("title")}
+          </h1>
+          <p className="text-sm text-slate-600">
+            {t("pickCount", { n: lessonsPerWeek })}
+          </p>
         </div>
 
         {!isAuth || !eligibility?.eligible ? (
@@ -287,6 +318,7 @@ export default function SubscriptionPlanSchedulePage() {
           <div className="flex min-h-[min(70vh,720px)] min-w-0 flex-1 flex-col">
             <ScheduleSelection
               availableSlots={scheduleAvailableSlots}
+              timezone={scheduleTimezone}
               selectionMode="multiple"
               maxSelections={lessonsPerWeek}
               value={selectedSlots}
@@ -310,7 +342,10 @@ export default function SubscriptionPlanSchedulePage() {
                 />
               </div>
               <CardTitle className="text-base font-semibold text-slate-900">
-                {t("selectedTitle", { count: selectedSlots.length, total: lessonsPerWeek })}
+                {t("selectedTitle", {
+                  count: selectedSlots.length,
+                  total: lessonsPerWeek,
+                })}
               </CardTitle>
               <CardDescription className="text-xs leading-relaxed text-slate-600">
                 {t("selectedHint")}
@@ -322,14 +357,17 @@ export default function SubscriptionPlanSchedulePage() {
                   <div className="flex size-14 items-center justify-center rounded-2xl bg-white shadow-inner ring-1 ring-violet-100">
                     <Calendar className="size-7 text-violet-400" />
                   </div>
-                  <p className="max-w-56 text-sm leading-relaxed text-muted-foreground">{t("selectedEmpty")}</p>
+                  <p className="max-w-56 text-sm leading-relaxed text-muted-foreground">
+                    {t("selectedEmpty")}
+                  </p>
                 </div>
               ) : (
                 <ul className="flex max-h-[min(40vh,22rem)] flex-col gap-2.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:thin]">
                   {selectedSlots.map((s, index) => {
                     const parts = s.label.split(" . ");
                     const datePart = parts[0]?.trim() ?? "";
-                    const timePart = parts.slice(1).join(" . ").trim() || s.label;
+                    const timePart =
+                      parts.slice(1).join(" . ").trim() || s.label;
                     return (
                       <li
                         key={slotKey(s)}
@@ -348,7 +386,9 @@ export default function SubscriptionPlanSchedulePage() {
                             ) : null}
                             <p className="flex min-h-0 min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight text-slate-900">
                               <Clock className="size-3.5 shrink-0 text-fuchsia-500" />
-                              <span className="min-w-0 truncate">{timePart}</span>
+                              <span className="min-w-0 truncate">
+                                {timePart}
+                              </span>
                             </p>
                           </div>
                           <Button
@@ -374,10 +414,13 @@ export default function SubscriptionPlanSchedulePage() {
                 disabled={!canSubmit || createEnrollment.isPending}
                 onClick={() => void handleSubmit()}
               >
-                {t('submit')}
+                {t("submit")}
               </Button>
               <Link
-                className={cn(buttonVariants({ variant: 'outline' }), 'w-full h-11')}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full h-11",
+                )}
                 href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutorId)}`}
               >
                 {t("back")}

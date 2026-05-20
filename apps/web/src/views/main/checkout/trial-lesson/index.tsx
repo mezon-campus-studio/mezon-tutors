@@ -1,6 +1,9 @@
 "use client";
 
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { useAtomValue } from "jotai";
 import { AlertCircle, CalendarCheck, Clock, Info } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -11,18 +14,28 @@ import {
 } from "@/components/common/PaymentMethodSelection";
 import { toast } from "@/components/ui";
 import { useCurrency } from "@/hooks";
+import { detectBrowserTimezone, resolveUserTimezone } from "@/lib/timezone";
 import {
   useCreateTrialLessonBookingMutation,
   useGetCurrentTrialLessonBooking,
   useGetVerifiedTutorAbout,
 } from "@/services";
+import { userAtom } from "@/store";
 import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export default function TrialLessonCheckoutPage() {
   const t = useTranslations("TrialLessonCheckout.Screen");
   const { currency } = useCurrency();
+  const currentUser = useAtomValue(userAtom);
+  const userTimezone = useMemo(
+    () => resolveUserTimezone(currentUser?.timezone, detectBrowserTimezone()),
+    [currentUser?.timezone],
+  );
   const searchParams = useSearchParams();
   const currentSearchParams = searchParams ?? new URLSearchParams();
 
@@ -171,7 +184,7 @@ export default function TrialLessonCheckoutPage() {
     );
   }
 
-  const start = dayjs(query.startAt);
+  const start = dayjs.utc(query.startAt).tz(userTimezone);
   const end = start.add(query.durationMinutes, "minute");
   const dateLabel = start.format("MMM D, YYYY");
   const timeLabel = `${start.format("h:mm A")} - ${end.format("h:mm A")}`;
