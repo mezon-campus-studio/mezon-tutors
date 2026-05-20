@@ -5,10 +5,6 @@ if (process.env.VERCEL === '1') {
   process.exit(0);
 }
 
-if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
-  process.exit(0);
-}
-
 const root = path.join(__dirname, '..');
 execSync('yarn workspace @mezon-tutors/db build', { stdio: 'inherit', cwd: root });
 execSync('yarn build', { stdio: 'inherit', cwd: root });
