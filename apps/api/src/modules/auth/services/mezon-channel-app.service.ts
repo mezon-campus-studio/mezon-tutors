@@ -6,6 +6,7 @@ import {
 import { AppConfigService } from '../../../shared/services/app-config.service';
 import { UserService } from '../../user/user.service';
 import { AuthService } from '../auth.service';
+import { NotificationService } from '../../notification/notification.service';
 import { validateMezonHash } from '../utils/mezon-channel-app-crypto.util';
 
 type ChannelAppUser = {
@@ -22,7 +23,8 @@ export class MezonChannelAppService {
   constructor(
     private readonly appConfig: AppConfigService,
     private readonly userService: UserService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly notificationService: NotificationService
   ) {}
 
   async authenticateFromBase64Hash(hashDataBase64: string) {
@@ -62,12 +64,20 @@ export class MezonChannelAppService {
       authUser.display_name ||
       `user-${mezonUserId.substring(0, 8)}`;
 
-    const user = await this.userService.upsertFromMezon({
+    const { user, created } = await this.userService.upsertFromMezon({
       mezonUserId,
       username,
       avatar: authUser.avatar_url ?? null,
       email: '',
     });
+
+    if (created) {
+      void this.notificationService.notifyWelcomeLinked({
+        userId: user.id,
+        mezonUserId: user.mezonUserId,
+        displayName: user.username,
+      });
+    }
 
     const tokens = await this.authService.generateTokens(user);
 

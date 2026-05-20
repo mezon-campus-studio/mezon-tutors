@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -13,23 +14,31 @@ import {
   Prisma,
   Role,
 } from '@mezon-tutors/db';
-import type {
-  CreateWalletWithdrawalPayload,
-  StudentWalletStatsApiResponse,
-  TutorWalletStatsApiResponse,
-  WalletDetailsApiResponse,
-  WalletStatsApiResponse,
-  WalletTransactionApiItem,
-  WalletTransactionsApiResponse,
-  WalletWithdrawalApiItem,
-  WalletWithdrawalsApiResponse,
+import {
+  ECurrency as SharedCurrency,
+  formatToCurrency,
+  type CreateWalletWithdrawalPayload,
+  type StudentWalletStatsApiResponse,
+  type TutorWalletStatsApiResponse,
+  type WalletDetailsApiResponse,
+  type WalletStatsApiResponse,
+  type WalletTransactionApiItem,
+  type WalletTransactionsApiResponse,
+  type WalletWithdrawalApiItem,
+  type WalletWithdrawalsApiResponse,
 } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class WalletService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(WalletService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   private monthStart(): Date {
     return dayjs().startOf('month').toDate();
@@ -597,7 +606,7 @@ export class WalletService {
     userId: string,
     role: string,
     payload: CreateWalletWithdrawalPayload
-  ): Promise<WalletWithdrawalApiItem> {
+  ): Promise<void> {
     if (role !== Role.TUTOR) {
       throw new ForbiddenException('Withdrawals are only available for tutors');
     }
@@ -627,48 +636,37 @@ export class WalletService {
       throw new BadRequestException('You already have a pending withdrawal request');
     }
 
-    const created = await this.prisma.$transaction(async (tx) => {
-      const withdrawal = await tx.withdrawal.create({
-        data: {
-          tutorId: userId,
-          walletId: wallet.id,
-          amount,
-          bankName: payload.bankName.trim(),
-          bankAccountNumber: payload.bankAccountNumber.trim(),
-          bankAccountName: payload.bankAccountName.trim(),
-          status: EWithdrawalStatus.PENDING,
-        },
-      });
-
-      await tx.wallet.update({
-        where: { id: wallet.id },
-        data: { balance: { decrement: amount } },
-      });
-
-      await tx.transaction.create({
-        data: {
-          walletId: wallet.id,
-          withdrawalId: withdrawal.id,
-          type: EWalletTransactionType.WITHDRAWAL,
-          direction: EWalletTransactionDirection.DEBIT,
-          amount,
-          description: `Withdrawal request to ${payload.bankName.trim()}`,
-        },
-      });
-
-      return withdrawal;
+    const created = await this.prisma.withdrawal.create({
+      data: {
+        tutorId: userId,
+        walletId: wallet.id,
+        amount,
+        bankName: payload.bankName.trim(),
+        bankAccountNumber: payload.bankAccountNumber.trim(),
+        bankAccountName: payload.bankAccountName.trim(),
+        status: EWithdrawalStatus.PENDING,
+      },
     });
 
-    return {
-      id: created.id,
-      amount: Number(created.amount),
-      bankName: created.bankName,
-      bankAccountNumber: created.bankAccountNumber,
-      bankAccountName: created.bankAccountName,
-      status: created.status,
-      adminNote: created.adminNote,
-      createdAt: created.createdAt.toISOString(),
-      processedAt: created.processedAt?.toISOString() ?? null,
-    };
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, avatar: true },
+    });
+    const tutorName = tutor?.username ?? 'A tutor';
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyAdminWithdrawalRequested({
+        withdrawalId: created.id,
+        tutorName,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+        senderAvatarUrl: tutor?.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
+    }
   }
 }

@@ -189,6 +189,7 @@ export class WebhookService {
       where: { paymentRef: txnRef },
       select: {
         id: true,
+        studentId: true,
         tutorId: true,
         tutorAmount: true,
         paymentStatus: true,
@@ -339,6 +340,7 @@ export class WebhookService {
     query: VnpayQuery,
     enrollment: {
       id: string;
+      studentId: string;
       tutorId: string;
       tutorAmount: bigint;
       paymentStatus: EPaymentStatus;
@@ -439,6 +441,11 @@ export class WebhookService {
     });
 
     if (processed.updated && isSucceeded) {
+      await this.notificationService.notifySubscriptionEnrollmentConfirmed({
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        tutorProfileId: enrollment.tutorId,
+      });
       await this.lessonSettlementService.scheduleSubscriptionEnrollmentSettlements(
         enrollment.id
       );
