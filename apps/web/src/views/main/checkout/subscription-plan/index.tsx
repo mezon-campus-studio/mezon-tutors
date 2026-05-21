@@ -22,7 +22,7 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { useCurrency } from "@/hooks";
+import { useCurrency, useUserTimezone } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   useGetSubscriptionEligibility,
@@ -38,6 +38,7 @@ export default function SubscriptionPlanCheckoutPage() {
   const tutorId = searchParams.get("tutorId") ?? "";
   const isAuth = useAtomValue(isAuthenticatedAtom);
   const { currency } = useCurrency();
+  const userTimezone = useUserTimezone();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const { data: tutor, isPending: isTutorPending } =
@@ -82,9 +83,12 @@ export default function SubscriptionPlanCheckoutPage() {
     if (!tutorId || !selectedPlanId) {
       return;
     }
-    router.push(
-      `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?tutorId=${encodeURIComponent(tutorId)}&lessonsPerWeek=${encodeURIComponent(selectedPlanId)}`,
-    );
+    const query = new URLSearchParams({
+      tutorId,
+      lessonsPerWeek: selectedPlanId,
+      timezone: userTimezone,
+    });
+    router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?${query.toString()}`);
   };
 
   if (!tutorId) {

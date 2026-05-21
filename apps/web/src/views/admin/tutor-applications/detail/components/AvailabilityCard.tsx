@@ -1,7 +1,8 @@
 "use client";
 
-import type { TutorAvailability, TutorProfile } from "@mezon-tutors/shared";
-import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
+import type { TutorAvailability, TutorProfile, WeeklyAvailabilitySlot } from "@mezon-tutors/shared";
+import { ECurrency, formatToCurrency, utcWeeklySlotsToTimezone } from "@mezon-tutors/shared";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui";
 
@@ -10,8 +11,8 @@ type AvailabilityCardProps = {
   availability: TutorAvailability[];
 };
 
-const groupByDay = (availability: TutorAvailability[]) => {
-  const grouped: Record<number, TutorAvailability[]> = {};
+const groupByDay = (availability: WeeklyAvailabilitySlot[]) => {
+  const grouped: Record<number, WeeklyAvailabilitySlot[]> = {};
   for (const slot of availability) {
     if (!grouped[slot.dayOfWeek]) grouped[slot.dayOfWeek] = [];
     grouped[slot.dayOfWeek].push(slot);
@@ -29,7 +30,20 @@ export default function AvailabilityCard({
   const days = useTranslations(
     "AdminTutorApplicationDetail.sections.availability.days",
   );
-  const grouped = groupByDay(availability);
+  const displayAvailability = useMemo(
+    () =>
+      utcWeeklySlotsToTimezone(
+        availability.map((slot) => ({
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isActive: slot.isActive,
+        })),
+        profile.timezone ?? "UTC",
+      ),
+    [availability, profile.timezone],
+  );
+  const grouped = groupByDay(displayAvailability);
   const { baseCurrency, usd, vnd, php } = profile.prices;
   const primaryAmount =
     baseCurrency === ECurrency.USD
@@ -78,9 +92,9 @@ export default function AvailabilityCard({
                       {slots.length === 0 ? (
                         <span className="text-xs text-slate-400">—</span>
                       ) : (
-                        slots.map((slot) => (
+                        slots.map((slot, slotIndex) => (
                           <span
-                            key={slot.id}
+                            key={`${idx}-${slot.startTime}-${slot.endTime}-${slotIndex}`}
                             className="rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700"
                           >
                             {slot.startTime} - {slot.endTime}

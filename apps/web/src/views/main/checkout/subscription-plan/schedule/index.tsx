@@ -1,11 +1,10 @@
 "use client";
 
 import {
-  buildTimeSlotsForDay,
-  jsDayToDbDayOfWeek,
-  minutesToTime,
   ROUTES,
-  timeToMinutes,
+  utcWeeklySlotsToCalendarInstances,
+  expandCalendarSlotToSteps,
+  getWeekMondayInTimezone,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -32,7 +31,15 @@ import {
   toast,
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { useCurrency } from "@/hooks";
+import { useCurrency, useUserTimezone } from "@/hooks";
+import {
+  convertWallClockSlotBetweenTimezones,
+  getWeekStartMondayInTimezone,
+  normalizeTimezoneParam,
+  parseYmdInTimezone,
+  resolveStableTimezone,
+  startOfTodayInTimezone,
+} from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 import {
   useCreateSubscriptionEnrollmentMutation,
@@ -40,7 +47,7 @@ import {
   useGetSubscriptionPlansByTutor,
   useGetTutorAvailability,
 } from "@/services";
-import { isAuthenticatedAtom } from "@/store/auth.atom";
+import { isAuthenticatedAtom, userAtom } from "@/store/auth.atom";
 
 const SUBSCRIPTION_GRID_INTERVAL_MINUTES = 60;
 const SUBSCRIPTION_LESSON_MINUTES = 60;
@@ -52,24 +59,11 @@ function getInitialWeekBounds(timezoneName: string): {
   start: string;
   end: string;
 } {
-  const now = dayjs().tz(timezoneName);
-  const mondayOffset = now.day() === 0 ? 6 : now.day() - 1;
-  const monday = now.subtract(mondayOffset, "day").startOf("day");
+  const monday = getWeekStartMondayInTimezone(timezoneName);
   return {
     start: monday.format("YYYY-MM-DD"),
     end: monday.add(6, "day").format("YYYY-MM-DD"),
   };
-}
-
-function eachYmdInRange(startYmd: string, endYmd: string): string[] {
-  const out: string[] = [];
-  let cur = dayjs(startYmd, "YYYY-MM-DD");
-  const end = dayjs(endYmd, "YYYY-MM-DD");
-  while (cur.valueOf() <= end.valueOf()) {
-    out.push(cur.format("YYYY-MM-DD"));
-    cur = cur.add(1, "day");
-  }
-  return out;
 }
 
 function slotKey(s: { date: string; startTime: string }): string {
@@ -89,9 +83,21 @@ export default function SubscriptionPlanSchedulePage() {
     return n;
   }, [lessonsPerWeekRaw]);
   const isAuth = useAtomValue(isAuthenticatedAtom);
+  const currentUser = useAtomValue(userAtom);
   const { currency } = useCurrency();
+  const fallbackTimezone = useUserTimezone();
+  const timezoneFromQuery = useMemo(
+    () => normalizeTimezoneParam(searchParams.get("timezone")),
+    [searchParams],
+  );
+  const userTimezone = useMemo(
+    () =>
+      resolveStableTimezone(currentUser?.timezone, timezoneFromQuery) ??
+      fallbackTimezone,
+    [currentUser?.timezone, timezoneFromQuery, fallbackTimezone],
+  );
   const [weekBounds, setWeekBounds] = useState(() =>
-    getInitialWeekBounds("UTC"),
+    getInitialWeekBounds(userTimezone),
   );
   const [selectedSlots, setSelectedSlots] = useState<SelectedScheduleSlot[]>(
     [],
@@ -109,11 +115,11 @@ export default function SubscriptionPlanSchedulePage() {
     tutorId,
     Boolean(tutorId) && isAuth,
   );
-  const scheduleTimezone = schedule?.timezone ?? "UTC";
+  const tutorTimezone = schedule?.timezone ?? "UTC";
 
   useEffect(() => {
-    setWeekBounds(getInitialWeekBounds(scheduleTimezone));
-  }, [scheduleTimezone]);
+    setWeekBounds(getInitialWeekBounds(userTimezone));
+  }, [userTimezone]);
 
   const createEnrollment = useCreateSubscriptionEnrollmentMutation();
 
@@ -129,38 +135,35 @@ export default function SubscriptionPlanSchedulePage() {
     if (!rows.length) {
       return [];
     }
-    const today = dayjs().tz(scheduleTimezone).startOf("day");
-    return eachYmdInRange(weekBounds.start, weekBounds.end).flatMap(
-      (dateString) => {
-        const fullDate = dayjs.tz(`${dateString} 00:00`, scheduleTimezone);
-        if (!fullDate.isValid() || fullDate.valueOf() < today.valueOf()) {
-          return [];
-        }
-        const dayOfWeek = jsDayToDbDayOfWeek(fullDate.day());
-        const daySlots = buildTimeSlotsForDay(
-          rows,
-          dayOfWeek,
+
+    const today = startOfTodayInTimezone(userTimezone);
+    const baseMonday = getWeekMondayInTimezone(userTimezone);
+    const selectedMonday = parseYmdInTimezone(weekBounds.start, userTimezone);
+    const weekOffset = selectedMonday.diff(baseMonday, "week");
+
+    const utcSlots = rows.map((slot) => ({
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      isActive: slot.isActive,
+    }));
+
+    const instances = utcWeeklySlotsToCalendarInstances(
+      utcSlots,
+      userTimezone,
+      weekOffset,
+    );
+
+    return instances
+      .filter((instance) => !parseYmdInTimezone(instance.date, userTimezone).isBefore(today, "day"))
+      .flatMap((instance) =>
+        expandCalendarSlotToSteps(
+          instance,
           SUBSCRIPTION_GRID_INTERVAL_MINUTES,
           SUBSCRIPTION_LESSON_MINUTES,
-        );
-        return daySlots.map((slot) => {
-          const endTime = minutesToTime(
-            timeToMinutes(slot.startTime) + SUBSCRIPTION_LESSON_MINUTES,
-          );
-          return {
-            date: dateString,
-            startTime: slot.startTime,
-            endTime,
-          };
-        });
-      },
-    );
-  }, [
-    schedule?.availability,
-    scheduleTimezone,
-    weekBounds.end,
-    weekBounds.start,
-  ]);
+        ),
+      );
+  }, [schedule?.availability, userTimezone, weekBounds.start]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
@@ -191,11 +194,15 @@ export default function SubscriptionPlanSchedulePage() {
         tutorId,
         lessonsPerWeek: plan.lessonsPerWeek,
         currency,
-        slots: selectedSlots.map((s) => ({
-          date: s.date,
-          startTime: s.startTime,
-          endTime: s.endTime,
-        })),
+        slots: selectedSlots.map((s) =>
+          convertWallClockSlotBetweenTimezones(
+            s.date,
+            s.startTime,
+            s.endTime,
+            userTimezone,
+            tutorTimezone,
+          ),
+        ),
       });
       if (enrollment.paymentUrl) {
         redirectToVnpay(enrollment.paymentUrl);
@@ -318,7 +325,7 @@ export default function SubscriptionPlanSchedulePage() {
           <div className="flex min-h-[min(70vh,720px)] min-w-0 flex-1 flex-col">
             <ScheduleSelection
               availableSlots={scheduleAvailableSlots}
-              timezone={scheduleTimezone}
+              timezone={userTimezone}
               selectionMode="multiple"
               maxSelections={lessonsPerWeek}
               value={selectedSlots}

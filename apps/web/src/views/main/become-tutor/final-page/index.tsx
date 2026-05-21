@@ -7,7 +7,13 @@ import { useSetAtom } from 'jotai';
 import { Button } from '@/components/ui';
 import { CheckCircle2, Clock3, RefreshCw, type LucideIcon } from 'lucide-react';
 import { Spinner } from '@/components/ui';
-import { ROUTES, VerificationStatus, DAY_KEYS, PROFESSIONAL_DOCUMENT_TYPE } from '@mezon-tutors/shared';
+import {
+  ROUTES,
+  VerificationStatus,
+  DAY_KEYS,
+  PROFESSIONAL_DOCUMENT_TYPE,
+  utcWeeklySlotsToTimezone,
+} from '@mezon-tutors/shared';
 import { useGetMyProfile } from '@/services';
 import {
   tutorProfileAboutAtom,
@@ -175,7 +181,17 @@ export default function FinalPage() {
     });
 
     const slotsByDay: Record<string, any[]> = Object.fromEntries(DAY_KEYS.map(d => [d, []]));
-    profile.availability.forEach((slot: any) => {
+    const tutorTz = profile.timezone ?? 'UTC';
+    const localSlots = utcWeeklySlotsToTimezone(
+      profile.availability.map((slot: { dayOfWeek: number; startTime: string; endTime: string }) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: true,
+      })),
+      tutorTz,
+    );
+    localSlots.forEach((slot) => {
       const dayKey = DAY_KEYS[slot.dayOfWeek];
       if (dayKey) {
         slotsByDay[dayKey].push({

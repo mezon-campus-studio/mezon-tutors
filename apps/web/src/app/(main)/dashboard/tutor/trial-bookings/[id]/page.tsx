@@ -1,11 +1,15 @@
+'use client';
+
+import { useParams } from 'next/navigation';
 import TrialBookingDetailView from '@/views/main/trial-bookings/detail';
 
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
+export default function TrialBookingDetailPage() {
+  const params = useParams<{ id: string }>();
+  const bookingId = params?.id;
 
-export default async function Page({ params }: PageProps) {
-  const { id } = await params;
+  if (!bookingId) {
+    return null;
+  }
 
-  return <TrialBookingDetailView bookingId={id} />;
+  return <TrialBookingDetailView bookingId={bookingId} />;
 }

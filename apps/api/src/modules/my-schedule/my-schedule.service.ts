@@ -4,7 +4,11 @@ import {
   EPaymentStatus,
   ESubscriptionEnrollmentStatus,
 } from '@mezon-tutors/db';
-import { subscriptionSlotsOccurrencesForWeek } from '@mezon-tutors/shared';
+import {
+  getWeekMondayInTimezone,
+  subscriptionSlotsOccurrencesForWeek,
+  utcWeeklySlotsToCalendarInstances,
+} from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import timezone = require('dayjs/plugin/timezone');
 import utc = require('dayjs/plugin/utc');
@@ -199,10 +203,26 @@ export class MyScheduleService {
       }
     );
 
-    const availabilityEvents: ScheduleEvent[] = availability.flatMap((slot) => {
-      const dayIndex = slot.dayOfWeek === 0 ? 6 : slot.dayOfWeek - 1;
-      const slotStartHour = this.parseTimeToDecimalHour(slot.startTime);
-      const slotEndHour = this.parseTimeToDecimalHour(slot.endTime);
+    const weekOffset = monday.diff(getWeekMondayInTimezone(timezoneName), 'week');
+    const availabilityInViewerTz = utcWeeklySlotsToCalendarInstances(
+      availability.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      })),
+      timezoneName,
+      weekOffset,
+    );
+
+    const availabilityEvents: ScheduleEvent[] = availabilityInViewerTz.flatMap((instance, index) => {
+      const instanceDay = dayjs.tz(instance.date, timezoneName).startOf('day');
+      const dayIndex = instanceDay.diff(monday, 'day');
+      if (dayIndex < 0 || dayIndex > 6) {
+        return [];
+      }
+      const slotStartHour = this.parseTimeToDecimalHour(instance.startTime);
+      const slotEndHour = this.parseTimeToDecimalHour(instance.endTime);
 
       const overlappingLessons = lessonEvents.filter(
         (lesson) =>
@@ -214,7 +234,7 @@ export class MyScheduleService {
       if (overlappingLessons.length === 0) {
         return [
           {
-            id: `availability-${slot.id}`,
+            id: `availability-${index}-${instance.date}-${instance.startTime}`,
             dayIndex,
             startHour: slotStartHour,
             endHour: slotEndHour,
@@ -234,7 +254,7 @@ export class MyScheduleService {
       for (const lesson of sortedLessons) {
         if (currentStart < lesson.startHour) {
           freeSlots.push({
-            id: `availability-${slot.id}-${currentStart}`,
+            id: `availability-${index}-${instance.date}-${currentStart}`,
             dayIndex,
             startHour: currentStart,
             endHour: lesson.startHour,
@@ -249,7 +269,7 @@ export class MyScheduleService {
 
       if (currentStart < slotEndHour) {
         freeSlots.push({
-          id: `availability-${slot.id}-${currentStart}`,
+          id: `availability-${index}-${instance.date}-${currentStart}`,
           dayIndex,
           startHour: currentStart,
           endHour: slotEndHour,

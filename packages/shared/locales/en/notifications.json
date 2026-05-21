@@ -27,7 +27,7 @@
     "paymentSucceeded": "Your payment for booking {bookingCode} was successful.",
     "paymentFailed": "Your payment for booking {bookingCode} failed. Please try again.",
     "systemAnnouncement": "{message}",
-    "lessonStartingSoon": "Your lesson will start in about 10 minutes.",
+    "lessonStartingSoon": "Your lesson will start in about 10 minutes at {lessonStartAt}.",
     "tutorEarningsReleased": "{amount} from your {lessonKind, select, trial {trial lesson} subscription {subscription lesson} other {lesson}} is now available in your wallet."
   }
 }

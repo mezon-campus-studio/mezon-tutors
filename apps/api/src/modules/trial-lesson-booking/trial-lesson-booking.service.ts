@@ -1,6 +1,6 @@
 import {
   PLATFORM_FEE_PERCENTAGE,
-  timeToMinutes,
+  instantFitsUtcWeeklyAvailability,
   type PaginatedResponse,
 } from '@mezon-tutors/shared'
 import {
@@ -352,32 +352,26 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Cannot book lesson in the past')
     }
 
-    // Convert absolute start time to tutor's local timezone
-    const tutorTimezone = tutor.user?.timezone ?? 'UTC'
-    const startAtTutorLocal = startAt.tz(tutorTimezone)
-
-    // In database, dayOfWeek represents: Monday = 0, ..., Sunday = 6
-    // dayjs.day() returns 0 for Sunday, 1 for Monday, etc.
-    const tutorDayOfWeek = (startAtTutorLocal.day() + 6) % 7
-    const startMinutes = startAtTutorLocal.hour() * 60 + startAtTutorLocal.minute()
-    const endMinutes = startMinutes + dto.durationMinutes
-
     const availability = await this.prisma.tutorAvailability.findMany({
       where: {
         tutorId: tutor.id,
-        dayOfWeek: tutorDayOfWeek,
         isActive: true,
       },
       orderBy: { startTime: 'asc' },
     })
 
-    const matchedAvailability = availability.find((slot) => {
-      const slotStart = timeToMinutes(slot.startTime)
-      const slotEnd = timeToMinutes(slot.endTime)
-      return startMinutes >= slotStart && endMinutes <= slotEnd
-    })
+    const fitsAvailability = instantFitsUtcWeeklyAvailability(
+      startAt.toISOString(),
+      dto.durationMinutes,
+      availability.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      })),
+    )
 
-    if (!matchedAvailability) {
+    if (!fitsAvailability) {
       throw new BadRequestException('Selected time is not available for this tutor')
     }
 

@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { useAtomValue } from "jotai";
+import { detectBrowserTimezone, resolveUserTimezone } from "@/lib/timezone";
 import { isAuthenticatedAtom, userAtom } from "@/store";
 import { apiClient } from "../api-client";
 import { myLessonsQueryKey } from "./my-lessons.qkey";
@@ -212,9 +213,7 @@ export const useGetMyLessonsOverview = (
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const user = useAtomValue(userAtom);
   const effectiveTimezone =
-    timezoneName ??
-    user?.timezone ??
-    Intl.DateTimeFormat().resolvedOptions().timeZone;
+    timezoneName ?? resolveUserTimezone(user?.timezone, detectBrowserTimezone());
 
   return useQuery({
     queryKey: myLessonsQueryKey.overview(weekStartDate, effectiveTimezone),

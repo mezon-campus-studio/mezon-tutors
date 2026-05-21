@@ -6,9 +6,10 @@ import {
   ETrialLessonBookingStatus,
   formatToCurrency,
   jsDayToDbDayOfWeek,
-  parseYyyyMmDdToLocalDate,
   type TrialTimeSlot,
   timeToMinutes,
+  utcWeeklySlotsToCalendarInstances,
+  expandCalendarSlotToSteps,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import { useAtomValue } from "jotai";
@@ -30,55 +31,24 @@ import {
   SheetTitle,
   toast,
 } from "@/components/ui";
-import { useCurrency } from "@/hooks";
+import { useCurrency, useUserTimezone } from "@/hooks";
 import {
-  detectBrowserTimezone,
-  FALLBACK_TIMEZONE,
-  nowInTimezone,
-  resolveUserTimezone,
+  formatWallClockTime12h,
+  formatWeekdayShort,
+  getWeekStartMondayInTimezone,
+  parseYmdInTimezone,
+  startOfTodayInTimezone,
 } from "@/lib/timezone";
 import {
   useGetAlreadyBookedTrialLesson,
   useGetOccupiedTrialLessonSlots,
   useGetTutorAvailability,
 } from "@/services";
-import { userAtom } from "@/store";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
 
 function parseTimeParts(hhmm: string): { hour: number; minute: number } {
   const [h, m] = hhmm.split(":").map(Number);
   return { hour: h ?? 0, minute: m ?? 0 };
-}
-
-function formatTimeLabel(hhmm: string): string {
-  const { hour, minute } = parseTimeParts(hhmm);
-  const d = new Date();
-  d.setHours(hour, minute, 0, 0);
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
-
-function expandRangeToSteps(
-  start: string,
-  end: string,
-  stepMinutes: number,
-): string[] {
-  const [startH, startMin] = start.split(":").map(Number);
-  const [endH, endMin] = end.split(":").map(Number);
-  const startM = (startH ?? 0) * 60 + (startMin ?? 0);
-  const endM = (endH ?? 0) * 60 + (endMin ?? 0);
-  if (endM <= startM) return [];
-
-  const out: string[] = [];
-  for (let m = startM; m + stepMinutes <= endM; m += stepMinutes) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    out.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
-  }
-  return out;
 }
 
 function periodFromHourMinute(hour: number): EPeriod {
@@ -127,7 +97,6 @@ export function TrialBookingSheet({
   const router = useRouter();
   const { currency } = useCurrency();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
-  const currentUser = useAtomValue(userAtom);
 
   const [duration, setDuration] = useState<number>(DURATION_OPTIONS[0]);
   const [timeId, setTimeId] = useState<string>("");
@@ -136,44 +105,24 @@ export function TrialBookingSheet({
 
   const { data: schedule, isPending: isAvailabilityPending } =
     useGetTutorAvailability(tutor.id, open && Boolean(tutor.id));
-  const scheduleTimezone =
-    (schedule as (typeof schedule & { timezone?: string }) | undefined)
-      ?.timezone ?? FALLBACK_TIMEZONE;
-  const userTimezone = useMemo(
-    () => resolveUserTimezone(currentUser?.timezone, detectBrowserTimezone()),
-    [currentUser?.timezone],
+  const userTimezone = useUserTimezone();
+
+  const baseWeekStart = useMemo(
+    () => getWeekStartMondayInTimezone(userTimezone),
+    [userTimezone],
   );
 
-  const baseWeekStart = useMemo(() => {
-    const now = nowInTimezone(userTimezone);
-    const todayStart = new Date(now.year(), now.month(), now.date());
-    const jsWeekDay = todayStart.getDay();
-    const distanceToMonday = jsWeekDay === 0 ? 6 : jsWeekDay - 1;
-    const startOfCurrentWeek = new Date(todayStart);
-    startOfCurrentWeek.setDate(todayStart.getDate() - distanceToMonday);
-    return startOfCurrentWeek;
-  }, [userTimezone]);
-
   const calendarDates = useMemo(() => {
-    const now = nowInTimezone(userTimezone);
-    const todayStart = new Date(now.year(), now.month(), now.date());
-    const startOfWeek = new Date(baseWeekStart);
-    startOfWeek.setDate(baseWeekStart.getDate() + weekOffset * DAYS_IN_WEEK);
+    const todayStart = startOfTodayInTimezone(userTimezone);
+    const startOfWeek = baseWeekStart.add(weekOffset * DAYS_IN_WEEK, "day");
 
     return Array.from({ length: DAYS_IN_WEEK }).map((_, index) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + index);
-
-      const normalized = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-      );
-      const isPastDate = normalized.getTime() < todayStart.getTime();
+      const date = startOfWeek.add(index, "day");
+      const isPastDate = date.isBefore(todayStart, "day");
 
       return {
-        id: `${normalized.getFullYear()}-${normalized.getMonth() + 1}-${normalized.getDate()}`,
-        day: normalized.getDate(),
+        id: date.format("YYYY-MM-DD"),
+        day: date.date(),
         disabled: isPastDate,
       };
     });
@@ -190,79 +139,31 @@ export function TrialBookingSheet({
     [calendarDates, dateId],
   );
 
-  const selectedDateString = useMemo(() => {
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    const y = fullDate.getFullYear();
-    const m = String(fullDate.getMonth() + 1).padStart(2, "0");
-    const d = String(fullDate.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }, [selectedDate]);
+  const selectedDateString = selectedDate?.id ?? "";
 
   const dbDayOfWeek = useMemo(() => {
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    return jsDayToDbDayOfWeek(fullDate.getDay());
-  }, [selectedDate]);
+    if (!selectedDateString) return 0;
+    return jsDayToDbDayOfWeek(
+      parseYmdInTimezone(selectedDateString, userTimezone).day(),
+    );
+  }, [selectedDateString, userTimezone]);
   const shiftedSlots = useMemo(() => {
     const rows = schedule?.availability ?? [];
-    const clientTimezone = userTimezone;
+    const calendarInstances = utcWeeklySlotsToCalendarInstances(
+      rows.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      })),
+      userTimezone,
+      weekOffset,
+    );
 
-
-    const startOfWeek = new Date(baseWeekStart);
-    startOfWeek.setDate(baseWeekStart.getDate() + weekOffset * DAYS_IN_WEEK);
-
-    const results: Array<{ date: string; startTime: string; endTime: string }> =
-      [];
-
-    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const absDate = new Date(startOfWeek);
-      absDate.setDate(startOfWeek.getDate() + dayOffset);
-
-      const y = absDate.getFullYear();
-      const m = String(absDate.getMonth() + 1).padStart(2, "0");
-      const d = String(absDate.getDate()).padStart(2, "0");
-      const dateString = `${y}-${m}-${d}`;
-
-      const dayOfWeek = dayOffset;
-      const activeSlotsForDay = rows.filter(
-        (slot) => slot.isActive && slot.dayOfWeek === dayOfWeek,
-      );
-
-      for (const slot of activeSlotsForDay) {
-        const starts = expandRangeToSteps(
-          slot.startTime,
-          slot.endTime,
-          SLOT_INTERVAL_MINUTES,
-        );
-        for (const start of starts) {
-          const tutorStartAbs = dayjs.tz(
-            `${dateString} ${start}`,
-            scheduleTimezone,
-          );
-          const tutorEndAbs = tutorStartAbs.add(
-            SLOT_INTERVAL_MINUTES,
-            "minute",
-          );
-
-          const clientStart = tutorStartAbs.tz(clientTimezone);
-          const clientEnd = tutorEndAbs.tz(clientTimezone);
-
-          results.push({
-            date: clientStart.format("YYYY-MM-DD"),
-            startTime: clientStart.format("HH:mm"),
-            endTime: clientEnd.format("HH:mm"),
-          });
-        }
-      }
-    }
-
-    return results;
-  }, [
-    schedule?.availability,
-    scheduleTimezone,
-    baseWeekStart,
-    weekOffset,
-    userTimezone,
-  ]);
+    return calendarInstances.flatMap((instance) =>
+      expandCalendarSlotToSteps(instance, SLOT_INTERVAL_MINUTES, duration),
+    );
+  }, [schedule?.availability, userTimezone, weekOffset, duration]);
 
   const timeSlots = useMemo(() => {
     const matching = shiftedSlots.filter(
@@ -273,7 +174,7 @@ export function TrialBookingSheet({
       const { hour } = parseTimeParts(slot.startTime);
       return {
         id: slot.startTime,
-        label: formatTimeLabel(slot.startTime),
+        label: formatWallClockTime12h(slot.startTime),
         period: periodFromHourMinute(hour),
         startTime: slot.startTime,
       };
@@ -328,11 +229,7 @@ export function TrialBookingSheet({
 
   const pastSlotIds = useMemo(() => {
     const now = dayjs(nowTs).tz(userTimezone);
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    const isToday =
-      fullDate.getFullYear() === now.year() &&
-      fullDate.getMonth() === now.month() &&
-      fullDate.getDate() === now.date();
+    const isToday = selectedDateString === now.format("YYYY-MM-DD");
 
     if (!isToday) {
       return new Set<string>();
@@ -352,7 +249,7 @@ export function TrialBookingSheet({
     }
 
     return ids;
-  }, [nowTs, selectedDate.id, timeSlots, userTimezone]);
+  }, [nowTs, selectedDateString, timeSlots, userTimezone]);
 
   const occupiedSlotIds = useMemo(() => {
     const occupied = occupiedSlotsResponse?.items ?? [];
@@ -481,10 +378,7 @@ export function TrialBookingSheet({
       return;
     }
 
-    const fullDate = parseYyyyMmDdToLocalDate(selected.date);
-    setDateId(
-      `${fullDate.getFullYear()}-${fullDate.getMonth() + 1}-${fullDate.getDate()}`,
-    );
+    setDateId(selected.date);
     setTimeId(selected.startTime);
   };
 
@@ -492,18 +386,13 @@ export function TrialBookingSheet({
     if (!selectedTime) {
       return t("noTimeSet");
     }
-    const date = parseYyyyMmDdToLocalDate(selectedDateString);
-    const dayLabel = new Intl.DateTimeFormat("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }).format(date);
+    const dayLabel = formatWeekdayShort(selectedDateString, userTimezone);
     const endMinutes = timeToMinutes(selectedTime.startTime) + duration;
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(
       endMinutes % 60,
     ).padStart(2, "0")}`;
     return `${dayLabel} · ${selectedTime.startTime} - ${endTime}`;
-  }, [duration, selectedDateString, selectedTime, t]);
+  }, [duration, selectedDateString, selectedTime, t, userTimezone]);
 
   const handleConfirm = async () => {
     if (!selectedTime || isBookingLocked) {
@@ -538,6 +427,7 @@ export function TrialBookingSheet({
       startAt: payload.startAt,
       durationMinutes: String(payload.duration),
       dayOfWeek: String(payload.dayOfWeek),
+      timezone: userTimezone,
     });
     onOpenChange(false);
     router.push(`/checkout/trial-lesson?${query.toString()}`);
