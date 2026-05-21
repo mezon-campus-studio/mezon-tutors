@@ -5,6 +5,8 @@ export type MyLessonApiStatus = 'upcoming' | 'completed'
 export type MyLessonWeekDayApiItem = {
   short_label: string
   date_label: string
+  /** YYYY-MM-DD in viewer timezone; used to align column headers with `day_index`. */
+  date_ymd: string
 }
 
 export type MyLessonApiItemSource = 'trial' | 'subscription'

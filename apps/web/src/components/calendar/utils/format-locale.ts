@@ -14,23 +14,29 @@ export function formatCalendarTitle(title: string, locale: string): string {
   return date.isValid() ? date.format('MMMM YYYY') : title;
 }
 
-export function formatWeekDays(weekDays: CalendarWeekDay[], locale: string): CalendarWeekDay[] {
-  return weekDays.map((day, index) => {
-    let dayDate: dayjs.Dayjs;
-    
-    if (day.fullDate) {
-      dayDate = dayjs(day.fullDate).locale(locale);
-    } else {
-      const now = dayjs();
-      const dayOfWeek = now.day();
-      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const monday = now.subtract(mondayOffset, 'day');
-      dayDate = monday.add(index, 'day').locale(locale);
+export function formatWeekDays(
+  weekDays: CalendarWeekDay[],
+  locale: string,
+  timezoneName?: string,
+): CalendarWeekDay[] {
+  return weekDays.map((day) => {
+    if (!day.fullDate) {
+      return {
+        shortLabel: day.shortLabel,
+        dateLabel: day.dateLabel,
+        fullDate: day.fullDate,
+      };
     }
-    
+
+    const dayDate = (timezoneName
+      ? dayjs(day.fullDate).tz(timezoneName)
+      : dayjs(day.fullDate)
+    ).locale(locale);
+
     return {
       shortLabel: dayDate.format('ddd').toUpperCase(),
-      dateLabel: day.dateLabel,
+      dateLabel: dayDate.format('DD'),
+      fullDate: day.fullDate,
     };
   });
 }
