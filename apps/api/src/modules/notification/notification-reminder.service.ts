@@ -54,6 +54,7 @@ export class NotificationReminderService {
             userId: true,
             firstName: true,
             lastName: true,
+            mezonClanId: true,
             user: {
               select: {
                 mezonUserId: true,
@@ -105,6 +106,18 @@ export class NotificationReminderService {
           `${booking.tutor.firstName ?? ''} ${booking.tutor.lastName ?? ''}`.trim() || 'your tutor'
         const studentName = booking.student.username ?? 'A student'
 
+        let voiceRoom: { id: string; name: string } | undefined
+        if (booking.tutor.mezonClanId) {
+          try {
+            voiceRoom = await this.mezonBotService.pickVoiceRoomForLesson(booking.tutor.mezonClanId)
+          } catch (error) {
+            this.logger.warn(
+              `Could not fetch voice room for booking ${booking.id}`,
+              error instanceof Error ? error.message : error
+            )
+          }
+        }
+
         const dmTasks: Promise<void>[] = []
         if (booking.student.mezonUserId) {
           dmTasks.push(
@@ -116,6 +129,7 @@ export class NotificationReminderService {
                 role: 'student',
                 lessonKind: 'trial',
                 senderAvatarUrl: booking.tutor.user.avatar,
+                voiceRoom,
               })
             )
           )
@@ -130,6 +144,7 @@ export class NotificationReminderService {
                 role: 'tutor',
                 lessonKind: 'trial',
                 senderAvatarUrl: booking.student.avatar,
+                voiceRoom,
               })
             )
           )

@@ -11,6 +11,7 @@ import {
   type LessonKind,
   type LessonParty,
   type SenderAvatarParams,
+  type VoiceRoomParams,
   refundCreditedEmbed,
   subscriptionEnrollmentCancelledEmbed,
   subscriptionEnrollmentConfirmedEmbed,
@@ -49,13 +50,17 @@ export class MezonMessageService {
       startAtLabel: string;
       role: LessonParty;
       lessonKind?: LessonKind;
-    } & SenderAvatarParams
+    } & SenderAvatarParams &
+      VoiceRoomParams
   ): ChannelMessageContent {
     const scheduleUrl =
       params.role === 'tutor'
         ? this.url(ROUTES.DASHBOARD.MY_SCHEDULE)
         : this.url(ROUTES.MY_LESSONS.INDEX);
-    return this.toChannelMessage(lessonStartingSoonEmbed({ ...params, scheduleUrl }));
+    return buildEmbedMessage(lessonStartingSoonEmbed({ ...params, scheduleUrl }), {
+      footer: this.embedFooter,
+      voiceRoom: params.voiceRoom,
+    });
   }
 
   trialLessonBooked(

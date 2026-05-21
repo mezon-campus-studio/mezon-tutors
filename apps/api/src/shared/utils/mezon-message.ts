@@ -1,4 +1,5 @@
 import { ChannelMessageContent, IInteractiveMessageProps } from 'mezon-sdk';
+import type { VoiceRoomParams } from './mezon-message-templates';
 
 export const MEZON_EMBED_COLORS = {
   primary: '#4f46e5',
@@ -28,15 +29,44 @@ export const embedAdminThumbnail = (): Pick<IInteractiveMessageProps, 'thumbnail
   thumbnail: { url: MEZONLY_LOGO_URL },
 });
 
+const VOICE_ROOM_LINK_PREFIX = 'Meeting room: ';
+
+export const buildVoiceRoomLinkContent = (
+  room: NonNullable<VoiceRoomParams['voiceRoom']>
+): Pick<ChannelMessageContent, 't' | 'hg'> => {
+  const t = `${VOICE_ROOM_LINK_PREFIX}${room.name}`;
+  return {
+    t,
+    hg: [
+      {
+        channelId: room.id,
+        s: VOICE_ROOM_LINK_PREFIX.length,
+        e: t.length,
+      },
+    ],
+  };
+};
+
 export const buildEmbedMessage = (
   embed: IInteractiveMessageProps,
-  options?: { footer?: NonNullable<IInteractiveMessageProps['footer']> }
-): ChannelMessageContent => ({
-  embed: [
-    {
-      ...embed,
-      footer: options?.footer ?? embed.footer,
-      timestamp: embed.timestamp ?? new Date().toISOString(),
-    },
-  ],
-});
+  options?: {
+    footer?: NonNullable<IInteractiveMessageProps['footer']>;
+    voiceRoom?: VoiceRoomParams['voiceRoom'];
+  }
+): ChannelMessageContent => {
+  const message: ChannelMessageContent = {
+    embed: [
+      {
+        ...embed,
+        footer: options?.footer ?? embed.footer,
+        timestamp: embed.timestamp ?? new Date().toISOString(),
+      },
+    ],
+  };
+
+  if (options?.voiceRoom) {
+    return { ...message, ...buildVoiceRoomLinkContent(options.voiceRoom) };
+  }
+
+  return message;
+};

@@ -6,8 +6,6 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './shared/services/app-config.service';
 import { ValidationPipe } from '@nestjs/common';
-import { AppService } from './app.service';
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', 1);
@@ -55,8 +53,6 @@ async function bootstrap() {
       whitelist: true,
     })
   );
-
-  await await app.get(AppService).onModuleInit();
 
   if (configService.nodeEnv !== 'production') {
     const config = new DocumentBuilder()
