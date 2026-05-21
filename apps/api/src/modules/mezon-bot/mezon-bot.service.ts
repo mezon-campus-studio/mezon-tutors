@@ -1,35 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AppConfigService } from '../../shared/services/app-config.service';
-import { ChannelMessageContent, MezonClient } from 'mezon-sdk';
+import { ChannelMessageContent, ChannelType, MezonClient } from 'mezon-sdk';
 import { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
 
 @Injectable()
-export class MezonBotService {
+export class MezonBotService implements OnModuleInit {
   private client: MezonClient;
+  private loggedIn = false;
 
   constructor(private readonly appConfig: AppConfigService) {
     if (!this.isConfigured()) {
       throw new Error('MezonBot is not configured');
     }
-    
+
     this.client = new MezonClient({
       botId: this.appConfig.mezonBotConfig.botId,
       token: this.appConfig.mezonBotConfig.botToken,
     });
   }
 
-
   async onModuleInit() {
+    await this.login();
+  }
+
+  async login(): Promise<void> {
+    if (this.loggedIn) {
+      return;
+    }
+
     try {
       await this.client.login();
+      this.loggedIn = true;
     } catch (error) {
       console.error('Error initializing MezonBotService:', error);
+      throw error;
     }
   }
 
   isConfigured() {
     const config = this.appConfig.mezonBotConfig;
     return Boolean(config.botId && config.botToken);
+  }
+
+  getClient() {
+    return this.client;
   }
 
   async sendDMToUser(mezonId: string, messageContent: ChannelMessageContent): Promise<void> {
@@ -40,5 +54,85 @@ export class MezonBotService {
     } catch (error) {
       console.error('Error sending DM to user:', mezonId, '| Error:', error);
     }
+  }
+
+  async sendChannelMessage(channelId: string, messageContent: ChannelMessageContent) {
+    try {
+      const channel = await this.client.channels.fetch(channelId);
+
+      await channel.send(messageContent);
+    } catch (error) {
+      console.error('Error sending channel message:', channelId, '| Error:', error);
+    }
+  }
+
+  async replyMessage(channelId: string, messageId: string, messageContent: ChannelMessageContent) {
+    try {
+      const channel = await this.client.channels.fetch(channelId);
+      const messageFetched = await channel.messages.fetch(messageId);
+
+      return await messageFetched.reply(messageContent);
+    } catch (error) {
+      console.error('Error replying message:', channelId, '| Error:', error);
+    }
+  }
+
+  private static readonly VOICE_CHANNEL_TYPE = 10;
+
+  private async loadVoiceChannelsWithOccupancy(
+    clanId: string
+  ): Promise<Array<{ id: string; name: string; userCount: number }>> {
+    const clan = await this.client.clans.fetch(clanId);
+    await clan.loadChannels();
+
+    const channelEntries = await clan.channels.cache.entries();
+    const channels = Array.from(channelEntries).reduce<Array<{ id: string; name: string }>>(
+      (acc, [, channel]) => {
+        if (channel.channel_type === MezonBotService.VOICE_CHANNEL_TYPE) {
+          acc.push({
+            id: channel.id ?? '',
+            name: channel.name ?? '',
+          });
+        }
+
+        return acc;
+      },
+      []
+    );
+
+    const res = await clan.listChannelVoiceUsers();
+    const channelsVoiceUsers = res?.voice_channel_users ?? [];
+    const userCountByChannel = new Map<string, number>();
+
+    for (const voiceUser of channelsVoiceUsers) {
+      const channelId = voiceUser.channel_id;
+      if (!channelId) {
+        continue;
+      }
+      userCountByChannel.set(channelId, (userCountByChannel.get(channelId) ?? 0) + 1);
+    }
+
+    return channels.map((channel) => ({
+      ...channel,
+      userCount: userCountByChannel.get(channel.id) ?? 0,
+    }));
+  }
+
+  async getVoiceChannelsByOccupancy(clanId: string) {
+    const channels = await this.loadVoiceChannelsWithOccupancy(clanId);
+    return [...channels].sort((a, b) => a.userCount - b.userCount);
+  }
+
+  async getAvailableVoiceChannels(clanId: string) {
+    const channels = await this.getVoiceChannelsByOccupancy(clanId);
+    return channels
+      .filter((channel) => channel.userCount === 0)
+      .map(({ id, name }) => ({ id, name }));
+  }
+
+  async pickVoiceRoomForLesson(clanId: string): Promise<{ id: string; name: string } | undefined> {
+    const channels = await this.getVoiceChannelsByOccupancy(clanId);
+    const best = channels[0];
+    return best ? { id: best.id, name: best.name } : undefined;
   }
 }

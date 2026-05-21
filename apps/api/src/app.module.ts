@@ -21,10 +21,10 @@ import { VnpayModule } from './modules/vnpay/vnpay.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { MezonBotModule } from './modules/mezon-bot/mezon-bot.module';
+import { ListenersModule } from './modules/mezon-bot/listeners/listeners.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settlement.module';
-import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -57,6 +57,7 @@ import { AppService } from './app.service';
     WebhookModule,
     NotificationModule,
     MezonBotModule,
+    ListenersModule,
     SubscriptionModule,
     WalletModule,
     LessonSettlementModule,
@@ -71,7 +72,6 @@ import { AppService } from './app.service';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    AppService,
   ],
 })
 export class AppModule {}

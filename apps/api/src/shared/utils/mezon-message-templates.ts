@@ -3,11 +3,23 @@ import { embedAdminThumbnail, embedSenderThumbnail, MEZON_EMBED_COLORS } from '.
 
 export type SenderAvatarParams = { senderAvatarUrl?: string | null };
 
+export type VoiceRoomParams = {
+  voiceRoom?: { id: string; name: string } | null;
+};
+
 export type LessonParty = 'student' | 'tutor';
 export type LessonKind = 'trial' | 'subscription';
 
 const lessonKindLabel = (kind: LessonKind) =>
   kind === 'trial' ? 'Trial lesson' : 'Subscription lesson';
+
+const lessonStartingSoonDescription = (
+  counterpartyName: string,
+  lessonKind?: LessonKind
+): string => {
+  const lessonPhrase = lessonKind ? `${lessonKindLabel(lessonKind).toLowerCase()} ` : '';
+  return `Your ${lessonPhrase}lesson with ${counterpartyName} starts in about 10 minutes.`;
+};
 
 export const lessonStartingSoonEmbed = (
   params: {
@@ -16,11 +28,12 @@ export const lessonStartingSoonEmbed = (
     role: LessonParty;
     lessonKind?: LessonKind;
     scheduleUrl?: string;
-  } & SenderAvatarParams
+  } & SenderAvatarParams &
+    VoiceRoomParams
 ): IInteractiveMessageProps => ({
   color: MEZON_EMBED_COLORS.warning,
   title: 'Lesson starting soon',
-  description: `Your ${params.lessonKind} lesson with ${params.counterpartyName} starts in about 10 minutes.`,
+  description: lessonStartingSoonDescription(params.counterpartyName, params.lessonKind),
   fields: [
     { name: 'With', value: params.counterpartyName, inline: true },
     { name: 'Start time', value: params.startAtLabel, inline: true },
