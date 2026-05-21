@@ -16,6 +16,7 @@ import type {
   MezonUserInfo,
 } from './interfaces/auth.interfaces';
 import { UserService } from '../user/user.service';
+import { NotificationService } from '../notification/notification.service';
 
 const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
@@ -26,7 +27,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly appConfig: AppConfigService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService
   ) {}
 
   buildMezonAuthorizeUrl(): { url: string; state: string } {
@@ -147,7 +149,10 @@ export class AuthService {
     };
   }
 
-  async findOrCreateUserFromMezon(mezonUser: MezonUserInfo, timezone?: string): Promise<User> {
+  async findOrCreateUserFromMezon(
+    mezonUser: MezonUserInfo,
+    timezone?: string
+  ): Promise<{ user: User; created: boolean }> {
     const mezonUserId = mezonUser.user_id;
     const username = mezonUser.username || `user-${mezonUserId.substring(0, 8)}`;
 
@@ -311,8 +316,16 @@ export class AuthService {
   async handleMezonCallback(code: string, state?: string, timezone?: string) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
-    const user = await this.findOrCreateUserFromMezon(mezonUser, timezone);
+    const { user, created } = await this.findOrCreateUserFromMezon(mezonUser, timezone);
     const tokens = await this.generateTokens(user);
+
+    if (created) {
+      void this.notificationService.notifyWelcomeLinked({
+        userId: user.id,
+        mezonUserId: user.mezonUserId,
+        displayName: user.username,
+      });
+    }
 
     const result = {
       user: {

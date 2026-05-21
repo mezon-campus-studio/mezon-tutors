@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CountryLabel,
@@ -25,9 +25,15 @@ import {
 import dayjs = require('dayjs');
 import { toTutorReviewDto, toVerifiedTutorProfileDto } from './tutor-profile.mapper';
 import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto';
+import { NotificationService } from '../notification/notification.service';
 @Injectable()
 export class TutorProfileService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(TutorProfileService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   private buildTrialLessonPriceData(dto: SubmitTutorProfileDto) {
     const baseCurrency = dto.currency ?? ECurrency.VND;
@@ -54,6 +60,34 @@ export class TutorProfileService {
       await this.updateByUserId(userId, dto);
     } else {
       await this.createByUserId(userId, dto);
+    }
+
+
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { avatar: true } },
+      },
+    });
+    if (!profile) {
+      return;
+    }
+
+    const tutorName =
+      `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'A tutor';
+
+    try {
+      await this.notificationService.notifyAdminTutorApplicationSubmitted({
+        tutorName,
+        applicationId: profile.id,
+        senderAvatarUrl: profile.user.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify admin for tutor application ${profile.id}: ${detail}`);
     }
   }
 

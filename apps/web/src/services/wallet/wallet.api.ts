@@ -7,7 +7,6 @@ import type {
   WalletDetailsApiResponse,
   WalletStatsApiResponse,
   WalletTransactionsApiResponse,
-  WalletWithdrawalApiItem,
   WalletWithdrawalsApiResponse,
 } from '@mezon-tutors/shared';
 import { useAtomValue } from 'jotai';
@@ -50,11 +49,8 @@ const walletApi = {
     >(`${BASE}/withdrawals`, { params: { page, limit: PAGE_SIZE } });
   },
 
-  createWithdrawal(payload: CreateWalletWithdrawalPayload): Promise<WalletWithdrawalApiItem> {
-    return apiClient.post<ApiResponse<WalletWithdrawalApiItem>, WalletWithdrawalApiItem>(
-      `${BASE}/withdrawals`,
-      payload,
-    );
+  createWithdrawal(payload: CreateWalletWithdrawalPayload): Promise<void> {
+    return apiClient.post(`${BASE}/withdrawals`, payload);
   },
 };
 

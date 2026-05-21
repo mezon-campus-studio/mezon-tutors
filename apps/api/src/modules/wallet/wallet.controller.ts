@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { SkipApiResponseWrap } from '../../common/decorators/skip-api-response-wrap.decorator';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -52,8 +53,11 @@ export class WalletController {
   }
 
   @Post('withdrawals')
-  createWithdrawal(@Req() req: Request, @Body() body: CreateWalletWithdrawalDto) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @SkipApiResponseWrap()
+  @ApiOperation({ summary: 'Request a withdrawal (pending admin approval)' })
+  async createWithdrawal(@Req() req: Request, @Body() body: CreateWalletWithdrawalDto) {
     const user = req.user as AuthUserPayload;
-    return this.walletService.createWithdrawal(user.sub, user.role, body);
+    await this.walletService.createWithdrawal(user.sub, user.role, body);
   }
 }

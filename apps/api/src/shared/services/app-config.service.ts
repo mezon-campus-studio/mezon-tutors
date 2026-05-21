@@ -41,6 +41,8 @@ const envSchema = z.object({
   BOT_ID: z.string().min(1, 'BOT_ID is required'),
   BOT_TOKEN: z.string().min(1, 'BOT_TOKEN is required'),
 
+  ADMIN_MEZON_ID: z.string().optional(),
+
   MEZON_APP_SECRET: z
     .string()
     .optional()
@@ -111,6 +113,7 @@ export class AppConfigService {
       REDIRECT_URI: this.configService.get('REDIRECT_URI'),
       BOT_ID: this.configService.get('BOT_ID'),
       BOT_TOKEN: this.configService.get('BOT_TOKEN'),
+      ADMIN_MEZON_ID: this.configService.get('ADMIN_MEZON_ID'),
       MEZON_APP_SECRET: this.configService.get('MEZON_APP_SECRET'),
       RESEND_API_KEY: this.configService.get('RESEND_API_KEY'),
       RESEND_FROM_EMAIL: this.configService.get('RESEND_FROM_EMAIL'),
@@ -208,6 +211,11 @@ export class AppConfigService {
       botId: this.env.BOT_ID,
       botToken: this.env.BOT_TOKEN,
     };
+  }
+
+  get adminMezonId(): string | undefined {
+    const id = this.env.ADMIN_MEZON_ID?.trim();
+    return id || undefined;
   }
 
   get mezonAppSecrets(): string[] {
