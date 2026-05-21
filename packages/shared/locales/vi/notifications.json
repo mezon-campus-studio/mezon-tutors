@@ -27,7 +27,7 @@
     "paymentSucceeded": "Thanh toán cho mã đặt lịch {bookingCode} đã thành công.",
     "paymentFailed": "Thanh toán cho mã đặt lịch {bookingCode} thất bại. Vui lòng thử lại.",
     "systemAnnouncement": "{message}",
-    "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 10 phút nữa.",
+    "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 10 phút nữa, lúc {lessonStartAt}.",
     "tutorEarningsReleased": "{amount} từ {lessonKind, select, trial {buổi học thử} subscription {buổi học gói đăng ký} other {buổi học}} đã được chuyển vào số dư khả dụng trong ví của bạn."
   }
 }

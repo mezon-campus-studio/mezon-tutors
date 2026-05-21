@@ -49,6 +49,22 @@ export function resolveStableTimezone(
   return normalizeTimezoneParam(queryTimezone ?? undefined);
 }
 
+export function formatInstantForLocale(
+  iso: string,
+  timezoneName: string,
+  locale: string,
+): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return iso;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: timezoneName,
+  }).format(date);
+}
+
 export function formatInstantRangeLabels(
   startAtIso: string,
   durationMinutes: number,
