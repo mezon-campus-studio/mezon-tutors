@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useUserTimezone } from "@/hooks";
+import { getWeekStartMondayInTimezone } from "@/lib/timezone";
 import { useGetMyLessonsOverview } from "@/services/my-lessons/my-lessons.api";
 import MyLessonsCalendarSection from "./components/MyLessonsCalendarSection";
 import MyLessonsHeader from "./components/MyLessonsHeader";
@@ -26,9 +27,7 @@ export default function MyLessonsPage() {
   const [activeTab, setActiveTab] = useState<MyLessonsTab>("calendar");
   const [selectedDate, setSelectedDate] = useState(dayjs().tz(userTimezone));
 
-  const dayOfWeek = selectedDate.day();
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const monday = selectedDate.subtract(mondayOffset, "day").startOf("day");
+  const monday = getWeekStartMondayInTimezone(userTimezone, selectedDate);
   const weekStartDate = monday.format("YYYY-MM-DD");
 
   const { data, isLoading } = useGetMyLessonsOverview(
@@ -40,13 +39,8 @@ export default function MyLessonsPage() {
     setSelectedDate((prev) => prev.subtract(7, "day"));
   const handleNextWeek = () => setSelectedDate((prev) => prev.add(7, "day"));
 
-  const isCurrentWeek = () => {
-    const today = dayjs().tz(userTimezone);
-    const todayDayOfWeek = today.day();
-    const todayMondayOffset = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
-    const todayMonday = today.subtract(todayMondayOffset, "day").startOf("day");
-    return monday.isSame(todayMonday, "day");
-  };
+  const isCurrentWeek = () =>
+    monday.isSame(getWeekStartMondayInTimezone(userTimezone), "day");
 
   const handleGoToToday = () => {
     setSelectedDate(dayjs().tz(userTimezone));
@@ -89,6 +83,8 @@ export default function MyLessonsPage() {
                 <MyLessonsCalendarSection
                   calendar={data.calendar}
                   lessons={data.calendarLessons}
+                  weekStartYmd={weekStartDate}
+                  timezoneName={userTimezone}
                   onPrevWeek={handlePrevWeek}
                   onNextWeek={handleNextWeek}
                   onGoToToday={handleGoToToday}

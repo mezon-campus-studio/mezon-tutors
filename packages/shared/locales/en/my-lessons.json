@@ -63,6 +63,7 @@
       }
     },
     "tutors": {
+      "eyebrow": "My tutors",
       "title": "My tutors",
       "subtitle": "You have {count} active tutors this semester.",
       "findNewTutors": "+ Find New Tutors",

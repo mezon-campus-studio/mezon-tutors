@@ -23,6 +23,7 @@ const DAY_COUNT = CALENDAR_CONFIG.DAYS_PER_WEEK;
 const MINUTES_PER_DAY = 24 * 60;
 const DEFAULT_TIMEZONE = 'UTC';
 
+/** Wall-clock slot in `timezone` (YYYY-MM-DD + HH:mm), not UTC. */
 export type ScheduleSlotInput = {
   date: string;
   startTime: string;
@@ -30,8 +31,10 @@ export type ScheduleSlotInput = {
 };
 
 export interface ScheduleViewerProps {
+  /** Slots expanded for the viewer; use `utcWeeklySlotsToCalendarInstances` when DB stores UTC weekly rows. */
   availableSlots: ScheduleSlotInput[];
   className?: string;
+  /** IANA timezone used for week headers and cell timestamps (typically `useUserTimezone()`). */
   timezone?: string;
 }
 

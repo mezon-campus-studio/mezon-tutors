@@ -6,6 +6,8 @@ import MyLessonsCalendarCard from './MyLessonsCalendarCard';
 type MyLessonsCalendarSectionProps = {
   calendar: MyLessonsCalendarMeta;
   lessons: LessonItem[];
+  weekStartYmd: string;
+  timezoneName: string;
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
   onGoToToday?: () => void;
@@ -15,6 +17,8 @@ type MyLessonsCalendarSectionProps = {
 export default function MyLessonsCalendarSection({
   calendar,
   lessons,
+  weekStartYmd,
+  timezoneName,
   onPrevWeek,
   onNextWeek,
   onGoToToday,
@@ -24,6 +28,8 @@ export default function MyLessonsCalendarSection({
     <MyLessonsCalendarCard
       lessons={lessons}
       calendar={calendar}
+      weekStartYmd={weekStartYmd}
+      timezoneName={timezoneName}
       onPrevWeek={onPrevWeek}
       onNextWeek={onNextWeek}
       onGoToToday={onGoToToday}

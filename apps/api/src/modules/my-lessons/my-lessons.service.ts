@@ -122,15 +122,26 @@ export class MyLessonsService {
       weekStartDate,
       timezoneName
     );
-    const calendarLessons = calendarTrialRows
-      .map((lesson) => this.toLessonCalendarApiItem(lesson, timezoneName))
-      .filter((item): item is MyLessonApiItem => item !== null);
+    const weekStartResolved = weekStartDate
+      ? this.parseWeekStartMondayYmd(weekStartDate, timezoneName)
+      : dayjs(this.getWeekStart(calendarBaseDate, timezoneName)).tz(timezoneName).startOf('day');
+    const weekStartDateObj = weekStartResolved.toDate();
+    const weekYmd = weekStartResolved.format('YYYY-MM-DD');
 
-    const weekYmd =
-      weekStartDate ??
-      dayjs(this.getWeekStart(calendarBaseDate, timezoneName))
-        .tz(timezoneName)
-        .format('YYYY-MM-DD');
+    const calendarLessons = calendarTrialRows
+      .map((lesson) => {
+        const item = this.toLessonCalendarApiItem(lesson, timezoneName);
+        if (!item) {
+          return null;
+        }
+        return this.withCalendarColumnIndex(
+          item,
+          lesson.startAt,
+          weekStartDateObj,
+          timezoneName
+        );
+      })
+      .filter((item): item is MyLessonApiItem => item !== null);
 
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
@@ -170,12 +181,17 @@ export class MyLessonsService {
         if (!calendarStatus) {
           continue;
         }
-        const item = this.enrollmentOccurrenceToLessonItem(
-          enrollment,
+        const item = this.withCalendarColumnIndex(
+          this.enrollmentOccurrenceToLessonItem(
+            enrollment,
+            range.startAt,
+            range.endAt,
+            occ.slotIndex,
+            calendarStatus,
+            timezoneName
+          ),
           range.startAt,
-          range.endAt,
-          occ.slotIndex,
-          calendarStatus,
+          weekStartDateObj,
           timezoneName
         );
         subscriptionCalendarItems.push(item);
@@ -228,7 +244,7 @@ export class MyLessonsService {
       calendar_lessons: mergedCalendar,
       upcoming_lessons: mergedUpcoming,
       previous_lessons: mergedPrevious,
-      tutors: this.buildTutorItems(lessons),
+      tutors: this.buildTutorItems(lessons, timezoneName),
     };
   }
 
@@ -339,7 +355,10 @@ export class MyLessonsService {
     };
   }
 
-  private buildTutorItems(lessons: TrialLessonBookingWithTutor[]): MyLessonTutorApiItem[] {
+  private buildTutorItems(
+    lessons: TrialLessonBookingWithTutor[],
+    timezoneName: string
+  ): MyLessonTutorApiItem[] {
     const tutorMap = new Map<
       string,
       {
@@ -401,8 +420,9 @@ export class MyLessonsService {
         availability: tutor.availability,
         completed_lessons: tutor.completedLessons,
         next_lesson_label: tutor.nextLessonAt
-          ? this.toUtc(tutor.nextLessonAt).format('ddd, h:mm A')
+          ? dayjs(tutor.nextLessonAt).tz(timezoneName).format('ddd, h:mm A')
           : '',
+        next_lesson_at: tutor.nextLessonAt ? tutor.nextLessonAt.toISOString() : null,
         rating_average: tutor.ratingAverage,
         review_count: tutor.reviewCount,
       }))
@@ -475,9 +495,34 @@ export class MyLessonsService {
     return `${this.formatTime(start, timezoneName)} - ${this.formatTime(end, timezoneName)}`;
   }
 
+  /** Monday=0 … Sunday=6 for the calendar week containing `date` (wall clock in TZ). */
   private toCalendarDayIndex(date: Date, timezoneName: string): number {
     const dow = dayjs(date).tz(timezoneName).day();
     return dow === 0 ? 6 : dow - 1;
+  }
+
+  /** Column index 0–6 = offset from `weekStart` (must match `week_days` headers). */
+  private toCalendarColumnIndex(
+    date: Date,
+    weekStart: Date,
+    timezoneName: string
+  ): number {
+    const start = dayjs(weekStart).tz(timezoneName).startOf('day');
+    const eventDay = dayjs(date).tz(timezoneName).startOf('day');
+    const diff = eventDay.diff(start, 'day');
+    return Math.max(0, Math.min(6, diff));
+  }
+
+  private withCalendarColumnIndex(
+    item: MyLessonApiItem,
+    startAt: Date,
+    weekStart: Date,
+    timezoneName: string
+  ): MyLessonApiItem {
+    return {
+      ...item,
+      day_index: this.toCalendarColumnIndex(startAt, weekStart, timezoneName),
+    };
   }
 
   private normalizeAvailabilityDay(dayOfWeek: number): number {
@@ -502,10 +547,7 @@ export class MyLessonsService {
     timezoneName = DEFAULT_CALENDAR_TZ
   ): Date {
     if (weekStartDate) {
-      const parsed = dayjs(weekStartDate).tz(timezoneName).startOf('day');
-      if (parsed.isValid()) {
-        return parsed.toDate();
-      }
+      return this.parseWeekStartMondayYmd(weekStartDate, timezoneName).toDate();
     }
 
     return dayjs().tz(timezoneName).toDate();
@@ -521,9 +563,9 @@ export class MyLessonsService {
     let weekEnd: Date;
 
     if (weekStartDate) {
-      const parsed = dayjs(weekStartDate).tz(timezoneName).startOf('day');
-      weekStart = parsed.toDate();
-      weekEnd = parsed.add(7, 'day').toDate();
+      const monday = this.parseWeekStartMondayYmd(weekStartDate, timezoneName);
+      weekStart = monday.toDate();
+      weekEnd = monday.add(7, 'day').toDate();
     } else {
       weekStart = this.getWeekStart(baseDate, timezoneName);
       weekEnd = dayjs(weekStart).add(7, 'day').toDate();
@@ -549,14 +591,15 @@ export class MyLessonsService {
     let weekDays: MyLessonWeekDayApiItem[];
 
     if (weekStartDate) {
-      const parsed = dayjs(weekStartDate).tz(timezoneName).startOf('day');
-      weekStart = parsed.toDate();
+      const monday = this.parseWeekStartMondayYmd(weekStartDate, timezoneName);
+      weekStart = monday.toDate();
 
       weekDays = Array.from({ length: 7 }, (_, index) => {
-        const day = parsed.add(index, 'day');
+        const day = monday.add(index, 'day');
         return {
           short_label: day.format('ddd'),
           date_label: day.format('DD'),
+          date_ymd: day.format('YYYY-MM-DD'),
         };
       });
     } else {
@@ -581,7 +624,7 @@ export class MyLessonsService {
     const weekStartMs = weekStart.getTime();
     const isCurrentWeek = nowMs >= weekStartMs && nowMs < weekEndMs;
     const currentDayIndex = isCurrentWeek
-      ? this.toCalendarDayIndex(now.toDate(), timezoneName)
+      ? this.toCalendarColumnIndex(now.toDate(), weekStart, timezoneName)
       : undefined;
 
     return {
@@ -593,6 +636,16 @@ export class MyLessonsService {
     };
   }
 
+  private parseWeekStartMondayYmd(weekStartYmd: string, timezoneName: string) {
+    const parsed = dayjs.tz(weekStartYmd, 'YYYY-MM-DD', timezoneName).startOf('day');
+    if (!parsed.isValid()) {
+      return dayjs().tz(timezoneName).startOf('day');
+    }
+    const jsDay = parsed.day();
+    const mondayOffset = jsDay === 0 ? 6 : jsDay - 1;
+    return parsed.subtract(mondayOffset, 'day');
+  }
+
   private getWeekStart(date: Date, timezoneName: string): Date {
     const d = dayjs(date).tz(timezoneName).startOf('day');
     const idx = this.toCalendarDayIndex(date, timezoneName);
@@ -600,12 +653,14 @@ export class MyLessonsService {
   }
 
   private buildWeekDays(weekStart: Date, timezoneName: string): MyLessonWeekDayApiItem[] {
+    const monday = dayjs(weekStart).tz(timezoneName).startOf('day');
     return Array.from({ length: 7 }, (_, index) => {
-      const day = dayjs(weekStart).tz(timezoneName).add(index, 'day');
+      const day = monday.add(index, 'day');
 
       return {
         short_label: day.format('ddd'),
         date_label: day.format('DD'),
+        date_ymd: day.format('YYYY-MM-DD'),
       };
     });
   }

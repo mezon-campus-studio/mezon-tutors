@@ -123,16 +123,18 @@ export function buildRowModels(
       index += 1;
     }
 
-    const emptyCount = index - startIndex;
+    const emptySlotCount = index - startIndex;
 
-    if (emptyCount >= minGapHours) {
+    if (emptySlotCount >= minGapHours) {
       const startHour = sortedHours[startIndex];
       const lastEmptyHour = sortedHours[index - 1] ?? startHour;
+      const endHour = Math.min(24, lastEmptyHour + 1);
       rows.push({
         type: 'gap',
         startHour,
-        endHour: Math.min(24, lastEmptyHour + 1),
-        hourCount: emptyCount,
+        endHour,
+        /** Wall-clock span (matches formatRangeLabel), not discrete weekHours indices (0–24 ⇒ 25 ticks). */
+        hourCount: endHour - startHour,
       });
     } else {
       for (let i = startIndex; i < index; i++) {
