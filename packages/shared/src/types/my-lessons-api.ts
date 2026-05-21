@@ -37,6 +37,8 @@ export type MyLessonTutorApiItem = {
   availability: string
   completed_lessons: number
   next_lesson_label: string
+  /** ISO-8601 start of next lesson; format on client with viewer timezone when set. */
+  next_lesson_at?: string | null
   rating_average: number
   review_count: number
 }

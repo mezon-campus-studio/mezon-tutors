@@ -63,6 +63,7 @@
       }
     },
     "tutors": {
+      "eyebrow": "Gia sư của tôi",
       "title": "Gia sư của tôi",
       "subtitle": "Bạn có {count} gia sư đang hoạt động trong học kỳ này.",
       "findNewTutors": "+ Tìm gia sư mới",

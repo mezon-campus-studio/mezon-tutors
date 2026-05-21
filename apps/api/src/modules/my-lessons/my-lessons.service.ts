@@ -244,7 +244,7 @@ export class MyLessonsService {
       calendar_lessons: mergedCalendar,
       upcoming_lessons: mergedUpcoming,
       previous_lessons: mergedPrevious,
-      tutors: this.buildTutorItems(lessons),
+      tutors: this.buildTutorItems(lessons, timezoneName),
     };
   }
 
@@ -355,7 +355,10 @@ export class MyLessonsService {
     };
   }
 
-  private buildTutorItems(lessons: TrialLessonBookingWithTutor[]): MyLessonTutorApiItem[] {
+  private buildTutorItems(
+    lessons: TrialLessonBookingWithTutor[],
+    timezoneName: string
+  ): MyLessonTutorApiItem[] {
     const tutorMap = new Map<
       string,
       {
@@ -417,8 +420,9 @@ export class MyLessonsService {
         availability: tutor.availability,
         completed_lessons: tutor.completedLessons,
         next_lesson_label: tutor.nextLessonAt
-          ? this.toUtc(tutor.nextLessonAt).format('ddd, h:mm A')
+          ? dayjs(tutor.nextLessonAt).tz(timezoneName).format('ddd, h:mm A')
           : '',
+        next_lesson_at: tutor.nextLessonAt ? tutor.nextLessonAt.toISOString() : null,
         rating_average: tutor.ratingAverage,
         review_count: tutor.reviewCount,
       }))

@@ -67,6 +67,7 @@ export type TutorItem = {
   availability: string;
   completedLessons: number;
   nextLessonLabel: string;
+  nextLessonAt?: string | null;
   ratingAverage: number;
   reviewCount: number;
 };
@@ -152,6 +153,7 @@ const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
   availability: item.availability,
   completedLessons: item.completed_lessons,
   nextLessonLabel: item.next_lesson_label,
+  nextLessonAt: item.next_lesson_at ?? null,
   ratingAverage: item.rating_average,
   reviewCount: item.review_count,
 });

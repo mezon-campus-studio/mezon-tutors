@@ -50,7 +50,19 @@ export function formatLessonDateLabel(dateLabel: string, locale: string): string
   return dateLabel;
 }
 
-export function formatTutorNextLessonLabel(nextLessonLabel: string, locale: string): string {
+export function formatTutorNextLessonLabel(
+  nextLessonLabel: string,
+  locale: string,
+  timezoneName?: string,
+  nextLessonAtIso?: string | null,
+): string {
+  if (nextLessonAtIso && timezoneName) {
+    const instant = dayjs(nextLessonAtIso);
+    if (instant.isValid()) {
+      return instant.tz(timezoneName).locale(locale).format('ddd, h:mm A');
+    }
+  }
+
   const date = dayjs(nextLessonLabel, 'ddd, h:mm A', 'en', true);
   if (date.isValid()) {
     return date.locale(locale).format('ddd, h:mm A');
