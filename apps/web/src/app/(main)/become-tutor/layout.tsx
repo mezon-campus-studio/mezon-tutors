@@ -1,20 +1,21 @@
-'use client';
+import type { Metadata } from "next";
+import { ROUTES } from "@mezon-tutors/shared";
+import { createNoIndexMetadata } from "@/lib/seo";
+import { getSeoMessages } from "@/lib/seo-messages";
+import BecomeTutorClientLayout from "@/components/layouts/BecomeTutorClientLayout";
 
-import { useEffect } from 'react';
-import { useSetAtom } from 'jotai';
-import { BecomeTutorGuard } from '@/components/guards/BecomeTutorGuard';
-import { isEditingRejectedProfileAtom } from '@/store';
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoMessages();
+  return createNoIndexMetadata({
+    title: seo.becomeTutor.title,
+    description: seo.becomeTutor.description,
+    path: ROUTES.BECOME_TUTOR.INDEX,
+  });
+}
 
 export default function BecomeTutorLayout({ children }: { children: React.ReactNode }) {
-  const setIsEditing = useSetAtom(isEditingRejectedProfileAtom);
-
-  useEffect(() => {
-    return () => {
-      setIsEditing(false);
-    };
-  }, [setIsEditing]);
 
   return (
-    <BecomeTutorGuard>{children}</BecomeTutorGuard>
+    <BecomeTutorClientLayout>{children}</BecomeTutorClientLayout>
   );
 }

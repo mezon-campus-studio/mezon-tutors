@@ -1,0 +1,61 @@
+{
+  "siteName": "Mezonly",
+  "default": {
+    "title": "Mezonly — Học gia sư trực tuyến trên Mezon",
+    "description": "Mezonly kết nối học viên với gia sư đã được kiểm duyệt. Đặt lịch 1-1, chat và học trực tiếp trên Mezon — linh hoạt theo thời gian của bạn."
+  },
+  "home": {
+    "title": "Mezonly — Học gia sư trực tuyến trên Mezon",
+    "description": "Tìm gia sư phù hợp cho ngoại ngữ, môn học và kỹ năng. Đặt buổi học thử, đăng ký theo tháng và học trực tiếp trên Mezon."
+  },
+  "tutors": {
+    "title": "Tìm gia sư | Mezonly",
+    "description": "Khám phá danh sách gia sư đã xác minh trên Mezonly. Lọc theo môn học, giá và đánh giá để chọn gia sư phù hợp."
+  },
+  "tutorDetail": {
+    "title": "{name} — Gia sư {subject} | Mezonly",
+    "description": "{snippet}",
+    "fallbackTitle": "Hồ sơ gia sư | Mezonly",
+    "fallbackDescription": "Xem hồ sơ, lịch dạy và đánh giá của gia sư trên Mezonly."
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển | Mezonly",
+    "description": "Quản lý lớp học, lịch dạy và ví của bạn trên Mezonly."
+  },
+  "myLessons": {
+    "title": "Lớp học của tôi | Mezonly",
+    "description": "Theo dõi buổi học sắp tới và lịch sử học trên Mezonly."
+  },
+  "mySchedule": {
+    "title": "Lịch dạy | Mezonly",
+    "description": "Quản lý lịch dạy và buổi học đã đặt trên Mezonly."
+  },
+  "wallet": {
+    "title": "Ví | Mezonly",
+    "description": "Xem số dư, giao dịch và rút tiền trên Mezonly."
+  },
+  "trialBookings": {
+    "title": "Buổi học thử | Mezonly",
+    "description": "Quản lý các buổi học thử với học viên trên Mezonly."
+  },
+  "becomeTutor": {
+    "title": "Trở thành gia sư | Mezonly",
+    "description": "Hoàn thiện hồ sơ gia sư và bắt đầu dạy trên Mezonly."
+  },
+  "checkoutTrial": {
+    "title": "Đặt buổi học thử | Mezonly",
+    "description": "Hoàn tất đặt buổi học thử với gia sư trên Mezonly."
+  },
+  "checkoutSubscription": {
+    "title": "Đăng ký gói học | Mezonly",
+    "description": "Chọn gói học theo tháng và lịch học trên Mezonly."
+  },
+  "admin": {
+    "title": "Quản trị | Mezonly",
+    "description": "Khu vực quản trị nội bộ Mezonly."
+  },
+  "authCallback": {
+    "title": "Đăng nhập | Mezonly",
+    "description": "Đang xử lý đăng nhập Mezonly."
+  }
+}

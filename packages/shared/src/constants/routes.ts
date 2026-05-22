@@ -39,6 +39,7 @@ export const ROUTES = {
     WALLET: '/dashboard/wallet',
   },
   CHECKOUT: {
+    INDEX: '/checkout',
     TRIAL_LESSON: '/checkout/trial-lesson',
     TRIAL_LESSON_SUCCESS: (bookingId: string) => `/checkout/trial-lesson/success/${bookingId}`,
     TRIAL_LESSON_CANCEL: '/checkout/trial-lesson/cancel',
