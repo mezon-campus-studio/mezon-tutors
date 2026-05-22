@@ -43,13 +43,13 @@ export class CommandService {
       if (!command.isPublic) {
         entryUser = await this.userService.findByMezonUserId(event.sender_id ?? '');
 
-        if (entryUser) {
+        if (!entryUser) {
             const feUrl = this.appConfig.frontendUrl;
           await this.mezonBotService.replyMessage(event.channel_id ?? '', event.message_id ?? '', {
             t: '❌ You have not registered an account! Please go to ' + feUrl + ' to register an account!',
             lk: [{
-              s: 49,
-              e: 49 +feUrl.length,
+              s: 51,
+              e: 51 + feUrl.length,
             }],
           });
           return;
