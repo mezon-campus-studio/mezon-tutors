@@ -12,7 +12,11 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { useAtomValue } from "jotai";
-import { detectBrowserTimezone, resolveUserTimezone } from "@/lib/timezone";
+import {
+  detectBrowserTimezone,
+  parseYmdInTimezone,
+  resolveUserTimezone,
+} from "@/lib/timezone";
 import { isAuthenticatedAtom, userAtom } from "@/store";
 import { apiClient } from "../api-client";
 import { myLessonsQueryKey } from "./my-lessons.qkey";
@@ -33,6 +37,7 @@ export type LessonStatus = "upcoming" | "completed";
 export type WeekDay = {
   shortLabel: string;
   dateLabel: string;
+  fullDate?: Date;
 };
 
 export type LessonItem = {
@@ -62,6 +67,7 @@ export type TutorItem = {
   availability: string;
   completedLessons: number;
   nextLessonLabel: string;
+  nextLessonAt?: string | null;
   ratingAverage: number;
   reviewCount: number;
 };
@@ -95,9 +101,15 @@ const mapCategory = (category: MyLessonApiCategory): LessonCategory => {
 const mapStatus = (status: MyLessonApiStatus): LessonStatus =>
   status === MyLessonsStatusEnum.Upcoming ? "upcoming" : "completed";
 
-const mapWeekDay = (item: MyLessonWeekDayApiItem): WeekDay => ({
+const mapWeekDay = (
+  item: MyLessonWeekDayApiItem,
+  timezoneName: string,
+): WeekDay => ({
   shortLabel: item.short_label,
   dateLabel: item.date_label,
+  fullDate: item.date_ymd
+    ? parseYmdInTimezone(item.date_ymd, timezoneName).toDate()
+    : undefined,
 });
 
 const roundToHalfHour = (hour: number): number => {
@@ -141,6 +153,7 @@ const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
   availability: item.availability,
   completedLessons: item.completed_lessons,
   nextLessonLabel: item.next_lesson_label,
+  nextLessonAt: item.next_lesson_at ?? null,
   ratingAverage: item.rating_average,
   reviewCount: item.review_count,
 });
@@ -148,6 +161,7 @@ const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
 const mapCalendarMeta = (
   data: MyLessonsApiResponse,
   lessons: LessonItem[],
+  timezoneName: string,
 ): MyLessonsCalendarMeta => {
   const { MIN, MAX } = CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE;
 
@@ -171,7 +185,7 @@ const mapCalendarMeta = (
 
   return {
     title: data.calendar_title,
-    weekDays: data.week_days.map(mapWeekDay),
+    weekDays: data.week_days.map((day) => mapWeekDay(day, timezoneName)),
     weekHours,
     currentDayIndex: data.current_day_index,
     currentHour,
@@ -197,7 +211,7 @@ export const myLessonsApi = {
     const calendarLessons = data.calendar_lessons.map(mapLesson);
 
     return {
-      calendar: mapCalendarMeta(data, calendarLessons),
+      calendar: mapCalendarMeta(data, calendarLessons, timezoneName ?? "UTC"),
       calendarLessons,
       upcomingLessons: data.upcoming_lessons.map(mapLesson),
       previousLessons: data.previous_lessons.map(mapLesson),

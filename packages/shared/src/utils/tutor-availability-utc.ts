@@ -211,15 +211,21 @@ export function utcWeeklySlotsToTimezone(
 }
 
 /**
- * Expand UTC recurring slots into concrete calendar ranges for one week,
- * expressed in `targetTimezone` (for booking UIs).
+ * Expand UTC recurring slots into concrete calendar ranges for one viewer week
+ * (Mon–Sun in `targetTimezone`). Scans UTC calendar days overlapping that week so
+ * slots stored on UTC Sunday evening still appear on the viewer's Monday column.
  */
 export function utcWeeklySlotsToCalendarInstances(
   slots: WeeklyAvailabilitySlot[],
   targetTimezone: string,
   weekOffset = 0,
 ): CalendarAvailabilitySlot[] {
-  const utcMonday = getWeekMondayUtc().add(weekOffset * 7, 'day')
+  const viewerMonday = getWeekMondayInTimezone(targetTimezone).add(weekOffset * 7, 'day')
+  const weekStartLocal = viewerMonday.startOf('day')
+  const weekEndLocal = weekStartLocal.add(7, 'day')
+
+  const scanStartUtc = weekStartLocal.utc().subtract(1, 'day').startOf('day')
+  const scanEndUtc = weekEndLocal.utc().add(1, 'day').startOf('day')
   const all: CalendarAvailabilitySlot[] = []
 
   for (const slot of slots) {
@@ -227,12 +233,26 @@ export function utcWeeklySlotsToCalendarInstances(
       continue
     }
 
-    const utcDay = utcMonday.add(slot.dayOfWeek, 'day')
-    const startUtc = parseStartTimeOnDay(utcDay, slot.startTime, true)
-    const endUtc = parseEndTimeOnDay(utcDay, slot.endTime, true)
-    const startLocal = startUtc.tz(targetTimezone)
-    const endLocal = endUtc.tz(targetTimezone)
-    all.push(...splitInstantRangeToCalendar(startLocal, endLocal))
+    let cursor = scanStartUtc
+    while (cursor.isBefore(scanEndUtc)) {
+      if (dbDayOfWeekFromDayjs(cursor) !== slot.dayOfWeek) {
+        cursor = cursor.add(1, 'day')
+        continue
+      }
+
+      const startUtc = parseStartTimeOnDay(cursor, slot.startTime, true)
+      const endUtc = parseEndTimeOnDay(cursor, slot.endTime, true)
+      const startLocal = startUtc.tz(targetTimezone)
+      const endLocal = endUtc.tz(targetTimezone)
+
+      if (endLocal.isAfter(weekStartLocal) && startLocal.isBefore(weekEndLocal)) {
+        const clipStart = startLocal.isBefore(weekStartLocal) ? weekStartLocal : startLocal
+        const clipEnd = endLocal.isAfter(weekEndLocal) ? weekEndLocal : endLocal
+        all.push(...splitInstantRangeToCalendar(clipStart, clipEnd))
+      }
+
+      cursor = cursor.add(1, 'day')
+    }
   }
 
   return all

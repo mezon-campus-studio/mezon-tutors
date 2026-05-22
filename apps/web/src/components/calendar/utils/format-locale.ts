@@ -14,23 +14,29 @@ export function formatCalendarTitle(title: string, locale: string): string {
   return date.isValid() ? date.format('MMMM YYYY') : title;
 }
 
-export function formatWeekDays(weekDays: CalendarWeekDay[], locale: string): CalendarWeekDay[] {
-  return weekDays.map((day, index) => {
-    let dayDate: dayjs.Dayjs;
-    
-    if (day.fullDate) {
-      dayDate = dayjs(day.fullDate).locale(locale);
-    } else {
-      const now = dayjs();
-      const dayOfWeek = now.day();
-      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const monday = now.subtract(mondayOffset, 'day');
-      dayDate = monday.add(index, 'day').locale(locale);
+export function formatWeekDays(
+  weekDays: CalendarWeekDay[],
+  locale: string,
+  timezoneName?: string,
+): CalendarWeekDay[] {
+  return weekDays.map((day) => {
+    if (!day.fullDate) {
+      return {
+        shortLabel: day.shortLabel,
+        dateLabel: day.dateLabel,
+        fullDate: day.fullDate,
+      };
     }
-    
+
+    const dayDate = (timezoneName
+      ? dayjs(day.fullDate).tz(timezoneName)
+      : dayjs(day.fullDate)
+    ).locale(locale);
+
     return {
       shortLabel: dayDate.format('ddd').toUpperCase(),
-      dateLabel: day.dateLabel,
+      dateLabel: dayDate.format('DD'),
+      fullDate: day.fullDate,
     };
   });
 }
@@ -44,7 +50,19 @@ export function formatLessonDateLabel(dateLabel: string, locale: string): string
   return dateLabel;
 }
 
-export function formatTutorNextLessonLabel(nextLessonLabel: string, locale: string): string {
+export function formatTutorNextLessonLabel(
+  nextLessonLabel: string,
+  locale: string,
+  timezoneName?: string,
+  nextLessonAtIso?: string | null,
+): string {
+  if (nextLessonAtIso && timezoneName) {
+    const instant = dayjs(nextLessonAtIso);
+    if (instant.isValid()) {
+      return instant.tz(timezoneName).locale(locale).format('ddd, h:mm A');
+    }
+  }
+
   const date = dayjs(nextLessonLabel, 'ddd, h:mm A', 'en', true);
   if (date.isValid()) {
     return date.locale(locale).format('ddd, h:mm A');

@@ -142,7 +142,10 @@ export class MyScheduleService {
     const trialLessonEvents: ScheduleEvent[] = bookings.map((booking) => {
       const startsAt = dayjs(booking.startAt).tz(timezoneName);
       const endsAt = startsAt.add(booking.durationMinutes, 'minute');
-      const dayIndex = startsAt.day() === 0 ? 6 : startsAt.day() - 1;
+      const dayIndex = Math.max(
+        0,
+        Math.min(6, startsAt.startOf('day').diff(monday.startOf('day'), 'day'))
+      );
 
       let status: 'upcoming' | 'pending' | 'blocked';
       if (booking.status === ETrialLessonStatus.CANCELLED) {
@@ -180,7 +183,10 @@ export class MyScheduleService {
         return subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, timezoneName).map((occ) => {
           const startsAt = dayjs(occ.startAt).tz(timezoneName);
           const endsAt = startsAt.add(slots[occ.slotIndex]?.durationMinutes ?? 60, 'minute');
-          const dayIndex = startsAt.day() === 0 ? 6 : startsAt.day() - 1;
+          const dayIndex = Math.max(
+            0,
+            Math.min(6, startsAt.startOf('day').diff(monday.startOf('day'), 'day'))
+          );
           return {
             id: `sub-${enrollment.id}-${occ.slotIndex}`,
             dayIndex,

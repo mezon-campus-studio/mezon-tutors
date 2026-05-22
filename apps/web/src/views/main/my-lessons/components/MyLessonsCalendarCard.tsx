@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { formatCalendarTitle, formatWeekDays } from '@/components/calendar';
+import { formatCalendarTitle } from '@/components/calendar';
 import { DashboardScheduleCalendar } from '@/components/schedule';
-import { buildFallbackWeekDays, ROUTES } from '@mezon-tutors/shared';
+import { ROUTES } from '@mezon-tutors/shared';
+import { parseYmdInTimezone } from '@/lib/timezone';
 import { useLocale, useTranslations } from 'next-intl';
 import type { LessonItem, MyLessonsCalendarMeta } from '@/services';
 import { userAtom } from '@/store/auth.atom';
@@ -15,6 +16,8 @@ import { useAtomValue } from 'jotai';
 type MyLessonsCalendarCardProps = {
   lessons: LessonItem[];
   calendar: MyLessonsCalendarMeta;
+  weekStartYmd: string;
+  timezoneName: string;
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
   onGoToToday?: () => void;
@@ -24,6 +27,8 @@ type MyLessonsCalendarCardProps = {
 export default function MyLessonsCalendarCard({
   lessons,
   calendar,
+  weekStartYmd,
+  timezoneName,
   onPrevWeek,
   onNextWeek,
   onGoToToday,
@@ -40,14 +45,17 @@ export default function MyLessonsCalendarCard({
 
   const formattedTitle = formatCalendarTitle(calendar.title, locale);
 
-  const displayWeekDays = useMemo(
-    () =>
-      formatWeekDays(
-        calendar.weekDays.length ? calendar.weekDays : buildFallbackWeekDays(),
-        locale,
-      ),
-    [calendar.weekDays, locale],
-  );
+  const displayWeekDays = useMemo(() => {
+    const monday = parseYmdInTimezone(weekStartYmd, timezoneName);
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = monday.add(index, 'day').locale(locale);
+      return {
+        shortLabel: day.format('ddd').toUpperCase(),
+        dateLabel: day.format('DD'),
+        fullDate: day.toDate(),
+      };
+    });
+  }, [weekStartYmd, timezoneName, locale]);
 
   const lessonModalDetailRows = useMemo(() => {
     if (!pickedLesson) return undefined;
