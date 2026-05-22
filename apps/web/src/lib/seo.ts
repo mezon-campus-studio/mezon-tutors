@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { ROUTES, type TutorAboutDto } from "@mezon-tutors/shared";
 import { getSeoMessages, type SeoMessages } from "./seo-messages";
 
@@ -28,6 +29,17 @@ export function formatSeoTemplate(
   });
 }
 
+function resolveOgImageUrl(image: string | null | undefined, siteUrl: string): string {
+  if (!image) {
+    return new URL("/images/Mezonly-logo.png", siteUrl).toString();
+  }
+  try {
+    return new URL(image, siteUrl).toString();
+  } catch {
+    return new URL("/images/Mezonly-logo.png", siteUrl).toString();
+  }
+}
+
 function truncate(text: string, maxLength: number): string {
   const trimmed = text.replace(/\s+/g, " ").trim();
   if (trimmed.length <= maxLength) {
@@ -51,9 +63,8 @@ export function buildPageMetadata(
   const canonicalPath = input.path ?? ROUTES.HOME.index;
   const url = new URL(canonicalPath, siteUrl).toString();
   const indexable = input.index !== false;
-  const images = input.image
-    ? [{ url: input.image, alt: input.title }]
-    : [{ url: "/images/Mezonly-logo.png", width: 512, height: 512, alt: SITE_NAME }];
+  const ogImageUrl = resolveOgImageUrl(input.image, siteUrl);
+  const images = [{ url: ogImageUrl, alt: input.title }];
 
   return {
     title: { absolute: input.title },
@@ -71,10 +82,10 @@ export function buildPageMetadata(
       images,
     },
     twitter: {
-      card: input.image ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: input.title,
       description: input.description,
-      images: input.image ? [input.image] : [new URL("/images/Mezonly-logo.png", siteUrl).toString()],
+      images: [ogImageUrl],
     },
     robots: indexable
       ? { index: true, follow: true }
@@ -112,7 +123,7 @@ export function createRootMetadata(siteUrl = getSiteUrl()): Metadata {
   };
 }
 
-export async function fetchTutorAboutForSeo(id: string): Promise<TutorAboutDto | null> {
+export const fetchTutorAboutForSeo = cache(async (id: string): Promise<TutorAboutDto | null> => {
   const base = process.env.NEXT_PUBLIC_API_ENDPOINT?.replace(/\/$/, "");
   if (!base || !id) {
     return null;
@@ -130,7 +141,7 @@ export async function fetchTutorAboutForSeo(id: string): Promise<TutorAboutDto |
   } catch {
     return null;
   }
-}
+});
 
 export async function buildTutorDetailMetadata(
   id: string,
