@@ -20,9 +20,12 @@ import { NotificationService } from '../notification/notification.service';
 
 const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
+const OAUTH_STATE_TTL_MS = 1000 * 60 * 10;
 
 @Injectable()
 export class AuthService {
+  private readonly pendingOAuthStates = new Map<string, number>();
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -34,6 +37,7 @@ export class AuthService {
   buildMezonAuthorizeUrl(): { url: string; state: string } {
     const oauth = this.appConfig.oauthConfig;
     const state = crypto.randomUUID();
+    this.registerPendingOAuthState(state);
     const params = new URLSearchParams({
       client_id: oauth.clientId,
       redirect_uri: oauth.redirectUri,
@@ -43,6 +47,42 @@ export class AuthService {
     });
 
     return { url: `${oauth.baseUri}/oauth2/auth?${params.toString()}`, state };
+  }
+
+  registerPendingOAuthState(state: string): void {
+    this.pendingOAuthStates.set(state, Date.now() + OAUTH_STATE_TTL_MS);
+    if (this.pendingOAuthStates.size > 500) {
+      this.pruneExpiredOAuthStates();
+    }
+  }
+
+  isValidPendingOAuthState(state: string): boolean {
+    const expiresAt = this.pendingOAuthStates.get(state);
+    if (!expiresAt) {
+      return false;
+    }
+    if (Date.now() > expiresAt) {
+      this.pendingOAuthStates.delete(state);
+      return false;
+    }
+    return true;
+  }
+
+  consumePendingOAuthState(state: string): boolean {
+    if (!this.isValidPendingOAuthState(state)) {
+      return false;
+    }
+    this.pendingOAuthStates.delete(state);
+    return true;
+  }
+
+  private pruneExpiredOAuthStates(): void {
+    const now = Date.now();
+    for (const [state, expiresAt] of this.pendingOAuthStates) {
+      if (now > expiresAt) {
+        this.pendingOAuthStates.delete(state);
+      }
+    }
   }
 
   async exchangeCodeForToken(code: string, state?: string): Promise<MezonTokenResponse> {
@@ -71,6 +111,10 @@ export class AuthService {
     const data = (await response.json()) as MezonTokenResponse;
     if (!data.access_token) {
       throw new UnauthorizedException('Mezon token response is missing access_token');
+    }
+
+    if (!data.id_token) {
+      throw new UnauthorizedException('Mezon token response is missing id_token');
     }
 
     return data;
@@ -132,7 +176,7 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.generateTokens(updated);
+    const tokens = await this.generateTokens(updated, tokenData.id_token);
 
     return {
       user: {
@@ -165,12 +209,12 @@ export class AuthService {
     });
   }
 
-  async createRefreshToken(userId: string): Promise<string> {
+  async createRefreshToken(userId: string, idToken?: string | null): Promise<string> {
     const jwtConfig = this.appConfig.jwtConfig;
     const expiresIn = REFRESH_TOKEN_EXPIRES_IN;
 
     const token = await this.jwtService.signAsync(
-      { sub: userId, type: 'refresh' },
+      { sub: userId, type: 'refresh', ...(idToken ? { idToken } : {}) },
       {
         expiresIn,
         secret: jwtConfig.refreshSecret,
@@ -191,11 +235,15 @@ export class AuthService {
     return token;
   }
 
-  async validateRefreshToken(token: string): Promise<User | null> {
+  async validateRefreshToken(token: string): Promise<{ user: User; idToken?: string } | null> {
     const jwtConfig = this.appConfig.jwtConfig;
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync<{
+        sub: string;
+        type: string;
+        idToken?: string;
+      }>(token, {
         secret: jwtConfig.refreshSecret,
       });
 
@@ -219,7 +267,14 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      return user;
+      if (!user) {
+        return null;
+      }
+
+      const idToken =
+        typeof payload.idToken === 'string' && payload.idToken.trim() ? payload.idToken : undefined;
+
+      return { user, idToken };
     } catch {
       return null;
     }
@@ -244,28 +299,31 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const user = await this.validateRefreshToken(refreshToken);
+    const validated = await this.validateRefreshToken(refreshToken);
 
-    if (!user) {
+    if (!validated) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
+    const { user, idToken } = validated;
+
     await this.revokeRefreshToken(refreshToken);
 
-    const payload: AuthUserPayload = {
+    const accessPayload: AuthUserPayload = {
       sub: user.id,
       mezonUserId: user.mezonUserId,
       username: user.username,
       role: user.role,
       avatar: user.avatar,
       email: user.email,
+      ...(idToken ? { idToken } : {}),
     };
 
-    const accessToken = await this.jwtService.signAsync(payload, {
+    const accessToken = await this.jwtService.signAsync(accessPayload, {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const newRefreshToken = await this.createRefreshToken(user.id);
+    const newRefreshToken = await this.createRefreshToken(user.id, idToken);
 
     return {
       accessToken,
@@ -273,8 +331,8 @@ export class AuthService {
     };
   }
 
-  async generateTokens(user: User): Promise<AuthTokens> {
-    const jwtConfig = this.appConfig.jwtConfig;
+  async generateTokens(user: User, idToken?: string | null): Promise<AuthTokens> {
+    const mezonIdToken = typeof idToken === 'string' && idToken.trim() ? idToken : undefined;
     const payload: AuthUserPayload = {
       sub: user.id,
       mezonUserId: user.mezonUserId,
@@ -282,13 +340,14 @@ export class AuthService {
       role: user.role,
       avatar: user.avatar,
       email: user.email,
+      ...(mezonIdToken ? { idToken: mezonIdToken } : {}),
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const refreshToken = await this.createRefreshToken(user.id);
+    const refreshToken = await this.createRefreshToken(user.id, mezonIdToken);
 
     return {
       accessToken,
@@ -296,7 +355,7 @@ export class AuthService {
     };
   }
 
-  async getCurrentUserForMe(userId: string) {
+  async getCurrentUserForMe(userId: string, idToken?: string | null) {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new UnauthorizedException();
@@ -310,6 +369,7 @@ export class AuthService {
       avatar: user.avatar || null,
       email: user.email ?? null,
       timezone: user.timezone ?? null,
+      idToken: idToken ?? null,
     };
   }
 
@@ -317,7 +377,7 @@ export class AuthService {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
     const { user, created } = await this.findOrCreateUserFromMezon(mezonUser, timezone);
-    const tokens = await this.generateTokens(user);
+    const tokens = await this.generateTokens(user, tokenData.id_token);
 
     if (created) {
       void this.notificationService.notifyWelcomeLinked({

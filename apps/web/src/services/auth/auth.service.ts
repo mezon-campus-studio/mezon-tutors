@@ -31,6 +31,7 @@ export type MeResponse = {
   avatar?: string | null;
   role?: string;
   timezone?: string | null;
+  idToken?: string | null;
 };
 
 type AuthUrlResponse = {

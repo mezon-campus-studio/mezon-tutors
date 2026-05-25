@@ -9,7 +9,9 @@ import {
 import { MEZON_LIGHT_SERVER_KEY } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { LightClient } from "mezon-light-sdk";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { MEZON_LIGHT_SESSION_STORAGE_KEY, storage } from "@/services";
+import { MezonLightSocketListener } from "./MezonLightSocketListener";
 
 type MezonLightContextValue = {
   lightClient: LightClient | null;
@@ -25,6 +27,7 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
   const user = useAtomValue(userAtom);
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const [lightClient, setLightClient] = useState<LightClient | null>(null);
+  const initStartedRef = useRef(false);
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -32,20 +35,26 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
     }
 
     if (!user) {
+      initStartedRef.current = false;
       setLightClient(null);
       void clearMezonLightSessionStorage();
       return;
     }
 
-    const initMezonClient = async () => {
-      if (lightClient) {
-        return;
-      }
+    if (initStartedRef.current) {
+      return;
+    }
+    initStartedRef.current = true;
 
-      const restoredClient = await restoreMezonLightClientFromStorage();
-      if (restoredClient) {
-        setLightClient(restoredClient);
-        return;
+    const initMezonClient = async () => {
+      const storedSession = await storage.getItem(MEZON_LIGHT_SESSION_STORAGE_KEY);
+
+      if (storedSession) {
+        const restoredClient = await restoreMezonLightClientFromStorage();
+        if (restoredClient) {
+          setLightClient(restoredClient);
+          return;
+        }
       }
 
       if (!user.idToken || !user.mezonUserId || !user.username) {
@@ -71,7 +80,7 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
     };
 
     void initMezonClient();
-  }, [isAuthLoading, lightClient, user]);
+  }, [isAuthLoading, user]);
 
   return (
     <MezonLightContext.Provider
@@ -80,6 +89,7 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
         setLightClient,
       }}
     >
+      <MezonLightSocketListener />
       {children}
     </MezonLightContext.Provider>
   );

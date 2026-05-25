@@ -4,6 +4,7 @@ export * from "./cloudinary/cloudinary.service";
 export * from "./dm-channel/dm-channel.api";
 export * from "./mezon-light/mezon-light.client";
 export * from "./mezon-light/mezon-light.service";
+export * from "./mezon-light/mezon-light.socket";
 export * from "./tutor-profile/tutor-profile.api";
 export * from "./tutor-profile/tutor-profile.qkey";
 export * from "./trial-lesson-booking/trial-lesson-booking.api";

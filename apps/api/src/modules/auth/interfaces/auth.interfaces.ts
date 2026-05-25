@@ -26,4 +26,5 @@ export interface AuthUserPayload {
   role: string
   avatar?: string | null
   email?: string | null
+  idToken?: string | null
 }
