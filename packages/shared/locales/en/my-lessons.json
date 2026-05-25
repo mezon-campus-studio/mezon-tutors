@@ -54,12 +54,48 @@
         "emptyDescription": "Don't put your goals on hold! Schedule your next lesson now to see progress.",
         "scheduleNow": "Schedule now",
         "rescheduleOrCancel": "Reschedule/Cancel",
-        "joinLesson": "Join lesson"
+        "joinLesson": "Join lesson",
+        "statusCancelled": "Cancelled"
       },
       "past": {
         "title": "Past lessons",
         "rate": "Rate",
-        "rated": "Rated"
+        "rated": "Rated",
+        "statusCancelled": "Cancelled"
+      },
+      "cancellation": {
+        "dialog": {
+          "title": "Cancel trial lesson",
+          "confirm": "Confirm cancellation",
+          "dismiss": "Keep lesson",
+          "reasonLabel": "Reason for canceling",
+          "reasonPlaceholder": "Select a reason",
+          "messageLabel": "Message for {tutor} (optional)",
+          "messagePlaceholder": "I need to cancel because...",
+          "messageSent": "Message sent successfully",
+          "successRefunded": "Lesson cancelled. The payment will be refunded to your wallet.",
+          "successNoRefund": "Lesson cancelled. Because your lesson was less than 12 hours away, no refund was issued.",
+          "policy": {
+            "eligibleDescription": "Your lesson is more than 12 hours away. You will receive a {amount} refund to your wallet if you cancel.",
+            "eligibleDescriptionNoAmount": "Your lesson is more than 12 hours away. Your payment will be refunded to your wallet if you cancel.",
+            "notEligibleDescription": "Your lesson is less than 12 hours away. You will not receive a refund if you cancel now.",
+            "fallback": "Cancel more than 12 hours before the lesson for a refund; within 12 hours, no refund."
+          }
+        },
+        "reasons": {
+          "timeNotWork": "This time doesn't work for me anymore",
+          "technicalIssue": "I have a technical issue",
+          "avoidBalanceLoss": "I booked this time to avoid losing my balance",
+          "notMotivated": "I don't feel motivated to take this lesson",
+          "tutorRescheduledUnavail": "The tutor rescheduled to a time when I'm not available",
+          "tutorAskedCancel": "The tutor asked me to cancel",
+          "noLongerLearnTutor": "I don't want to learn with this tutor anymore",
+          "other": "Other"
+        },
+        "options": {
+          "reschedule": "Reschedule",
+          "cancel": "Cancel"
+        }
       }
     },
     "tutors": {

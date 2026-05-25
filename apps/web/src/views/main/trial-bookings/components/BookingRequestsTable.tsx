@@ -1,14 +1,15 @@
 'use client';
 
-import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
+import { ECurrency, ETrialLessonBookingStatus, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useAtomValue } from 'jotai';
-import { Eye } from 'lucide-react';
-import Link from 'next/link';
+import { CalendarClock, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
+import { isTrialLessonRefundEligible } from '@/lib/trial-lesson-cancellation';
+import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import {
   Avatar,
   AvatarFallback,
@@ -24,6 +25,9 @@ type BookingRequestsTableProps = {
   items: TrialLessonBookingRequestItem[];
   isLoading?: boolean;
   isFetching?: boolean;
+  onViewDetail: (bookingId: string) => void;
+  onReschedule: (item: TrialLessonBookingRequestItem) => void;
+  onCancel: (item: TrialLessonBookingRequestItem) => void;
 };
 
 dayjs.extend(utc);
@@ -31,12 +35,14 @@ dayjs.extend(timezone);
 
 const getInitials = (name?: string) => {
   if (!name) return 'S';
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'S';
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'S'
+  );
 };
 
 const formatStartAt = (
@@ -56,9 +62,86 @@ const formatStartAt = (
   };
 };
 
+const normalizeStatus = (status: string) => String(status).toUpperCase();
+
+const isConfirmedTrial = (status: string) =>
+  normalizeStatus(status) === ETrialLessonBookingStatus.CONFIRMED;
+
+const isCancelledTrial = (status: string) =>
+  normalizeStatus(status) === ETrialLessonBookingStatus.CANCELLED;
+
+function buildActionMenuItems(
+  item: TrialLessonBookingRequestItem,
+  t: (key: string) => string,
+  onViewDetail: (bookingId: string) => void,
+  onReschedule: (item: TrialLessonBookingRequestItem) => void,
+  onCancel: (item: TrialLessonBookingRequestItem) => void,
+): ActionMenuItem[] {
+  const cancelled = isCancelledTrial(item.status);
+  const confirmed = isConfirmedTrial(item.status);
+  const canCancel = confirmed && isTrialLessonRefundEligible(item.startAt);
+
+  const items: ActionMenuItem[] = [
+    {
+      label: t('view'),
+      icon: <Eye className="size-4" />,
+      onClick: () => onViewDetail(item.id),
+    },
+  ];
+
+  if (cancelled) {
+    items.push(
+      {
+        label: t('reschedule'),
+        icon: <CalendarClock className="size-4" />,
+        onClick: () => {},
+        disabled: true,
+      },
+      {
+        label: t('cancel'),
+        icon: <Trash2 className="size-4 text-destructive" />,
+        onClick: () => {},
+        variant: 'destructive',
+        disabled: true,
+      },
+    );
+    return items;
+  }
+
+  if (confirmed) {
+    items.push({
+      label: t('reschedule'),
+      icon: <CalendarClock className="size-4" />,
+      onClick: () => onReschedule(item),
+    });
+  }
+
+  if (canCancel) {
+    items.push({
+      label: t('cancel'),
+      icon: <Trash2 className="size-4 text-destructive" />,
+      onClick: () => onCancel(item),
+      variant: 'destructive',
+    });
+  } else if (confirmed) {
+    items.push({
+      label: t('cancel'),
+      icon: <Trash2 className="size-4 text-destructive" />,
+      onClick: () => {},
+      variant: 'destructive',
+      disabled: true,
+    });
+  }
+
+  return items;
+}
+
 export default function BookingRequestsTable({
   items,
   isLoading,
+  onViewDetail,
+  onReschedule,
+  onCancel,
 }: BookingRequestsTableProps) {
   const t = useTranslations('Dashboard.bookingRequests.table');
   const locale = useLocale();
@@ -118,8 +201,24 @@ export default function BookingRequestsTable({
                 locale,
                 userTimezone,
               );
+              const cancelled = isCancelledTrial(item.status);
+              const menuItems = buildActionMenuItems(
+                item,
+                t,
+                onViewDetail,
+                onReschedule,
+                onCancel,
+              );
+
               return (
-                <tr key={item.id} className="bg-white transition-colors hover:bg-violet-50/40">
+                <tr
+                  key={item.id}
+                  className={
+                    cancelled
+                      ? 'bg-slate-50/60 transition-colors hover:bg-slate-50'
+                      : 'bg-white transition-colors hover:bg-violet-50/40'
+                  }
+                >
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-10 rounded-xl border border-violet-100">
@@ -167,17 +266,20 @@ export default function BookingRequestsTable({
                     <BookingRequestStatusBadge status={item.status} />
                   </td>
                   <td className="px-5 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50"
-                        >
-                          <Eye className="mr-1.5 size-3.5" />
-                          {t('view')}
-                        </Button>
-                      </Link>
+                    <div className="flex items-center justify-end">
+                      <ActionMenu
+                        trigger={
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            className="rounded-full border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50"
+                            aria-label={t('actions')}
+                          >
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        }
+                        items={menuItems}
+                      />
                     </div>
                   </td>
                 </tr>

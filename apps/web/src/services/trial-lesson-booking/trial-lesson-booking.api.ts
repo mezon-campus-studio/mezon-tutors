@@ -72,6 +72,7 @@ export type TrialLessonBookingRequestItem = {
   grossAmount: number;
   platformFee: number;
   tutorAmount: number;
+  currency?: string;
   status: ETrialLessonBookingStatus;
   createdAt: string;
   scheduleKind?: "subscription";
@@ -83,7 +84,8 @@ export type TrialLessonBookingRequestsResponse =
 export type TrialLessonBookingRequestStatusFilter =
   | "PENDING"
   | "CONFIRMED"
-  | "COMPLETED";
+  | "COMPLETED"
+  | "CANCELLED";
 
 export type TrialLessonBookingDetail = {
   id: string;
@@ -163,6 +165,26 @@ export const trialLessonBookingApi = {
       ApiResponse<TrialLessonBookingDetail>,
       TrialLessonBookingDetail
     >(`/trial-lesson-bookings/${bookingId}`);
+  },
+
+  cancelTrialLessonBooking(
+    bookingId: string,
+    payload?: { reason?: string; message?: string },
+  ): Promise<{ success: boolean; refunded: boolean }> {
+    return apiClient.post<
+      { success: boolean; refunded: boolean },
+      { success: boolean; refunded: boolean }
+    >(`/trial-lesson-bookings/${bookingId}/cancel`, payload);
+  },
+
+  cancelTrialLessonBookingByTutor(
+    bookingId: string,
+    payload?: { reason?: string; message?: string },
+  ): Promise<{ success: boolean; refunded: boolean }> {
+    return apiClient.post<
+      { success: boolean; refunded: boolean },
+      { success: boolean; refunded: boolean }
+    >(`/trial-lesson-bookings/${bookingId}/tutor-cancel`, payload);
   },
 
   async getMyTrialLessonBookingRequests(params?: {
@@ -276,5 +298,27 @@ export function useGetTrialLessonBookingDetail(
     queryKey: trialLessonBookingQueryKey.detail(bookingId),
     queryFn: () => trialLessonBookingApi.getBookingDetail(bookingId),
     enabled: Boolean(bookingId) && enabled,
+  });
+}
+
+export function useCancelTrialLessonBookingMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload?: { reason?: string; message?: string };
+    }) => trialLessonBookingApi.cancelTrialLessonBooking(args.bookingId, args.payload),
+  });
+}
+
+export function useCancelTrialLessonBookingByTutorMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload?: { reason?: string; message?: string };
+    }) =>
+      trialLessonBookingApi.cancelTrialLessonBookingByTutor(
+        args.bookingId,
+        args.payload,
+      ),
   });
 }

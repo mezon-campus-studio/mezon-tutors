@@ -64,3 +64,4 @@ export * from './utils/tutor-availability-utc';
 export * from './utils/subscription-week-occurrences';
 export * from './utils/subscription-slot-status';
 export * from './utils/currency';
+export * from './utils/trial-lesson-cancellation';

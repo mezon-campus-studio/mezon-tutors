@@ -23,7 +23,7 @@ import {
   useGetTutorSubscriptionWeekOccurrences,
 } from '@/services';
 import { userAtom } from '@/store';
-import { mapTutorBookingStatusToUi } from '../trial-bookings';
+import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 import MyScheduleEventCard from './components/MyScheduleEventCard';
 import MyScheduleUpcomingList from './components/MyScheduleUpcomingList';
 import ScheduleEventModal from './components/ScheduleEventModal';

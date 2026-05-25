@@ -10,7 +10,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
-import { mapTutorBookingStatusToUi } from '../../trial-bookings';
+import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 
 type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];

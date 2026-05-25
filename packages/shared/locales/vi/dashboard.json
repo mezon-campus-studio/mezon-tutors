@@ -78,7 +78,8 @@
         "all": "Tất cả yêu cầu",
         "pending": "Đang chờ",
         "confirmed": "Đã xác nhận",
-        "completed": "Hoàn thành"
+        "completed": "Hoàn thành",
+        "cancelled": "Đã hủy"
       },
       "table": {
         "student": "Học viên",
@@ -88,7 +89,35 @@
         "status": "Trạng thái",
         "actions": "Hành động",
         "view": "Xem",
+        "reschedule": "Dời lịch",
+        "cancel": "Hủy buổi học",
+        "rescheduleComingSoon": "Tính năng dời lịch sẽ sớm có mặt.",
         "noResults": "Không có yêu cầu đặt lịch nào với bộ lọc này."
+      },
+      "cancellation": {
+        "dialog": {
+          "title": "Hủy buổi học thử",
+          "confirm": "Xác nhận hủy",
+          "dismiss": "Giữ buổi học",
+          "reasonLabel": "Lý do hủy",
+          "reasonPlaceholder": "Chọn lý do",
+          "messageLabelStudent": "Tin nhắn cho {student} (tùy chọn)",
+          "messagePlaceholder": "Giải thích lý do bạn cần hủy...",
+          "successRefunded": "Đã hủy buổi học. Học sinh sẽ được hoàn tiền vào ví.",
+          "success": "Đã hủy buổi học.",
+          "policy": {
+            "eligibleDescription": "Buổi học còn hơn 12 tiếng nữa mới bắt đầu. Nếu bạn hủy, học sinh sẽ được hoàn {amount} vào ví.",
+            "eligibleDescriptionNoAmount": "Buổi học còn hơn 12 tiếng nữa mới bắt đầu. Nếu bạn hủy, học sinh sẽ được hoàn tiền vào ví.",
+            "notEligibleDescription": "Bạn chỉ được phép hủy buổi học khi thời gian bắt đầu còn nhiều hơn 12 tiếng. Nếu buổi học diễn ra trong vòng 12 tiếng tới, bạn không được hủy mà chỉ có thể dời lịch.",
+            "fallback": "Hủy buổi học thử đã thanh toán và xác nhận sẽ hoàn tiền cho học sinh từ ví hệ thống."
+          }
+        },
+        "reasons": {
+          "scheduleConflict": "Trùng lịch",
+          "personalEmergency": "Sự cố cá nhân",
+          "studentUnavailable": "Học sinh không thể tham gia",
+          "other": "Khác"
+        }
       },
       "status": {
         "pending": "Đang chờ",

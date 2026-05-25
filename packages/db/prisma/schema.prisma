@@ -373,9 +373,11 @@ model TrialLessonBooking {
   paidAt           DateTime?       @map("paid_at")
   failedAt         DateTime?       @map("failed_at")
   refundedAt       DateTime?       @map("refunded_at")
+  cancelReason     String?            @map("cancel_reason")
+  cancelMessage    String?            @map("cancel_message") @db.Text
   
   createdAt           DateTime           @default(now()) @map("created_at")
-  updatedAt           DateTime           @updatedAt @map("updated_at")  
+  updatedAt           DateTime           @updatedAt @map("updated_at")
 
   tutor   TutorProfile         @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   student User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)

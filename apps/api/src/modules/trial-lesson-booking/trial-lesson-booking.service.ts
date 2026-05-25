@@ -1,11 +1,13 @@
 import {
   PLATFORM_FEE_PERCENTAGE,
+  TRIAL_LESSON_CANCEL_REFUND_HOURS,
   instantFitsUtcWeeklyAvailability,
   type PaginatedResponse,
 } from '@mezon-tutors/shared'
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
@@ -24,13 +26,15 @@ import { VnpayService } from '../vnpay/vnpay.service'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
+import { WalletService } from '../wallet/wallet.service'
 
 @Injectable()
 export class TrialLessonBookingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
-    private readonly appConfig: AppConfigService
+    private readonly appConfig: AppConfigService,
+    private readonly walletService: WalletService
   ) {}
 
   async getTutorBookingRequests(
@@ -55,27 +59,56 @@ export class TrialLessonBookingService {
     const page = Math.max(1, options?.page ?? 1)
     const limit = Math.max(10, Math.min(100, options?.limit ?? 10))
     const statusIn = (options?.statusIn ?? []).filter(Boolean)
-    const statusFilter =
-      !statusIn.length && options?.status && options?.status !== ETrialLessonStatus.CANCELLED
-        ? options.status
-        : undefined
+    const statusFilter = !statusIn.length ? options?.status : undefined
 
     const postPayStatuses = new Set<ETrialLessonStatus>([
       ETrialLessonStatus.CONFIRMED,
       ETrialLessonStatus.COMPLETED,
-    ]);
+      ETrialLessonStatus.CANCELLED,
+    ])
     const needsPaymentSucceeded = statusIn.length
       ? statusIn.every((s) => postPayStatuses.has(s))
-      : statusFilter === ETrialLessonStatus.CONFIRMED || statusFilter === ETrialLessonStatus.COMPLETED
+      : statusFilter !== undefined && postPayStatuses.has(statusFilter)
+
+    const paidCancelledWhere: Prisma.TrialLessonBookingWhereInput = {
+      OR: [
+        { paymentStatus: { in: [EPaymentStatus.SUCCEEDED, EPaymentStatus.REFUNDED] } },
+        { paidAt: { not: null } },
+      ],
+    }
+
+    const statusWhere: Prisma.TrialLessonBookingWhereInput = statusIn.length
+      ? { status: { in: statusIn } }
+      : statusFilter !== undefined
+        ? { status: statusFilter }
+        : {
+            OR: [
+              { status: { not: ETrialLessonStatus.CANCELLED } },
+              {
+                status: ETrialLessonStatus.CANCELLED,
+                ...paidCancelledWhere,
+              },
+            ],
+          }
+
+    const cancelledOnlyFilter =
+      statusFilter === ETrialLessonStatus.CANCELLED ||
+      (statusIn.length === 1 && statusIn[0] === ETrialLessonStatus.CANCELLED)
+
+    const paymentWhere: Prisma.TrialLessonBookingWhereInput | undefined =
+      cancelledOnlyFilter
+        ? paidCancelledWhere
+        : statusFilter === ETrialLessonStatus.CONFIRMED ||
+            statusFilter === ETrialLessonStatus.COMPLETED
+          ? { paymentStatus: EPaymentStatus.SUCCEEDED }
+          : needsPaymentSucceeded && !cancelledOnlyFilter
+            ? { paymentStatus: EPaymentStatus.SUCCEEDED }
+            : undefined
 
     const where: Prisma.TrialLessonBookingWhereInput = {
       tutorId: tutor.id,
-      ...(statusIn.length
-        ? { status: { in: statusIn } }
-        : statusFilter
-          ? { status: statusFilter }
-          : { status: { not: ETrialLessonStatus.CANCELLED } }),
-      ...(needsPaymentSucceeded ? { paymentStatus: EPaymentStatus.SUCCEEDED } : {}),
+      ...statusWhere,
+      ...(paymentWhere ?? {}),
     }
 
     const orderBy =
@@ -115,6 +148,7 @@ export class TrialLessonBookingService {
           grossAmount: Number(item.grossAmount),
           platformFee: Number(item.platformFee),
           tutorAmount: Number(item.tutorAmount),
+          currency: item.currency,
           status: item.status,
           createdAt: item.createdAt.toISOString(),
         })),
@@ -543,5 +577,154 @@ export class TrialLessonBookingService {
       throw new BadRequestException(`Invalid ${currency} booking amount`)
     }
     return BigInt(gross)
+  }
+
+  async cancelTrialLessonBooking(
+    studentUserId: string,
+    bookingId: string,
+    payload?: { reason?: string; message?: string }
+  ): Promise<{ refunded: boolean }> {
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.studentId !== studentUserId) {
+      throw new ForbiddenException('Not allowed to cancel this booking')
+    }
+
+    return this.applyTrialLessonCancellation(booking.id, {
+      refundIfEligible: true,
+      cancelReason: payload?.reason ?? null,
+      cancelMessage: payload?.message ?? null,
+    })
+  }
+
+  async cancelTrialLessonBookingByTutor(
+    tutorUserId: string,
+    bookingId: string,
+    payload?: { reason?: string; message?: string }
+  ): Promise<{ refunded: boolean }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    })
+
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found for current user')
+    }
+
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to cancel this booking')
+    }
+
+    if (booking.status !== ETrialLessonStatus.CONFIRMED) {
+      throw new BadRequestException('Only confirmed lessons can be cancelled by the tutor')
+    }
+
+    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot cancel within 12 hours of the lesson. Please reschedule instead.'
+      )
+    }
+
+    return this.applyTrialLessonCancellation(booking.id, {
+      refundIfEligible: true,
+      cancelReason: payload?.reason ? `tutor:${payload.reason}` : 'tutor',
+      cancelMessage: payload?.message ?? null,
+      refundDescription: 'Refund after tutor cancelled the trial lesson',
+      requireRefundIfPaid: true,
+    })
+  }
+
+  private isTrialLessonPaymentRefundable(booking: {
+    paymentStatus: EPaymentStatus
+    paidAt: Date | null
+    grossAmount: bigint
+  }): boolean {
+    if (booking.grossAmount <= 0n) {
+      return false
+    }
+    if (booking.paymentStatus === EPaymentStatus.REFUNDED) {
+      return false
+    }
+    if (booking.paymentStatus === EPaymentStatus.FAILED) {
+      return false
+    }
+    if (booking.paymentStatus === EPaymentStatus.SUCCEEDED) {
+      return true
+    }
+    return booking.paidAt != null
+  }
+
+  private async applyTrialLessonCancellation(
+    bookingId: string,
+    options: {
+      refundIfEligible: boolean
+      cancelReason: string | null
+      cancelMessage: string | null
+      refundDescription?: string
+      requireRefundIfPaid?: boolean
+    }
+  ): Promise<{ refunded: boolean }> {
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.status === ETrialLessonStatus.CANCELLED) {
+      throw new BadRequestException('Booking is already cancelled')
+    }
+
+    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
+    const paymentRefundable = this.isTrialLessonPaymentRefundable(booking)
+    const shouldRefund =
+      options.refundIfEligible &&
+      hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS &&
+      paymentRefundable
+
+    let refunded = false
+    if (shouldRefund) {
+      refunded = await this.walletService.refundTrialLessonBooking(booking.id, {
+        refundDescription: options.refundDescription,
+      })
+    }
+
+    if (
+      options.requireRefundIfPaid &&
+      hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS &&
+      paymentRefundable &&
+      !refunded
+    ) {
+      throw new BadRequestException(
+        'Lesson was cancelled but payment could not be refunded to the student wallet'
+      )
+    }
+
+    await this.prisma.trialLessonBooking.update({
+      where: { id: booking.id },
+      data: {
+        status: ETrialLessonStatus.CANCELLED,
+        cancelReason: options.cancelReason,
+        cancelMessage: options.cancelMessage,
+      },
+    })
+
+    return { refunded }
   }
 }

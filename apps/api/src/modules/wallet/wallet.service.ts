@@ -482,41 +482,117 @@ export class WalletService {
     });
   }
 
-  async refundTrialLessonBooking(bookingId: string): Promise<void> {
-    const booking = await this.prisma.trialLessonBooking.findUnique({
-      where: { id: bookingId },
-      select: {
-        id: true,
-        studentId: true,
-        grossAmount: true,
-        paymentStatus: true,
-        tutor: { select: { user: { select: { username: true } } } },
+  async refundTrialLessonBooking(
+    bookingId: string,
+    options?: { refundDescription?: string }
+  ): Promise<boolean> {
+    const existingRefund = await this.prisma.transaction.findFirst({
+      where: {
+        bookingId,
+        type: EWalletTransactionType.REFUND,
       },
     });
-
-    if (!booking) {
-      throw new NotFoundException('Booking not found');
+    if (existingRefund) {
+      await this.prisma.trialLessonBooking.updateMany({
+        where: {
+          id: bookingId,
+          paymentStatus: { not: EPaymentStatus.REFUNDED },
+        },
+        data: {
+          paymentStatus: EPaymentStatus.REFUNDED,
+          refundedAt: new Date(),
+        },
+      });
+      return true;
     }
-    if (booking.paymentStatus !== EPaymentStatus.SUCCEEDED) {
-      throw new BadRequestException('Only succeeded payments can be refunded to wallet');
-    }
 
-    const tutorLabel = booking.tutor.user.username ?? 'tutor';
+    await this.prisma.$transaction(async (tx) => {
+      const booking = await tx.trialLessonBooking.findUnique({
+        where: { id: bookingId },
+        include: {
+          tutor: {
+            select: {
+              userId: true,
+              user: { select: { username: true } },
+            },
+          },
+        },
+      });
 
-    await this.creditStudentRefund({
-      studentUserId: booking.studentId,
-      amount: booking.grossAmount,
-      bookingId: booking.id,
-      description: `Refund for trial lesson with ${tutorLabel}`,
+      if (!booking) {
+        throw new NotFoundException('Booking not found');
+      }
+      if (booking.paymentStatus === EPaymentStatus.REFUNDED) {
+        return;
+      }
+      const isPaid =
+        booking.paymentStatus === EPaymentStatus.SUCCEEDED || booking.paidAt != null;
+      if (!isPaid || booking.paymentStatus === EPaymentStatus.FAILED) {
+        throw new BadRequestException('Only paid trial lessons can be refunded to wallet');
+      }
+      if (booking.grossAmount <= 0n) {
+        throw new BadRequestException('Invalid refund amount for this booking');
+      }
+
+      const tutorLabel = booking.tutor.user.username ?? 'tutor';
+      const refundDescription =
+        options?.refundDescription ?? `Refund for trial lesson with ${tutorLabel}`;
+
+      const studentWallet = await tx.wallet.upsert({
+        where: { userId: booking.studentId },
+        update: {
+          balance: { increment: booking.grossAmount },
+          totalEarned: { increment: booking.grossAmount },
+        },
+        create: {
+          userId: booking.studentId,
+          balance: booking.grossAmount,
+          pendingBalance: 0n,
+          totalEarned: booking.grossAmount,
+          totalWithdrawn: 0n,
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          walletId: studentWallet.id,
+          bookingId: booking.id,
+          type: EWalletTransactionType.REFUND,
+          direction: EWalletTransactionDirection.CREDIT,
+          amount: booking.grossAmount,
+          description: refundDescription,
+        },
+      });
+
+      const tutorWallet = await tx.wallet.findUnique({
+        where: { userId: booking.tutor.userId },
+      });
+      if (tutorWallet && booking.tutorAmount > 0n) {
+        const pendingDecrement =
+          tutorWallet.pendingBalance >= booking.tutorAmount
+            ? booking.tutorAmount
+            : tutorWallet.pendingBalance;
+        if (pendingDecrement > 0n) {
+          await tx.wallet.update({
+            where: { id: tutorWallet.id },
+            data: {
+              pendingBalance: { decrement: pendingDecrement },
+              totalEarned: { decrement: pendingDecrement },
+            },
+          });
+        }
+      }
+
+      await tx.trialLessonBooking.update({
+        where: { id: booking.id },
+        data: {
+          paymentStatus: EPaymentStatus.REFUNDED,
+          refundedAt: new Date(),
+        },
+      });
     });
 
-    await this.prisma.trialLessonBooking.update({
-      where: { id: booking.id },
-      data: {
-        paymentStatus: EPaymentStatus.REFUNDED,
-        refundedAt: new Date(),
-      },
-    });
+    return true;
   }
 
   async refundSubscriptionEnrollment(enrollmentId: string): Promise<void> {

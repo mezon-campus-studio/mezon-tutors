@@ -68,12 +68,10 @@ export class TrialLessonBookingController {
   ): Promise<PaginatedResponse<TutorTrialLessonBookingRequestDto>> {
     const user = req.user as AuthUserPayload
 
-    const status =
-      query.status && query.status !== ETrialLessonStatus.CANCELLED ? query.status : undefined
     const statusIn = query.statusIn?.length ? query.statusIn : undefined
 
     return this.trialLessonBookingService.getTutorBookingRequests(user.sub, {
-      status: statusIn?.length ? undefined : status,
+      status: statusIn?.length ? undefined : query.status,
       statusIn,
       orderBy: statusIn?.length ? 'startAt' : undefined,
       page: query.page,
@@ -86,5 +84,33 @@ export class TrialLessonBookingController {
   async getBookingDetail(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string) {
     const user = req.user as AuthUserPayload
     return this.trialLessonBookingService.getStudentBookingDetail(user.sub, id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/cancel')
+  async cancelBooking(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { reason?: string; message?: string }
+  ) {
+    const user = req.user as AuthUserPayload
+    const result = await this.trialLessonBookingService.cancelTrialLessonBooking(user.sub, id, body)
+    return { success: true, refunded: result.refunded }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/tutor-cancel')
+  async cancelBookingByTutor(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { reason?: string; message?: string }
+  ) {
+    const user = req.user as AuthUserPayload
+    const result = await this.trialLessonBookingService.cancelTrialLessonBookingByTutor(
+      user.sub,
+      id,
+      body
+    )
+    return { success: true, refunded: result.refunded }
   }
 }

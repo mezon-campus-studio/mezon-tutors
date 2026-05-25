@@ -11,6 +11,9 @@ export type MyLessonWeekDayApiItem = {
 
 export type MyLessonApiItemSource = 'trial' | 'subscription'
 
+/** Trial lesson booking lifecycle; omitted for subscription slots. */
+export type MyLessonTrialBookingStatus = 'confirmed' | 'cancelled' | 'completed'
+
 export type MyLessonApiItem = {
   id: string
   subject: string
@@ -27,6 +30,11 @@ export type MyLessonApiItem = {
   start_hour: number
   end_hour: number
   source?: MyLessonApiItemSource
+  /** UTC ISO-8601; used for cancellation refund policy (trial). */
+  start_at?: string
+  gross_amount?: number
+  currency?: string
+  trial_booking_status?: MyLessonTrialBookingStatus
 }
 
 export type MyLessonTutorApiItem = {

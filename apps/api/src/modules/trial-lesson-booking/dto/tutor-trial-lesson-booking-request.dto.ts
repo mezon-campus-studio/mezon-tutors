@@ -12,6 +12,7 @@ export interface TutorTrialLessonBookingRequestDto {
   grossAmount: number
   platformFee: number
   tutorAmount: number
+  currency: string
   status: ETrialLessonStatus
   createdAt: string
 }
