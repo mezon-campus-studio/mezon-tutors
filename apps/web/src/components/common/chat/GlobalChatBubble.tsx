@@ -168,6 +168,12 @@ export default function GlobalChatBubble() {
         markUnread: false,
       });
       setMessageContent('');
+      requestAnimationFrame(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.focus();
+      });
     } catch (error) {
       console.error(error);
     } finally {
