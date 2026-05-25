@@ -120,13 +120,31 @@ export const trialLessonBookingApi = {
     tutorId: string,
     date: string,
     timezone: string,
+    excludeBookingId?: string,
   ): Promise<OccupiedTrialLessonSlotsResponse> {
     return apiClient.get<
       ApiResponse<OccupiedTrialLessonSlotsResponse>,
       OccupiedTrialLessonSlotsResponse
     >("/trial-lesson-bookings/occupied", {
-      params: { tutorId, date, timezone },
+      params: {
+        tutorId,
+        date,
+        timezone,
+        ...(excludeBookingId ? { excludeBookingId } : {}),
+      },
     });
+  },
+
+  rescheduleTrialLessonBooking(
+    bookingId: string,
+    payload: { startAt: string; durationMinutes: number },
+    timezone: string,
+  ): Promise<{ success: boolean }> {
+    return apiClient.post<{ success: boolean }, { success: boolean }>(
+      `/trial-lesson-bookings/${bookingId}/reschedule`,
+      payload,
+      { params: { timezone } },
+    );
   },
 
   getAlreadyBookedStatus(
@@ -228,12 +246,38 @@ export function useGetOccupiedTrialLessonSlots(
   date: string,
   timezone: string,
   enabled = true,
+  excludeBookingId?: string,
 ) {
   return useQuery({
-    queryKey: trialLessonBookingQueryKey.occupied(tutorId, date, timezone),
+    queryKey: trialLessonBookingQueryKey.occupied(
+      tutorId,
+      date,
+      timezone,
+      excludeBookingId,
+    ),
     queryFn: () =>
-      trialLessonBookingApi.getOccupiedByTutorAndDate(tutorId, date, timezone),
+      trialLessonBookingApi.getOccupiedByTutorAndDate(
+        tutorId,
+        date,
+        timezone,
+        excludeBookingId,
+      ),
     enabled: Boolean(tutorId) && Boolean(date) && Boolean(timezone) && enabled,
+  });
+}
+
+export function useRescheduleTrialLessonBookingMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload: { startAt: string; durationMinutes: number };
+      timezone: string;
+    }) =>
+      trialLessonBookingApi.rescheduleTrialLessonBooking(
+        args.bookingId,
+        args.payload,
+        args.timezone,
+      ),
   });
 }
 

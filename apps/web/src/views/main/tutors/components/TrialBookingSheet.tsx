@@ -65,9 +65,16 @@ export type TrialBookingPayload = {
   time: TrialTimeSlot;
 };
 
+export type TrialBookingSheetMode = "book" | "reschedule";
+
 export interface TrialBookingSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: TrialBookingSheetMode;
+  /** When rescheduling, exclude this booking from occupied slots. */
+  rescheduleBookingId?: string;
+  initialDurationMinutes?: number;
+  lockDuration?: boolean;
   onConfirm?: (payload: TrialBookingPayload) => void | Promise<void>;
   tutor: {
     id: string;
@@ -90,15 +97,22 @@ const SLOT_INTERVAL_MINUTES = 30;
 export function TrialBookingSheet({
   open,
   onOpenChange,
+  mode = "book",
+  rescheduleBookingId,
+  initialDurationMinutes,
+  lockDuration = false,
   onConfirm,
   tutor,
 }: TrialBookingSheetProps) {
   const t = useTranslations("Tutors.TrialBookingSheet");
+  const isReschedule = mode === "reschedule";
   const router = useRouter();
   const { currency } = useCurrency();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
 
-  const [duration, setDuration] = useState<number>(DURATION_OPTIONS[0]);
+  const [duration, setDuration] = useState<number>(
+    initialDurationMinutes ?? DURATION_OPTIONS[0],
+  );
   const [timeId, setTimeId] = useState<string>("");
   const [nowTs, setNowTs] = useState<number>(Date.now());
   const [weekOffset, setWeekOffset] = useState<number>(0);
@@ -193,18 +207,21 @@ export function TrialBookingSheet({
     selectedDateString,
     userTimezone,
     open && Boolean(tutor.id),
+    isReschedule ? rescheduleBookingId : undefined,
   );
   const { data: alreadyBookedResponse } = useGetAlreadyBookedTrialLesson(
     tutor.id,
-    open && Boolean(tutor.id) && isAuthenticated,
+    open && Boolean(tutor.id) && isAuthenticated && !isReschedule,
   );
   const alreadyBookedStatus = alreadyBookedResponse?.status ?? null;
   const hasBooked = Boolean(alreadyBookedResponse?.hasBooked);
-  const isBookingLocked = Boolean(
-    hasBooked &&
-      alreadyBookedStatus &&
-      alreadyBookedStatus !== ETrialLessonBookingStatus.CANCELLED,
-  );
+  const isBookingLocked =
+    !isReschedule &&
+    Boolean(
+      hasBooked &&
+        alreadyBookedStatus &&
+        alreadyBookedStatus !== ETrialLessonBookingStatus.CANCELLED,
+    );
 
   const selectedTime = useMemo(
     () => timeSlots.find((slot) => slot.id === timeId),
@@ -224,8 +241,17 @@ export function TrialBookingSheet({
     if (alreadyBookedStatus === ETrialLessonBookingStatus.COMPLETED) {
       return t("alreadyBookedCompleted");
     }
+    if (isReschedule) {
+      return t("confirmReschedule");
+    }
     return t("confirmBooking");
-  }, [alreadyBookedStatus, selectedTime, t]);
+  }, [alreadyBookedStatus, isReschedule, selectedTime, t]);
+
+  useEffect(() => {
+    if (open && initialDurationMinutes) {
+      setDuration(initialDurationMinutes);
+    }
+  }, [open, initialDurationMinutes]);
 
   const pastSlotIds = useMemo(() => {
     const now = dayjs(nowTs).tz(userTimezone);
@@ -454,7 +480,7 @@ export function TrialBookingSheet({
               </p>
               <SheetTitle className="min-w-0 truncate text-left text-base font-extrabold text-slate-900 sm:text-lg md:text-xl">
                 <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
-                  {t("title")}
+                  {isReschedule ? t("rescheduleTitle") : t("title")}
                 </span>
               </SheetTitle>
             </div>
@@ -516,7 +542,11 @@ export function TrialBookingSheet({
                   </div>
                 </div>
 
-                <div className="relative inline-flex w-full max-w-full shrink-0 items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto">
+                <div
+                  className={`relative inline-flex w-full max-w-full shrink-0 items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto ${
+                    lockDuration ? "pointer-events-none opacity-60" : ""
+                  }`}
+                >
                   <span
                     aria-hidden
                     className="absolute bottom-1 left-1 top-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
@@ -567,14 +597,20 @@ export function TrialBookingSheet({
               </div>
 
               <div className="flex w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between lg:w-auto lg:justify-end lg:shrink-0">
-                <div className="flex flex-col items-start sm:items-end">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                    Total
+                {!isReschedule ? (
+                  <div className="flex flex-col items-start sm:items-end">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                      Total
+                    </p>
+                    <p className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold leading-none tracking-tight text-transparent sm:text-3xl">
+                      {formatToCurrency(currency, totalPrice)}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="max-w-xs text-xs leading-relaxed text-slate-500 sm:text-sm">
+                    {t("rescheduleHint")}
                   </p>
-                  <p className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold leading-none tracking-tight text-transparent sm:text-3xl">
-                    {formatToCurrency(currency, totalPrice)}
-                  </p>
-                </div>
+                )}
                 <Button
                   size="lg"
                   className="group h-11 w-full min-w-0 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:w-auto sm:min-w-32"

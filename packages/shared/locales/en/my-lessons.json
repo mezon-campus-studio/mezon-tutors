@@ -96,6 +96,11 @@
           "reschedule": "Reschedule",
           "cancel": "Cancel"
         }
+      },
+      "reschedule": {
+        "success": "Lesson rescheduled successfully.",
+        "failed": "Could not reschedule the lesson. Please try another time.",
+        "within12Hours": "Reschedule is only available more than 12 hours before the lesson starts."
       }
     },
     "tutors": {

@@ -21,6 +21,9 @@ export function isTrialLessonRefundEligible(
   return getTrialLessonHoursUntilStartUtc(startAt, now) > TRIAL_LESSON_CANCEL_REFUND_HOURS
 }
 
+/** Same 12h window as refund eligibility — used for student/tutor reschedule. */
+export const isTrialLessonRescheduleEligible = isTrialLessonRefundEligible
+
 export function formatTrialLessonHoursUntilStart(hours: number): string {
   if (!Number.isFinite(hours) || hours <= 0) {
     return '0'

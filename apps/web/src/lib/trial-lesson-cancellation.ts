@@ -23,6 +23,8 @@ export function isTrialLessonRefundEligible(
   );
 }
 
+export const isTrialLessonRescheduleEligible = isTrialLessonRefundEligible;
+
 export function formatTrialLessonHoursUntilStart(hours: number): string {
   if (!Number.isFinite(hours) || hours <= 0) {
     return "0";

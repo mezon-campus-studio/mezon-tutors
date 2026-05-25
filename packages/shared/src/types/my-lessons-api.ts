@@ -32,6 +32,7 @@ export type MyLessonApiItem = {
   source?: MyLessonApiItemSource
   /** UTC ISO-8601; used for cancellation refund policy (trial). */
   start_at?: string
+  duration_minutes?: number
   gross_amount?: number
   currency?: string
   trial_booking_status?: MyLessonTrialBookingStatus

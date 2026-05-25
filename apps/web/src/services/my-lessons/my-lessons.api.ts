@@ -59,6 +59,7 @@ export type LessonItem = {
   source?: "trial" | "subscription";
   /** UTC ISO-8601; cancellation refund policy. */
   startAt?: string;
+  durationMinutes?: number;
   grossAmount?: number;
   currency?: string;
   trialBookingStatus?: "confirmed" | "cancelled" | "completed";
@@ -148,6 +149,7 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     endHour: roundToHalfHour(item.end_hour),
     source: item.source ?? "trial",
     startAt: item.start_at,
+    durationMinutes: item.duration_minutes,
     grossAmount: item.gross_amount,
     currency: item.currency,
     trialBookingStatus: item.trial_booking_status,

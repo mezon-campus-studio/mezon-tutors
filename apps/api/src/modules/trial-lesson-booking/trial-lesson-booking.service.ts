@@ -2,8 +2,13 @@ import {
   PLATFORM_FEE_PERCENTAGE,
   TRIAL_LESSON_CANCEL_REFUND_HOURS,
   instantFitsUtcWeeklyAvailability,
+  subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotsOccurrencesForWeek,
+  subscriptionSlotsUseConcreteDates,
   type PaginatedResponse,
+  type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared'
+import { ESubscriptionEnrollmentStatus } from '@mezon-tutors/db'
 import {
   BadRequestException,
   ConflictException,
@@ -20,10 +25,17 @@ import timezone = require('dayjs/plugin/timezone')
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
+
+function weekStartMondayYmd(instant: dayjs.Dayjs, timezoneName: string): string {
+  const local = instant.tz(timezoneName).startOf('day')
+  const daysFromMonday = (local.day() + 6) % 7
+  return local.subtract(daysFromMonday, 'day').format('YYYY-MM-DD')
+}
 import { PrismaService } from '../../prisma/prisma.service'
 import { AppConfigService } from '../../shared/services/app-config.service'
 import { VnpayService } from '../vnpay/vnpay.service'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
+import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
 import { WalletService } from '../wallet/wallet.service'
@@ -289,7 +301,12 @@ export class TrialLessonBookingService {
     }
   }
 
-  async getAcceptedByTutorAndDate(tutorId: string, date: string, timezoneName: string) {
+  async getAcceptedByTutorAndDate(
+    tutorId: string,
+    date: string,
+    timezoneName: string,
+    excludeBookingId?: string
+  ) {
     const tutor = await this.prisma.tutorProfile.findUnique({
       where: { id: tutorId },
       select: { id: true },
@@ -306,33 +323,234 @@ export class TrialLessonBookingService {
     }
 
     const dayEnd = dayStart.add(1, 'day')
+    const items = await this.collectOccupiedSlotsForTutorDay(
+      tutor.id,
+      dayStart.toDate(),
+      dayEnd.toDate(),
+      timezoneName,
+      excludeBookingId
+    )
 
-    const bookings = await this.prisma.trialLessonBooking.findMany({
+    return { items }
+  }
+
+  private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
+    if (!Array.isArray(value)) {
+      return []
+    }
+    return value as unknown as SubscriptionWeeklySlotDto[]
+  }
+
+  private async collectOccupiedSlotsForTutorDay(
+    tutorId: string,
+    dayStart: Date,
+    dayEnd: Date,
+    timezoneName: string,
+    excludeBookingId?: string
+  ): Promise<{ id: string; startAt: string; durationMinutes: number }[]> {
+    const [bookings, enrollments] = await Promise.all([
+      this.prisma.trialLessonBooking.findMany({
+        where: {
+          tutorId,
+          status: {
+            in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
+          },
+          ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+          startAt: {
+            gte: dayStart,
+            lt: dayEnd,
+          },
+        },
+        select: {
+          id: true,
+          startAt: true,
+          durationMinutes: true,
+        },
+        orderBy: { startAt: 'asc' },
+      }),
+      this.prisma.subscriptionEnrollment.findMany({
+        where: {
+          tutorId,
+          status: ESubscriptionEnrollmentStatus.ACTIVE,
+          paymentStatus: EPaymentStatus.SUCCEEDED,
+        },
+        select: {
+          id: true,
+          weeklySlots: true,
+          tutor: {
+            select: {
+              user: { select: { timezone: true } },
+            },
+          },
+        },
+      }),
+    ])
+
+    const trialItems = bookings.map((booking) => ({
+      id: booking.id,
+      startAt: booking.startAt.toISOString(),
+      durationMinutes: booking.durationMinutes,
+    }))
+
+    const weekStartYmd = weekStartMondayYmd(dayjs(dayStart).tz(timezoneName), timezoneName)
+    const subscriptionItems: { id: string; startAt: string; durationMinutes: number }[] = []
+
+    for (const enrollment of enrollments) {
+      const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
+      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC'
+      const occurrences = subscriptionSlotsOccurrencesForWeek(
+        weekStartYmd,
+        slots,
+        timezoneName,
+        tutorTimezone
+      )
+      for (const occ of occurrences) {
+        if (occ.startAt >= dayStart && occ.startAt < dayEnd) {
+          subscriptionItems.push({
+            id: `sub-${enrollment.id}-${occ.slotIndex}`,
+            startAt: occ.startAt.toISOString(),
+            durationMinutes: Math.round(
+              (occ.endAt.getTime() - occ.startAt.getTime()) / (60 * 1000)
+            ),
+          })
+        }
+      }
+    }
+
+    return [...trialItems, ...subscriptionItems].sort(
+      (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+    )
+  }
+
+  private rangesOverlap(
+    aStart: Date,
+    aEnd: Date,
+    bStart: Date,
+    bEnd: Date
+  ): boolean {
+    return aStart < bEnd && aEnd > bStart
+  }
+
+  private async assertTrialSlotAvailableForTutor(
+    tutorId: string,
+    startAt: dayjs.Dayjs,
+    durationMinutes: number,
+    timezoneName: string,
+    excludeBookingId?: string
+  ): Promise<void> {
+    const availability = await this.prisma.tutorAvailability.findMany({
       where: {
         tutorId,
-        status: ETrialLessonStatus.CONFIRMED,
-        paymentStatus: EPaymentStatus.SUCCEEDED,
+        isActive: true,
+      },
+      orderBy: { startTime: 'asc' },
+    })
+
+    const fitsAvailability = instantFitsUtcWeeklyAvailability(
+      startAt.toISOString(),
+      durationMinutes,
+      availability.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      }))
+    )
+
+    if (!fitsAvailability) {
+      throw new BadRequestException('Selected time is not available for this tutor')
+    }
+
+    const newStart = startAt.toDate()
+    const newEnd = startAt.add(durationMinutes, 'minute').toDate()
+    const queryRangeStart = startAt.subtract(1, 'day').toDate()
+    const queryRangeEnd = startAt.add(1, 'day').toDate()
+
+    const existingBookings = await this.prisma.trialLessonBooking.findMany({
+      where: {
+        tutorId,
+        status: {
+          in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
+        },
+        ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
         startAt: {
-          gte: dayStart.toDate(),
-          lt: dayEnd.toDate(),
+          gte: queryRangeStart,
+          lt: queryRangeEnd,
         },
       },
       select: {
-        id: true,
         startAt: true,
         durationMinutes: true,
       },
-      orderBy: {
-        startAt: 'asc',
+    })
+
+    const hasTrialOverlap = existingBookings.some((booking) => {
+      const bookedStart = booking.startAt
+      const bookedEnd = new Date(bookedStart.getTime() + booking.durationMinutes * 60 * 1000)
+      return this.rangesOverlap(newStart, newEnd, bookedStart, bookedEnd)
+    })
+
+    if (hasTrialOverlap) {
+      throw new ConflictException('Selected time overlaps an existing booking')
+    }
+
+    const enrollments = await this.prisma.subscriptionEnrollment.findMany({
+      where: {
+        tutorId,
+        status: ESubscriptionEnrollmentStatus.ACTIVE,
+        paymentStatus: EPaymentStatus.SUCCEEDED,
+      },
+      select: {
+        weeklySlots: true,
+        tutor: { select: { user: { select: { timezone: true } } } },
       },
     })
 
-    return {
-      items: bookings.map((booking) => ({
-        id: booking.id,
-        startAt: booking.startAt.toISOString(),
-        durationMinutes: booking.durationMinutes,
-      })),
+    const weekStartYmd = weekStartMondayYmd(startAt, timezoneName)
+
+    for (const enrollment of enrollments) {
+      const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
+      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC'
+
+      const occurrences = subscriptionSlotsUseConcreteDates(slots)
+        ? subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
+        : subscriptionSlotsOccurrencesForWeek(
+            weekStartYmd,
+            slots,
+            timezoneName,
+            tutorTimezone
+          )
+
+      const hasSubscriptionOverlap = occurrences.some((occ) =>
+        this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
+      )
+
+      if (hasSubscriptionOverlap) {
+        throw new ConflictException('Selected time overlaps a subscription lesson')
+      }
+
+      if (!subscriptionSlotsUseConcreteDates(slots)) {
+        const prevWeek = dayjs
+          .tz(weekStartYmd, timezoneName)
+          .subtract(7, 'day')
+          .format('YYYY-MM-DD')
+        const nextWeek = dayjs.tz(weekStartYmd, timezoneName).add(7, 'day').format('YYYY-MM-DD')
+        for (const ymd of [prevWeek, nextWeek]) {
+          const adjacent = subscriptionSlotsOccurrencesForWeek(
+            ymd,
+            slots,
+            timezoneName,
+            tutorTimezone
+          )
+          if (
+            adjacent.some((occ) =>
+              this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
+            )
+          ) {
+            throw new ConflictException('Selected time overlaps a subscription lesson')
+          }
+        }
+      }
     }
   }
 
@@ -386,63 +604,13 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Cannot book lesson in the past')
     }
 
-    const availability = await this.prisma.tutorAvailability.findMany({
-      where: {
-        tutorId: tutor.id,
-        isActive: true,
-      },
-      orderBy: { startTime: 'asc' },
-    })
-
-    const fitsAvailability = instantFitsUtcWeeklyAvailability(
-      startAt.toISOString(),
+    const viewerTimezone = tutor.user?.timezone ?? 'UTC'
+    await this.assertTrialSlotAvailableForTutor(
+      tutor.id,
+      startAt,
       dto.durationMinutes,
-      availability.map((slot) => ({
-        dayOfWeek: slot.dayOfWeek,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        isActive: slot.isActive,
-      })),
+      viewerTimezone
     )
-
-    if (!fitsAvailability) {
-      throw new BadRequestException('Selected time is not available for this tutor')
-    }
-
-    // Query existing bookings within 24 hours around requested time (handling timezone shifts securely)
-    const queryRangeStart = startAt.subtract(1, 'day').toDate()
-    const queryRangeEnd = startAt.add(1, 'day').toDate()
-
-    const existingBookings = await this.prisma.trialLessonBooking.findMany({
-      where: {
-        tutorId: tutor.id,
-        status: {
-          in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
-        },
-        startAt: {
-          gte: queryRangeStart,
-          lt: queryRangeEnd,
-        },
-      },
-      select: {
-        id: true,
-        startAt: true,
-        durationMinutes: true,
-      },
-    })
-
-    const newStart = startAt.toDate()
-    const newEnd = startAt.add(dto.durationMinutes, 'minute').toDate()
-
-    const hasOverlap = existingBookings.some((booking) => {
-      const bookedStart = booking.startAt
-      const bookedEnd = new Date(bookedStart.getTime() + booking.durationMinutes * 60 * 1000)
-      return newStart < bookedEnd && newEnd > bookedStart
-    })
-
-    if (hasOverlap) {
-      throw new ConflictException('Selected time overlaps an existing booking')
-    }
 
     const grossAmount = this.calculateGrossAmountByCurrency(
       {
@@ -577,6 +745,72 @@ export class TrialLessonBookingService {
       throw new BadRequestException(`Invalid ${currency} booking amount`)
     }
     return BigInt(gross)
+  }
+
+  async rescheduleTrialLessonBooking(
+    studentUserId: string,
+    bookingId: string,
+    dto: RescheduleTrialLessonBookingDto,
+    timezoneName: string
+  ) {
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            user: { select: { timezone: true } },
+          },
+        },
+      },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.studentId !== studentUserId) {
+      throw new ForbiddenException('Not allowed to reschedule this booking')
+    }
+
+    if (booking.status !== ETrialLessonStatus.CONFIRMED) {
+      throw new BadRequestException('Only confirmed lessons can be rescheduled')
+    }
+
+    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot reschedule within 12 hours of the lesson. Please contact your tutor.'
+      )
+    }
+
+    const startAt = dayjs(dto.startAt)
+    if (!startAt.isValid()) {
+      throw new BadRequestException('Invalid start time')
+    }
+
+    if (startAt.isBefore(dayjs())) {
+      throw new BadRequestException('Cannot reschedule to a time in the past')
+    }
+
+    const tz = timezoneName?.trim() || booking.tutor.user?.timezone || 'UTC'
+    await this.assertTrialSlotAvailableForTutor(
+      booking.tutorId,
+      startAt,
+      dto.durationMinutes,
+      tz,
+      booking.id
+    )
+
+    await this.prisma.trialLessonBooking.update({
+      where: { id: booking.id },
+      data: {
+        startAt: startAt.toDate(),
+        durationMinutes: dto.durationMinutes,
+      },
+    })
+
+    return { success: true }
   }
 
   async cancelTrialLessonBooking(

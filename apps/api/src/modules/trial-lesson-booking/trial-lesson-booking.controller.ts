@@ -16,6 +16,7 @@ import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
+import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
 import { GetMyTrialLessonBookingsDto } from './dto/get-my-trial-lesson-bookings.dto'
 import { getRequestClientIp } from '../../common/utils/request-ip.util'
 import { TrialLessonBookingService } from './trial-lesson-booking.service'
@@ -30,9 +31,15 @@ export class TrialLessonBookingController {
   async getOccupiedByTutorAndDate(
     @Query('tutorId') tutorId: string,
     @Query('date') date: string,
-    @Query('timezone') timezone: string
+    @Query('timezone') timezone: string,
+    @Query('excludeBookingId') excludeBookingId?: string
   ) {
-    return this.trialLessonBookingService.getAcceptedByTutorAndDate(tutorId, date, timezone)
+    return this.trialLessonBookingService.getAcceptedByTutorAndDate(
+      tutorId,
+      date,
+      timezone,
+      excludeBookingId
+    )
   }
 
   @UseGuards(JwtAuthGuard)
@@ -84,6 +91,23 @@ export class TrialLessonBookingController {
   async getBookingDetail(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string) {
     const user = req.user as AuthUserPayload
     return this.trialLessonBookingService.getStudentBookingDetail(user.sub, id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/reschedule')
+  async rescheduleBooking(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RescheduleTrialLessonBookingDto,
+    @Query('timezone') timezone?: string
+  ) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.rescheduleTrialLessonBooking(
+      user.sub,
+      id,
+      body,
+      timezone?.trim() || 'UTC'
+    )
   }
 
   @UseGuards(JwtAuthGuard)

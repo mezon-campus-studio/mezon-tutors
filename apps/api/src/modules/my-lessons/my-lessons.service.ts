@@ -390,6 +390,7 @@ export class MyLessonsService {
       end_hour: this.getCalendarHour(endAt, timezoneName),
       source: 'trial',
       start_at: lesson.startAt.toISOString(),
+      duration_minutes: lesson.durationMinutes,
       gross_amount: Number(lesson.grossAmount),
       currency: lesson.currency,
       trial_booking_status: trialBookingStatus,

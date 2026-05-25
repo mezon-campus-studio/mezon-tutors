@@ -96,6 +96,11 @@
           "reschedule": "Đổi lịch",
           "cancel": "Hủy"
         }
+      },
+      "reschedule": {
+        "success": "Đã đổi lịch buổi học thành công.",
+        "failed": "Không thể đổi lịch. Vui lòng chọn khung giờ khác.",
+        "within12Hours": "Chỉ có thể đổi lịch khi còn hơn 12 tiếng trước giờ học."
       }
     },
     "tutors": {
