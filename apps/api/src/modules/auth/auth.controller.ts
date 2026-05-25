@@ -35,28 +35,38 @@ export class AuthController {
     private readonly mezonChannelAppService: MezonChannelAppService
   ) {}
 
-  private getRefreshCookieOptions(): CookieOptions {
+  private getCrossSiteCookieOptions(maxAge: number): CookieOptions {
     const isProduction = this.appConfig.nodeEnv === 'production';
 
     return {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
-      maxAge: REFRESH_TOKEN_MAX_AGE,
+      maxAge,
       path: '/',
+      ...(isProduction ? { partitioned: true } : {}),
     };
   }
 
-  private getOAuthStateCookieOptions(): CookieOptions {
-    const isProduction = this.appConfig.nodeEnv === 'production';
+  private getRefreshCookieOptions(): CookieOptions {
+    return this.getCrossSiteCookieOptions(REFRESH_TOKEN_MAX_AGE);
+  }
 
-    return {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
-      maxAge: OAUTH_STATE_MAX_AGE,
-      path: '/',
-    };
+  private getOAuthStateCookieOptions(): CookieOptions {
+    return this.getCrossSiteCookieOptions(OAUTH_STATE_MAX_AGE);
+  }
+
+  private assertValidOAuthState(req: Request, state: string, res: Response): void {
+    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
+    const cookieValid = Boolean(cookieState && cookieState === state);
+    const serverValid = this.authService.consumePendingOAuthState(state);
+
+    if (!cookieValid && !serverValid) {
+      this.clearOAuthStateCookie(res);
+      throw new UnauthorizedException('Invalid or expired OAuth state');
+    }
+
+    this.clearOAuthStateCookie(res);
   }
 
   private clearOAuthStateCookie(res: Response) {
@@ -91,14 +101,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const { code, state } = body;
-    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
-
-    if (!cookieState || cookieState !== state) {
-      this.clearOAuthStateCookie(res);
-      throw new UnauthorizedException('Invalid or expired OAuth state');
-    }
-
-    this.clearOAuthStateCookie(res);
+    this.assertValidOAuthState(req, state, res);
 
     const result = await this.authService.handleMezonCallback(code, state, body.timezone);
 
@@ -167,14 +170,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const { code, state } = body;
-    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
-
-    if (!cookieState || cookieState !== state) {
-      this.clearOAuthStateCookie(res);
-      throw new UnauthorizedException('Invalid or expired OAuth state');
-    }
-
-    this.clearOAuthStateCookie(res);
+    this.assertValidOAuthState(req, state, res);
 
     const previousRefreshToken = req.cookies?.refresh_token as string | undefined;
     if (previousRefreshToken?.trim()) {

@@ -20,9 +20,12 @@ import { NotificationService } from '../notification/notification.service';
 
 const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
+const OAUTH_STATE_TTL_MS = 1000 * 60 * 10;
 
 @Injectable()
 export class AuthService {
+  private readonly pendingOAuthStates = new Map<string, number>();
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -34,6 +37,7 @@ export class AuthService {
   buildMezonAuthorizeUrl(): { url: string; state: string } {
     const oauth = this.appConfig.oauthConfig;
     const state = crypto.randomUUID();
+    this.registerPendingOAuthState(state);
     const params = new URLSearchParams({
       client_id: oauth.clientId,
       redirect_uri: oauth.redirectUri,
@@ -43,6 +47,42 @@ export class AuthService {
     });
 
     return { url: `${oauth.baseUri}/oauth2/auth?${params.toString()}`, state };
+  }
+
+  registerPendingOAuthState(state: string): void {
+    this.pendingOAuthStates.set(state, Date.now() + OAUTH_STATE_TTL_MS);
+    if (this.pendingOAuthStates.size > 500) {
+      this.pruneExpiredOAuthStates();
+    }
+  }
+
+  isValidPendingOAuthState(state: string): boolean {
+    const expiresAt = this.pendingOAuthStates.get(state);
+    if (!expiresAt) {
+      return false;
+    }
+    if (Date.now() > expiresAt) {
+      this.pendingOAuthStates.delete(state);
+      return false;
+    }
+    return true;
+  }
+
+  consumePendingOAuthState(state: string): boolean {
+    if (!this.isValidPendingOAuthState(state)) {
+      return false;
+    }
+    this.pendingOAuthStates.delete(state);
+    return true;
+  }
+
+  private pruneExpiredOAuthStates(): void {
+    const now = Date.now();
+    for (const [state, expiresAt] of this.pendingOAuthStates) {
+      if (now > expiresAt) {
+        this.pendingOAuthStates.delete(state);
+      }
+    }
   }
 
   async exchangeCodeForToken(code: string, state?: string): Promise<MezonTokenResponse> {

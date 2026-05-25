@@ -6,44 +6,35 @@ import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './shared/services/app-config.service';
 import { ValidationPipe } from '@nestjs/common';
+import {
+  buildAllowedCorsOrigins,
+  createCorsOriginDelegate,
+} from './common/utils/cors-origin.util';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', 1);
   const configService = app.get(AppConfigService);
 
-  app.use(helmet());
-
-  app.use(cookieParser());
-
-  const corsOrigins =
-    configService.corsOrigins
-      ?.split(',')
-      .map((o) => o.trim().replace(/\/$/, ''))
-      .filter(Boolean) ?? [];
-  const frontendOrigin = configService.frontendUrl.replace(/\/$/, '');
-
-  let allowOrigin: boolean | string[];
-  if (corsOrigins.length > 0) {
-    allowOrigin = [...new Set([...corsOrigins, frontendOrigin])];
-  } else if (configService.nodeEnv !== 'production') {
-    allowOrigin = true;
-  } else {
-    allowOrigin = [frontendOrigin];
-    console.warn(
-      `[CORS] CORS_ORIGINS unset in production; allowing only FRONTEND_URL: ${frontendOrigin}`
-    );
-  }
-
-  if (configService.nodeEnv === 'production') {
-    console.info(`[CORS] Allowed origins: ${JSON.stringify(allowOrigin)}`);
-  }
+  const allowedOrigins = buildAllowedCorsOrigins(
+    configService.corsOrigins,
+    configService.frontendUrl
+  );
 
   app.enableCors({
-    origin: allowOrigin,
+    origin: createCorsOriginDelegate(allowedOrigins),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Content-Length', 'Accept-Encoding', 'X-CSRF-Token', 'Authorization', 'accept', 'origin', 'Cache-Control', 'X-Requested-With'],
   });
+
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
+
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api');
 
