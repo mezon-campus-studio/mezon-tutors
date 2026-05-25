@@ -152,10 +152,10 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-    @Get('me')
+  @Get('me')
   async getMe(@Req() req: Request) {
-    const jwtUser = req.user as { sub: string };
-    return this.authService.getCurrentUserForMe(jwtUser.sub);
+    const jwtUser = req.user as { sub: string; idToken?: string | null };
+    return this.authService.getCurrentUserForMe(jwtUser.sub, jwtUser.idToken);
   }
 
   @UseGuards(JwtAuthGuard)
