@@ -59,6 +59,18 @@
       },
       "subscription": {
         "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",
+        "reschedule": {
+          "dialog": {
+            "title": "Đổi lịch buổi gói đăng ký",
+            "subtitle": "Chọn giờ mới với {tutor} (hiện tại {date} · {time}).",
+            "dismiss": "Giữ nguyên giờ học",
+            "confirm": "Xác nhận giờ mới",
+            "confirming": "Đang lưu…",
+            "success": "Đã đổi lịch buổi học thành công.",
+            "failed": "Không thể đổi lịch. Vui lòng chọn khung giờ khác.",
+            "loadFailed": "Không tải được khung giờ trống."
+          }
+        },
         "cancellation": {
           "dialog": {
             "title": "Hủy buổi học gói đăng ký",

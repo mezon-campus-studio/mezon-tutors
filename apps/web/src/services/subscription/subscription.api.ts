@@ -5,6 +5,9 @@ import type {
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
   SubscriptionSlotCancelResult,
+  SubscriptionSlotRescheduleOptionsResponse,
+  SubscriptionSlotRescheduleResult,
+  RescheduleSubscriptionSlotPayload,
   TutorSubscriptionPlanDto,
   TutorSubscriptionWeekOccurrenceDto,
 } from "@mezon-tutors/shared";
@@ -52,6 +55,37 @@ export const subscriptionApi = {
       ApiResponse<SubscriptionSlotCancelResult>,
       SubscriptionSlotCancelResult
     >(`/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/cancel`, payload);
+  },
+
+  getRescheduleOptions(
+    enrollmentId: string,
+    slotIndex: number,
+    weekStartDate: string,
+    timezone: string,
+  ): Promise<SubscriptionSlotRescheduleOptionsResponse> {
+    return apiClient.get<
+      ApiResponse<SubscriptionSlotRescheduleOptionsResponse>,
+      SubscriptionSlotRescheduleOptionsResponse
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/reschedule-options`,
+      { params: { week_start_date: weekStartDate, timezone } },
+    );
+  },
+
+  rescheduleSlot(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: RescheduleSubscriptionSlotPayload,
+    timezone: string,
+  ): Promise<SubscriptionSlotRescheduleResult> {
+    return apiClient.post<
+      ApiResponse<SubscriptionSlotRescheduleResult>,
+      SubscriptionSlotRescheduleResult
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/reschedule`,
+      payload,
+      { params: { timezone } },
+    );
   },
 
   getTutorWeekOccurrences(
@@ -126,6 +160,58 @@ export function useCancelSubscriptionSlotMutation() {
         params.enrollmentId,
         params.slotIndex,
         params.payload,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-lessons"] });
+    },
+  });
+}
+
+export function useGetSubscriptionSlotRescheduleOptions(
+  enrollmentId: string,
+  slotIndex: number,
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: subscriptionQueryKey.rescheduleOptions(
+      enrollmentId,
+      slotIndex,
+      weekStartDate,
+      timezone,
+    ),
+    queryFn: () =>
+      subscriptionApi.getRescheduleOptions(
+        enrollmentId,
+        slotIndex,
+        weekStartDate,
+        timezone,
+      ),
+    enabled:
+      enabled &&
+      Boolean(enrollmentId) &&
+      slotIndex >= 0 &&
+      Boolean(weekStartDate) &&
+      Boolean(timezone),
+    staleTime: 15 * 1000,
+  });
+}
+
+export function useRescheduleSubscriptionSlotMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: RescheduleSubscriptionSlotPayload;
+      timezone: string;
+    }) =>
+      subscriptionApi.rescheduleSlot(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+        params.timezone,
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-lessons"] });

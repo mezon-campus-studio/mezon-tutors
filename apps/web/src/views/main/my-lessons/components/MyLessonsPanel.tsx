@@ -46,6 +46,7 @@ import {
   useCreateDmChannelMutation,
 } from "@/services";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLessonDialog";
 
 type LessonPersonBadgeProps = {
   name: string;
@@ -67,7 +68,12 @@ function isReschedulableTrialLesson(lesson: LessonItem): boolean {
 }
 
 function isReschedulableSubscriptionLesson(lesson: LessonItem): boolean {
-  return isActivePaidSubscriptionLesson(lesson) && !lesson.rescheduleRequestSubmitted;
+  return (
+    isActivePaidSubscriptionLesson(lesson) &&
+    Boolean(lesson.startAt) &&
+    isTrialLessonRescheduleEligible(lesson.startAt!) &&
+    !lesson.rescheduleRequestSubmitted
+  );
 }
 
 function isActivePaidSubscriptionLesson(lesson: LessonItem): boolean {
@@ -481,6 +487,8 @@ export default function MyLessonsPanel({
   const userTimezone = useUserTimezone();
 
   const [rescheduleLesson, setRescheduleLesson] = useState<LessonItem | null>(null);
+  const [rescheduleSubscriptionLesson, setRescheduleSubscriptionLesson] =
+    useState<LessonItem | null>(null);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
   const { data: rescheduleTutorAbout } = useGetVerifiedTutorAbout(
@@ -493,7 +501,11 @@ export default function MyLessonsPanel({
       return;
     }
     if (lesson.source === "subscription") {
-      toast.info(t("panels.lessons.subscription.rescheduleComingSoon"));
+      if (!isReschedulableSubscriptionLesson(lesson)) {
+        toast.error(t("panels.lessons.reschedule.within12Hours"));
+        return;
+      }
+      setRescheduleSubscriptionLesson(lesson);
       return;
     }
     if (!isReschedulableTrialLesson(lesson)) {
@@ -713,6 +725,12 @@ export default function MyLessonsPanel({
           }}
         />
       ) : null}
+
+      <RescheduleSubscriptionLessonDialog
+        lesson={rescheduleSubscriptionLesson}
+        open={Boolean(rescheduleSubscriptionLesson)}
+        onClose={() => setRescheduleSubscriptionLesson(null)}
+      />
     </div>
   );
 }

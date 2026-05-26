@@ -15,4 +15,18 @@ export const subscriptionQueryKey = {
       weekStart,
       timezone,
     ] as const,
+  rescheduleOptions: (
+    enrollmentId: string,
+    slotIndex: number,
+    weekStart: string,
+    timezone: string,
+  ) =>
+    [
+      ...SUBSCRIPTION_QK_ROOT,
+      "reschedule-options",
+      enrollmentId,
+      slotIndex,
+      weekStart,
+      timezone,
+    ] as const,
 };

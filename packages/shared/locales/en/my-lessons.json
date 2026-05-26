@@ -59,6 +59,18 @@
       },
       "subscription": {
         "rescheduleComingSoon": "Subscription reschedule will be available soon.",
+        "reschedule": {
+          "dialog": {
+            "title": "Reschedule subscription lesson",
+            "subtitle": "Pick a new time with {tutor} (currently {date} · {time}).",
+            "dismiss": "Keep current time",
+            "confirm": "Confirm new time",
+            "confirming": "Saving…",
+            "success": "Lesson rescheduled successfully.",
+            "failed": "Could not reschedule the lesson. Please try another time.",
+            "loadFailed": "Could not load available times."
+          }
+        },
         "cancellation": {
           "dialog": {
             "title": "Cancel subscription lesson",
