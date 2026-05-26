@@ -17,6 +17,7 @@ import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
 import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
+import { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.dto'
 import { GetMyTrialLessonBookingsDto } from './dto/get-my-trial-lesson-bookings.dto'
 import { getRequestClientIp } from '../../common/utils/request-ip.util'
 import { TrialLessonBookingService } from './trial-lesson-booking.service'
@@ -107,6 +108,21 @@ export class TrialLessonBookingController {
       id,
       body,
       timezone?.trim() || 'UTC'
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/tutor-reschedule-request')
+  async tutorRescheduleRequest(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: TutorRescheduleRequestDto
+  ) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.tutorRequestRescheduleTrialLesson(
+      user.sub,
+      id,
+      body
     )
   }
 

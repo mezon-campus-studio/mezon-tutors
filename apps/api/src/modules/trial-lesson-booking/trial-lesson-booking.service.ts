@@ -8,7 +8,6 @@ import {
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared'
-import { ESubscriptionEnrollmentStatus } from '@mezon-tutors/db'
 import {
   BadRequestException,
   ConflictException,
@@ -17,8 +16,17 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common'
-import { ECurrency, EPaymentStatus, ETrialLessonStatus, VerificationStatus } from '@mezon-tutors/db'
-import { Prisma } from '@mezon-tutors/db'
+import {
+  ECurrency,
+  ELessonChangeAction,
+  ELessonChangeInitiatorRole,
+  ELessonChangeLessonType,
+  ESubscriptionEnrollmentStatus,
+  EPaymentStatus,
+  ETrialLessonStatus,
+  Prisma,
+  VerificationStatus,
+} from '@mezon-tutors/db'
 import dayjs = require('dayjs')
 import utc = require('dayjs/plugin/utc')
 import timezone = require('dayjs/plugin/timezone')
@@ -36,6 +44,7 @@ import { AppConfigService } from '../../shared/services/app-config.service'
 import { VnpayService } from '../vnpay/vnpay.service'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
 import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
+import type { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.dto'
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
 import { WalletService } from '../wallet/wallet.service'
@@ -146,6 +155,20 @@ export class TrialLessonBookingService {
       }),
     ])
     const totalPages = Math.ceil(total / limit)
+    const bookingIds = items.map((item) => item.id)
+    const rescheduleRows =
+      bookingIds.length > 0
+        ? await this.prisma.findCancelRescheduleReasons({
+            trialLessonBookingId: { in: bookingIds },
+            action: ELessonChangeAction.RESCHEDULE,
+          })
+        : []
+    const rescheduleSubmittedIds = new Set(
+      rescheduleRows
+        .map((row) => row.trialLessonBookingId)
+        .filter((id): id is string => Boolean(id))
+    )
+
     return {
       data: {
         items: items.map((item) => ({
@@ -163,6 +186,7 @@ export class TrialLessonBookingService {
           currency: item.currency,
           status: item.status,
           createdAt: item.createdAt.toISOString(),
+          rescheduleRequestSubmitted: rescheduleSubmittedIds.has(item.id),
         })),
         meta: {
           page,
@@ -835,6 +859,81 @@ export class TrialLessonBookingService {
       cancelReason: payload?.reason ?? null,
       cancelMessage: payload?.message ?? null,
     })
+  }
+
+  /**
+   * Tutor requests to reschedule a confirmed trial lesson: audit log only (no booking update, no refund).
+   */
+  async tutorRequestRescheduleTrialLesson(
+    tutorUserId: string,
+    bookingId: string,
+    payload: TutorRescheduleRequestDto
+  ): Promise<{ success: true; logId: string }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    })
+
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found for current user')
+    }
+
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        tutorId: true,
+        studentId: true,
+        startAt: true,
+        durationMinutes: true,
+        status: true,
+      },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to reschedule this booking')
+    }
+
+    if (booking.status !== ETrialLessonStatus.CONFIRMED) {
+      throw new BadRequestException('Only confirmed lessons can be rescheduled')
+    }
+
+    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot request reschedule within 12 hours of the lesson start time'
+      )
+    }
+
+    const existingRequest = await this.prisma.findCancelRescheduleReasons({
+      trialLessonBookingId: booking.id,
+      action: ELessonChangeAction.RESCHEDULE,
+    })
+    if (existingRequest.length > 0) {
+      throw new BadRequestException('A reschedule request was already submitted for this lesson')
+    }
+
+    const log = await this.prisma.createCancelRescheduleReason({
+      data: {
+        studentId: booking.studentId,
+        tutorId: booking.tutorId,
+        initiatedByUserId: tutorUserId,
+        initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
+        action: ELessonChangeAction.RESCHEDULE,
+        lessonType: ELessonChangeLessonType.TRIAL,
+        reason: payload.reason.trim(),
+        message: payload.message?.trim() || null,
+        trialLessonBookingId: booking.id,
+        originalStartAt: booking.startAt,
+        originalDurationMinutes: booking.durationMinutes,
+      },
+    })
+
+    return { success: true, logId: log.id }
   }
 
   private isTrialLessonPaymentRefundable(booking: {

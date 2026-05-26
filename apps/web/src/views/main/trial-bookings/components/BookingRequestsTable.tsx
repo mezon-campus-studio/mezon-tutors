@@ -8,6 +8,7 @@ import { useAtomValue } from 'jotai';
 import { CalendarClock, Eye, MoreVertical } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
+import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import {
   Avatar,
@@ -96,10 +97,13 @@ function buildActionMenuItems(
   }
 
   if (confirmed) {
+    const canReschedule =
+      isTrialLessonRescheduleEligible(item.startAt) && !item.rescheduleRequestSubmitted;
     items.push({
       label: t('reschedule'),
       icon: <CalendarClock className="size-4" />,
       onClick: () => onReschedule(item),
+      disabled: !canReschedule,
     });
   }
 

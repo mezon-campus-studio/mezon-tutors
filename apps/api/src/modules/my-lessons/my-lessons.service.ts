@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ELessonChangeAction,
   ETrialLessonStatus,
   ESubscriptionEnrollmentStatus,
   EPaymentStatus,
@@ -238,6 +239,10 @@ export class MyLessonsService {
       (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
     );
 
+    const rescheduleKeys = await this.loadRescheduleRequestKeys(studentId);
+    const annotate = (item: MyLessonApiItem) =>
+      this.annotateRescheduleRequestSubmitted(item, rescheduleKeys);
+
     return {
       ...this.buildCalendarMeta(
         calendarTrialRows,
@@ -246,11 +251,79 @@ export class MyLessonsService {
         subscriptionBounds,
         timezoneName
       ),
-      calendar_lessons: mergedCalendar,
-      upcoming_lessons: mergedUpcoming,
-      previous_lessons: mergedPrevious,
+      calendar_lessons: mergedCalendar.map(annotate),
+      upcoming_lessons: mergedUpcoming.map(annotate),
+      previous_lessons: mergedPrevious.map(annotate),
       tutors: this.buildTutorItems(lessons, timezoneName),
     };
+  }
+
+  private async loadRescheduleRequestKeys(studentId: string): Promise<{
+    trialBookingIds: Set<string>;
+    subscriptionSlotKeys: Set<string>;
+  }> {
+    const rows = await this.prisma.findCancelRescheduleReasons({
+      studentId,
+      action: ELessonChangeAction.RESCHEDULE,
+    });
+
+    const trialBookingIds = new Set<string>();
+    const subscriptionSlotKeys = new Set<string>();
+
+    for (const row of rows) {
+      if (row.trialLessonBookingId) {
+        trialBookingIds.add(row.trialLessonBookingId);
+      }
+      if (
+        row.subscriptionEnrollmentId != null &&
+        row.subscriptionSlotIndex != null &&
+        row.originalStartAt
+      ) {
+        subscriptionSlotKeys.add(
+          this.buildSubscriptionRescheduleKey(
+            row.subscriptionEnrollmentId,
+            row.subscriptionSlotIndex,
+            row.originalStartAt
+          )
+        );
+      }
+    }
+
+    return { trialBookingIds, subscriptionSlotKeys };
+  }
+
+  private buildSubscriptionRescheduleKey(
+    enrollmentId: string,
+    slotIndex: number,
+    startAt: string | Date
+  ): string {
+    return `${enrollmentId}:${slotIndex}:${dayjs(startAt).utc().toISOString()}`;
+  }
+
+  private annotateRescheduleRequestSubmitted(
+    item: MyLessonApiItem,
+    keys: { trialBookingIds: Set<string>; subscriptionSlotKeys: Set<string> }
+  ): MyLessonApiItem {
+    let submitted = false;
+
+    if (item.source === 'trial') {
+      submitted = keys.trialBookingIds.has(item.id);
+    } else if (
+      item.source === 'subscription' &&
+      item.subscription_enrollment_id &&
+      item.subscription_slot_index != null &&
+      item.start_at
+    ) {
+      submitted = keys.subscriptionSlotKeys.has(
+        this.buildSubscriptionRescheduleKey(
+          item.subscription_enrollment_id,
+          item.subscription_slot_index,
+          item.start_at
+        )
+      );
+    }
+
+    return { ...item, reschedule_request_submitted: submitted };
   }
 
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
@@ -276,6 +349,8 @@ export class MyLessonsService {
     enrollment: {
       id: string;
       tutorId: string;
+      status: ESubscriptionEnrollmentStatus;
+      paymentStatus: EPaymentStatus;
       weeklySlots: Prisma.JsonValue;
       tutor: TrialLessonBookingWithTutor['tutor'];
     },
@@ -303,6 +378,12 @@ export class MyLessonsService {
       day_index: this.toCalendarDayIndex(startAt, timezoneName),
       start_hour: this.getCalendarHour(startAt, timezoneName),
       end_hour: this.getCalendarHour(endAt, timezoneName),
+      start_at: startAt.toISOString(),
+      duration_minutes: Math.round((endAt.getTime() - startAt.getTime()) / (60 * 1000)),
+      subscription_enrollment_id: enrollment.id,
+      subscription_slot_index: slotIdx,
+      enrollment_status: enrollment.status,
+      enrollment_payment_status: enrollment.paymentStatus,
     };
   }
 

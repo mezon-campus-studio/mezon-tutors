@@ -60,8 +60,32 @@ function isReschedulableTrialLesson(lesson: LessonItem): boolean {
     lesson.source === "trial" &&
     lesson.trialBookingStatus === "confirmed" &&
     Boolean(lesson.startAt) &&
-    isTrialLessonRescheduleEligible(lesson.startAt!)
+    isTrialLessonRescheduleEligible(lesson.startAt!) &&
+    !lesson.rescheduleRequestSubmitted
   );
+}
+
+function isReschedulableSubscriptionLesson(lesson: LessonItem): boolean {
+  return isActivePaidSubscriptionLesson(lesson) && !lesson.rescheduleRequestSubmitted;
+}
+
+function isActivePaidSubscriptionLesson(lesson: LessonItem): boolean {
+  return (
+    lesson.source === "subscription" &&
+    lesson.status === "upcoming" &&
+    lesson.enrollmentStatus?.toUpperCase() === "ACTIVE" &&
+    lesson.enrollmentPaymentStatus?.toUpperCase() === "SUCCEEDED"
+  );
+}
+
+function canShowRescheduleOrCancelMenu(lesson: LessonItem): boolean {
+  if (isCancelledTrialLesson(lesson)) {
+    return false;
+  }
+  if (lesson.source === "trial" && lesson.trialBookingStatus === "confirmed") {
+    return true;
+  }
+  return isActivePaidSubscriptionLesson(lesson);
 }
 
 function LessonCancelledBadge({ label }: { label: string }) {
@@ -176,7 +200,7 @@ function UpcomingLessonItem({
   const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
   const cancelled = isCancelledTrialLesson(lesson);
 
-  const canReschedule = isReschedulableTrialLesson(lesson);
+  const canReschedule = isReschedulableTrialLesson(lesson) || isReschedulableSubscriptionLesson(lesson);
 
   const actionItems = [
     {
@@ -214,7 +238,7 @@ function UpcomingLessonItem({
       <div className="flex shrink-0 gap-2">
         {cancelled ? (
           <LessonCancelledBadge label={cancelledLabel} />
-        ) : lesson.source === "trial" && lesson.trialBookingStatus === "confirmed" ? (
+        ) : canShowRescheduleOrCancelMenu(lesson) ? (
           <>
             <ActionMenu
               trigger={
@@ -462,6 +486,14 @@ export default function MyLessonsPanel({
   );
 
   const handleReschedule = (lesson: LessonItem) => {
+    if (lesson.rescheduleRequestSubmitted) {
+      toast.error(t("panels.lessons.reschedule.alreadyRequested"));
+      return;
+    }
+    if (lesson.source === "subscription") {
+      toast.info(t("panels.lessons.subscription.rescheduleComingSoon"));
+      return;
+    }
     if (!isReschedulableTrialLesson(lesson)) {
       toast.error(t("panels.lessons.reschedule.within12Hours"));
       return;
@@ -496,6 +528,10 @@ export default function MyLessonsPanel({
   };
 
   const handleCancelClick = (lesson: LessonItem) => {
+    if (lesson.source === "subscription") {
+      toast.info(t("panels.lessons.subscription.cancelComingSoon"));
+      return;
+    }
     setSelectedLesson(lesson);
     setIsCancelDialogOpen(true);
   };

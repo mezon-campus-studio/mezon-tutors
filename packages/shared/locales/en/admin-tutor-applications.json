@@ -42,6 +42,40 @@
         "title": "Education & Credentials",
         "verifyCredential": "Verify Credential"
       },
+      "lessonChangeHistory": {
+        "title": "Cancel & reschedule history",
+        "subtitle": "Audit log of lesson cancel and reschedule requests for this tutor.",
+        "empty": "No cancel or reschedule requests recorded yet.",
+        "columns": {
+          "requestedAt": "Requested at",
+          "student": "Student",
+          "lesson": "Lesson",
+          "action": "Action",
+          "reason": "Reason",
+          "message": "Message"
+        },
+        "lessonRef": {
+          "trial": "Trial",
+          "subscription": "Subscription · slot {slot}"
+        },
+        "action": {
+          "CANCEL": "Cancel",
+          "RESCHEDULE": "Reschedule"
+        },
+        "reasons": {
+          "scheduleConflict": "Schedule conflict",
+          "personalEmergency": "Personal emergency",
+          "studentUnavailable": "Student is unavailable",
+          "timeNotWork": "This time doesn't work for me anymore",
+          "technicalIssue": "I have a technical issue",
+          "avoidBalanceLoss": "I booked this time to avoid losing my balance",
+          "notMotivated": "I don't feel motivated to take this lesson",
+          "tutorRescheduledUnavail": "The tutor rescheduled to a time when I'm not available",
+          "tutorAskedCancel": "The tutor asked me to cancel",
+          "noLongerLearnTutor": "I don't want to learn with this tutor anymore",
+          "other": "Other"
+        }
+      },
       "availability": {
         "title": "Availability & Pricing",
         "weeklySchedule": "Weekly schedule",

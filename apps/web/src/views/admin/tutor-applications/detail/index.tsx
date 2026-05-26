@@ -22,6 +22,7 @@ import StatusBadge from "../components/StatusBadge";
 import AdminNotesCard from "./components/AdminNotesCard";
 import ApplicationMetaCard from "./components/ApplicationMetaCard";
 import AvailabilityCard from "./components/AvailabilityCard";
+import LessonChangeHistoryCard from "./components/LessonChangeHistoryCard";
 import ConfirmDialog from "./components/ConfirmDialog";
 import IdentityVerificationCard from "./components/IdentityVerificationCard";
 import PersonalInfoCard from "./components/PersonalInfoCard";
@@ -170,7 +171,13 @@ export default function AdminTutorApplicationDetailView({
           </div>
         </div>
       </div>
-
+      
+      <div className="mb-6">
+        <LessonChangeHistoryCard
+            tutorId={profile.id}
+            timezoneName={profile.timezone ?? "UTC"}
+          />
+      </div>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <PersonalInfoCard profile={profile} />
@@ -178,6 +185,10 @@ export default function AdminTutorApplicationDetailView({
           <IdentityVerificationCard verification={identityVerification} />
           <ProfessionalDocumentsCard documents={professionalDocuments} />
           <AvailabilityCard profile={profile} availability={availability} />
+          <LessonChangeHistoryCard
+            tutorId={profile.id}
+            timezoneName={profile.timezone ?? "UTC"}
+          />
         </div>
         <div className="space-y-5">
           <ApplicationMetaCard profile={profile} />

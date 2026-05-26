@@ -120,6 +120,22 @@ enum ELessonSettlementJobStatus {
   CANCELLED
 }
 
+enum ELessonChangeAction {
+  CANCEL
+  RESCHEDULE
+}
+
+enum ELessonChangeLessonType {
+  TRIAL
+  SUBSCRIPTION
+}
+
+enum ELessonChangeInitiatorRole {
+  STUDENT
+  TUTOR
+  SYSTEM
+}
+
 /// Application users table mapped to `users`
 model User {
   id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -140,6 +156,8 @@ model User {
   wallet                 Wallet?
   withdrawals            Withdrawal[]
   notificationRecipients NotificationRecipient[]
+  cancelRescheduleReasonsAsStudent CancelRescheduleReason[] @relation("CancelRescheduleStudent")
+  cancelRescheduleReasonsInitiated CancelRescheduleReason[] @relation("CancelRescheduleInitiator")
 
   @@map("users")
 }
@@ -207,6 +225,7 @@ model TutorProfile {
   reviews             TutorReview[]
   trialLessonPrice    TrialLessonPrice?
   subscriptionEnrollments SubscriptionEnrollment[]
+  cancelRescheduleReasons CancelRescheduleReason[]
 
   adminNotes            TutorAdminNote[]
   professionalDocuments ProfessionalDocument[]
@@ -252,6 +271,7 @@ model SubscriptionEnrollment {
   student             User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   tutor               TutorProfile      @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   walletTransactions  Transaction[]
+  cancelRescheduleReasons CancelRescheduleReason[]
 
   @@index([studentId, tutorId])
   @@index([paymentRef])
@@ -382,12 +402,44 @@ model TrialLessonBooking {
   tutor   TutorProfile         @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   student User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
   walletTransactions Transaction[]
+  cancelRescheduleReasons CancelRescheduleReason[]
 
   @@index([paymentRef])
   @@index([studentId])
   @@index([tutorId])
   @@index([tutorId, startAt])
   @@map("trial_lesson_booking")
+}
+
+/// Audit log for lesson cancel / reschedule requests (tutor or student).
+model CancelRescheduleReason {
+  id                        String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId                 String                   @map("student_id") @db.Uuid
+  tutorId                   String                   @map("tutor_id") @db.Uuid
+  initiatedByUserId         String                   @map("initiated_by_user_id") @db.Uuid
+  initiatedByRole           ELessonChangeInitiatorRole @map("initiated_by_role")
+  action                    ELessonChangeAction
+  lessonType                ELessonChangeLessonType  @map("lesson_type")
+  reason                    String
+  message                   String?                  @db.Text
+  trialLessonBookingId      String?                  @map("trial_lesson_booking_id") @db.Uuid
+  subscriptionEnrollmentId  String?                  @map("subscription_enrollment_id") @db.Uuid
+  subscriptionSlotIndex     Int?                     @map("subscription_slot_index")
+  originalStartAt           DateTime                 @map("original_start_at")
+  originalDurationMinutes   Int                      @map("original_duration_minutes")
+  createdAt                 DateTime                 @default(now()) @map("created_at")
+
+  student              User                    @relation("CancelRescheduleStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  tutor                TutorProfile            @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  initiatedBy          User                    @relation("CancelRescheduleInitiator", fields: [initiatedByUserId], references: [id], onDelete: Cascade)
+  trialLessonBooking   TrialLessonBooking?     @relation(fields: [trialLessonBookingId], references: [id], onDelete: SetNull)
+  subscriptionEnrollment SubscriptionEnrollment? @relation(fields: [subscriptionEnrollmentId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, createdAt])
+  @@index([tutorId, createdAt])
+  @@index([trialLessonBookingId])
+  @@index([subscriptionEnrollmentId, subscriptionSlotIndex, originalStartAt])
+  @@map("cancel_reschedule_reason")
 }
 
 model UserDmChannel {

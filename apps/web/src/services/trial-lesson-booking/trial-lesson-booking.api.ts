@@ -75,6 +75,7 @@ export type TrialLessonBookingRequestItem = {
   currency?: string;
   status: ETrialLessonBookingStatus;
   createdAt: string;
+  rescheduleRequestSubmitted?: boolean;
   scheduleKind?: "subscription";
 };
 
@@ -193,6 +194,16 @@ export const trialLessonBookingApi = {
       { success: boolean; refunded: boolean },
       { success: boolean; refunded: boolean }
     >(`/trial-lesson-bookings/${bookingId}/cancel`, payload);
+  },
+
+  tutorRescheduleRequest(
+    bookingId: string,
+    payload: { reason: string; message?: string },
+  ): Promise<{ success: boolean; logId: string }> {
+    return apiClient.post<
+      { success: boolean; logId: string },
+      { success: boolean; logId: string }
+    >(`/trial-lesson-bookings/${bookingId}/tutor-reschedule-request`, payload);
   },
 
   async getMyTrialLessonBookingRequests(params?: {
@@ -341,6 +352,19 @@ export function useCancelTrialLessonBookingMutation() {
       bookingId: string;
       payload?: { reason?: string; message?: string };
     }) => trialLessonBookingApi.cancelTrialLessonBooking(args.bookingId, args.payload),
+  });
+}
+
+export function useTutorRescheduleRequestMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload: { reason: string; message?: string };
+    }) =>
+      trialLessonBookingApi.tutorRescheduleRequest(
+        args.bookingId,
+        args.payload,
+      ),
   });
 }
 

@@ -15,4 +15,5 @@ export interface TutorTrialLessonBookingRequestDto {
   currency: string
   status: ETrialLessonStatus
   createdAt: string
+  rescheduleRequestSubmitted: boolean
 }

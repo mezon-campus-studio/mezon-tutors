@@ -57,6 +57,10 @@
         "joinLesson": "Vào lớp",
         "statusCancelled": "Đã hủy"
       },
+      "subscription": {
+        "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",
+        "cancelComingSoon": "Tính năng hủy buổi gói học sẽ sớm có mặt."
+      },
       "past": {
         "title": "Buổi học trước đó",
         "rate": "Đánh giá",
@@ -100,7 +104,8 @@
       "reschedule": {
         "success": "Đã đổi lịch buổi học thành công.",
         "failed": "Không thể đổi lịch. Vui lòng chọn khung giờ khác.",
-        "within12Hours": "Chỉ có thể đổi lịch khi còn hơn 12 tiếng trước giờ học."
+        "within12Hours": "Chỉ có thể đổi lịch khi còn hơn 12 tiếng trước giờ học.",
+        "alreadyRequested": "Buổi học này đã có yêu cầu đổi lịch."
       }
     },
     "tutors": {

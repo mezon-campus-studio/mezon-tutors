@@ -63,6 +63,11 @@ export type LessonItem = {
   grossAmount?: number;
   currency?: string;
   trialBookingStatus?: "confirmed" | "cancelled" | "completed";
+  subscriptionEnrollmentId?: string;
+  subscriptionSlotIndex?: number;
+  enrollmentStatus?: string;
+  enrollmentPaymentStatus?: string;
+  rescheduleRequestSubmitted?: boolean;
 };
 
 export type TutorItem = {
@@ -153,6 +158,11 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     grossAmount: item.gross_amount,
     currency: item.currency,
     trialBookingStatus: item.trial_booking_status,
+    subscriptionEnrollmentId: item.subscription_enrollment_id,
+    subscriptionSlotIndex: item.subscription_slot_index,
+    enrollmentStatus: item.enrollment_status,
+    enrollmentPaymentStatus: item.enrollment_payment_status,
+    rescheduleRequestSubmitted: item.reschedule_request_submitted ?? false,
   };
 };
 

@@ -57,6 +57,10 @@
         "joinLesson": "Join lesson",
         "statusCancelled": "Cancelled"
       },
+      "subscription": {
+        "rescheduleComingSoon": "Subscription reschedule will be available soon.",
+        "cancelComingSoon": "Subscription cancellation will be available soon."
+      },
       "past": {
         "title": "Past lessons",
         "rate": "Rate",
@@ -100,7 +104,8 @@
       "reschedule": {
         "success": "Lesson rescheduled successfully.",
         "failed": "Could not reschedule the lesson. Please try another time.",
-        "within12Hours": "Reschedule is only available more than 12 hours before the lesson starts."
+        "within12Hours": "Reschedule is only available more than 12 hours before the lesson starts.",
+        "alreadyRequested": "A reschedule request was already submitted for this lesson."
       }
     },
     "tutors": {

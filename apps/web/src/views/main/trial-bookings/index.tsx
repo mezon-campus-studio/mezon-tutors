@@ -2,13 +2,23 @@
 
 import { ClipboardList, Search } from 'lucide-react'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import { toast } from 'sonner'
+
+import dayjs from 'dayjs'
+
+import timezone from 'dayjs/plugin/timezone'
+
+import utc from 'dayjs/plugin/utc'
+
+import { useAtomValue } from 'jotai'
 
 import {
   Input,
@@ -21,9 +31,23 @@ import {
 
 import {
   useGetMyTrialLessonBookingRequests,
+  useTutorRescheduleRequestMutation,
   type TrialLessonBookingRequestItem,
   type TrialLessonBookingRequestStatusFilter,
 } from '@/services'
+import {
+  createMezonLightDM,
+  persistMezonLightSession,
+  refreshMezonLightSession,
+  restoreMezonLightClientFromStorage,
+  sendMezonLightDMWithRefreshFallback,
+  useGetDmChannel,
+  useCreateDmChannelMutation,
+} from '@/services'
+import { useMezonLight } from '@/providers'
+import { userAtom } from '@/store'
+import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
+import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation'
 
 import { ROUTES } from '@mezon-tutors/shared'
 
@@ -31,8 +55,15 @@ import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
 
 import BookingRequestsMetrics from './components/BookingRequestsMetrics'
 import BookingRequestsTable from './components/BookingRequestsTable'
+import {
+  RescheduleLessonDialog,
+  type TutorRescheduleLessonTarget,
+} from './components/RescheduleLessonDialog'
 
 import type { TutorBookingRequestUiStatus } from '@/lib/trial-booking-status'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const STATUS_FILTERS: Array<{
   value: 'all' | TrialLessonBookingRequestStatusFilter
@@ -47,57 +78,91 @@ const STATUS_FILTERS: Array<{
 
 const PAGE_SIZE = 10
 
+function bookingToRescheduleTarget(
+  item: TrialLessonBookingRequestItem,
+  locale: string,
+  timezoneName: string,
+): TutorRescheduleLessonTarget {
+  const start = dayjs(item.startAt).tz(timezoneName).locale(locale)
+  const end = start.add(item.durationMinutes, 'minute')
+
+  return {
+    id: item.id,
+    studentName: item.studentName,
+    studentAvatarUrl: item.studentAvatarUrl,
+    dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
+    timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
+    subject: 'Trial lesson',
+  }
+}
+
 export default function BookingRequestsView() {
   const t = useTranslations('Dashboard.bookingRequests')
-
-  const tTable = useTranslations('Dashboard.bookingRequests.table')
+  const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule')
 
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const locale = useLocale()
 
-  const [search, setSearch] = useState('')
+  const currentUser = useAtomValue(userAtom)
+  const senderId = currentUser?.id ?? ''
+  const senderMezonUserId = currentUser?.mezonUserId ?? ''
 
-  const [statusFilter, setStatusFilter] = useState<'all' | TrialLessonBookingRequestStatusFilter>(
-    'all'
+  const userTimezone = resolveUserTimezone(
+    currentUser?.timezone,
+    detectBrowserTimezone(),
   )
 
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | TrialLessonBookingRequestStatusFilter>(
+    'all',
+  )
   const [page, setPage] = useState(1)
+
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false)
+  const [rescheduleTarget, setRescheduleTarget] = useState<TutorRescheduleLessonTarget | null>(
+    null,
+  )
+  const [rescheduleBooking, setRescheduleBooking] = useState<TrialLessonBookingRequestItem | null>(
+    null,
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const tutorRescheduleMutation = useTutorRescheduleRequestMutation()
+
+  const recipientId = rescheduleBooking?.studentId ?? ''
+  const recipientMezonUserId = rescheduleBooking?.studentMezonUserId ?? ''
+
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false)
+  const createDmChannelMutation = useCreateDmChannelMutation()
+  const { lightClient, setLightClient } = useMezonLight()
 
   const { data, isLoading, isFetching } = useGetMyTrialLessonBookingRequests({
     status: statusFilter === 'all' ? undefined : statusFilter,
-
     page,
-
     limit: PAGE_SIZE,
   })
 
   const items = data?.items ?? []
-
   const meta = data?.meta
 
   const filtered = useMemo(() => {
     const trimmed = search.trim().toLowerCase()
-
     if (!trimmed) return items
-
     return items.filter((item) => item.studentName.toLowerCase().includes(trimmed))
   }, [items, search])
 
   const counts = useMemo(() => {
     const map: Record<TutorBookingRequestUiStatus | 'total', number> = {
       total: items.length,
-
       pending: 0,
-
       confirmed: 0,
-
       completed: 0,
-
       cancelled: 0,
     }
 
     for (const item of items) {
       const upper = String(item.status).toUpperCase()
-
       if (upper === 'PENDING') map.pending += 1
       else if (upper === 'CONFIRMED') map.confirmed += 1
       else if (upper === 'COMPLETED') map.completed += 1
@@ -113,8 +178,91 @@ export default function BookingRequestsView() {
     router.push(ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(bookingId))
   }
 
-  const handleReschedule = (_item: TrialLessonBookingRequestItem) => {
-    toast.info(tTable('rescheduleComingSoon'))
+  const handleReschedule = (item: TrialLessonBookingRequestItem) => {
+    if (item.rescheduleRequestSubmitted) {
+      toast.error(tReschedule('alreadyRequested'))
+      return
+    }
+    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+      toast.error(tReschedule('within12Hours'))
+      return
+    }
+    setRescheduleBooking(item)
+    setRescheduleTarget(bookingToRescheduleTarget(item, locale, userTimezone))
+    setIsRescheduleDialogOpen(true)
+  }
+
+  const handleConfirmReschedule = async (reason: string, message?: string) => {
+    if (!rescheduleBooking) return
+
+    try {
+      setIsSubmitting(true)
+
+      await tutorRescheduleMutation.mutateAsync({
+        bookingId: rescheduleBooking.id,
+        payload: { reason, message: message?.trim() || undefined },
+      })
+
+      if (message?.trim()) {
+        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
+          toast.error(tReschedule('messageMissingUser'))
+        } else {
+          try {
+            let client = lightClient
+            if (!client) {
+              client = await restoreMezonLightClientFromStorage()
+              if (!client) {
+                throw new Error('Cannot restore Mezon client. Please login again.')
+              }
+              setLightClient(client)
+            }
+
+            const isSessionExpired = await client.isSessionExpired()
+            if (isSessionExpired) {
+              await refreshMezonLightSession(client)
+              await persistMezonLightSession(client)
+            }
+
+            let channelId = (await refetchDmChannel()).data?.channelId
+            if (!channelId) {
+              const dmChannel = await createMezonLightDM(client, recipientMezonUserId)
+              channelId = dmChannel?.channel_id
+              if (!channelId) {
+                throw new Error('Could not create DM channel.')
+              }
+
+              await createDmChannelMutation.mutateAsync({
+                senderId,
+                recipientId,
+                channelId,
+              })
+            }
+
+            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim())
+            toast.success(tReschedule('messageSent'))
+          } catch (error) {
+            console.error('DM Error:', error)
+            toast.error(tReschedule('messageFailed'))
+          }
+        }
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['trial-lesson-booking-my-requests'],
+      })
+
+      toast.success(tReschedule('success'))
+      setIsRescheduleDialogOpen(false)
+      setRescheduleTarget(null)
+      setRescheduleBooking(null)
+    } catch (error) {
+      console.error(error)
+      toast.error(
+        error instanceof Error ? error.message : tReschedule('failed'),
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -161,7 +309,6 @@ export default function BookingRequestsView() {
           value={statusFilter}
           onValueChange={(value) => {
             setStatusFilter(value as 'all' | TrialLessonBookingRequestStatusFilter)
-
             setPage(1)
           }}
         >
@@ -195,6 +342,18 @@ export default function BookingRequestsView() {
           onPageChangeAction={setPage}
         />
       </div>
+
+      <RescheduleLessonDialog
+        isOpen={isRescheduleDialogOpen}
+        onClose={() => {
+          setIsRescheduleDialogOpen(false)
+          setRescheduleTarget(null)
+          setRescheduleBooking(null)
+        }}
+        onConfirm={handleConfirmReschedule}
+        lesson={rescheduleTarget}
+        isLoading={isSubmitting}
+      />
     </div>
   )
 }
