@@ -122,19 +122,4 @@ export class TrialLessonBookingController {
     return { success: true, refunded: result.refunded }
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post(':id/tutor-cancel')
-  async cancelBookingByTutor(
-    @Req() req: Request,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { reason?: string; message?: string }
-  ) {
-    const user = req.user as AuthUserPayload
-    const result = await this.trialLessonBookingService.cancelTrialLessonBookingByTutor(
-      user.sub,
-      id,
-      body
-    )
-    return { success: true, refunded: result.refunded }
-  }
 }

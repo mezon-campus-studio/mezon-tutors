@@ -837,52 +837,6 @@ export class TrialLessonBookingService {
     })
   }
 
-  async cancelTrialLessonBookingByTutor(
-    tutorUserId: string,
-    bookingId: string,
-    payload?: { reason?: string; message?: string }
-  ): Promise<{ refunded: boolean }> {
-    const tutor = await this.prisma.tutorProfile.findUnique({
-      where: { userId: tutorUserId },
-      select: { id: true },
-    })
-
-    if (!tutor) {
-      throw new NotFoundException('Tutor profile not found for current user')
-    }
-
-    const booking = await this.prisma.trialLessonBooking.findUnique({
-      where: { id: bookingId },
-    })
-
-    if (!booking) {
-      throw new NotFoundException('Booking not found')
-    }
-
-    if (booking.tutorId !== tutor.id) {
-      throw new ForbiddenException('Not allowed to cancel this booking')
-    }
-
-    if (booking.status !== ETrialLessonStatus.CONFIRMED) {
-      throw new BadRequestException('Only confirmed lessons can be cancelled by the tutor')
-    }
-
-    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
-      throw new BadRequestException(
-        'Cannot cancel within 12 hours of the lesson. Please reschedule instead.'
-      )
-    }
-
-    return this.applyTrialLessonCancellation(booking.id, {
-      refundIfEligible: true,
-      cancelReason: payload?.reason ? `tutor:${payload.reason}` : 'tutor',
-      cancelMessage: payload?.message ?? null,
-      refundDescription: 'Refund after tutor cancelled the trial lesson',
-      requireRefundIfPaid: true,
-    })
-  }
-
   private isTrialLessonPaymentRefundable(booking: {
     paymentStatus: EPaymentStatus
     paidAt: Date | null

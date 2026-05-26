@@ -5,10 +5,9 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useAtomValue } from 'jotai';
-import { CalendarClock, Eye, MoreVertical, Trash2 } from 'lucide-react';
+import { CalendarClock, Eye, MoreVertical } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
-import { isTrialLessonRefundEligible } from '@/lib/trial-lesson-cancellation';
 import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import {
   Avatar,
@@ -27,7 +26,6 @@ type BookingRequestsTableProps = {
   isFetching?: boolean;
   onViewDetail: (bookingId: string) => void;
   onReschedule: (item: TrialLessonBookingRequestItem) => void;
-  onCancel: (item: TrialLessonBookingRequestItem) => void;
 };
 
 dayjs.extend(utc);
@@ -75,11 +73,9 @@ function buildActionMenuItems(
   t: (key: string) => string,
   onViewDetail: (bookingId: string) => void,
   onReschedule: (item: TrialLessonBookingRequestItem) => void,
-  onCancel: (item: TrialLessonBookingRequestItem) => void,
 ): ActionMenuItem[] {
   const cancelled = isCancelledTrial(item.status);
   const confirmed = isConfirmedTrial(item.status);
-  const canCancel = confirmed && isTrialLessonRefundEligible(item.startAt);
 
   const items: ActionMenuItem[] = [
     {
@@ -90,21 +86,12 @@ function buildActionMenuItems(
   ];
 
   if (cancelled) {
-    items.push(
-      {
-        label: t('reschedule'),
-        icon: <CalendarClock className="size-4" />,
-        onClick: () => {},
-        disabled: true,
-      },
-      {
-        label: t('cancel'),
-        icon: <Trash2 className="size-4 text-destructive" />,
-        onClick: () => {},
-        variant: 'destructive',
-        disabled: true,
-      },
-    );
+    items.push({
+      label: t('reschedule'),
+      icon: <CalendarClock className="size-4" />,
+      onClick: () => {},
+      disabled: true,
+    });
     return items;
   }
 
@@ -116,23 +103,6 @@ function buildActionMenuItems(
     });
   }
 
-  if (canCancel) {
-    items.push({
-      label: t('cancel'),
-      icon: <Trash2 className="size-4 text-destructive" />,
-      onClick: () => onCancel(item),
-      variant: 'destructive',
-    });
-  } else if (confirmed) {
-    items.push({
-      label: t('cancel'),
-      icon: <Trash2 className="size-4 text-destructive" />,
-      onClick: () => {},
-      variant: 'destructive',
-      disabled: true,
-    });
-  }
-
   return items;
 }
 
@@ -141,7 +111,6 @@ export default function BookingRequestsTable({
   isLoading,
   onViewDetail,
   onReschedule,
-  onCancel,
 }: BookingRequestsTableProps) {
   const t = useTranslations('Dashboard.bookingRequests.table');
   const locale = useLocale();
@@ -207,7 +176,6 @@ export default function BookingRequestsTable({
                 t,
                 onViewDetail,
                 onReschedule,
-                onCancel,
               );
 
               return (

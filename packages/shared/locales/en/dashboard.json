@@ -90,34 +90,8 @@
         "actions": "Actions",
         "view": "View",
         "reschedule": "Reschedule",
-        "cancel": "Cancel lesson",
         "rescheduleComingSoon": "Reschedule will be available soon.",
         "noResults": "No booking requests found for this filter."
-      },
-      "cancellation": {
-        "dialog": {
-          "title": "Cancel trial lesson",
-          "confirm": "Confirm cancellation",
-          "dismiss": "Keep lesson",
-          "reasonLabel": "Reason for canceling",
-          "reasonPlaceholder": "Select a reason",
-          "messageLabelStudent": "Message for {student} (optional)",
-          "messagePlaceholder": "Explain why you need to cancel...",
-          "successRefunded": "Lesson cancelled. The student will receive a refund to their wallet.",
-          "success": "Lesson cancelled.",
-          "policy": {
-            "eligibleDescription": "This lesson starts in more than 12 hours. If you cancel, the student will receive a {amount} refund to their wallet.",
-            "eligibleDescriptionNoAmount": "This lesson starts in more than 12 hours. If you cancel, the student will receive a refund to their wallet.",
-            "notEligibleDescription": "You can only cancel lessons more than 12 hours before the start time. If the lesson is within 12 hours, please reschedule instead.",
-            "fallback": "Cancelling a confirmed paid trial lesson refunds the student from the platform wallet."
-          }
-        },
-        "reasons": {
-          "scheduleConflict": "Schedule conflict",
-          "personalEmergency": "Personal emergency",
-          "studentUnavailable": "Student is unavailable",
-          "other": "Other"
-        }
       },
       "status": {
         "pending": "Pending",

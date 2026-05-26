@@ -195,16 +195,6 @@ export const trialLessonBookingApi = {
     >(`/trial-lesson-bookings/${bookingId}/cancel`, payload);
   },
 
-  cancelTrialLessonBookingByTutor(
-    bookingId: string,
-    payload?: { reason?: string; message?: string },
-  ): Promise<{ success: boolean; refunded: boolean }> {
-    return apiClient.post<
-      { success: boolean; refunded: boolean },
-      { success: boolean; refunded: boolean }
-    >(`/trial-lesson-bookings/${bookingId}/tutor-cancel`, payload);
-  },
-
   async getMyTrialLessonBookingRequests(params?: {
     status?: TrialLessonBookingRequestStatusFilter;
     statusIn?: TrialLessonBookingRequestStatusFilter[];
@@ -354,15 +344,3 @@ export function useCancelTrialLessonBookingMutation() {
   });
 }
 
-export function useCancelTrialLessonBookingByTutorMutation() {
-  return useMutation({
-    mutationFn: (args: {
-      bookingId: string;
-      payload?: { reason?: string; message?: string };
-    }) =>
-      trialLessonBookingApi.cancelTrialLessonBookingByTutor(
-        args.bookingId,
-        args.payload,
-      ),
-  });
-}

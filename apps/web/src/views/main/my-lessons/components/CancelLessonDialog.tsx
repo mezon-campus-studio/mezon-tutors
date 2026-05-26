@@ -38,7 +38,6 @@ export type TrialCancelLessonTarget = {
 };
 
 type CancelLessonDialogProps = {
-  variant?: "student" | "tutor";
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (reason: string, message?: string) => void;
@@ -85,18 +84,13 @@ const getInitials = (name?: string) => {
 };
 
 export function CancelLessonDialog({
-  variant = "student",
   isOpen,
   onClose,
   onConfirm,
   isLoading,
   lesson,
 }: CancelLessonDialogProps) {
-  const translationNs =
-    variant === "tutor"
-      ? "Dashboard.bookingRequests.cancellation"
-      : "MyLessons.panels.lessons.cancellation";
-  const t = useTranslations(translationNs);
+  const t = useTranslations("MyLessons.panels.lessons.cancellation");
   const locale = useLocale();
   const [reason, setReason] = useState<string>("");
   const [message, setMessage] = useState<string>("");
@@ -117,8 +111,7 @@ export function CancelLessonDialog({
     if (!target?.startAt) {
       return null;
     }
-    const eligible =
-      variant === "tutor" ? true : isTrialLessonRefundEligible(target.startAt);
+    const eligible = isTrialLessonRefundEligible(target.startAt);
     const amountLabel =
       target.grossAmount != null && target.currency
         ? formatToCurrency(resolveCurrency(target.currency), target.grossAmount)
@@ -127,18 +120,10 @@ export function CancelLessonDialog({
           : null;
 
     return { eligible, amountLabel };
-  }, [target, variant]);
+  }, [target]);
 
-  const reasons = useMemo(() => {
-    if (variant === "tutor") {
-      return [
-        { value: "scheduleConflict", label: t("reasons.scheduleConflict") },
-        { value: "personalEmergency", label: t("reasons.personalEmergency") },
-        { value: "studentUnavailable", label: t("reasons.studentUnavailable") },
-        { value: "other", label: t("reasons.other") },
-      ];
-    }
-    return [
+  const reasons = useMemo(
+    () => [
       { value: "timeNotWork", label: t("reasons.timeNotWork") },
       { value: "technicalIssue", label: t("reasons.technicalIssue") },
       { value: "avoidBalanceLoss", label: t("reasons.avoidBalanceLoss") },
@@ -147,8 +132,9 @@ export function CancelLessonDialog({
       { value: "tutorAskedCancel", label: t("reasons.tutorAskedCancel") },
       { value: "noLongerLearnTutor", label: t("reasons.noLongerLearnTutor") },
       { value: "other", label: t("reasons.other") },
-    ];
-  }, [variant, t]);
+    ],
+    [t],
+  );
 
   const handleConfirm = () => {
     if (reason) {
@@ -272,9 +258,7 @@ export function CancelLessonDialog({
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-900">
-                  {variant === "tutor"
-                    ? t("dialog.messageLabelStudent", { student: target.peerName })
-                    : t("dialog.messageLabel", { tutor: target.peerName })}
+                  {t("dialog.messageLabel", { tutor: target.peerName })}
                 </label>
                 <Textarea
                   value={message}

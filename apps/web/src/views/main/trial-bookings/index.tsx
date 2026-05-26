@@ -2,23 +2,13 @@
 
 import { ClipboardList, Search } from 'lucide-react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { useQueryClient } from '@tanstack/react-query'
-
 import { toast } from 'sonner'
-
-import dayjs from 'dayjs'
-
-import timezone from 'dayjs/plugin/timezone'
-
-import utc from 'dayjs/plugin/utc'
-
-import { useAtomValue } from 'jotai'
 
 import {
   Input,
@@ -30,33 +20,19 @@ import {
 } from '@/components/ui'
 
 import {
-  useCancelTrialLessonBookingByTutorMutation,
   useGetMyTrialLessonBookingRequests,
   type TrialLessonBookingRequestItem,
   type TrialLessonBookingRequestStatusFilter,
 } from '@/services'
-import { walletQueryKey } from '@/services/wallet/wallet.qkey'
-
-import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
-
-import { userAtom } from '@/store'
 
 import { ROUTES } from '@mezon-tutors/shared'
 
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
 
-import {
-  CancelLessonDialog,
-  type TrialCancelLessonTarget,
-} from '@/views/main/my-lessons/components/CancelLessonDialog'
-
 import BookingRequestsMetrics from './components/BookingRequestsMetrics'
 import BookingRequestsTable from './components/BookingRequestsTable'
 
 import type { TutorBookingRequestUiStatus } from '@/lib/trial-booking-status'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
 
 const STATUS_FILTERS: Array<{
   value: 'all' | TrialLessonBookingRequestStatusFilter
@@ -71,58 +47,12 @@ const STATUS_FILTERS: Array<{
 
 const PAGE_SIZE = 10
 
-function bookingToCancelTarget(
-  item: TrialLessonBookingRequestItem,
-
-  locale: string,
-
-  timezoneName: string
-): TrialCancelLessonTarget {
-  const start = dayjs(item.startAt).tz(timezoneName).locale(locale)
-
-  const end = start.add(item.durationMinutes, 'minute')
-
-  return {
-    id: item.id,
-
-    peerName: item.studentName,
-
-    peerAvatarUrl: item.studentAvatarUrl,
-
-    dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
-
-    timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
-
-    subject: 'Trial lesson',
-
-    startAt: item.startAt,
-
-    grossAmount: item.grossAmount,
-
-    currency: item.currency,
-  }
-}
-
 export default function BookingRequestsView() {
   const t = useTranslations('Dashboard.bookingRequests')
 
   const tTable = useTranslations('Dashboard.bookingRequests.table')
 
-  const tCancel = useTranslations('Dashboard.bookingRequests.cancellation.dialog')
-
   const router = useRouter()
-
-  const queryClient = useQueryClient()
-
-  const locale = useLocale()
-
-  const user = useAtomValue(userAtom)
-
-  const userTimezone = resolveUserTimezone(
-    user?.timezone,
-
-    detectBrowserTimezone()
-  )
 
   const [search, setSearch] = useState('')
 
@@ -131,14 +61,6 @@ export default function BookingRequestsView() {
   )
 
   const [page, setPage] = useState(1)
-
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
-
-  const [cancelTarget, setCancelTarget] = useState<TrialCancelLessonTarget | null>(null)
-
-  const [isCanceling, setIsCanceling] = useState(false)
-
-  const cancelByTutorMutation = useCancelTrialLessonBookingByTutorMutation()
 
   const { data, isLoading, isFetching } = useGetMyTrialLessonBookingRequests({
     status: statusFilter === 'all' ? undefined : statusFilter,
@@ -191,51 +113,8 @@ export default function BookingRequestsView() {
     router.push(ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(bookingId))
   }
 
-  const handleReschedule = () => {
+  const handleReschedule = (_item: TrialLessonBookingRequestItem) => {
     toast.info(tTable('rescheduleComingSoon'))
-  }
-
-  const handleCancelClick = (item: TrialLessonBookingRequestItem) => {
-    setCancelTarget(bookingToCancelTarget(item, locale, userTimezone))
-
-    setIsCancelDialogOpen(true)
-  }
-
-  const handleConfirmCancel = async (reason: string, message?: string) => {
-    if (!cancelTarget) return
-
-    try {
-      setIsCanceling(true)
-
-      const result = await cancelByTutorMutation.mutateAsync({
-        bookingId: cancelTarget.id,
-
-        payload: { reason, message: message?.trim() || undefined },
-      })
-
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ['trial-lesson-booking-my-requests'],
-        }),
-        result.refunded
-          ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
-          : Promise.resolve(),
-      ])
-
-      toast.success(
-        result.refunded ? tCancel('successRefunded') : tCancel('success'),
-      )
-
-      setIsCancelDialogOpen(false)
-
-      setCancelTarget(null)
-    } catch (error) {
-      console.error(error)
-
-      toast.error(error instanceof Error ? error.message : 'Failed to cancel lesson.')
-    } finally {
-      setIsCanceling(false)
-    }
   }
 
   return (
@@ -306,7 +185,6 @@ export default function BookingRequestsView() {
         isFetching={isFetching}
         onViewDetail={handleViewDetail}
         onReschedule={handleReschedule}
-        onCancel={handleCancelClick}
       />
 
       <div className="pt-6">
@@ -317,19 +195,6 @@ export default function BookingRequestsView() {
           onPageChangeAction={setPage}
         />
       </div>
-
-      <CancelLessonDialog
-        variant="tutor"
-        isOpen={isCancelDialogOpen}
-        onClose={() => {
-          setIsCancelDialogOpen(false)
-
-          setCancelTarget(null)
-        }}
-        onConfirm={handleConfirmCancel}
-        lesson={cancelTarget}
-        isLoading={isCanceling}
-      />
     </div>
   )
 }
