@@ -5,6 +5,7 @@ export * from './types/api-response';
 export * from './types/auth';
 export * from './types/tutor-profile';
 export * from './types/admin-lesson-change-history';
+export * from './types/subscription-slot-cancel';
 export * from './types/my-lessons-api';
 export * from './types/trial-lesson-booking';
 export * from './types/subscription-plan';

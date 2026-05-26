@@ -27,6 +27,7 @@ import { isTrialLessonRefundEligible } from "@/lib/trial-lesson-cancellation";
 
 export type TrialCancelLessonTarget = {
   id: string;
+  source?: "trial" | "subscription";
   peerName: string;
   peerAvatarUrl?: string;
   dateLabel: string;
@@ -60,6 +61,7 @@ function lessonToTarget(
   }
   return {
     id: lesson.id,
+    source: lesson.source,
     peerName: lesson.tutor,
     peerAvatarUrl: lesson.tutorAvatar,
     dateLabel: lesson.dateLabel,
@@ -90,8 +92,16 @@ export function CancelLessonDialog({
   isLoading,
   lesson,
 }: CancelLessonDialogProps) {
-  const t = useTranslations("MyLessons.panels.lessons.cancellation");
   const locale = useLocale();
+  const isSubscription =
+    lesson != null &&
+    "source" in lesson &&
+    lesson.source === "subscription";
+  const t = useTranslations("MyLessons.panels.lessons.cancellation");
+  const tSubscription = useTranslations(
+    "MyLessons.panels.lessons.subscription.cancellation",
+  );
+  const tPolicy = isSubscription ? tSubscription : t;
   const [reason, setReason] = useState<string>("");
   const [message, setMessage] = useState<string>("");
 
@@ -147,7 +157,7 @@ export function CancelLessonDialog({
       <DialogContent className="max-w-[460px] gap-0 overflow-hidden border-violet-100 p-0 shadow-xl shadow-violet-200/40">
         <DialogHeader className="border-b border-violet-50 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4">
           <DialogTitle className="font-heading text-lg font-extrabold text-slate-900">
-            {t("dialog.title")}
+            {isSubscription ? tSubscription("dialog.title") : t("dialog.title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -217,11 +227,11 @@ export function CancelLessonDialog({
                     >
                       {refundPolicy.eligible
                         ? refundPolicy.amountLabel
-                          ? t("dialog.policy.eligibleDescription", {
+                          ? tPolicy("dialog.policy.eligibleDescription", {
                               amount: refundPolicy.amountLabel,
                             })
-                          : t("dialog.policy.eligibleDescriptionNoAmount")
-                        : t("dialog.policy.notEligibleDescription")}
+                          : tPolicy("dialog.policy.eligibleDescriptionNoAmount")
+                        : tPolicy("dialog.policy.notEligibleDescription")}
                     </p>
                   </div>
                 </div>
@@ -231,7 +241,7 @@ export function CancelLessonDialog({
                     <Info className="size-4" />
                   </div>
                   <p className="text-xs leading-relaxed text-slate-600">
-                    {t("dialog.policy.fallback")}
+                    {tPolicy("dialog.policy.fallback")}
                   </p>
                 </div>
               )}

@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
@@ -18,11 +19,13 @@ import type {
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
+  SubscriptionSlotCancelResult,
   TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
 import { SubscriptionService } from './subscription.service';
 import { getRequestClientIp } from '../../common/utils/request-ip.util';
 import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
+import { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
 
 @Controller('subscription-enrollments')
 @ApiTags('Subscription enrollments')
@@ -62,6 +65,23 @@ export class SubscriptionEnrollmentController {
     }
     const user = req.user as AuthUserPayload;
     return this.subscriptionService.listTutorWeekOccurrences(user.sub, v, timezone);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/cancel')
+  async cancelSlot(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: CancelSubscriptionSlotBodyDto
+  ): Promise<SubscriptionSlotCancelResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.cancelStudentSubscriptionSlot(
+      user.sub,
+      id,
+      slotIndex,
+      body
+    );
   }
 
   @UseGuards(JwtAuthGuard)

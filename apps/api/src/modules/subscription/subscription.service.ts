@@ -1,11 +1,16 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   ECurrency as PrismaCurrency,
+  ELessonChangeAction,
+  ELessonChangeInitiatorRole,
+  ELessonChangeLessonType,
+  ELessonSettlementJobStatus,
   EPaymentStatus,
   ESubscriptionEnrollmentStatus,
   ETrialLessonStatus,
@@ -15,13 +20,19 @@ import {
 import {
   ECurrency,
   PLATFORM_FEE_PERCENTAGE,
+  TRIAL_LESSON_CANCEL_REFUND_HOURS,
   buildMonthlySubscriptionSlotJson,
   jsDayToDbDayOfWeek,
+  ESubscriptionLessonSlotStatus,
+  normalizeSubscriptionSlotStatus,
+  subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotGrossAmount,
   timeToMinutes,
   tutorLocalSlotFitsUtcAvailability,
   type SubscriptionEligibilityDto,
   type SubscriptionEnrollmentDetailDto,
   type SubscriptionEnrollmentDto,
+  type SubscriptionSlotCancelResult,
   type SubscriptionWeeklySlotDto,
   type TutorSubscriptionPlanDto,
   type TutorSubscriptionWeekOccurrenceDto,
@@ -30,7 +41,9 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { VnpayService } from '../vnpay/vnpay.service';
+import { WalletService } from '../wallet/wallet.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
+import type { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
 import dayjs = require('dayjs');
 import utc = require('dayjs/plugin/utc');
 import timezone = require('dayjs/plugin/timezone');
@@ -106,7 +119,8 @@ export class SubscriptionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
-    private readonly appConfig: AppConfigService
+    private readonly appConfig: AppConfigService,
+    private readonly walletService: WalletService
   ) {}
 
   async listPlansByTutorProfileId(tutorProfileId: string): Promise<TutorSubscriptionPlanDto[]> {
@@ -514,5 +528,130 @@ export class SubscriptionService {
       }
     }
     return out;
+  }
+
+  async cancelStudentSubscriptionSlot(
+    studentUserId: string,
+    enrollmentId: string,
+    slotIndex: number,
+    payload: CancelSubscriptionSlotBodyDto
+  ): Promise<SubscriptionSlotCancelResult> {
+    const enrollment = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollmentId },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            userId: true,
+            user: { select: { username: true, timezone: true } },
+          },
+        },
+      },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+    if (enrollment.studentId !== studentUserId) {
+      throw new ForbiddenException('Not allowed to cancel this lesson');
+    }
+    if (enrollment.status !== ESubscriptionEnrollmentStatus.ACTIVE) {
+      throw new BadRequestException('Only active subscriptions can be modified');
+    }
+    if (enrollment.paymentStatus !== EPaymentStatus.SUCCEEDED) {
+      throw new BadRequestException('Payment must be completed before cancelling a lesson');
+    }
+
+    const slots = this.parseWeeklySlots(enrollment.weeklySlots);
+    if (slotIndex < 0 || slotIndex >= slots.length) {
+      throw new BadRequestException('Invalid lesson slot');
+    }
+
+    const slot = slots[slotIndex];
+    const slotStatus = normalizeSubscriptionSlotStatus(slot?.status);
+    if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
+      throw new BadRequestException('This lesson is already cancelled');
+    }
+    if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
+      throw new BadRequestException('Completed lessons cannot be cancelled');
+    }
+
+    const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
+
+    const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone);
+    const occurrence = occurrences.find((o) => o.slotIndex === slotIndex);
+    if (!occurrence) {
+      throw new BadRequestException('Lesson time could not be resolved');
+    }
+
+    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
+    const shouldCredit = hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS;
+    const refundAmount = subscriptionSlotGrossAmount(
+      enrollment.grossAmount,
+      slots.length,
+      slotIndex
+    );
+    const currency = (enrollment.currency as ECurrency | null) ?? ECurrency.VND;
+
+    const updatedSlots = slots.map((s, i) =>
+      i === slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.CANCELLED } : s
+    );
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.subscriptionEnrollment.update({
+        where: { id: enrollment.id },
+        data: { weeklySlots: updatedSlots as unknown as Prisma.InputJsonValue },
+      });
+
+      await tx.cancelRescheduleReason.create({
+        data: {
+          studentId: enrollment.studentId,
+          tutorId: enrollment.tutorId,
+          initiatedByUserId: studentUserId,
+          initiatedByRole: ELessonChangeInitiatorRole.STUDENT,
+          action: ELessonChangeAction.CANCEL,
+          lessonType: ELessonChangeLessonType.SUBSCRIPTION,
+          reason: payload.reason.trim(),
+          message: payload.message?.trim() || null,
+          subscriptionEnrollmentId: enrollment.id,
+          subscriptionSlotIndex: slotIndex,
+          originalStartAt: occurrence.startAt,
+          originalDurationMinutes: slot.durationMinutes,
+        },
+      });
+
+      await tx.lessonSettlementJob.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          slotIndex,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          status: ELessonSettlementJobStatus.CANCELLED,
+          processedAt: new Date(),
+        },
+      });
+    });
+
+    let credited = false;
+    if (shouldCredit && refundAmount > 0n) {
+      const tutorLabel = enrollment.tutor.user?.username ?? 'tutor';
+      credited = await this.walletService.refundSubscriptionLessonSlot({
+        enrollmentId: enrollment.id,
+        slotIndex,
+        studentUserId: enrollment.studentId,
+        tutorUserId: enrollment.tutor.userId,
+        grossAmount: enrollment.grossAmount,
+        tutorAmount: enrollment.tutorAmount,
+        slotCount: slots.length,
+        description: `Refund for cancelled subscription lesson with ${tutorLabel}`,
+      });
+    }
+
+    return {
+      credited,
+      refundAmount: Number(refundAmount),
+      currency,
+    };
   }
 }

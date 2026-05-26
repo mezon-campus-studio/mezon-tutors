@@ -20,6 +20,7 @@ import {
   isSubscriptionSlotCompleted,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotGrossAmount,
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
   type SubscriptionWeeklySlotDto,
@@ -351,6 +352,8 @@ export class MyLessonsService {
       tutorId: string;
       status: ESubscriptionEnrollmentStatus;
       paymentStatus: EPaymentStatus;
+      grossAmount: bigint;
+      currency: string | null;
       weeklySlots: Prisma.JsonValue;
       tutor: TrialLessonBookingWithTutor['tutor'];
     },
@@ -362,6 +365,12 @@ export class MyLessonsService {
   ): MyLessonApiItem {
     const ymd = dayjs(startAt).tz(timezoneName).format('YYYY-MM-DD');
     const subj = enrollment.tutor.subject?.trim();
+    const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
+    const slotRefundAmount = subscriptionSlotGrossAmount(
+      enrollment.grossAmount,
+      slots.length,
+      slotIdx
+    );
     return {
       id: `sub-${enrollment.id}-${slotIdx}-${ymd}`,
       source: 'subscription',
@@ -384,6 +393,8 @@ export class MyLessonsService {
       subscription_slot_index: slotIdx,
       enrollment_status: enrollment.status,
       enrollment_payment_status: enrollment.paymentStatus,
+      gross_amount: Number(slotRefundAmount),
+      currency: enrollment.currency ?? undefined,
     };
   }
 

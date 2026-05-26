@@ -22,6 +22,7 @@ import { Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import { ActionMenu } from "@/components/common/ActionMenu";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
+import { useCancelSubscriptionSlotMutation } from "@/services/subscription/subscription.api";
 import {
   useCancelTrialLessonBookingMutation,
   useRescheduleTrialLessonBookingMutation,
@@ -34,7 +35,7 @@ import {
   TrialBookingSheet,
   type TrialBookingPayload,
 } from "@/views/main/tutors/components/TrialBookingSheet";
-import { ECurrency } from "@mezon-tutors/shared";
+import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
 import {
   createMezonLightDM,
   persistMezonLightSession,
@@ -475,6 +476,7 @@ export default function MyLessonsPanel({
   const { lightClient, setLightClient } = useMezonLight();
   const queryClient = useQueryClient();
   const cancelMutation = useCancelTrialLessonBookingMutation();
+  const cancelSubscriptionMutation = useCancelSubscriptionSlotMutation();
   const rescheduleMutation = useRescheduleTrialLessonBookingMutation();
   const userTimezone = useUserTimezone();
 
@@ -528,10 +530,6 @@ export default function MyLessonsPanel({
   };
 
   const handleCancelClick = (lesson: LessonItem) => {
-    if (lesson.source === "subscription") {
-      toast.info(t("panels.lessons.subscription.cancelComingSoon"));
-      return;
-    }
     setSelectedLesson(lesson);
     setIsCancelDialogOpen(true);
   };
@@ -587,21 +585,56 @@ export default function MyLessonsPanel({
 
     try {
       setIsCanceling(true);
-      const result = await cancelMutation.mutateAsync({
-        bookingId: selectedLesson.id,
-        payload: { reason, message: message?.trim() },
-      });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
-        result.refunded
-          ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
-          : Promise.resolve(),
-      ]);
-      toast.success(
-        result.refunded
-          ? t("panels.lessons.cancellation.dialog.successRefunded")
-          : t("panels.lessons.cancellation.dialog.successNoRefund"),
-      );
+
+      if (selectedLesson.source === "subscription") {
+        const enrollmentId = selectedLesson.subscriptionEnrollmentId;
+        const slotIndex = selectedLesson.subscriptionSlotIndex;
+        if (enrollmentId == null || slotIndex == null) {
+          throw new Error("Missing subscription lesson reference");
+        }
+        const result = await cancelSubscriptionMutation.mutateAsync({
+          enrollmentId,
+          slotIndex,
+          payload: { reason, message: message?.trim() },
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
+          result.credited
+            ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
+            : Promise.resolve(),
+        ]);
+        const amountLabel =
+          result.refundAmount > 0 && result.currency
+            ? formatToCurrency(
+                result.currency as ECurrency,
+                result.refundAmount,
+              )
+            : null;
+        toast.success(
+          result.credited && amountLabel
+            ? t("panels.lessons.subscription.cancellation.dialog.successCredited", {
+                amount: amountLabel,
+              })
+            : t("panels.lessons.subscription.cancellation.dialog.successNoCredit"),
+        );
+      } else {
+        const result = await cancelMutation.mutateAsync({
+          bookingId: selectedLesson.id,
+          payload: { reason, message: message?.trim() },
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
+          result.refunded
+            ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
+            : Promise.resolve(),
+        ]);
+        toast.success(
+          result.refunded
+            ? t("panels.lessons.cancellation.dialog.successRefunded")
+            : t("panels.lessons.cancellation.dialog.successNoRefund"),
+        );
+      }
+
       setIsCancelDialogOpen(false);
       setSelectedLesson(null);
     } catch (error) {

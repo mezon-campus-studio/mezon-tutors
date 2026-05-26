@@ -24,6 +24,10 @@ import type {
   WalletWithdrawalApiItem,
   WalletWithdrawalsApiResponse,
 } from '@mezon-tutors/shared';
+import {
+  subscriptionSlotGrossAmount,
+  subscriptionSlotTutorAmount,
+} from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -590,6 +594,95 @@ export class WalletService {
           refundedAt: new Date(),
         },
       });
+    });
+
+    return true;
+  }
+
+  async refundSubscriptionLessonSlot(params: {
+    enrollmentId: string;
+    slotIndex: number;
+    studentUserId: string;
+    tutorUserId: string;
+    grossAmount: bigint;
+    tutorAmount: bigint;
+    slotCount: number;
+    description?: string;
+  }): Promise<boolean> {
+    const existingRefund = await this.prisma.transaction.findFirst({
+      where: {
+        subscriptionEnrollmentId: params.enrollmentId,
+        subscriptionSlotIndex: params.slotIndex,
+        type: EWalletTransactionType.REFUND,
+      },
+    });
+    if (existingRefund) {
+      return true;
+    }
+
+    const refundAmount = subscriptionSlotGrossAmount(
+      params.grossAmount,
+      params.slotCount,
+      params.slotIndex
+    );
+    const tutorPendingDecrement = subscriptionSlotTutorAmount(
+      params.tutorAmount,
+      params.slotCount,
+      params.slotIndex
+    );
+
+    if (refundAmount <= 0n) {
+      return false;
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const studentWallet = await tx.wallet.upsert({
+        where: { userId: params.studentUserId },
+        update: {
+          balance: { increment: refundAmount },
+          totalEarned: { increment: refundAmount },
+        },
+        create: {
+          userId: params.studentUserId,
+          balance: refundAmount,
+          pendingBalance: 0n,
+          totalEarned: refundAmount,
+          totalWithdrawn: 0n,
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          walletId: studentWallet.id,
+          subscriptionEnrollmentId: params.enrollmentId,
+          subscriptionSlotIndex: params.slotIndex,
+          type: EWalletTransactionType.REFUND,
+          direction: EWalletTransactionDirection.CREDIT,
+          amount: refundAmount,
+          description: params.description ?? 'Refund for cancelled subscription lesson',
+        },
+      });
+
+      if (tutorPendingDecrement > 0n) {
+        const tutorWallet = await tx.wallet.findUnique({
+          where: { userId: params.tutorUserId },
+        });
+        if (tutorWallet) {
+          const pendingDecrement =
+            tutorWallet.pendingBalance >= tutorPendingDecrement
+              ? tutorPendingDecrement
+              : tutorWallet.pendingBalance;
+          if (pendingDecrement > 0n) {
+            await tx.wallet.update({
+              where: { id: tutorWallet.id },
+              data: {
+                pendingBalance: { decrement: pendingDecrement },
+                totalEarned: { decrement: pendingDecrement },
+              },
+            });
+          }
+        }
+      }
     });
 
     return true;

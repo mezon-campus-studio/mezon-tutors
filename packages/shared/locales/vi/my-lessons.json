@@ -59,7 +59,19 @@
       },
       "subscription": {
         "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",
-        "cancelComingSoon": "Tính năng hủy buổi gói học sẽ sớm có mặt."
+        "cancellation": {
+          "dialog": {
+            "title": "Hủy buổi học gói đăng ký",
+            "successCredited": "Đã hủy buổi học. {amount} đã được hoàn vào số dư ví của bạn.",
+            "successNoCredit": "Đã hủy buổi học. Vì còn dưới 12 tiếng trước giờ học nên không được hoàn tiền.",
+            "policy": {
+              "eligibleDescription": "Buổi học còn hơn 12 tiếng. Nếu hủy, bạn sẽ được hoàn {amount} vào số dư ví.",
+              "eligibleDescriptionNoAmount": "Buổi học còn hơn 12 tiếng. Nếu hủy, tiền buổi học này sẽ được hoàn vào số dư ví.",
+              "notEligibleDescription": "Buổi học còn dưới 12 tiếng. Bạn vẫn có thể hủy nhưng sẽ không được hoàn tiền.",
+              "fallback": "Hủy trước 12 tiếng để được hoàn tiền; trong vòng 12 tiếng thì không hoàn."
+            }
+          }
+        }
       },
       "past": {
         "title": "Buổi học trước đó",

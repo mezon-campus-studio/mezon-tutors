@@ -4,6 +4,7 @@ import type {
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
+  SubscriptionSlotCancelResult,
   TutorSubscriptionPlanDto,
   TutorSubscriptionWeekOccurrenceDto,
 } from "@mezon-tutors/shared";
@@ -40,6 +41,17 @@ export const subscriptionApi = {
       ApiResponse<SubscriptionEnrollmentDetailDto>,
       SubscriptionEnrollmentDetailDto
     >(`/subscription-enrollments/${id}`);
+  },
+
+  cancelSlot(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string },
+  ): Promise<SubscriptionSlotCancelResult> {
+    return apiClient.post<
+      ApiResponse<SubscriptionSlotCancelResult>,
+      SubscriptionSlotCancelResult
+    >(`/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/cancel`, payload);
   },
 
   getTutorWeekOccurrences(
@@ -99,6 +111,25 @@ export function useGetSubscriptionEnrollment(
     queryKey: subscriptionQueryKey.enrollment(enrollmentId),
     queryFn: () => subscriptionApi.getEnrollment(enrollmentId),
     enabled: Boolean(enrollmentId) && enabled,
+  });
+}
+
+export function useCancelSubscriptionSlotMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: { reason: string; message?: string };
+    }) =>
+      subscriptionApi.cancelSlot(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-lessons"] });
+    },
   });
 }
 
