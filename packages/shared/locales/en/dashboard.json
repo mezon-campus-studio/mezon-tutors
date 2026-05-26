@@ -212,6 +212,7 @@
         "emptyDescription": "Try another week, or open Trial bookings when you have new requests.",
         "durationLabel": "{minutes} min",
         "viewDetail": "Details",
+        "reschedule": "Reschedule",
         "joinLesson": "Join",
         "subscriptionBadge": "Monthly subscription"
       }

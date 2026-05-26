@@ -41,6 +41,7 @@ import {
   type SubscriptionSlotRescheduleResult,
   type SubscriptionWeeklySlotDto,
   type TutorSubscriptionPlanDto,
+  type TutorSubscriptionSlotRescheduleRequestResult,
   type TutorSubscriptionWeekOccurrenceDto,
   subscriptionSlotsOccurrencesForWeek,
 } from '@mezon-tutors/shared';
@@ -190,6 +191,86 @@ export class SubscriptionService {
     }
 
     return { enrollment, slots, slot, slotIndex, occurrence, tutorTimezone };
+  }
+
+  private async loadTutorSubscriptionSlotContext(
+    tutorUserId: string,
+    enrollmentId: string,
+    slotIndex: number,
+    occurrenceStartAtIso: string
+  ) {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    });
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found for current user');
+    }
+
+    const enrollment = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollmentId },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            user: { select: { timezone: true } },
+          },
+        },
+      },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+    if (enrollment.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to reschedule this lesson');
+    }
+    if (enrollment.status !== ESubscriptionEnrollmentStatus.ACTIVE) {
+      throw new BadRequestException('Only active subscriptions can be modified');
+    }
+    if (enrollment.paymentStatus !== EPaymentStatus.SUCCEEDED) {
+      throw new BadRequestException('Payment must be completed before modifying a lesson');
+    }
+
+    const slots = this.parseWeeklySlots(enrollment.weeklySlots);
+    if (slotIndex < 0 || slotIndex >= slots.length) {
+      throw new BadRequestException('Invalid lesson slot');
+    }
+
+    const slot = slots[slotIndex];
+    const slotStatus = normalizeSubscriptionSlotStatus(slot?.status);
+    if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
+      throw new BadRequestException('This lesson is already cancelled');
+    }
+    if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
+      throw new BadRequestException('Completed lessons cannot be modified');
+    }
+
+    const occurrenceStart = dayjs(occurrenceStartAtIso).utc();
+    if (!occurrenceStart.isValid()) {
+      throw new BadRequestException('Invalid lesson start time');
+    }
+
+    const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
+    const weekStart = occurrenceStart.tz(tutorTimezone).startOf('day');
+    const mondayOffset = weekStart.day() === 0 ? 6 : weekStart.day() - 1;
+    const weekStartYmd = weekStart.subtract(mondayOffset, 'day').format('YYYY-MM-DD');
+    const weekOccurrences = subscriptionSlotsOccurrencesForWeek(
+      weekStartYmd,
+      slots,
+      tutorTimezone
+    );
+    const occurrence = weekOccurrences.find((o) => {
+      if (o.slotIndex !== slotIndex) {
+        return false;
+      }
+      return dayjs(o.startAt).utc().isSame(occurrenceStart, 'minute');
+    });
+    if (!occurrence) {
+      throw new BadRequestException('Lesson occurrence not found for this time');
+    }
+
+    return { enrollment, slot, occurrence, tutor };
   }
 
   async listPlansByTutorProfileId(tutorProfileId: string): Promise<TutorSubscriptionPlanDto[]> {
@@ -584,8 +665,9 @@ export class SubscriptionService {
         }
         out.push({
           scheduleKind: 'subscription',
-          id: `sub-${e.id}-${t.slotIndex}`,
+          id: `sub-${e.id}-${t.slotIndex}-${t.startAt.toISOString()}`,
           enrollmentId: e.id,
+          slotIndex: t.slotIndex,
           studentId: e.student.id,
           studentMezonUserId: e.student.mezonUserId,
           studentName: e.student.username,
@@ -596,7 +678,87 @@ export class SubscriptionService {
         });
       }
     }
-    return out;
+
+    if (out.length === 0) {
+      return out;
+    }
+
+    const enrollmentIds = [...new Set(out.map((row) => row.enrollmentId))];
+    const rescheduleRows = await this.prisma.findCancelRescheduleReasons({
+      tutorId: tutor.id,
+      action: ELessonChangeAction.RESCHEDULE,
+      subscriptionEnrollmentId: { in: enrollmentIds },
+    });
+    const submittedKeys = new Set(
+      rescheduleRows
+        .filter(
+          (row) =>
+            row.subscriptionEnrollmentId != null &&
+            row.subscriptionSlotIndex != null &&
+            row.originalStartAt
+        )
+        .map(
+          (row) =>
+            `${row.subscriptionEnrollmentId}:${row.subscriptionSlotIndex}:${dayjs(row.originalStartAt).utc().toISOString()}`
+        )
+    );
+
+    return out.map((row) => ({
+      ...row,
+      rescheduleRequestSubmitted: submittedKeys.has(
+        `${row.enrollmentId}:${row.slotIndex}:${dayjs(row.startAt).utc().toISOString()}`
+      ),
+    }));
+  }
+
+  async requestTutorSubscriptionSlotReschedule(
+    tutorUserId: string,
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string; occurrenceStartAt: string }
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    const { enrollment, slot, occurrence } = await this.loadTutorSubscriptionSlotContext(
+      tutorUserId,
+      enrollmentId,
+      slotIndex,
+      payload.occurrenceStartAt
+    );
+
+    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot request reschedule within 12 hours of the lesson start time'
+      );
+    }
+
+    const existingRequest = await this.prisma.findCancelRescheduleReasons({
+      subscriptionEnrollmentId: enrollmentId,
+      subscriptionSlotIndex: slotIndex,
+      originalStartAt: occurrence.startAt,
+      action: ELessonChangeAction.RESCHEDULE,
+    });
+    if (existingRequest.length > 0) {
+      throw new BadRequestException('A reschedule request was already submitted for this lesson');
+    }
+
+    const log = await this.prisma.createCancelRescheduleReason({
+      data: {
+        studentId: enrollment.studentId,
+        tutorId: enrollment.tutorId,
+        initiatedByUserId: tutorUserId,
+        initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
+        action: ELessonChangeAction.RESCHEDULE,
+        lessonType: ELessonChangeLessonType.SUBSCRIPTION,
+        reason: payload.reason.trim(),
+        message: payload.message?.trim() || null,
+        subscriptionEnrollmentId: enrollmentId,
+        subscriptionSlotIndex: slotIndex,
+        originalStartAt: occurrence.startAt,
+        originalDurationMinutes: slot.durationMinutes,
+      },
+    });
+
+    return { success: true, logId: log.id };
   }
 
   async cancelStudentSubscriptionSlot(

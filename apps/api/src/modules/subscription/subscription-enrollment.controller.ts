@@ -29,6 +29,8 @@ import { getRequestClientIp } from '../../common/utils/request-ip.util';
 import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
 import { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
 import { RescheduleSubscriptionSlotBodyDto } from './dto/reschedule-subscription-slot.dto';
+import { TutorSubscriptionSlotRescheduleRequestDto } from './dto/tutor-subscription-slot-reschedule-request.dto';
+import type { TutorSubscriptionSlotRescheduleRequestResult } from '@mezon-tutors/shared';
 
 @Controller('subscription-enrollments')
 @ApiTags('Subscription enrollments')
@@ -109,6 +111,23 @@ export class SubscriptionEnrollmentController {
       slotIndex,
       body,
       timezone?.trim() || 'UTC'
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/tutor-reschedule-request')
+  async tutorRescheduleRequest(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: TutorSubscriptionSlotRescheduleRequestDto
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.requestTutorSubscriptionSlotReschedule(
+      user.sub,
+      id,
+      slotIndex,
+      body
     );
   }
 

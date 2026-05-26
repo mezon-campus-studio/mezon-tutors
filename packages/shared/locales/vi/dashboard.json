@@ -212,6 +212,7 @@
         "emptyDescription": "Chọn tuần khác, hoặc mở Buổi học thử khi có yêu cầu mới.",
         "durationLabel": "{minutes} phút",
         "viewDetail": "Chi tiết",
+        "reschedule": "Dời lịch",
         "joinLesson": "Vào lớp",
         "subscriptionBadge": "Gói theo tháng"
       }

@@ -77,6 +77,8 @@ export type TrialLessonBookingRequestItem = {
   createdAt: string;
   rescheduleRequestSubmitted?: boolean;
   scheduleKind?: "subscription";
+  subscriptionEnrollmentId?: string;
+  subscriptionSlotIndex?: number;
 };
 
 export type TrialLessonBookingRequestsResponse =

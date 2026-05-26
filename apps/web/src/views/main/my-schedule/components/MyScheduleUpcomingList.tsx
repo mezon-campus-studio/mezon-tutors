@@ -4,10 +4,12 @@ import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { CalendarPlus, Clock4, Sparkles } from 'lucide-react';
+import { CalendarClock, CalendarPlus, Clock4, MoreVertical, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
+import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
 import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
@@ -15,6 +17,7 @@ import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];
   timezoneName: string;
+  onRescheduleSubscription?: (item: TrialLessonBookingRequestItem) => void;
 };
 
 dayjs.extend(utc);
@@ -35,11 +38,31 @@ const getInitials = (name?: string) => {
 export default function MyScheduleUpcomingList({
   items,
   timezoneName,
+  onRescheduleSubscription,
 }: MyScheduleUpcomingListProps) {
   const t = useTranslations('Dashboard.mySchedule.upcoming');
   const tSchedule = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
   const nowInTimezone = dayjs().tz(timezoneName);
+
+  const buildSubscriptionMenuItems = (
+    item: TrialLessonBookingRequestItem,
+    isCompleted: boolean,
+  ): ActionMenuItem[] => {
+    const canReschedule =
+      !isCompleted &&
+      isTrialLessonRescheduleEligible(item.startAt) &&
+      !item.rescheduleRequestSubmitted;
+
+    return [
+      {
+        label: t('reschedule'),
+        icon: <CalendarClock className="size-4" />,
+        onClick: () => onRescheduleSubscription?.(item),
+        disabled: !canReschedule || !onRescheduleSubscription,
+      },
+    ];
+  };
 
   return (
     <aside className="flex min-h-0 w-full flex-col gap-4 pb-24 pr-1 sm:pr-2">
@@ -81,6 +104,10 @@ export default function MyScheduleUpcomingList({
             const end = start.add(item.durationMinutes, 'minute');
             const isCompleted =
               end.isBefore(nowInTimezone) || mapTutorBookingStatusToUi(item.status) === 'completed';
+            const menuItems = isSubscription
+              ? buildSubscriptionMenuItems(item, isCompleted)
+              : [];
+
             return (
               <div
                 key={item.id}
@@ -106,27 +133,45 @@ export default function MyScheduleUpcomingList({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className={cn(
-                          'shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                          isSubscription
-                            ? 'border-fuchsia-200/80 bg-fuchsia-100 text-fuchsia-900'
-                            : 'border-amber-200/80 bg-amber-100 text-amber-950'
-                        )}
-                      >
-                        {isSubscription
-                          ? tSchedule('lessonTypePlan')
-                          : tSchedule('lessonTypeTrial')}
-                      </Badge>
-                      {isCompleted ? (
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <Badge
-                          variant="outline"
-                          className="shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600"
+                          variant="secondary"
+                          className={cn(
+                            'shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                            isSubscription
+                              ? 'border-fuchsia-200/80 bg-fuchsia-100 text-fuchsia-900'
+                              : 'border-amber-200/80 bg-amber-100 text-amber-950'
+                          )}
                         >
-                          {tSchedule('completedBadge')}
+                          {isSubscription
+                            ? tSchedule('lessonTypePlan')
+                            : tSchedule('lessonTypeTrial')}
                         </Badge>
+                        {isCompleted ? (
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600"
+                          >
+                            {tSchedule('completedBadge')}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {isSubscription ? (
+                        <ActionMenu
+                          items={menuItems}
+                          trigger={
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              className="size-8 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
+                              aria-label={t('reschedule')}
+                            >
+                              <MoreVertical className="size-4" />
+                            </Button>
+                          }
+                        />
                       ) : null}
                     </div>
                     <div>

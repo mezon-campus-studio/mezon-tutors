@@ -74,6 +74,7 @@ export interface TutorSubscriptionWeekOccurrenceDto {
   scheduleKind: "subscription"
   id: string
   enrollmentId: string
+  slotIndex: number
   studentId: string
   studentMezonUserId: string | null
   studentName: string
@@ -81,4 +82,10 @@ export interface TutorSubscriptionWeekOccurrenceDto {
   tutorProfileId: string
   startAt: string
   durationMinutes: number
+  rescheduleRequestSubmitted?: boolean
+}
+
+export type TutorSubscriptionSlotRescheduleRequestResult = {
+  success: boolean
+  logId: string
 }

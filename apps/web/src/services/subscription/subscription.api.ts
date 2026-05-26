@@ -9,6 +9,7 @@ import type {
   SubscriptionSlotRescheduleResult,
   RescheduleSubscriptionSlotPayload,
   TutorSubscriptionPlanDto,
+  TutorSubscriptionSlotRescheduleRequestResult,
   TutorSubscriptionWeekOccurrenceDto,
 } from "@mezon-tutors/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -85,6 +86,20 @@ export const subscriptionApi = {
       `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/reschedule`,
       payload,
       { params: { timezone } },
+    );
+  },
+
+  tutorRescheduleRequest(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string; occurrenceStartAt: string },
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    return apiClient.post<
+      TutorSubscriptionSlotRescheduleRequestResult,
+      TutorSubscriptionSlotRescheduleRequestResult
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/tutor-reschedule-request`,
+      payload,
     );
   },
 
@@ -215,6 +230,27 @@ export function useRescheduleSubscriptionSlotMutation() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-lessons"] });
+    },
+  });
+}
+
+export function useTutorSubscriptionSlotRescheduleRequestMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: { reason: string; message?: string; occurrenceStartAt: string };
+    }) =>
+      subscriptionApi.tutorRescheduleRequest(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.root,
+      });
     },
   });
 }
