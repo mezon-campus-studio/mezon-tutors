@@ -2,7 +2,7 @@ export type SessionStatus = 'upcoming' | 'pending' | 'available' | 'blocked';
 
 export const ALL_SESSION_STATUSES: SessionStatus[] = ['upcoming', 'pending', 'available', 'blocked'];
 
-export const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
+export const DEFAULT_TIMEZONE = 'UTC';
 
 export const PENDING_STUDENT_ID = 'mezon-pending-1';
 

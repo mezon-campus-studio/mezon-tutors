@@ -1,18 +1,13 @@
 import { LightClient, LightSocket } from "mezon-light-sdk";
-
-const SEND_DM_MAX_ATTEMPTS = 3;
-
-async function delay(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { persistMezonLightSession } from "./mezon-light.client";
 
 export function createMezonLightSocket(client: LightClient) {
-  const session = client.getSession();
-  return new LightSocket(client, session);
+  return new LightSocket(client, client.getSession());
 }
 
 export async function refreshMezonLightSession(client: LightClient) {
-  return client.refreshSession();
+  await client.refreshSession();
+  await persistMezonLightSession(client);
 }
 
 export function exportMezonLightSession(client: LightClient) {
@@ -27,30 +22,40 @@ export async function createMezonLightGroupDM(client: LightClient, userIds: stri
   return client.createGroupDM(userIds);
 }
 
-export async function sendMezonLightDM(client: LightClient, channelId: string, content: string) {
-  let lastError: unknown = null;
+let socket: LightSocket | null = null;
+const joinedChannels = new Set<string>();
+let onIncomingMessage: ((message: { channel_id: string; content: unknown; sender_id: string }) => void) | null =
+  null;
 
-  for (let attempt = 1; attempt <= SEND_DM_MAX_ATTEMPTS; attempt += 1) {
-    const socket = createMezonLightSocket(client);
-
-    try {
-      await socket.connect();
-      await socket.joinDMChannel(channelId);
-      await socket.sendDM({ channelId, content: { t: content } });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt < SEND_DM_MAX_ATTEMPTS) {
-        await delay(500);
-      }
-    } finally {
-      socket.disconnect();
-    }
+async function connect(client: LightClient) {
+  if (!socket) {
+    socket = createMezonLightSocket(client);
+    socket.onChannelMessage((message) => onIncomingMessage?.(message));
   }
+  if (!socket.isConnected) {
+    await socket.connect();
+  }
+}
 
-  throw new Error(
-    lastError instanceof Error ? `Send DM failed. ${lastError.message}` : "Send DM failed. Connection error.",
-  );
+async function joinChannel(channelId: string) {
+  if (!socket || !channelId || joinedChannels.has(channelId)) {
+    return;
+  }
+  await socket.joinDMChannel(channelId);
+  joinedChannels.add(channelId);
+}
+
+export function releaseMezonLightSocket() {
+  socket?.disconnect();
+  socket = null;
+  joinedChannels.clear();
+  onIncomingMessage = null;
+}
+
+export async function sendMezonLightDM(client: LightClient, channelId: string, content: string) {
+  await connect(client);
+  await joinChannel(channelId);
+  await socket!.sendDM({ channelId, content: { t: content } });
 }
 
 export async function sendMezonLightDMWithRefreshFallback(
@@ -62,6 +67,24 @@ export async function sendMezonLightDMWithRefreshFallback(
     await sendMezonLightDM(client, channelId, content);
   } catch {
     await refreshMezonLightSession(client);
+    releaseMezonLightSocket();
     await sendMezonLightDM(client, channelId, content);
   }
+}
+
+export async function subscribeMezonLightMessages(
+  client: LightClient,
+  channelIds: string[],
+  handler: (message: { channel_id: string; content: unknown; sender_id: string }) => void,
+) {
+  await connect(client);
+  for (const channelId of channelIds) {
+    await joinChannel(channelId);
+  }
+  onIncomingMessage = handler;
+  return () => {
+    if (onIncomingMessage === handler) {
+      onIncomingMessage = null;
+    }
+  };
 }

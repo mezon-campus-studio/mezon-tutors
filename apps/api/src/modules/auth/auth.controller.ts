@@ -18,6 +18,8 @@ import { AuthService } from './auth.service';
 import { MezonCallbackQueryDto } from './dto/mezon-callback-query.dto';
 import { MezonExchangeDto } from './dto/mezon-exchange.dto';
 import { SyncMezonProfileDto } from './dto/sync-mezon-profile.dto';
+import { MezonChannelAppLoginDto } from './dto/mezon-channel-app-login.dto';
+import { MezonChannelAppService } from './services/mezon-channel-app.service';
 
 const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const OAUTH_STATE_COOKIE = 'oauth_state';
@@ -29,31 +31,42 @@ const OAUTH_STATE_MAX_AGE = 1000 * 60 * 10;
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly appConfig: AppConfigService
+    private readonly appConfig: AppConfigService,
+    private readonly mezonChannelAppService: MezonChannelAppService
   ) {}
 
-  private getRefreshCookieOptions(): CookieOptions {
+  private getCrossSiteCookieOptions(maxAge: number): CookieOptions {
     const isProduction = this.appConfig.nodeEnv === 'production';
 
     return {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
-      maxAge: REFRESH_TOKEN_MAX_AGE,
+      maxAge,
       path: '/',
+      ...(isProduction ? { partitioned: true } : {}),
     };
   }
 
-  private getOAuthStateCookieOptions(): CookieOptions {
-    const isProduction = this.appConfig.nodeEnv === 'production';
+  private getRefreshCookieOptions(): CookieOptions {
+    return this.getCrossSiteCookieOptions(REFRESH_TOKEN_MAX_AGE);
+  }
 
-    return {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
-      maxAge: OAUTH_STATE_MAX_AGE,
-      path: '/',
-    };
+  private getOAuthStateCookieOptions(): CookieOptions {
+    return this.getCrossSiteCookieOptions(OAUTH_STATE_MAX_AGE);
+  }
+
+  private assertValidOAuthState(req: Request, state: string, res: Response): void {
+    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
+    const cookieValid = Boolean(cookieState && cookieState === state);
+    const serverValid = this.authService.consumePendingOAuthState(state);
+
+    if (!cookieValid && !serverValid) {
+      this.clearOAuthStateCookie(res);
+      throw new UnauthorizedException('Invalid or expired OAuth state');
+    }
+
+    this.clearOAuthStateCookie(res);
   }
 
   private clearOAuthStateCookie(res: Response) {
@@ -88,16 +101,26 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const { code, state } = body;
-    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
+    this.assertValidOAuthState(req, state, res);
 
-    if (!cookieState || cookieState !== state) {
-      this.clearOAuthStateCookie(res);
-      throw new UnauthorizedException('Invalid or expired OAuth state');
-    }
+    const result = await this.authService.handleMezonCallback(code, state, body.timezone);
 
-    this.clearOAuthStateCookie(res);
+    res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 
-    const result = await this.authService.handleMezonCallback(code, state);
+    return {
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+      idToken: result.idToken,
+    };
+  }
+
+  @Post('channel-app/login')
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
+  async channelAppLogin(
+    @Body() body: MezonChannelAppLoginDto,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.mezonChannelAppService.authenticateFromBase64Hash(body.hashData);
 
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 
@@ -132,10 +155,10 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-    @Get('me')
+  @Get('me')
   async getMe(@Req() req: Request) {
-    const jwtUser = req.user as { sub: string };
-    return this.authService.getCurrentUserForMe(jwtUser.sub);
+    const jwtUser = req.user as { sub: string; idToken?: string | null };
+    return this.authService.getCurrentUserForMe(jwtUser.sub, jwtUser.idToken);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -147,14 +170,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const { code, state } = body;
-    const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
-
-    if (!cookieState || cookieState !== state) {
-      this.clearOAuthStateCookie(res);
-      throw new UnauthorizedException('Invalid or expired OAuth state');
-    }
-
-    this.clearOAuthStateCookie(res);
+    this.assertValidOAuthState(req, state, res);
 
     const previousRefreshToken = req.cookies?.refresh_token as string | undefined;
     if (previousRefreshToken?.trim()) {
@@ -162,7 +178,7 @@ export class AuthController {
     }
 
     const jwtUser = req.user as { sub: string };
-    const result = await this.authService.syncProfileFromMezonWithCode(jwtUser.sub, code, state);
+    const result = await this.authService.syncProfileFromMezonWithCode(jwtUser.sub, code, state, body.timezone);
 
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
 

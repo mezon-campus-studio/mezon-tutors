@@ -9,7 +9,9 @@ export class TutorAvailabilityController {
   constructor(private readonly tutorAvailabilityService: TutorAvailabilityService) {}
 
   @Get(':tutorId')
-  async getTutorAvailability(@Param('tutorId') tutorId: string): Promise<TutorScheduleDto> {
+  async getTutorAvailability(
+    @Param('tutorId') tutorId: string,
+  ): Promise<TutorScheduleDto & { timezone?: string }> {
     return this.tutorAvailabilityService.getByTutorId(tutorId)
   }
 }

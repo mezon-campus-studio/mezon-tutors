@@ -1,6 +1,6 @@
 "use client";
 
-import dayjs from "dayjs";
+import { useAtomValue } from "jotai";
 import { AlertCircle, CalendarCheck, Clock, Info } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,10 +12,18 @@ import {
 import { toast } from "@/components/ui";
 import { useCurrency } from "@/hooks";
 import {
+  detectBrowserTimezone,
+  formatInstantRangeLabels,
+  normalizeTimezoneParam,
+  resolveStableTimezone,
+  resolveUserTimezone,
+} from "@/lib/timezone";
+import {
   useCreateTrialLessonBookingMutation,
   useGetCurrentTrialLessonBooking,
   useGetVerifiedTutorAbout,
 } from "@/services";
+import { userAtom } from "@/store";
 import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
@@ -23,8 +31,18 @@ import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
 export default function TrialLessonCheckoutPage() {
   const t = useTranslations("TrialLessonCheckout.Screen");
   const { currency } = useCurrency();
+  const currentUser = useAtomValue(userAtom);
   const searchParams = useSearchParams();
   const currentSearchParams = searchParams ?? new URLSearchParams();
+  const timezoneFromQuery = useMemo(
+    () => normalizeTimezoneParam(currentSearchParams.get("timezone")),
+    [currentSearchParams],
+  );
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const query = useMemo(() => {
     const tutorId = currentSearchParams.get("tutorId");
@@ -149,6 +167,40 @@ export default function TrialLessonCheckoutPage() {
     redirectToVnpay(paymentLink);
   }, [redirectToVnpay, paymentLink]);
 
+  const scheduleLabels = useMemo(() => {
+    if (!query) {
+      return { dateLabel: "—", timeLabel: "—" };
+    }
+
+    const stableTimezone = resolveStableTimezone(
+      currentUser?.timezone,
+      timezoneFromQuery,
+    );
+    const timezoneName = stableTimezone
+      ? stableTimezone
+      : hasMounted
+        ? resolveUserTimezone(
+            currentUser?.timezone,
+            detectBrowserTimezone(),
+          )
+        : null;
+
+    if (!timezoneName) {
+      return { dateLabel: "—", timeLabel: "—" };
+    }
+
+    return formatInstantRangeLabels(
+      query.startAt,
+      query.durationMinutes,
+      timezoneName,
+    );
+  }, [
+    query,
+    currentUser?.timezone,
+    timezoneFromQuery,
+    hasMounted,
+  ]);
+
   if (!query) {
     return (
       <div className="relative min-h-screen overflow-hidden">
@@ -171,10 +223,7 @@ export default function TrialLessonCheckoutPage() {
     );
   }
 
-  const start = dayjs(query.startAt);
-  const end = start.add(query.durationMinutes, "minute");
-  const dateLabel = start.format("MMM D, YYYY");
-  const timeLabel = `${start.format("h:mm A")} - ${end.format("h:mm A")}`;
+  const { dateLabel, timeLabel } = scheduleLabels;
   const durationLabel = t("durationLabel", { durationMinutes: query.durationMinutes });
 
   const lessonPrice = (

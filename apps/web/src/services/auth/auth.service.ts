@@ -1,8 +1,9 @@
-import { apiClient } from "@/services/api-client";
-import { getDefaultStore } from "jotai";
-import { accessTokenAtom } from "@/store/token.atom";
 import { useQuery } from "@tanstack/react-query";
+import { getDefaultStore } from "jotai";
+import { apiClient } from "@/services/api-client";
+import { accessTokenAtom } from "@/store/token.atom";
 import { storage } from "../storage/storage.service";
+import { base64EncodeUtf8 } from "@/lib/mezon-channel-app";
 
 export type AuthUser = {
   id?: string;
@@ -12,6 +13,7 @@ export type AuthUser = {
   avatar?: string | null;
   role?: string;
   idToken?: string | null;
+  timezone?: string | null;
 };
 
 export type ExchangeResponse = {
@@ -28,6 +30,8 @@ export type MeResponse = {
   username?: string;
   avatar?: string | null;
   role?: string;
+  timezone?: string | null;
+  idToken?: string | null;
 };
 
 type AuthUrlResponse = {
@@ -42,11 +46,32 @@ class AuthService {
     return res.url;
   }
 
+  async loginWithChannelAppHash(rawHashData: string): Promise<ExchangeResponse> {
+    const data = await apiClient.post<ExchangeResponse>(
+      "/auth/channel-app/login",
+      { hashData: base64EncodeUtf8(rawHashData) }
+    );
+    this.store.set(accessTokenAtom, data.accessToken);
+    return data;
+  }
+
   async exchangeCode(code: string, state: string): Promise<ExchangeResponse> {
-    const data = await apiClient.post<ExchangeResponse>("/auth/mezon/exchange", {
-      code,
-      state,
-    });
+    const timezone =
+      typeof window !== "undefined"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : "UTC";
+    console.log(
+      "[AuthService] Timezone detected before code exchange:",
+      timezone,
+    );
+    const data = await apiClient.post<ExchangeResponse>(
+      "/auth/mezon/exchange",
+      {
+        code,
+        state,
+        timezone,
+      },
+    );
     this.store.set(accessTokenAtom, data.accessToken);
     return data;
   }
@@ -55,8 +80,26 @@ class AuthService {
     return apiClient.get<MeResponse>("/auth/me");
   }
 
-  async syncMezonProfileWithCode(code: string, state: string): Promise<ExchangeResponse> {
-    const data = await apiClient.post<ExchangeResponse>('/auth/mezon/sync-profile', { code, state });
+  async syncMezonProfileWithCode(
+    code: string,
+    state: string,
+  ): Promise<ExchangeResponse> {
+    const timezone =
+      typeof window !== "undefined"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : "UTC";
+    console.log(
+      "[AuthService] Timezone detected before profile sync:",
+      timezone,
+    );
+    const data = await apiClient.post<ExchangeResponse>(
+      "/auth/mezon/sync-profile",
+      {
+        code,
+        state,
+        timezone,
+      },
+    );
     this.store.set(accessTokenAtom, data.accessToken);
     return data;
   }

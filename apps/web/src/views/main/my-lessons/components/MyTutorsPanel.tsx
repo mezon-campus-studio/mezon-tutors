@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import { formatTutorNextLessonLabel } from "@/components/calendar/utils/format-locale";
+import { useUserTimezone } from "@/hooks";
 import type { TutorItem } from "@/services/my-lessons/my-lessons.api";
 
 type TutorCardProps = {
@@ -26,9 +27,17 @@ type TutorCardProps = {
 function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
   const t = useTranslations("MyLessons");
   const locale = useLocale();
-  const displayNextLesson = tutor.nextLessonLabel
-    ? formatTutorNextLessonLabel(tutor.nextLessonLabel, locale)
-    : t("panels.tutors.unscheduled");
+  const userTimezone = useUserTimezone();
+  const displayNextLesson = tutor.nextLessonAt
+    ? formatTutorNextLessonLabel(
+        tutor.nextLessonLabel,
+        locale,
+        userTimezone,
+        tutor.nextLessonAt,
+      )
+    : tutor.nextLessonLabel
+      ? formatTutorNextLessonLabel(tutor.nextLessonLabel, locale, userTimezone)
+      : t("panels.tutors.unscheduled");
 
   return (
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white p-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:items-center sm:gap-5">
@@ -181,7 +190,7 @@ export default function MyTutorsPanel({ tutors }: MyTutorsPanelProps) {
           </div>
           <div className="leading-tight">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-              {t("panels.tutors.eyebrow", { defaultValue: "My tutors" })}
+              {t("panels.tutors.eyebrow")}
             </p>
             <h2 className="text-xl font-extrabold text-slate-900 md:text-2xl">
               {t("panels.tutors.title")}

@@ -1,11 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import {
+  ECurrency,
+  formatToCurrency,
+  ROUTES,
+  type TutorSubscriptionPlanDto,
+} from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { AlertCircle, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -16,20 +22,14 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
+import { useCurrency, useUserTimezone } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useCurrency } from "@/hooks";
 import {
   useGetSubscriptionEligibility,
   useGetSubscriptionPlansByTutor,
   useGetVerifiedTutorAbout,
 } from "@/services";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
-import {
-  ECurrency,
-  ROUTES,
-  formatToCurrency,
-  type TutorSubscriptionPlanDto,
-} from "@mezon-tutors/shared";
 
 export default function SubscriptionPlanCheckoutPage() {
   const t = useTranslations("SubscriptionCheckout.PlanPicker");
@@ -38,19 +38,18 @@ export default function SubscriptionPlanCheckoutPage() {
   const tutorId = searchParams.get("tutorId") ?? "";
   const isAuth = useAtomValue(isAuthenticatedAtom);
   const { currency } = useCurrency();
+  const userTimezone = useUserTimezone();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  const { data: tutor, isPending: isTutorPending } = useGetVerifiedTutorAbout(tutorId);
-  const { data: plans, isPending: isPlansPending } = useGetSubscriptionPlansByTutor(
-    tutorId,
-    Boolean(tutorId),
-  );
-  const { data: eligibility, isPending: isEligPending } = useGetSubscriptionEligibility(
-    tutorId,
-    Boolean(tutorId) && isAuth,
-  );
+  const { data: tutor, isPending: isTutorPending } =
+    useGetVerifiedTutorAbout(tutorId);
+  const { data: plans, isPending: isPlansPending } =
+    useGetSubscriptionPlansByTutor(tutorId, Boolean(tutorId));
+  const { data: eligibility, isPending: isEligPending } =
+    useGetSubscriptionEligibility(tutorId, Boolean(tutorId) && isAuth);
 
-  const isPending = isTutorPending || isPlansPending || (isAuth && isEligPending);
+  const isPending =
+    isTutorPending || isPlansPending || (isAuth && isEligPending);
   const canSubscribe = Boolean(isAuth && eligibility?.eligible);
   const selectedPlan = useMemo(
     () => plans?.find((p) => p.id === selectedPlanId) ?? null,
@@ -66,7 +65,7 @@ export default function SubscriptionPlanCheckoutPage() {
       if (prev && plans.some((p) => p.id === prev)) {
         return prev;
       }
-      return plans[0]!.id;
+      return plans[0]?.id ?? null;
     });
   }, [plans]);
 
@@ -84,9 +83,12 @@ export default function SubscriptionPlanCheckoutPage() {
     if (!tutorId || !selectedPlanId) {
       return;
     }
-    router.push(
-      `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?tutorId=${encodeURIComponent(tutorId)}&lessonsPerWeek=${encodeURIComponent(selectedPlanId)}`,
-    );
+    const query = new URLSearchParams({
+      tutorId,
+      lessonsPerWeek: selectedPlanId,
+      timezone: userTimezone,
+    });
+    router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?${query.toString()}`);
   };
 
   if (!tutorId) {
@@ -102,7 +104,10 @@ export default function SubscriptionPlanCheckoutPage() {
               <CardTitle className="text-xl">{t("missingTutor")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Link className={buttonVariants({ variant: "outline" })} href={ROUTES.TUTOR.INDEX}>
+              <Link
+                className={buttonVariants({ variant: "outline" })}
+                href={ROUTES.TUTOR.INDEX}
+              >
                 {t("backTutors")}
               </Link>
             </CardContent>
@@ -130,9 +135,14 @@ export default function SubscriptionPlanCheckoutPage() {
           </h1>
           <p className="text-sm text-slate-600 sm:text-base">{t("subtitle")}</p>
           {tutor ? (
-            <p className="text-sm font-semibold text-slate-800">
-              {tutor.firstName} {tutor.lastName}
-            </p>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-800">
+                {tutor.firstName} {tutor.lastName}
+              </p>
+              <p className="text-xs text-slate-500">
+                Times shown in tutor timezone ({tutor.timezone || "UTC"})
+              </p>
+            </div>
           ) : null}
         </div>
 
@@ -153,7 +163,9 @@ export default function SubscriptionPlanCheckoutPage() {
         {isAuth && !isPending && !canSubscribe ? (
           <Card className="border-rose-200 bg-rose-50/50">
             <CardHeader>
-              <CardTitle className="text-base">{t("notEligibleTitle")}</CardTitle>
+              <CardTitle className="text-base">
+                {t("notEligibleTitle")}
+              </CardTitle>
               <CardDescription>
                 {eligibility?.reason === "TRIAL_NOT_COMPLETED"
                   ? t("notEligibleTrial")
@@ -194,14 +206,20 @@ export default function SubscriptionPlanCheckoutPage() {
                     <span className="text-lg font-extrabold text-slate-900">
                       {t("lessonsPerWeek", { n: p.lessonsPerWeek })}
                     </span>
-                    <span className="text-xl font-extrabold text-violet-700">{monthlyLabel(p)}</span>
+                    <span className="text-xl font-extrabold text-violet-700">
+                      {monthlyLabel(p)}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{t("perMonth")}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("perMonth")}
+                  </span>
                 </button>
               );
             })}
             {!plans?.length ? (
-              <p className="text-center text-sm text-slate-600">{t("emptyPlans")}</p>
+              <p className="text-center text-sm text-slate-600">
+                {t("emptyPlans")}
+              </p>
             ) : null}
           </div>
         )}
@@ -215,7 +233,10 @@ export default function SubscriptionPlanCheckoutPage() {
       >
         <div className="mx-auto py-2 flex w-full max-w-3xl flex-row flex-wrap items-center justify-end gap-3 px-6 sm:pl-10 sm:pr-8">
           <Link
-            className={cn(buttonVariants({ variant: "outline" }), "h-11 shrink-0 px-6")}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-11 shrink-0 px-6",
+            )}
             href={tutorId ? ROUTES.TUTOR.DETAIL(tutorId) : ROUTES.TUTOR.INDEX}
           >
             {t("back")}

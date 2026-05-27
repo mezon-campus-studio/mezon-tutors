@@ -1,37 +1,43 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
-import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
 import type {
   MyLessonApiCategory,
   MyLessonApiItem,
   MyLessonApiStatus,
+  MyLessonsApiResponse,
   MyLessonTutorApiItem,
   MyLessonWeekDayApiItem,
-  MyLessonsApiResponse,
-} from '@mezon-tutors/shared';
-import { CALENDAR_CONFIG } from '@mezon-tutors/shared';
-import { isAuthenticatedAtom } from '@/store';
-import { apiClient } from '../api-client';
-import { myLessonsQueryKey } from './my-lessons.qkey';
+} from "@mezon-tutors/shared";
+import { CALENDAR_CONFIG } from "@mezon-tutors/shared";
+import { useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { useAtomValue } from "jotai";
+import {
+  detectBrowserTimezone,
+  parseYmdInTimezone,
+  resolveUserTimezone,
+} from "@/lib/timezone";
+import { isAuthenticatedAtom, userAtom } from "@/store";
+import { apiClient } from "../api-client";
+import { myLessonsQueryKey } from "./my-lessons.qkey";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const BASE = '/my-lessons';
+const BASE = "/my-lessons";
 
 enum MyLessonsStatusEnum {
-  Upcoming = 'upcoming',
-  Completed = 'completed',
+  Upcoming = "upcoming",
+  Completed = "completed",
 }
 
 export type LessonCategory = string;
-export type LessonStatus = 'upcoming' | 'completed';
+export type LessonStatus = "upcoming" | "completed";
 
 export type WeekDay = {
   shortLabel: string;
   dateLabel: string;
+  fullDate?: Date;
 };
 
 export type LessonItem = {
@@ -50,7 +56,18 @@ export type LessonItem = {
   startHour: number;
   endHour: number;
   rating?: number;
-  source?: 'trial' | 'subscription';
+  source?: "trial" | "subscription";
+  /** UTC ISO-8601; cancellation refund policy. */
+  startAt?: string;
+  durationMinutes?: number;
+  grossAmount?: number;
+  currency?: string;
+  trialBookingStatus?: "confirmed" | "cancelled" | "completed";
+  subscriptionEnrollmentId?: string;
+  subscriptionSlotIndex?: number;
+  enrollmentStatus?: string;
+  enrollmentPaymentStatus?: string;
+  rescheduleRequestSubmitted?: boolean;
 };
 
 export type TutorItem = {
@@ -61,6 +78,7 @@ export type TutorItem = {
   availability: string;
   completedLessons: number;
   nextLessonLabel: string;
+  nextLessonAt?: string | null;
   ratingAverage: number;
   reviewCount: number;
 };
@@ -85,18 +103,24 @@ const mapCategory = (category: MyLessonApiCategory): LessonCategory => {
   const normalized = category
     .trim()
     .toLowerCase()
-    .replace(/[_\s]+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 
-  return normalized || 'other';
+  return normalized || "other";
 };
 
 const mapStatus = (status: MyLessonApiStatus): LessonStatus =>
-  status === MyLessonsStatusEnum.Upcoming ? 'upcoming' : 'completed';
+  status === MyLessonsStatusEnum.Upcoming ? "upcoming" : "completed";
 
-const mapWeekDay = (item: MyLessonWeekDayApiItem): WeekDay => ({
+const mapWeekDay = (
+  item: MyLessonWeekDayApiItem,
+  timezoneName: string,
+): WeekDay => ({
   shortLabel: item.short_label,
   dateLabel: item.date_label,
+  fullDate: item.date_ymd
+    ? parseYmdInTimezone(item.date_ymd, timezoneName).toDate()
+    : undefined,
 });
 
 const roundToHalfHour = (hour: number): number => {
@@ -128,8 +152,18 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     dayIndex: item.day_index,
     startHour: roundToHalfHour(item.start_hour),
     endHour: roundToHalfHour(item.end_hour),
-    source: item.source ?? 'trial',
-  }
+    source: item.source ?? "trial",
+    startAt: item.start_at,
+    durationMinutes: item.duration_minutes,
+    grossAmount: item.gross_amount,
+    currency: item.currency,
+    trialBookingStatus: item.trial_booking_status,
+    subscriptionEnrollmentId: item.subscription_enrollment_id,
+    subscriptionSlotIndex: item.subscription_slot_index,
+    enrollmentStatus: item.enrollment_status,
+    enrollmentPaymentStatus: item.enrollment_payment_status,
+    rescheduleRequestSubmitted: item.reschedule_request_submitted ?? false,
+  };
 };
 
 const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
@@ -140,20 +174,21 @@ const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
   availability: item.availability,
   completedLessons: item.completed_lessons,
   nextLessonLabel: item.next_lesson_label,
+  nextLessonAt: item.next_lesson_at ?? null,
   ratingAverage: item.rating_average,
   reviewCount: item.review_count,
 });
 
-const mapCalendarMeta = (data: MyLessonsApiResponse, lessons: LessonItem[]): MyLessonsCalendarMeta => {
+const mapCalendarMeta = (
+  data: MyLessonsApiResponse,
+  lessons: LessonItem[],
+  timezoneName: string,
+): MyLessonsCalendarMeta => {
   const { MIN, MAX } = CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE;
 
   const defaultHours = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i);
 
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const nowLocal = dayjs().tz(userTimeZone);
-  const currentHour = (data.current_day_index ?? -1) >= 0 
-    ? nowLocal.hour() + nowLocal.minute() / 60 
-    : undefined;
+  const currentHour = data.current_hour;
 
   const hourSet = new Set([...defaultHours, ...(data.week_hours || [])]);
 
@@ -171,7 +206,7 @@ const mapCalendarMeta = (data: MyLessonsApiResponse, lessons: LessonItem[]): MyL
 
   return {
     title: data.calendar_title,
-    weekDays: data.week_days.map(mapWeekDay),
+    weekDays: data.week_days.map((day) => mapWeekDay(day, timezoneName)),
     weekHours,
     currentDayIndex: data.current_day_index,
     currentHour,
@@ -179,20 +214,25 @@ const mapCalendarMeta = (data: MyLessonsApiResponse, lessons: LessonItem[]): MyL
 };
 
 export const myLessonsApi = {
-  async getOverview(weekStartDate?: string): Promise<MyLessonsViewData> {
+  async getOverview(
+    weekStartDate?: string,
+    timezoneName?: string,
+  ): Promise<MyLessonsViewData> {
     const params: Record<string, string> = {};
 
     if (weekStartDate) {
       params.week_start_date = weekStartDate;
     }
+    if (timezoneName) {
+      params.timezone = timezoneName;
+    }
 
     const data = await apiClient.get<MyLessonsApiResponse>(BASE, { params });
 
-    
     const calendarLessons = data.calendar_lessons.map(mapLesson);
 
     return {
-      calendar: mapCalendarMeta(data, calendarLessons),
+      calendar: mapCalendarMeta(data, calendarLessons, timezoneName ?? "UTC"),
       calendarLessons,
       upcomingLessons: data.upcoming_lessons.map(mapLesson),
       previousLessons: data.previous_lessons.map(mapLesson),
@@ -201,13 +241,19 @@ export const myLessonsApi = {
   },
 };
 
-export const useGetMyLessonsOverview = (weekStartDate?: string) => {
+export const useGetMyLessonsOverview = (
+  weekStartDate?: string,
+  timezoneName?: string,
+) => {
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const user = useAtomValue(userAtom);
+  const effectiveTimezone =
+    timezoneName ?? resolveUserTimezone(user?.timezone, detectBrowserTimezone());
 
   return useQuery({
-    queryKey: myLessonsQueryKey.overview(weekStartDate),
-    queryFn: () => myLessonsApi.getOverview(weekStartDate),
-    enabled: isAuthenticated,
+    queryKey: myLessonsQueryKey.overview(weekStartDate, effectiveTimezone),
+    queryFn: () => myLessonsApi.getOverview(weekStartDate, effectiveTimezone),
+    enabled: isAuthenticated && Boolean(effectiveTimezone),
     staleTime: 0,
     gcTime: 1000 * 60 * 10,
     refetchOnMount: true,

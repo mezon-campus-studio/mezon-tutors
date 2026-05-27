@@ -63,16 +63,17 @@ export function buildMonthlySubscriptionSlotJson(
   return out
 }
 
+/** `slotStorageTimezone`: timezone used when `date` + `startTime` were persisted (tutor TZ). */
 export function subscriptionConcreteOccurrencesSorted(
   slots: SubscriptionWeeklySlotLike[],
-  tz: string
+  slotStorageTimezone: string
 ): { startAt: Date; endAt: Date; slotIndex: number }[] {
   if (!subscriptionSlotsUseConcreteDates(slots)) {
     return []
   }
   const out: { startAt: Date; endAt: Date; slotIndex: number }[] = []
   slots.forEach((slot, slotIndex) => {
-    const start = subscriptionSlotConcreteStart(slot, tz)
+    const start = subscriptionSlotConcreteStart(slot, slotStorageTimezone)
     out.push({
       startAt: start.toDate(),
       endAt: start.add(slot.durationMinutes, 'minute').toDate(),
@@ -82,18 +83,24 @@ export function subscriptionConcreteOccurrencesSorted(
   return out.sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
 }
 
+/**
+ * @param weekTimezone - calendar week boundaries (viewer's timezone)
+ * @param slotStorageTimezone - timezone of persisted `date` + `startTime` (defaults to weekTimezone)
+ */
 export function subscriptionSlotsOccurrencesForWeek(
   weekStartYmd: string,
   slots: SubscriptionWeeklySlotLike[],
-  tz = DEFAULT_TIMEZONE
+  weekTimezone = DEFAULT_TIMEZONE,
+  slotStorageTimezone?: string
 ): { startAt: Date; endAt: Date; slotIndex: number }[] {
-  const weekStart = dayjs.tz(weekStartYmd, tz).startOf('day')
+  const slotTz = slotStorageTimezone ?? weekTimezone
+  const weekStart = dayjs.tz(weekStartYmd, weekTimezone).startOf('day')
   const weekEnd = weekStart.add(7, 'day')
   const out: { startAt: Date; endAt: Date; slotIndex: number }[] = []
 
   if (subscriptionSlotsUseConcreteDates(slots)) {
     slots.forEach((slot, slotIndex) => {
-      const start = subscriptionSlotConcreteStart(slot, tz)
+      const start = subscriptionSlotConcreteStart(slot, slotTz)
       if (!start.isBefore(weekStart) && start.isBefore(weekEnd)) {
         out.push({
           startAt: start.toDate(),
@@ -103,9 +110,9 @@ export function subscriptionSlotsOccurrencesForWeek(
       }
     })
   } else {
-    const occ = subscriptionWeeklySlotsToOccurrencesInTimezone(weekStartYmd, slots, tz)
+    const occ = subscriptionWeeklySlotsToOccurrencesInTimezone(weekStartYmd, slots, slotTz)
     occ.forEach((range, slotIndex) => {
-      const s = dayjs(range.startAt).tz(tz)
+      const s = dayjs(range.startAt).tz(weekTimezone)
       if (!s.isBefore(weekStart) && s.isBefore(weekEnd)) {
         out.push({ startAt: range.startAt, endAt: range.endAt, slotIndex })
       }

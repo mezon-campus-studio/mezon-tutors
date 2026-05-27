@@ -1,12 +1,14 @@
 'use client';
 
 import { ENotificationType } from '@mezon-tutors/shared';
+import { formatInstantForLocale } from '@/lib/timezone';
 import { cn } from '@/lib/utils';
 import type { NotificationItem } from '@/services/notification/notification.api';
 
 type HeaderNotificationItemProps = {
   item: NotificationItem;
   locale: string;
+  userTimezone: string;
   typeLabel: string;
   title: string;
   content: string;
@@ -31,6 +33,7 @@ function typeBorderClass(type: ENotificationType): string {
 export function HeaderNotificationItem({
   item,
   locale,
+  userTimezone,
   typeLabel,
   title,
   content,
@@ -67,7 +70,9 @@ export function HeaderNotificationItem({
         </div>
         <p className="text-xs font-semibold text-blue-700">{typeLabel}</p>
         <p className="text-sm leading-5 text-slate-600">{content}</p>
-        <p className="text-xs text-slate-500">{new Date(item.createdAt).toLocaleString(locale)}</p>
+        <p className="text-xs text-slate-500">
+          {formatInstantForLocale(item.createdAt, userTimezone, locale)}
+        </p>
       </div>
     </button>
   );

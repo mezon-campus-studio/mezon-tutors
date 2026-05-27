@@ -54,15 +54,86 @@
         "emptyDescription": "Đừng để mục tiêu bị gián đoạn! Hãy đặt lịch buổi học tiếp theo ngay để tiếp tục tiến bộ.",
         "scheduleNow": "Đặt lịch ngay",
         "rescheduleOrCancel": "Đổi lịch/Hủy",
-        "joinLesson": "Vào lớp"
+        "joinLesson": "Vào lớp",
+        "statusCancelled": "Đã hủy"
+      },
+      "subscription": {
+        "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",
+        "reschedule": {
+          "dialog": {
+            "title": "Đổi lịch buổi gói đăng ký",
+            "subtitle": "Chọn giờ mới với {tutor} (hiện tại {date} · {time}).",
+            "dismiss": "Giữ nguyên giờ học",
+            "confirm": "Xác nhận giờ mới",
+            "confirming": "Đang lưu…",
+            "success": "Đã đổi lịch buổi học thành công.",
+            "failed": "Không thể đổi lịch. Vui lòng chọn khung giờ khác.",
+            "loadFailed": "Không tải được khung giờ trống."
+          }
+        },
+        "cancellation": {
+          "dialog": {
+            "title": "Hủy buổi học gói đăng ký",
+            "successCredited": "Đã hủy buổi học. {amount} đã được hoàn vào số dư ví của bạn.",
+            "successNoCredit": "Đã hủy buổi học. Vì còn dưới 12 tiếng trước giờ học nên không được hoàn tiền.",
+            "policy": {
+              "eligibleDescription": "Buổi học còn hơn 12 tiếng. Nếu hủy, bạn sẽ được hoàn {amount} vào số dư ví.",
+              "eligibleDescriptionNoAmount": "Buổi học còn hơn 12 tiếng. Nếu hủy, tiền buổi học này sẽ được hoàn vào số dư ví.",
+              "notEligibleDescription": "Buổi học còn dưới 12 tiếng. Bạn vẫn có thể hủy nhưng sẽ không được hoàn tiền.",
+              "fallback": "Hủy trước 12 tiếng để được hoàn tiền; trong vòng 12 tiếng thì không hoàn."
+            }
+          }
+        }
       },
       "past": {
         "title": "Buổi học trước đó",
         "rate": "Đánh giá",
-        "rated": "Đã đánh giá"
+        "rated": "Đã đánh giá",
+        "statusCancelled": "Đã hủy"
+      },
+      "cancellation": {
+        "dialog": {
+          "title": "Hủy buổi học thử",
+          "confirm": "Xác nhận hủy",
+          "dismiss": "Giữ buổi học",
+          "reasonLabel": "Lý do hủy",
+          "reasonPlaceholder": "Chọn lý do",
+          "messageLabel": "Tin nhắn cho {tutor} (tùy chọn)",
+          "messagePlaceholder": "Tôi cần hủy vì...",
+          "messageSent": "Đã gửi tin nhắn thành công",
+          "successRefunded": "Đã hủy buổi học. Số tiền thanh toán sẽ được hoàn vào ví của bạn.",
+          "successNoRefund": "Đã hủy buổi học. Vì buổi học còn dưới 12 giờ nên bạn không được hoàn tiền.",
+          "policy": {
+            "eligibleDescription": "Buổi học còn hơn 12 tiếng nữa, bạn sẽ được hoàn {amount} vào ví nếu hủy.",
+            "eligibleDescriptionNoAmount": "Buổi học còn hơn 12 tiếng nữa, khoản thanh toán sẽ được hoàn vào ví nếu hủy.",
+            "notEligibleDescription": "Buổi học còn chưa đến 12 tiếng nữa, hủy lúc này sẽ không được hoàn tiền.",
+            "fallback": "Hủy khi còn hơn 12 tiếng được hoàn tiền; trong vòng 12 tiếng thì không hoàn."
+          }
+        },
+        "reasons": {
+          "timeNotWork": "Thời gian này không còn phù hợp với tôi",
+          "technicalIssue": "Tôi gặp vấn đề kỹ thuật",
+          "avoidBalanceLoss": "Tôi đã đặt giờ này để tránh bị mất số dư",
+          "notMotivated": "Tôi không cảm thấy có động lực để tham gia buổi học này",
+          "tutorRescheduledUnavail": "Gia sư đã đổi lịch sang thời gian tôi không rảnh",
+          "tutorAskedCancel": "Gia sư yêu cầu tôi hủy",
+          "noLongerLearnTutor": "Tôi không muốn học với gia sư này nữa",
+          "other": "Lý do khác"
+        },
+        "options": {
+          "reschedule": "Đổi lịch",
+          "cancel": "Hủy"
+        }
+      },
+      "reschedule": {
+        "success": "Đã đổi lịch buổi học thành công.",
+        "failed": "Không thể đổi lịch. Vui lòng chọn khung giờ khác.",
+        "within12Hours": "Chỉ có thể đổi lịch khi còn hơn 12 tiếng trước giờ học.",
+        "alreadyRequested": "Buổi học này đã có yêu cầu đổi lịch."
       }
     },
     "tutors": {
+      "eyebrow": "Gia sư của tôi",
       "title": "Gia sư của tôi",
       "subtitle": "Bạn có {count} gia sư đang hoạt động trong học kỳ này.",
       "findNewTutors": "+ Tìm gia sư mới",

@@ -1,13 +1,22 @@
 'use client';
 
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
-import { InfoIcon, MessageCircleMoreIcon } from 'lucide-react';
+import { ExternalLinkIcon, InfoIcon, MessageCircleMoreIcon, SendIcon } from 'lucide-react';
 import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL, MEZON_URL } from '@mezon-tutors/shared';
-import { Button, Card, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { userAtom } from '@/store/auth.atom';
+import {
+  appendGlobalChatMessageAtom,
+  globalChatMessagesByChannelAtom,
+  globalChatOpenAtom,
+  globalChatSelectedChannelIdAtom,
+  globalChatUnreadChannelIdsAtom,
+  hasGlobalChatUnreadAtom,
+  markGlobalChatChannelReadAtom,
+} from '@/store/global-chat.atom';
 import { useMezonLight } from '@/providers';
 import {
   persistMezonLightSession,
@@ -18,29 +27,60 @@ import {
 } from '@/services';
 import { buildFakeMessages, getRandomFakeSetIndex } from './global-chat.fake';
 
-type RuntimeMessage = {
-  id: string;
-  sender: 'me';
-  content: string;
-};
-
 const MIN_ROWS = 1;
 const MAX_ROWS = 5;
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return '?';
+  }
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function ChatMessageBubble({
+  content,
+  isMine,
+}: {
+  content: string;
+  isMine: boolean;
+}) {
+  return (
+    <div className={cn('flex w-full', isMine ? 'justify-end' : 'justify-start')}>
+      <div
+        className={cn(
+          'max-w-[min(85%,20rem)] px-3.5 py-2 text-sm leading-relaxed shadow-sm',
+          isMine
+            ? 'rounded-2xl rounded-br-md bg-violet-600 text-white'
+            : 'rounded-2xl rounded-bl-md border border-violet-100/90 bg-white text-slate-800',
+        )}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
 
 export default function GlobalChatBubble() {
   const t = useTranslations('GlobalChat');
   const currentUser = useAtomValue(userAtom);
   const { lightClient, setLightClient } = useMezonLight();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useAtom(globalChatOpenAtom);
+  const [selectedChannelId, setSelectedChannelId] = useAtom(globalChatSelectedChannelIdAtom);
   const [fakeSetIndex, setFakeSetIndex] = useState(0);
-  const [selectedChannelId, setSelectedChannelId] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [runtimeMessagesByChannel, setRuntimeMessagesByChannel] = useState<
-    Record<string, RuntimeMessage[]>
-  >({});
+  const messagesByChannel = useAtomValue(globalChatMessagesByChannelAtom);
+  const unreadChannelIds = useAtomValue(globalChatUnreadChannelIdsAtom);
+  const hasUnread = useAtomValue(hasGlobalChatUnreadAtom);
+  const appendMessage = useSetAtom(appendGlobalChatMessageAtom);
+  const markChannelRead = useSetAtom(markGlobalChatChannelReadAtom);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: channels = [] } = useGetMyDmChannels(Boolean(currentUser?.id));
 
   const selectedChannel = useMemo(() => {
@@ -51,8 +91,8 @@ export default function GlobalChatBubble() {
     return channels.find((item) => item.channelId === selectedChannelId) ?? fallback;
   }, [channels, selectedChannelId]);
 
-  const runtimeMessages = selectedChannel
-    ? (runtimeMessagesByChannel[selectedChannel.channelId] ?? [])
+  const conversationMessages = selectedChannel
+    ? (messagesByChannel[selectedChannel.channelId] ?? [])
     : [];
   const mySenderRole = useMemo<'sender' | 'recipient' | null>(() => {
     if (!selectedChannel || !currentUser?.id) {
@@ -72,6 +112,27 @@ export default function GlobalChatBubble() {
     }
     setFakeSetIndex(getRandomFakeSetIndex());
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !selectedChannel?.channelId) {
+      return;
+    }
+    markChannelRead(selectedChannel.channelId);
+  }, [markChannelRead, open, selectedChannel?.channelId]);
+
+  useEffect(() => {
+    if (!channels.length || selectedChannelId) {
+      return;
+    }
+    setSelectedChannelId(channels[0].channelId);
+  }, [channels, selectedChannelId, setSelectedChannelId]);
+
+  useEffect(() => {
+    if (!open || !selectedChannel) {
+      return;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversationMessages.length, open, selectedChannel?.channelId]);
 
   const handleSend = async () => {
     const content = messageContent.trim();
@@ -97,18 +158,22 @@ export default function GlobalChatBubble() {
       }
 
       await sendMezonLightDMWithRefreshFallback(client, selectedChannel.channelId, content);
-      setRuntimeMessagesByChannel((prev) => ({
-        ...prev,
-        [selectedChannel.channelId]: [
-          ...(prev[selectedChannel.channelId] ?? []),
-          {
-            id: `runtime-${Date.now()}`,
-            sender: 'me',
-            content,
-          },
-        ],
-      }));
+      appendMessage({
+        channelId: selectedChannel.channelId,
+        message: {
+          id: `runtime-${Date.now()}`,
+          sender: 'me',
+          content,
+        },
+        markUnread: false,
+      });
       setMessageContent('');
+      requestAnimationFrame(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.focus();
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -150,7 +215,7 @@ export default function GlobalChatBubble() {
         <Button
           size="icon-lg"
           className={cn(
-            'size-14 shrink-0 rounded-full border-0 p-0',
+            'relative size-14 shrink-0 rounded-full border-0 p-0',
             ctaGradientClass,
             'focus-visible:ring-2 focus-visible:ring-violet-400/50',
           )}
@@ -158,6 +223,12 @@ export default function GlobalChatBubble() {
           aria-label={t('chatButton')}
         >
           <MessageCircleMoreIcon className="size-6" />
+          {hasUnread ? (
+            <span
+              className="absolute top-1 right-1 size-3 rounded-full border-2 border-white bg-red-500"
+              aria-hidden
+            />
+          ) : null}
         </Button>
       </div>
 
@@ -191,124 +262,191 @@ export default function GlobalChatBubble() {
             </div>
           </DialogHeader>
 
-          <div className="grid min-h-[min(320px,45vh)] flex-1 gap-0 md:min-h-0 md:grid-cols-[minmax(0,260px)_1fr] md:divide-x md:divide-violet-100/80">
-            <Card className="min-h-0 rounded-none border-0 py-3 shadow-none ring-0 md:rounded-none">
-              <div className="flex h-full min-h-0 flex-col gap-3 px-4 sm:px-5">
-                <p className="text-sm font-semibold text-slate-900">{t('listTitle')}</p>
-                {channels.length === 0 ? (
-                  <p className="text-sm text-slate-500">{t('emptyList')}</p>
-                ) : null}
-                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5 md:max-h-[min(52vh,420px)]">
-                  {channels.map((item) => (
-                    <Button
-                      key={item.channelId}
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        'h-auto min-h-10 w-full justify-start rounded-xl border-slate-200 px-3 py-2.5 text-left text-sm font-medium whitespace-normal text-slate-800 hover:border-violet-200 hover:bg-violet-50/80 hover:text-violet-900',
-                        selectedChannel?.channelId === item.channelId &&
-                          cn('border-transparent text-white', ctaGradientClass, 'hover:text-white'),
-                      )}
-                      onClick={() => setSelectedChannelId(item.channelId)}
-                    >
-                      {item.peerName}
-                    </Button>
-                  ))}
-                </div>
+          <div className="grid h-[480px] shrink-0 grid-cols-1 overflow-hidden md:grid-cols-[240px_1fr]">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden border-b border-violet-100/80 bg-violet-50/35 md:border-b-0 md:border-r">
+              <div className="shrink-0 px-4 py-3 sm:px-5">
+                <p className="text-xs font-semibold tracking-wide text-violet-600 uppercase">
+                  {t('listTitle')}
+                </p>
               </div>
-            </Card>
-
-            <Card className="min-h-0 rounded-none border-0 py-3 shadow-none ring-0 md:rounded-none">
-              {!selectedChannel ? (
-                <div className="flex h-full min-h-[240px] items-center justify-center px-4 text-sm text-slate-500 sm:px-6">
-                  {t('emptyConversation')}
-                </div>
+              {channels.length === 0 ? (
+                <p className="px-4 pb-4 text-sm text-slate-500 sm:px-5">{t('emptyList')}</p>
               ) : (
-                <div className="flex h-full min-h-0 flex-col gap-3 px-4 pb-4 sm:px-6 sm:pb-5">
-                  <p className="text-base font-bold text-slate-900">{selectedChannel.peerName}</p>
-
-                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-xl border border-violet-100/80 bg-slate-50/60 p-3 sm:p-4">
-                    {fakeMessages.map((message) => (
-                      <div
-                        key={message.id}
+                <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-3 sm:px-3">
+                  {channels.map((item) => {
+                    const isActive = selectedChannel?.channelId === item.channelId;
+                    const hasChannelUnread = unreadChannelIds.has(item.channelId);
+                    return (
+                      <button
+                        key={item.channelId}
+                        type="button"
+                        onClick={() => setSelectedChannelId(item.channelId)}
                         className={cn(
-                          'max-w-[85%] rounded-2xl px-3 py-2 text-sm blur-[1.5px] opacity-70 sm:max-w-[75%]',
-                          message.sender === mySenderRole
-                            ? cn('ml-auto text-white', ctaGradientClass)
-                            : 'bg-white text-slate-700 ring-1 ring-violet-100/80',
+                          'relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors cursor-pointer',
+                          isActive
+                            ? 'bg-white text-violet-900 shadow-sm ring-1 ring-violet-200/80'
+                            : 'text-slate-700 hover:bg-white/70',
                         )}
                       >
-                        {message.content}
-                      </div>
-                    ))}
-
-                    {runtimeMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          'ml-auto max-w-[85%] rounded-2xl px-3 py-2 text-sm text-white sm:max-w-[75%]',
-                          ctaGradientClass,
-                        )}
-                      >
-                        {message.content}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded-2xl border border-violet-200/50 bg-violet-50/70 p-3 sm:p-4">
-                    <div className="mb-2 flex items-center gap-2 text-violet-800">
-                      <InfoIcon className="size-4 shrink-0 sm:size-5" />
-                      <span className="text-sm font-semibold sm:text-base">{t('noticeTitle')}</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-slate-600">
-                      {t('noticePrefix')}{' '}
-                      <a
-                        href={MEZON_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-violet-700 underline-offset-2 hover:text-violet-900 hover:underline"
-                      >
-                        {t('noticeLink')}
-                      </a>
-                      <br />
-                      {t('noticeOpenChatPrefix')}{' '}
-                      <a
-                        href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-violet-700 underline-offset-2 hover:text-violet-900 hover:underline"
-                      >
-                        {t('noticeOpenChatLink')}
-                      </a>{' '}
-                      {t('noticeOpenChatSuffix')}
-                    </p>
-                  </div>
-
-                  <div className="flex items-end gap-2">
-                    <textarea
-                      ref={textareaRef}
-                      rows={MIN_ROWS}
-                      value={messageContent}
-                      onChange={handleChange}
-                      placeholder={t('inputPlaceholder')}
-                      className="max-h-24 min-h-10 w-full resize-none rounded-xl border border-violet-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus-visible:border-violet-300 focus-visible:ring-2 focus-visible:ring-violet-400/25"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={handleSend}
-                      disabled={isSending || !messageContent.trim()}
-                      className={cn(
-                        'h-10 shrink-0 rounded-full px-5 font-semibold',
-                        ctaGradientClass,
-                        'disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none',
-                      )}
-                    >
-                      {isSending ? t('sending') : t('send')}
-                    </Button>
-                  </div>
+                        <span
+                          className={cn(
+                            'flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold',
+                            isActive
+                              ? 'bg-violet-600 text-white'
+                              : 'bg-violet-100 text-violet-700',
+                          )}
+                        >
+                          {item.peerAvatar ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.peerAvatar}
+                              alt=""
+                              className="size-full object-cover"
+                            />
+                          ) : (
+                            getInitials(item.peerName)
+                          )}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                          {item.peerName}
+                        </span>
+                        {hasChannelUnread ? (
+                          <span
+                            className="size-2 shrink-0 rounded-full bg-red-500"
+                            aria-hidden
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-            </Card>
+            </div>
+
+            <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#faf8ff_0%,#ffffff_38%)]">
+              {!selectedChannel ? (
+                <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+                  <MessageCircleMoreIcon className="size-10 text-violet-300" />
+                  <p className="text-sm text-slate-500">{t('emptyConversation')}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex shrink-0 items-center justify-between gap-3 border-b border-violet-100/80 px-4 py-3 sm:px-5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-100 text-sm font-bold text-violet-700">
+                        {selectedChannel.peerAvatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={selectedChannel.peerAvatar}
+                            alt=""
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          getInitials(selectedChannel.peerName)
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {selectedChannel.peerName}
+                        </p>
+                        <p className="text-xs text-slate-500">{t('eyebrow')}</p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 rounded-full border-violet-200 px-3 text-xs text-violet-700 hover:bg-violet-50"
+                      onClick={() =>
+                        window.open(
+                          MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId),
+                          '_blank',
+                          'noopener,noreferrer',
+                        )
+                      }
+                    >
+                      <ExternalLinkIcon className="size-3.5" />
+                      Mezon
+                    </Button>
+                  </div>
+
+                  <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+                    <div className="flex flex-col gap-3">
+                      {conversationMessages.length === 0
+                        ? fakeMessages.map((message) => (
+                            <div
+                              key={message.id}
+                              className={cn(
+                                'pointer-events-none max-w-[min(85%,20rem)] select-none rounded-2xl px-3.5 py-2 text-sm leading-relaxed blur-[1.5px] opacity-60',
+                                message.sender === mySenderRole
+                                  ? 'ml-auto rounded-br-md bg-violet-200 text-violet-900'
+                                  : 'rounded-bl-md border border-violet-100/80 bg-white text-slate-600',
+                              )}
+                            >
+                              {message.content}
+                            </div>
+                          ))
+                        : conversationMessages.map((message) => (
+                            <ChatMessageBubble
+                              key={message.id}
+                              content={message.content}
+                              isMine={message.sender === 'me'}
+                            />
+                          ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 space-y-2 border-t border-violet-100/80 bg-white/90 px-4 py-3 backdrop-blur-sm sm:px-5">
+                    <p className="flex items-start gap-2 text-xs leading-relaxed text-slate-500">
+                      <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-violet-500" />
+                      <span>
+                        {t('noticePrefix')}{' '}
+                        <a
+                          href={MEZON_URL}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-violet-700 hover:underline"
+                        >
+                          {t('noticeLink')}
+                        </a>
+                      </span>
+                    </p>
+
+                    <div className="flex items-end gap-2 rounded-2xl border border-violet-100 bg-slate-50/80 p-2 ring-1 ring-violet-50">
+                      <textarea
+                        ref={textareaRef}
+                        rows={MIN_ROWS}
+                        value={messageContent}
+                        onChange={handleChange}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' && !event.shiftKey) {
+                            event.preventDefault();
+                            void handleSend();
+                          }
+                        }}
+                        placeholder={t('inputPlaceholder')}
+                        className="max-h-24 min-h-9 flex-1 resize-none border-0 bg-transparent px-2 py-1.5 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                      />
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        onClick={() => void handleSend()}
+                        disabled={isSending || !messageContent.trim()}
+                        aria-label={t('send')}
+                        className={cn(
+                          'size-9 shrink-0 rounded-xl border-0',
+                          ctaGradientClass,
+                          'disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none',
+                        )}
+                      >
+                        <SendIcon className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

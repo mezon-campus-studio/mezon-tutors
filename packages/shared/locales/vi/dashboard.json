@@ -78,7 +78,8 @@
         "all": "Tất cả yêu cầu",
         "pending": "Đang chờ",
         "confirmed": "Đã xác nhận",
-        "completed": "Hoàn thành"
+        "completed": "Hoàn thành",
+        "cancelled": "Đã hủy"
       },
       "table": {
         "student": "Học viên",
@@ -88,7 +89,34 @@
         "status": "Trạng thái",
         "actions": "Hành động",
         "view": "Xem",
+        "reschedule": "Dời lịch",
+        "rescheduleComingSoon": "Tính năng dời lịch sẽ sớm có mặt.",
         "noResults": "Không có yêu cầu đặt lịch nào với bộ lọc này."
+      },
+      "reschedule": {
+        "within12Hours": "Bạn chỉ có thể yêu cầu dời lịch khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
+        "alreadyRequested": "Buổi học này đã có yêu cầu đổi lịch.",
+        "success": "Đã ghi nhận yêu cầu dời lịch. Học sinh đã được thông báo.",
+        "failed": "Không thể gửi yêu cầu dời lịch.",
+        "messageSent": "Đã gửi tin nhắn cho học sinh.",
+        "messageFailed": "Đã lưu yêu cầu nhưng không gửi được tin nhắn.",
+        "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn.",
+        "dialog": {
+          "title": "Yêu cầu dời lịch buổi học thử",
+          "confirm": "Gửi yêu cầu",
+          "dismiss": "Giữ giờ hiện tại",
+          "reasonLabel": "Lý do dời lịch",
+          "reasonPlaceholder": "Chọn lý do",
+          "messageLabel": "Tin nhắn cho {student} (tùy chọn)",
+          "messagePlaceholder": "Giải thích lý do dời lịch và gợi ý khung giờ mới...",
+          "policyHint": "Hệ thống lưu yêu cầu dời lịch và thông báo cho học sinh. Giờ trên lịch chưa thay đổi và không hoàn tiền."
+        },
+        "reasons": {
+          "scheduleConflict": "Trùng lịch",
+          "personalEmergency": "Sự cố cá nhân",
+          "studentUnavailable": "Học sinh không thể tham gia",
+          "other": "Khác"
+        }
       },
       "status": {
         "pending": "Đang chờ",
@@ -184,6 +212,7 @@
         "emptyDescription": "Chọn tuần khác, hoặc mở Buổi học thử khi có yêu cầu mới.",
         "durationLabel": "{minutes} phút",
         "viewDetail": "Chi tiết",
+        "reschedule": "Dời lịch",
         "joinLesson": "Vào lớp",
         "subscriptionBadge": "Gói theo tháng"
       }

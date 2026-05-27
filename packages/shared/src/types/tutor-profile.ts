@@ -258,6 +258,10 @@ export interface TutorAboutDto extends VerifiedTutorProfileDto {
 
 export interface TutorScheduleDto {
   availability: TutorDetailAvailabilitySlotDto[]
+  /** IANA timezone of the tutor (for display). Availability times are stored in UTC. */
+  timezone?: string
+  /** When true, `availability` dayOfWeek/startTime/endTime are UTC wall-clock (DB canonical). */
+  availabilityStoredInUtc?: boolean
 }
 
 export interface TutorReviewsDto {

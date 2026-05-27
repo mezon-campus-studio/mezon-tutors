@@ -1,44 +1,49 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import dayjs from 'dayjs';
-import { useGetMyLessonsOverview } from '@/services/my-lessons/my-lessons.api';
-import MyLessonsHeader from './components/MyLessonsHeader';
-import MyLessonsCalendarSection from './components/MyLessonsCalendarSection';
-import MyLessonsPanel from './components/MyLessonsPanel';
-import MyLessonsTutorsSection from './components/MyTutorsPanel';
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { useUserTimezone } from "@/hooks";
+import { getWeekStartMondayInTimezone } from "@/lib/timezone";
+import { useGetMyLessonsOverview } from "@/services/my-lessons/my-lessons.api";
+import MyLessonsCalendarSection from "./components/MyLessonsCalendarSection";
+import MyLessonsHeader from "./components/MyLessonsHeader";
+import MyLessonsPanel from "./components/MyLessonsPanel";
+import MyLessonsTutorsSection from "./components/MyTutorsPanel";
 
-type MyLessonsTab = 'lessons' | 'calendar' | 'tutors';
+type MyLessonsTab = "lessons" | "calendar" | "tutors";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export default function MyLessonsPage() {
-  const t = useTranslations('MyLessons');
+  const t = useTranslations("MyLessons");
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<MyLessonsTab>('calendar');
-  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const userTimezone = useUserTimezone();
+  const [activeTab, setActiveTab] = useState<MyLessonsTab>("calendar");
+  const [selectedDate, setSelectedDate] = useState(dayjs().tz(userTimezone));
 
-  const dayOfWeek = selectedDate.day();
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const monday = selectedDate.subtract(mondayOffset, 'day').startOf('day');
-  const weekStartDate = monday.format('YYYY-MM-DD');
+  const monday = getWeekStartMondayInTimezone(userTimezone, selectedDate);
+  const weekStartDate = monday.format("YYYY-MM-DD");
 
-  const { data, isLoading } = useGetMyLessonsOverview(weekStartDate);
+  const { data, isLoading } = useGetMyLessonsOverview(
+    weekStartDate,
+    userTimezone,
+  );
 
-  const handlePrevWeek = () => setSelectedDate((prev) => prev.subtract(7, 'day'));
-  const handleNextWeek = () => setSelectedDate((prev) => prev.add(7, 'day'));
-  
-  const isCurrentWeek = () => {
-    const today = dayjs();
-    const todayDayOfWeek = today.day();
-    const todayMondayOffset = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
-    const todayMonday = today.subtract(todayMondayOffset, 'day').startOf('day');
-    return monday.isSame(todayMonday, 'day');
-  };
+  const handlePrevWeek = () =>
+    setSelectedDate((prev) => prev.subtract(7, "day"));
+  const handleNextWeek = () => setSelectedDate((prev) => prev.add(7, "day"));
+
+  const isCurrentWeek = () =>
+    monday.isSame(getWeekStartMondayInTimezone(userTimezone), "day");
 
   const handleGoToToday = () => {
-    setSelectedDate(dayjs());
+    setSelectedDate(dayjs().tz(userTimezone));
   };
 
   return (
@@ -48,17 +53,19 @@ export default function MyLessonsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
-                {t('header.title')}
+                {t("header.title")}
               </h1>
-              <p className="mt-1 text-sm text-slate-500">{t('header.subtitle')}</p>
+              <p className="mt-1 text-sm text-slate-500">
+                {t("header.subtitle")}
+              </p>
             </div>
             <button
               type="button"
-              onClick={() => router.push('/tutors')}
+              onClick={() => router.push("/tutors")}
               className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
             >
               <Plus className="size-4" />
-              {t('header.scheduleLesson')}
+              {t("header.scheduleLesson")}
             </button>
           </div>
 
@@ -66,17 +73,18 @@ export default function MyLessonsPage() {
 
           {isLoading && (
             <div className="flex min-h-[400px] w-full items-center justify-center rounded-2xl border border-violet-100 bg-white">
-              <p className="text-sm text-slate-500">{t('screen.loading')}</p>
+              <p className="text-sm text-slate-500">{t("screen.loading")}</p>
             </div>
           )}
 
-
           {data && !isLoading && (
             <>
-              {activeTab === 'calendar' && (
+              {activeTab === "calendar" && (
                 <MyLessonsCalendarSection
                   calendar={data.calendar}
                   lessons={data.calendarLessons}
+                  weekStartYmd={weekStartDate}
+                  timezoneName={userTimezone}
                   onPrevWeek={handlePrevWeek}
                   onNextWeek={handleNextWeek}
                   onGoToToday={handleGoToToday}
@@ -84,14 +92,14 @@ export default function MyLessonsPage() {
                 />
               )}
 
-              {activeTab === 'lessons' && (
+              {activeTab === "lessons" && (
                 <MyLessonsPanel
                   upcomingLessons={data.upcomingLessons}
                   previousLessons={data.previousLessons}
                 />
               )}
 
-              {activeTab === 'tutors' && (
+              {activeTab === "tutors" && (
                 <MyLessonsTutorsSection tutors={data.tutors} />
               )}
             </>

@@ -4,15 +4,18 @@ import { PassportModule } from '@nestjs/passport'
 import { AppConfigService } from '../../shared/services/app-config.service'
 import { PrismaModule } from '../../prisma/prisma.module'
 import { UserModule } from '../user/user.module'
+import { NotificationModule } from '../notification/notification.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
+import { MezonChannelAppService } from './services/mezon-channel-app.service'
 
 @Module({
   imports: [
     PassportModule,
     PrismaModule,
     UserModule,
+    NotificationModule,
     JwtModule.registerAsync({
       inject: [AppConfigService],
       useFactory: (config: AppConfigService) => ({
@@ -24,7 +27,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, MezonChannelAppService],
   exports: [AuthService, JwtModule, PassportModule, JwtStrategy],
 })
 export class AuthModule {}

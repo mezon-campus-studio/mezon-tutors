@@ -1,0 +1,61 @@
+{
+  "siteName": "Mezonly",
+  "default": {
+    "title": "Mezonly — Online tutoring on Mezon",
+    "description": "Mezonly connects learners with vetted tutors. Book 1-on-1 lessons, chat, and study live on Mezon — on your schedule."
+  },
+  "home": {
+    "title": "Mezonly — Online tutoring on Mezon",
+    "description": "Find the right tutor for languages, school subjects, and skills. Book a trial lesson, subscribe monthly, and learn live on Mezon."
+  },
+  "tutors": {
+    "title": "Find tutors | Mezonly",
+    "description": "Browse verified tutors on Mezonly. Filter by subject, price, and ratings to find your match."
+  },
+  "tutorDetail": {
+    "title": "{name} — {subject} tutor | Mezonly",
+    "description": "{snippet}",
+    "fallbackTitle": "Tutor profile | Mezonly",
+    "fallbackDescription": "View tutor profile, schedule, and reviews on Mezonly."
+  },
+  "dashboard": {
+    "title": "Dashboard | Mezonly",
+    "description": "Manage your lessons, teaching schedule, and wallet on Mezonly."
+  },
+  "myLessons": {
+    "title": "My lessons | Mezonly",
+    "description": "Track upcoming and past lessons on Mezonly."
+  },
+  "mySchedule": {
+    "title": "My schedule | Mezonly",
+    "description": "Manage your teaching schedule and bookings on Mezonly."
+  },
+  "wallet": {
+    "title": "Wallet | Mezonly",
+    "description": "View balance, transactions, and withdrawals on Mezonly."
+  },
+  "trialBookings": {
+    "title": "Trial bookings | Mezonly",
+    "description": "Manage trial lessons with students on Mezonly."
+  },
+  "becomeTutor": {
+    "title": "Become a tutor | Mezonly",
+    "description": "Complete your tutor profile and start teaching on Mezonly."
+  },
+  "checkoutTrial": {
+    "title": "Book a trial lesson | Mezonly",
+    "description": "Complete your trial lesson booking on Mezonly."
+  },
+  "checkoutSubscription": {
+    "title": "Subscribe to lessons | Mezonly",
+    "description": "Choose a monthly plan and schedule on Mezonly."
+  },
+  "admin": {
+    "title": "Admin | Mezonly",
+    "description": "Mezonly internal administration."
+  },
+  "authCallback": {
+    "title": "Sign in | Mezonly",
+    "description": "Completing Mezonly sign-in."
+  }
+}

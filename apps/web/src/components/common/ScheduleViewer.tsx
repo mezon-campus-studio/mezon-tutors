@@ -1,26 +1,29 @@
 'use client';
 
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { 
+import {
   CALENDAR_CONFIG,
-  formatWeekday,
-  formatWeekRange,
   formatTimezoneToUTC,
-  getWeekStartMonday,
-  addDays,
-  formatYmd,
   minutesToTime,
   timeToMinutes as parseTimeToMinutes,
 } from '@mezon-tutors/shared';
+import dayjs from 'dayjs';
+import timezonePlugin from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Button, Dialog, DialogContent } from '@/components/ui';
 import { cn } from '@/lib/utils';
+
+dayjs.extend(utc);
+dayjs.extend(timezonePlugin);
 
 const { SLOT_MINUTES, COMPACT_BLOCK_HOURS, MODAL_MAX_HEIGHT } = CALENDAR_CONFIG.SCHEDULE_VIEWER;
 const DAY_COUNT = CALENDAR_CONFIG.DAYS_PER_WEEK;
 const MINUTES_PER_DAY = 24 * 60;
+const DEFAULT_TIMEZONE = 'UTC';
 
+/** Wall-clock slot in `timezone` (YYYY-MM-DD + HH:mm), not UTC. */
 export type ScheduleSlotInput = {
   date: string;
   startTime: string;
@@ -28,8 +31,10 @@ export type ScheduleSlotInput = {
 };
 
 export interface ScheduleViewerProps {
+  /** Slots expanded for the viewer; use `utcWeeklySlotsToCalendarInstances` when DB stores UTC weekly rows. */
   availableSlots: ScheduleSlotInput[];
   className?: string;
+  /** IANA timezone used for week headers and cell timestamps (typically `useUserTimezone()`). */
   timezone?: string;
 }
 
@@ -41,8 +46,10 @@ export interface ScheduleViewerModalProps {
 }
 
 type WeekDate = {
-  date: Date;
   id: string;
+  anchorDate: Date;
+  shortWeekdayLabel: string;
+  dayNumberLabel: string;
 };
 
 type TimeBlock = {
@@ -51,9 +58,18 @@ type TimeBlock = {
   endHour: number;
 };
 
-function parseYmd(ymd: string): Date {
-  const [yearText, monthText, dayText] = ymd.split('-');
-  return new Date(Number(yearText), Number(monthText) - 1, Number(dayText));
+function resolveTimezone(timezoneName?: string): string {
+  const candidate = timezoneName?.trim();
+  if (!candidate) {
+    return DEFAULT_TIMEZONE;
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: candidate }).format(new Date());
+    return candidate;
+  } catch {
+    return DEFAULT_TIMEZONE;
+  }
 }
 
 function normalizeEndTime(startTime: string, endTime?: string): string {
@@ -63,20 +79,19 @@ function normalizeEndTime(startTime: string, endTime?: string): string {
 
 function getCompactTimeBlocks(): TimeBlock[] {
   const blocks: TimeBlock[] = [];
-  
+
   for (let hour = 0; hour < 24; hour += COMPACT_BLOCK_HOURS) {
     const startHour = hour;
     const endHour = hour + COMPACT_BLOCK_HOURS;
-    
     const formatHour = (h: number) => String(h).padStart(2, '0');
-    
+
     blocks.push({
       label: `${formatHour(startHour)} - ${formatHour(endHour)}`,
       startHour,
       endHour,
     });
   }
-  
+
   return blocks;
 }
 
@@ -100,41 +115,96 @@ function hasAvailableSlotInBlock(
 
 function buildAvailableCellSet(slots: ScheduleSlotInput[]): Set<string> {
   const set = new Set<string>();
-  
+
   for (const slot of slots) {
     const start = parseTimeToMinutes(slot.startTime);
     const end = parseTimeToMinutes(normalizeEndTime(slot.startTime, slot.endTime));
-    
+
     for (let minute = start; minute + SLOT_MINUTES <= end; minute += SLOT_MINUTES) {
       set.add(`${slot.date}|${minutesToTime(minute)}`);
     }
   }
-  
+
   return set;
 }
 
-function generateWeekDates(baseWeekStart: Date, weekOffset: number): WeekDate[] {
-  const start = addDays(baseWeekStart, weekOffset * DAY_COUNT);
-  return Array.from({ length: DAY_COUNT }).map((_, index) => {
-    const date = addDays(start, index);
-    return { date, id: formatYmd(date) };
+function getWeekStartMonday(timezoneName: string): dayjs.Dayjs {
+  const today = dayjs().tz(timezoneName).startOf('day');
+  const jsDay = today.day(); // 0:Sun ... 6:Sat
+  const distanceToMonday = jsDay === 0 ? 6 : jsDay - 1;
+  return today.subtract(distanceToMonday, 'day');
+}
+
+function generateWeekDates(
+  baseWeekStart: dayjs.Dayjs,
+  weekOffset: number,
+  timezoneName: string,
+  locale: string
+): WeekDate[] {
+  const start = baseWeekStart.add(weekOffset * DAY_COUNT, 'day');
+  const weekdayFormatter = new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    timeZone: timezoneName,
   });
+  const dayFormatter = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    timeZone: timezoneName,
+  });
+
+  return Array.from({ length: DAY_COUNT }).map((_, index) => {
+    const date = start.add(index, 'day');
+    const id = date.format('YYYY-MM-DD');
+    const anchorDate = dayjs.tz(`${id} 12:00`, 'YYYY-MM-DD HH:mm', timezoneName).toDate();
+
+    return {
+      id,
+      anchorDate,
+      shortWeekdayLabel: weekdayFormatter.format(anchorDate).toUpperCase(),
+      dayNumberLabel: dayFormatter.format(anchorDate),
+    };
+  });
+}
+
+function formatWeekRangeLabel(weekDates: WeekDate[], locale: string, timezoneName: string): string {
+  if (!weekDates.length) {
+    return '';
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: timezoneName,
+  });
+
+  return `${formatter.format(weekDates[0].anchorDate)} - ${formatter.format(
+    weekDates[DAY_COUNT - 1].anchorDate
+  )}`;
+}
+
+function toCellTimestamp(date: string, startTime: string, timezoneName: string): number {
+  return dayjs.tz(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm', timezoneName).valueOf();
 }
 
 export function ScheduleViewer({
   availableSlots,
   className,
-  timezone = 'UTC+7',
+  timezone = DEFAULT_TIMEZONE,
 }: ScheduleViewerProps) {
   const t = useTranslations('Tutors.Detail');
   const locale = useLocale();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const formattedTimezone = useMemo(() => formatTimezoneToUTC(timezone), [timezone]);
-  
-  const now = useMemo(() => new Date(), []);
-  const baseWeekStart = useMemo(() => getWeekStartMonday(now), [now]);
-  const weekDates = useMemo(() => generateWeekDates(baseWeekStart, 0), [baseWeekStart]);
+
+  const effectiveTimezone = useMemo(() => resolveTimezone(timezone), [timezone]);
+  const formattedTimezone = useMemo(
+    () => formatTimezoneToUTC(effectiveTimezone),
+    [effectiveTimezone]
+  );
+  const baseWeekStart = useMemo(() => getWeekStartMonday(effectiveTimezone), [effectiveTimezone]);
+  const weekDates = useMemo(
+    () => generateWeekDates(baseWeekStart, 0, effectiveTimezone, locale),
+    [baseWeekStart, effectiveTimezone, locale]
+  );
   const timeBlocks = useMemo(() => getCompactTimeBlocks(), []);
   const availableCellSet = useMemo(() => buildAvailableCellSet(availableSlots), [availableSlots]);
 
@@ -148,11 +218,12 @@ export function ScheduleViewer({
                 {formattedTimezone}
               </div>
               {weekDates.map((day) => (
-                <div key={day.id} className="border-r px-2 py-3 text-center last:border-r-0">
-                  <p className="text-xs font-bold text-primary">
-                    {formatWeekday(day.date, locale)}
-                  </p>
-                  <p className="text-base font-semibold">{day.date.getDate()}</p>
+                <div
+                  key={day.id}
+                  className="border-r px-2 py-3 text-center last:border-r-0"
+                >
+                  <p className="text-xs font-bold text-primary">{day.shortWeekdayLabel}</p>
+                  <p className="text-base font-semibold">{day.dayNumberLabel}</p>
                 </div>
               ))}
             </div>
@@ -167,7 +238,7 @@ export function ScheduleViewer({
                 </div>
                 {weekDates.map((day) => {
                   const hasSlot = hasAvailableSlotInBlock(day.id, block, availableCellSet);
-                  
+
                   return (
                     <div
                       key={`${day.id}-${block.label}`}
@@ -199,7 +270,7 @@ export function ScheduleViewer({
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         availableSlots={availableSlots}
-        timezone={timezone}
+        timezone={effectiveTimezone}
       />
     </>
   );
@@ -209,21 +280,29 @@ export function ScheduleViewerModal({
   open,
   onOpenChange,
   availableSlots,
-  timezone = 'UTC+7',
+  timezone = DEFAULT_TIMEZONE,
 }: ScheduleViewerModalProps) {
   const t = useTranslations('Tutors.Detail');
   const tSchedule = useTranslations('Common.ScheduleSelection');
   const locale = useLocale();
   const [weekOffset, setWeekOffset] = useState(0);
-  
-  const formattedTimezone = useMemo(() => formatTimezoneToUTC(timezone), [timezone]);
-  
-  const now = useMemo(() => new Date(), []);
-  const baseWeekStart = useMemo(() => getWeekStartMonday(now), [now]);
-  const weekDates = useMemo(() => generateWeekDates(baseWeekStart, weekOffset), [baseWeekStart, weekOffset]);
-  const weekRangeLabel = useMemo(() => formatWeekRange(weekDates.map(d => d.date), locale), [weekDates, locale]);
+
+  const effectiveTimezone = useMemo(() => resolveTimezone(timezone), [timezone]);
+  const formattedTimezone = useMemo(
+    () => formatTimezoneToUTC(effectiveTimezone),
+    [effectiveTimezone]
+  );
+  const baseWeekStart = useMemo(() => getWeekStartMonday(effectiveTimezone), [effectiveTimezone]);
+  const weekDates = useMemo(
+    () => generateWeekDates(baseWeekStart, weekOffset, effectiveTimezone, locale),
+    [baseWeekStart, weekOffset, effectiveTimezone, locale]
+  );
+  const weekRangeLabel = useMemo(
+    () => formatWeekRangeLabel(weekDates, locale, effectiveTimezone),
+    [weekDates, locale, effectiveTimezone]
+  );
   const availableCellSet = useMemo(() => buildAvailableCellSet(availableSlots), [availableSlots]);
-  
+
   const timeRows = useMemo(() => {
     return Array.from({ length: MINUTES_PER_DAY / SLOT_MINUTES }).map((_, index) =>
       minutesToTime(index * SLOT_MINUTES)
@@ -233,7 +312,7 @@ export function ScheduleViewerModal({
   const scrollBodyRef = useRef<HTMLDivElement>(null);
 
   const scrollTargetRowStartTime = useMemo(() => {
-    const nowMs = Date.now();
+    const nowMs = dayjs().tz(effectiveTimezone).valueOf();
     let bestTs = Number.POSITIVE_INFINITY;
     let bestRow: string | null = null;
 
@@ -241,12 +320,8 @@ export function ScheduleViewerModal({
       for (const startTime of timeRows) {
         const key = `${day.id}|${startTime}`;
         if (!availableCellSet.has(key)) continue;
-        
-        const cellDate = parseYmd(day.id);
-        const [hourText, minuteText] = startTime.split(':');
-        cellDate.setHours(Number(hourText), Number(minuteText), 0, 0);
-        const ts = cellDate.getTime();
-        
+
+        const ts = toCellTimestamp(day.id, startTime, effectiveTimezone);
         if (ts <= nowMs) continue;
         if (ts < bestTs) {
           bestTs = ts;
@@ -268,7 +343,7 @@ export function ScheduleViewerModal({
     }
 
     return null;
-  }, [availableCellSet, timeRows, weekDates]);
+  }, [availableCellSet, effectiveTimezone, timeRows, weekDates]);
 
   useLayoutEffect(() => {
     if (!open || !scrollTargetRowStartTime) {
@@ -285,14 +360,21 @@ export function ScheduleViewerModal({
   }, [scrollTargetRowStartTime, weekOffset, availableSlots, open]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent
         showCloseButton={false}
         className="!max-w-4xl !w-full max-h-[85vh] p-0 flex flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <h2 className="text-xl font-bold">{t('fullScheduleTitle')}</h2>
-          <Button variant="ghost" size="icon-sm" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onOpenChange(false)}
+          >
             <XIcon className="size-5" />
           </Button>
         </div>
@@ -353,20 +435,19 @@ export function ScheduleViewerModal({
                   {formattedTimezone}
                 </div>
                 {weekDates.map((day) => (
-                  <div key={day.id} className="border-r px-1 py-2 text-center last:border-r-0">
-                    <p className="text-[10px] font-bold text-primary">
-                      {formatWeekday(day.date, locale)}
-                    </p>
-                    <p className="text-sm font-semibold">{day.date.getDate()}</p>
+                  <div
+                    key={day.id}
+                    className="border-r px-1 py-2 text-center last:border-r-0"
+                  >
+                    <p className="text-[10px] font-bold text-primary">{day.shortWeekdayLabel}</p>
+                    <p className="text-sm font-semibold">{day.dayNumberLabel}</p>
                   </div>
                 ))}
               </div>
 
-            {(() => {
-              const nowMs = Date.now();
-              return timeRows.map((startTime) => {
-                const [hourText, minuteText] = startTime.split(':');
-                return (
+              {(() => {
+                const nowMs = dayjs().tz(effectiveTimezone).valueOf();
+                return timeRows.map((startTime) => (
                   <div
                     key={startTime}
                     data-schedule-row={startTime}
@@ -378,7 +459,7 @@ export function ScheduleViewerModal({
                     {weekDates.map((day) => {
                       const key = `${day.id}|${startTime}`;
                       const isAvailable = availableCellSet.has(key);
-                      const cellTs = parseYmd(day.id).setHours(Number(hourText), Number(minuteText), 0, 0);
+                      const cellTs = toCellTimestamp(day.id, startTime, effectiveTimezone);
                       const isPast = cellTs <= nowMs;
 
                       return (
@@ -394,17 +475,15 @@ export function ScheduleViewerModal({
                       );
                     })}
                   </div>
-                );
-              });
-            })()}
-            
+                ));
+              })()}
             </div>
           </div>
         </div>
 
         <div className="flex items-center justify-center px-6 py-4 border-t shrink-0">
           <p className="text-sm text-muted-foreground">
-            {t('basedOnTimezone', { timezone })}
+            {t('basedOnTimezone', { timezone: effectiveTimezone })}
           </p>
         </div>
       </DialogContent>

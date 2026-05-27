@@ -1,15 +1,11 @@
-"use client";
+'use client';
 
-import type {
-  TutorAboutDto,
-  TutorDetailAvailabilitySlotDto,
-} from "@mezon-tutors/shared";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
-import {
-  type ScheduleSlotInput,
-  ScheduleViewer,
-} from "@/components/common/ScheduleViewer";
+import type { TutorAboutDto, TutorDetailAvailabilitySlotDto } from '@mezon-tutors/shared';
+import { utcWeeklySlotsToCalendarInstances } from '@mezon-tutors/shared';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
+import { type ScheduleSlotInput, ScheduleViewer } from '@/components/common/ScheduleViewer';
+import { useUserTimezone } from '@/hooks';
 
 type TutorScheduleTabProps = {
   tutor: TutorAboutDto & {
@@ -17,76 +13,55 @@ type TutorScheduleTabProps = {
   };
 };
 
-function getDateForDayOfWeek(
-  dbDayOfWeek: number,
-  weekOffset: number = 0,
-): string {
-  const jsDay = (dbDayOfWeek + 1) % 7;
+/** Weeks pre-expanded for ScheduleViewer modal navigation (viewer-local dates/times). */
+const WEEKS_AHEAD = 8;
 
-  const today = new Date();
-  const currentDay = today.getDay();
-
-  let daysToAdd = jsDay - currentDay;
-  if (daysToAdd < 0) {
-    daysToAdd += 7;
-  }
-  daysToAdd += weekOffset * 7;
-
-  const targetDate = new Date(today);
-  targetDate.setDate(today.getDate() + daysToAdd);
-
-  const year = targetDate.getFullYear();
-  const month = String(targetDate.getMonth() + 1).padStart(2, "0");
-  const day = String(targetDate.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function generateAvailableSlots(
+function buildViewerScheduleSlots(
   availability: TutorDetailAvailabilitySlotDto[],
-  weeksAhead: number = 4,
+  viewerTimezone: string,
 ): ScheduleSlotInput[] {
-  const slots: ScheduleSlotInput[] = [];
+  const utcSlots = availability.map((slot) => ({
+    dayOfWeek: slot.dayOfWeek,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    isActive: slot.isActive,
+  }));
 
-  for (let weekOffset = 0; weekOffset < weeksAhead; weekOffset++) {
-    for (const slot of availability) {
-      if (!slot.isActive) continue;
-
-      slots.push({
-        date: getDateForDayOfWeek(slot.dayOfWeek, weekOffset),
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-      });
-    }
+  const merged: ScheduleSlotInput[] = [];
+  for (let weekOffset = 0; weekOffset < WEEKS_AHEAD; weekOffset++) {
+    const instances = utcWeeklySlotsToCalendarInstances(
+      utcSlots,
+      viewerTimezone,
+      weekOffset,
+    );
+    merged.push(...instances);
   }
-
-  return slots;
+  return merged;
 }
 
 export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
-  const t = useTranslations("Tutors.Detail");
+  const t = useTranslations('Tutors.Detail');
+  const viewerTimezone = useUserTimezone();
 
   const availableSlots = useMemo(
-    () => generateAvailableSlots(tutor.availability),
-    [tutor.availability],
+    () => buildViewerScheduleSlots(tutor.availability, viewerTimezone),
+    [tutor.availability, viewerTimezone],
   );
 
-  const hasAvailability = tutor.availability?.length > 0;
+  const hasAvailability = tutor.availability?.some((slot) => slot.isActive) ?? false;
 
   if (!hasAvailability) {
     return (
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-            {t("scheduleTitle")}
-          </h2>
+          <h2 className="text-xl font-extrabold text-gray-900 mb-2">{t('scheduleTitle')}</h2>
           <p className="text-sm text-gray-600">
-            {t("scheduleHint", { timezone: tutor.timezone })}
+            {t('scheduleHint', { timezone: viewerTimezone })}
           </p>
         </div>
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-          <p className="text-center text-gray-600">{t("scheduleEmpty")}</p>
+          <p className="text-center text-gray-600">{t('scheduleEmpty')}</p>
         </div>
       </div>
     );
@@ -95,18 +70,13 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-          {t("scheduleTitle")}
-        </h2>
+        <h2 className="text-xl font-extrabold text-gray-900 mb-2">{t('scheduleTitle')}</h2>
         <p className="text-sm text-gray-600">
-          {t("scheduleHint", { timezone: tutor.timezone })}
+          {t('scheduleHint', { timezone: viewerTimezone })}
         </p>
       </div>
 
-      <ScheduleViewer
-        availableSlots={availableSlots}
-        timezone={tutor.timezone || "UTC+7"}
-      />
+      <ScheduleViewer availableSlots={availableSlots} timezone={viewerTimezone} />
     </div>
   );
 }

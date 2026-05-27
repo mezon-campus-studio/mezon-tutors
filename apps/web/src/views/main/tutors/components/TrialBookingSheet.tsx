@@ -1,15 +1,17 @@
 "use client";
 
 import {
-  buildTimeSlotsForDay,
   ECurrency,
+  EPeriod,
   ETrialLessonBookingStatus,
   formatToCurrency,
   jsDayToDbDayOfWeek,
-  parseYyyyMmDdToLocalDate,
   type TrialTimeSlot,
   timeToMinutes,
+  utcWeeklySlotsToCalendarInstances,
+  expandCalendarSlotToSteps,
 } from "@mezon-tutors/shared";
+import dayjs from "dayjs";
 import { useAtomValue } from "jotai";
 import { CalendarClock, Clock, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
@@ -29,13 +31,32 @@ import {
   SheetTitle,
   toast,
 } from "@/components/ui";
-import { useCurrency } from "@/hooks";
+import { useCurrency, useUserTimezone } from "@/hooks";
+import {
+  formatWallClockTime12h,
+  formatWeekdayShort,
+  getWeekStartMondayInTimezone,
+  parseYmdInTimezone,
+  startOfTodayInTimezone,
+} from "@/lib/timezone";
 import {
   useGetAlreadyBookedTrialLesson,
   useGetOccupiedTrialLessonSlots,
   useGetTutorAvailability,
 } from "@/services";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
+
+function parseTimeParts(hhmm: string): { hour: number; minute: number } {
+  const [h, m] = hhmm.split(":").map(Number);
+  return { hour: h ?? 0, minute: m ?? 0 };
+}
+
+function periodFromHourMinute(hour: number): EPeriod {
+  if (hour >= 1 && hour < 11) return EPeriod.MORNING;
+  if (hour >= 11 && hour < 13) return EPeriod.NOON;
+  if (hour >= 13 && hour < 17) return EPeriod.AFTERNOON;
+  return EPeriod.EVENING;
+}
 
 export type TrialBookingPayload = {
   duration: number;
@@ -44,9 +65,16 @@ export type TrialBookingPayload = {
   time: TrialTimeSlot;
 };
 
+export type TrialBookingSheetMode = "book" | "reschedule";
+
 export interface TrialBookingSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: TrialBookingSheetMode;
+  /** When rescheduling, exclude this booking from occupied slots. */
+  rescheduleBookingId?: string;
+  initialDurationMinutes?: number;
+  lockDuration?: boolean;
   onConfirm?: (payload: TrialBookingPayload) => void | Promise<void>;
   tutor: {
     id: string;
@@ -69,64 +97,50 @@ const SLOT_INTERVAL_MINUTES = 30;
 export function TrialBookingSheet({
   open,
   onOpenChange,
+  mode = "book",
+  rescheduleBookingId,
+  initialDurationMinutes,
+  lockDuration = false,
   onConfirm,
   tutor,
 }: TrialBookingSheetProps) {
   const t = useTranslations("Tutors.TrialBookingSheet");
+  const isReschedule = mode === "reschedule";
   const router = useRouter();
   const { currency } = useCurrency();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
 
-  const [duration, setDuration] = useState<number>(DURATION_OPTIONS[0]);
+  const [duration, setDuration] = useState<number>(
+    initialDurationMinutes ?? DURATION_OPTIONS[0],
+  );
   const [timeId, setTimeId] = useState<string>("");
   const [nowTs, setNowTs] = useState<number>(Date.now());
   const [weekOffset, setWeekOffset] = useState<number>(0);
 
   const { data: schedule, isPending: isAvailabilityPending } =
     useGetTutorAvailability(tutor.id, open && Boolean(tutor.id));
+  const userTimezone = useUserTimezone();
 
-  const baseWeekStart = useMemo(() => {
-    const today = new Date();
-    const todayStart = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-    const jsWeekDay = todayStart.getDay();
-    const distanceToMonday = jsWeekDay === 0 ? 6 : jsWeekDay - 1;
-    const startOfCurrentWeek = new Date(todayStart);
-    startOfCurrentWeek.setDate(todayStart.getDate() - distanceToMonday);
-    return startOfCurrentWeek;
-  }, []);
+  const baseWeekStart = useMemo(
+    () => getWeekStartMondayInTimezone(userTimezone),
+    [userTimezone],
+  );
 
   const calendarDates = useMemo(() => {
-    const today = new Date();
-    const todayStart = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-    const startOfWeek = new Date(baseWeekStart);
-    startOfWeek.setDate(baseWeekStart.getDate() + weekOffset * DAYS_IN_WEEK);
+    const todayStart = startOfTodayInTimezone(userTimezone);
+    const startOfWeek = baseWeekStart.add(weekOffset * DAYS_IN_WEEK, "day");
 
     return Array.from({ length: DAYS_IN_WEEK }).map((_, index) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + index);
-
-      const normalized = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-      );
-      const isPastDate = normalized.getTime() < todayStart.getTime();
+      const date = startOfWeek.add(index, "day");
+      const isPastDate = date.isBefore(todayStart, "day");
 
       return {
-        id: `${normalized.getFullYear()}-${normalized.getMonth() + 1}-${normalized.getDate()}`,
-        day: normalized.getDate(),
+        id: date.format("YYYY-MM-DD"),
+        day: date.date(),
         disabled: isPastDate,
       };
     });
-  }, [baseWeekStart, weekOffset]);
+  }, [baseWeekStart, userTimezone, weekOffset]);
 
   const [dateId, setDateId] = useState<string>(() => {
     const firstAvailableDate = calendarDates.find((option) => !option.disabled);
@@ -139,64 +153,75 @@ export function TrialBookingSheet({
     [calendarDates, dateId],
   );
 
-  const selectedDateString = useMemo(() => {
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    const y = fullDate.getFullYear();
-    const m = String(fullDate.getMonth() + 1).padStart(2, "0");
-    const d = String(fullDate.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }, [selectedDate]);
+  const selectedDateString = selectedDate?.id ?? "";
 
   const dbDayOfWeek = useMemo(() => {
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    return jsDayToDbDayOfWeek(fullDate.getDay());
-  }, [selectedDate]);
+    if (!selectedDateString) return 0;
+    return jsDayToDbDayOfWeek(
+      parseYmdInTimezone(selectedDateString, userTimezone).day(),
+    );
+  }, [selectedDateString, userTimezone]);
+  const shiftedSlots = useMemo(() => {
+    const rows = schedule?.availability ?? [];
+    const calendarInstances = utcWeeklySlotsToCalendarInstances(
+      rows.map((slot) => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isActive: slot.isActive,
+      })),
+      userTimezone,
+      weekOffset,
+    );
+
+    return calendarInstances.flatMap((instance) =>
+      expandCalendarSlotToSteps(instance, SLOT_INTERVAL_MINUTES, duration),
+    );
+  }, [schedule?.availability, userTimezone, weekOffset, duration]);
 
   const timeSlots = useMemo(() => {
-    const rows = schedule?.availability ?? [];
-    return buildTimeSlotsForDay(rows, dbDayOfWeek, SLOT_INTERVAL_MINUTES);
-  }, [schedule?.availability, dbDayOfWeek]);
+    const matching = shiftedSlots.filter(
+      (slot) => slot.date === selectedDateString,
+    );
+
+    return matching.map((slot) => {
+      const { hour } = parseTimeParts(slot.startTime);
+      return {
+        id: slot.startTime,
+        label: formatWallClockTime12h(slot.startTime),
+        period: periodFromHourMinute(hour),
+        startTime: slot.startTime,
+      };
+    });
+  }, [shiftedSlots, selectedDateString]);
 
   const scheduleAvailableSlots = useMemo(() => {
-    const rows = schedule?.availability ?? [];
-
-    return calendarDates.flatMap((dateOption) => {
-      const fullDate = parseYyyyMmDdToLocalDate(dateOption.id);
-      const y = fullDate.getFullYear();
-      const m = String(fullDate.getMonth() + 1).padStart(2, "0");
-      const d = String(fullDate.getDate()).padStart(2, "0");
-      const dateString = `${y}-${m}-${d}`;
-      const dayOfWeek = jsDayToDbDayOfWeek(fullDate.getDay());
-      const daySlots = buildTimeSlotsForDay(
-        rows,
-        dayOfWeek,
-        SLOT_INTERVAL_MINUTES,
-      );
-
-      return daySlots.map((slot) => ({
-        date: dateString,
-        startTime: slot.startTime,
-      }));
-    });
-  }, [calendarDates, schedule?.availability]);
+    return shiftedSlots.map((slot) => ({
+      date: slot.date,
+      startTime: slot.startTime,
+    }));
+  }, [shiftedSlots]);
 
   const { data: occupiedSlotsResponse } = useGetOccupiedTrialLessonSlots(
     tutor.id,
     selectedDateString,
+    userTimezone,
     open && Boolean(tutor.id),
+    isReschedule ? rescheduleBookingId : undefined,
   );
-  const { data: alreadyBookedResponse, isPending: isAlreadyBookedPending } =
-    useGetAlreadyBookedTrialLesson(
-      tutor.id,
-      open && Boolean(tutor.id) && isAuthenticated,
-    );
+  const { data: alreadyBookedResponse } = useGetAlreadyBookedTrialLesson(
+    tutor.id,
+    open && Boolean(tutor.id) && isAuthenticated && !isReschedule,
+  );
   const alreadyBookedStatus = alreadyBookedResponse?.status ?? null;
   const hasBooked = Boolean(alreadyBookedResponse?.hasBooked);
-  const isBookingLocked = Boolean(
-    hasBooked &&
-      alreadyBookedStatus &&
-      alreadyBookedStatus !== ETrialLessonBookingStatus.CANCELLED,
-  );
+  const isBookingLocked =
+    !isReschedule &&
+    Boolean(
+      hasBooked &&
+        alreadyBookedStatus &&
+        alreadyBookedStatus !== ETrialLessonBookingStatus.CANCELLED,
+    );
 
   const selectedTime = useMemo(
     () => timeSlots.find((slot) => slot.id === timeId),
@@ -216,22 +241,27 @@ export function TrialBookingSheet({
     if (alreadyBookedStatus === ETrialLessonBookingStatus.COMPLETED) {
       return t("alreadyBookedCompleted");
     }
+    if (isReschedule) {
+      return t("confirmReschedule");
+    }
     return t("confirmBooking");
-  }, [alreadyBookedStatus, selectedTime, t]);
+  }, [alreadyBookedStatus, isReschedule, selectedTime, t]);
+
+  useEffect(() => {
+    if (open && initialDurationMinutes) {
+      setDuration(initialDurationMinutes);
+    }
+  }, [open, initialDurationMinutes]);
 
   const pastSlotIds = useMemo(() => {
-    const now = new Date(nowTs);
-    const fullDate = parseYyyyMmDdToLocalDate(selectedDate.id);
-    const isToday =
-      fullDate.getFullYear() === now.getFullYear() &&
-      fullDate.getMonth() === now.getMonth() &&
-      fullDate.getDate() === now.getDate();
+    const now = dayjs(nowTs).tz(userTimezone);
+    const isToday = selectedDateString === now.format("YYYY-MM-DD");
 
     if (!isToday) {
       return new Set<string>();
     }
 
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = now.hour() * 60 + now.minute();
     const ids = new Set<string>();
 
     for (const slot of timeSlots) {
@@ -245,7 +275,7 @@ export function TrialBookingSheet({
     }
 
     return ids;
-  }, [nowTs, selectedDate.id, timeSlots]);
+  }, [nowTs, selectedDateString, timeSlots, userTimezone]);
 
   const occupiedSlotIds = useMemo(() => {
     const occupied = occupiedSlotsResponse?.items ?? [];
@@ -253,12 +283,20 @@ export function TrialBookingSheet({
       return new Set<string>();
     }
 
+    const occupiedLocal = occupied.map((booked) => {
+      const local = dayjs(booked.startAt).tz(userTimezone);
+      return {
+        startTime: local.format("HH:mm"),
+        durationMinutes: booked.durationMinutes,
+      };
+    });
+
     const ids = new Set<string>();
     for (const slot of timeSlots) {
       const slotStart = timeToMinutes(slot.startTime);
       const slotEnd = slotStart + duration;
 
-      const overlapsBooked = occupied.some((booked) => {
+      const overlapsBooked = occupiedLocal.some((booked) => {
         const bookedStart = timeToMinutes(booked.startTime);
         const bookedEnd = bookedStart + booked.durationMinutes;
         return slotStart < bookedEnd && slotEnd > bookedStart;
@@ -270,7 +308,7 @@ export function TrialBookingSheet({
     }
 
     return ids;
-  }, [occupiedSlotsResponse?.items, timeSlots, duration]);
+  }, [occupiedSlotsResponse?.items, timeSlots, duration, userTimezone]);
 
   useEffect(() => {
     if (!timeSlots.length) {
@@ -366,10 +404,7 @@ export function TrialBookingSheet({
       return;
     }
 
-    const fullDate = parseYyyyMmDdToLocalDate(selected.date);
-    setDateId(
-      `${fullDate.getFullYear()}-${fullDate.getMonth() + 1}-${fullDate.getDate()}`,
-    );
+    setDateId(selected.date);
     setTimeId(selected.startTime);
   };
 
@@ -377,18 +412,13 @@ export function TrialBookingSheet({
     if (!selectedTime) {
       return t("noTimeSet");
     }
-    const date = parseYyyyMmDdToLocalDate(selectedDateString);
-    const dayLabel = new Intl.DateTimeFormat("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }).format(date);
+    const dayLabel = formatWeekdayShort(selectedDateString, userTimezone);
     const endMinutes = timeToMinutes(selectedTime.startTime) + duration;
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(
       endMinutes % 60,
     ).padStart(2, "0")}`;
     return `${dayLabel} · ${selectedTime.startTime} - ${endTime}`;
-  }, [duration, selectedDateString, selectedTime, t]);
+  }, [duration, selectedDateString, selectedTime, t, userTimezone]);
 
   const handleConfirm = async () => {
     if (!selectedTime || isBookingLocked) {
@@ -401,7 +431,11 @@ export function TrialBookingSheet({
       return;
     }
 
-    const startAt = `${selectedDateString}T${selectedTime.startTime}:00Z`;
+    const clientTimezone = userTimezone;
+    const startAt = dayjs(`${selectedDateString} ${selectedTime.startTime}`)
+      .tz(clientTimezone, true)
+      .utc()
+      .format();
     const payload: TrialBookingPayload = {
       duration,
       startAt,
@@ -419,6 +453,7 @@ export function TrialBookingSheet({
       startAt: payload.startAt,
       durationMinutes: String(payload.duration),
       dayOfWeek: String(payload.dayOfWeek),
+      timezone: userTimezone,
     });
     onOpenChange(false);
     router.push(`/checkout/trial-lesson?${query.toString()}`);
@@ -445,7 +480,7 @@ export function TrialBookingSheet({
               </p>
               <SheetTitle className="min-w-0 truncate text-left text-base font-extrabold text-slate-900 sm:text-lg md:text-xl">
                 <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
-                  {t("title")}
+                  {isReschedule ? t("rescheduleTitle") : t("title")}
                 </span>
               </SheetTitle>
             </div>
@@ -466,6 +501,7 @@ export function TrialBookingSheet({
               fillAvailableHeight
               className="min-h-0 flex-1"
               availableSlots={scheduleAvailableSlots}
+              timezone={userTimezone}
               selectionMode="single"
               lessonDurationMinutes={duration}
               value={selectedScheduleSlots}
@@ -506,7 +542,11 @@ export function TrialBookingSheet({
                   </div>
                 </div>
 
-                <div className="relative inline-flex w-full max-w-full shrink-0 items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto">
+                <div
+                  className={`relative inline-flex w-full max-w-full shrink-0 items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto ${
+                    lockDuration ? "pointer-events-none opacity-60" : ""
+                  }`}
+                >
                   <span
                     aria-hidden
                     className="absolute bottom-1 left-1 top-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
@@ -557,14 +597,20 @@ export function TrialBookingSheet({
               </div>
 
               <div className="flex w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between lg:w-auto lg:justify-end lg:shrink-0">
-                <div className="flex flex-col items-start sm:items-end">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                    Total
+                {!isReschedule ? (
+                  <div className="flex flex-col items-start sm:items-end">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                      Total
+                    </p>
+                    <p className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold leading-none tracking-tight text-transparent sm:text-3xl">
+                      {formatToCurrency(currency, totalPrice)}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="max-w-xs text-xs leading-relaxed text-slate-500 sm:text-sm">
+                    {t("rescheduleHint")}
                   </p>
-                  <p className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold leading-none tracking-tight text-transparent sm:text-3xl">
-                    {formatToCurrency(currency, totalPrice)}
-                  </p>
-                </div>
+                )}
                 <Button
                   size="lg"
                   className="group h-11 w-full min-w-0 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:w-auto sm:min-w-32"

@@ -1,60 +1,130 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   ApiResponse,
   CreateSubscriptionEnrollmentDto,
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
+  SubscriptionSlotCancelResult,
+  SubscriptionSlotRescheduleOptionsResponse,
+  SubscriptionSlotRescheduleResult,
+  RescheduleSubscriptionSlotPayload,
   TutorSubscriptionPlanDto,
+  TutorSubscriptionSlotRescheduleRequestResult,
   TutorSubscriptionWeekOccurrenceDto,
-} from '@mezon-tutors/shared'
-import { apiClient } from '../api-client'
-import { subscriptionQueryKey } from './subscription.qkey'
+} from "@mezon-tutors/shared";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../api-client";
+import { subscriptionQueryKey } from "./subscription.qkey";
 
 export const subscriptionApi = {
   getPlansByTutorId(tutorId: string): Promise<TutorSubscriptionPlanDto[]> {
-    return apiClient.get<ApiResponse<TutorSubscriptionPlanDto[]>, TutorSubscriptionPlanDto[]>(
-      '/subscription-plans',
-      { params: { tutorId } }
-    )
+    return apiClient.get<
+      ApiResponse<TutorSubscriptionPlanDto[]>,
+      TutorSubscriptionPlanDto[]
+    >("/subscription-plans", { params: { tutorId } });
   },
 
   getEligibility(tutorId: string): Promise<SubscriptionEligibilityDto> {
-    return apiClient.get<ApiResponse<SubscriptionEligibilityDto>, SubscriptionEligibilityDto>(
-      '/subscription-enrollments/eligibility',
-      { params: { tutorId } }
-    )
+    return apiClient.get<
+      ApiResponse<SubscriptionEligibilityDto>,
+      SubscriptionEligibilityDto
+    >("/subscription-enrollments/eligibility", { params: { tutorId } });
   },
 
-  createEnrollment(body: CreateSubscriptionEnrollmentDto): Promise<SubscriptionEnrollmentDto> {
-    return apiClient.post<ApiResponse<SubscriptionEnrollmentDto>, SubscriptionEnrollmentDto>(
-      '/subscription-enrollments',
-      body
-    )
+  createEnrollment(
+    body: CreateSubscriptionEnrollmentDto,
+  ): Promise<SubscriptionEnrollmentDto> {
+    return apiClient.post<
+      ApiResponse<SubscriptionEnrollmentDto>,
+      SubscriptionEnrollmentDto
+    >("/subscription-enrollments", body);
   },
 
   getEnrollment(id: string): Promise<SubscriptionEnrollmentDetailDto> {
-    return apiClient.get<ApiResponse<SubscriptionEnrollmentDetailDto>, SubscriptionEnrollmentDetailDto>(
-      `/subscription-enrollments/${id}`
-    )
+    return apiClient.get<
+      ApiResponse<SubscriptionEnrollmentDetailDto>,
+      SubscriptionEnrollmentDetailDto
+    >(`/subscription-enrollments/${id}`);
   },
 
-  getTutorWeekOccurrences(weekStartDate: string): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
+  cancelSlot(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string },
+  ): Promise<SubscriptionSlotCancelResult> {
+    return apiClient.post<
+      ApiResponse<SubscriptionSlotCancelResult>,
+      SubscriptionSlotCancelResult
+    >(`/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/cancel`, payload);
+  },
+
+  getRescheduleOptions(
+    enrollmentId: string,
+    slotIndex: number,
+    weekStartDate: string,
+    timezone: string,
+  ): Promise<SubscriptionSlotRescheduleOptionsResponse> {
+    return apiClient.get<
+      ApiResponse<SubscriptionSlotRescheduleOptionsResponse>,
+      SubscriptionSlotRescheduleOptionsResponse
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/reschedule-options`,
+      { params: { week_start_date: weekStartDate, timezone } },
+    );
+  },
+
+  rescheduleSlot(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: RescheduleSubscriptionSlotPayload,
+    timezone: string,
+  ): Promise<SubscriptionSlotRescheduleResult> {
+    return apiClient.post<
+      ApiResponse<SubscriptionSlotRescheduleResult>,
+      SubscriptionSlotRescheduleResult
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/reschedule`,
+      payload,
+      { params: { timezone } },
+    );
+  },
+
+  tutorRescheduleRequest(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string; occurrenceStartAt: string },
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    return apiClient.post<
+      TutorSubscriptionSlotRescheduleRequestResult,
+      TutorSubscriptionSlotRescheduleRequestResult
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/tutor-reschedule-request`,
+      payload,
+    );
+  },
+
+  getTutorWeekOccurrences(
+    weekStartDate: string,
+    timezone: string,
+  ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
     return apiClient.get<
       ApiResponse<TutorSubscriptionWeekOccurrenceDto[]>,
       TutorSubscriptionWeekOccurrenceDto[]
-    >('/subscription-enrollments/tutor/week-occurrences', {
-      params: { week_start_date: weekStartDate },
-    })
+    >("/subscription-enrollments/tutor/week-occurrences", {
+      params: { week_start_date: weekStartDate, timezone },
+    });
   },
-}
+};
 
-export function useGetSubscriptionPlansByTutor(tutorId: string, enabled = true) {
+export function useGetSubscriptionPlansByTutor(
+  tutorId: string,
+  enabled = true,
+) {
   return useQuery({
     queryKey: subscriptionQueryKey.plansByTutor(tutorId),
     queryFn: () => subscriptionApi.getPlansByTutorId(tutorId),
     enabled: Boolean(tutorId) && enabled,
-  })
+  });
 }
 
 export function useGetSubscriptionEligibility(tutorId: string, enabled = true) {
@@ -62,33 +132,141 @@ export function useGetSubscriptionEligibility(tutorId: string, enabled = true) {
     queryKey: subscriptionQueryKey.eligibility(tutorId),
     queryFn: () => subscriptionApi.getEligibility(tutorId),
     enabled: Boolean(tutorId) && enabled,
-  })
+  });
 }
 
 export function useCreateSubscriptionEnrollmentMutation() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateSubscriptionEnrollmentDto) => subscriptionApi.createEnrollment(body),
+    mutationFn: (body: CreateSubscriptionEnrollmentDto) =>
+      subscriptionApi.createEnrollment(body),
     onSuccess: (data, variables) => {
-      void qc.invalidateQueries({ queryKey: subscriptionQueryKey.eligibility(variables.tutorId) })
-      void qc.invalidateQueries({ queryKey: subscriptionQueryKey.enrollment(data.id) })
-      void qc.invalidateQueries({ queryKey: subscriptionQueryKey.root })
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.eligibility(variables.tutorId),
+      });
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.enrollment(data.id),
+      });
+      void qc.invalidateQueries({ queryKey: subscriptionQueryKey.root });
     },
-  })
+  });
 }
 
-export function useGetSubscriptionEnrollment(enrollmentId: string, enabled = true) {
+export function useGetSubscriptionEnrollment(
+  enrollmentId: string,
+  enabled = true,
+) {
   return useQuery({
     queryKey: subscriptionQueryKey.enrollment(enrollmentId),
     queryFn: () => subscriptionApi.getEnrollment(enrollmentId),
     enabled: Boolean(enrollmentId) && enabled,
-  })
+  });
 }
 
-export function useGetTutorSubscriptionWeekOccurrences(weekStartDate: string, enabled = true) {
+export function useCancelSubscriptionSlotMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: { reason: string; message?: string };
+    }) =>
+      subscriptionApi.cancelSlot(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-lessons"] });
+    },
+  });
+}
+
+export function useGetSubscriptionSlotRescheduleOptions(
+  enrollmentId: string,
+  slotIndex: number,
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+) {
   return useQuery({
-    queryKey: subscriptionQueryKey.tutorWeekOccurrences(weekStartDate),
-    queryFn: () => subscriptionApi.getTutorWeekOccurrences(weekStartDate),
-    enabled: Boolean(weekStartDate) && enabled,
-  })
+    queryKey: subscriptionQueryKey.rescheduleOptions(
+      enrollmentId,
+      slotIndex,
+      weekStartDate,
+      timezone,
+    ),
+    queryFn: () =>
+      subscriptionApi.getRescheduleOptions(
+        enrollmentId,
+        slotIndex,
+        weekStartDate,
+        timezone,
+      ),
+    enabled:
+      enabled &&
+      Boolean(enrollmentId) &&
+      slotIndex >= 0 &&
+      Boolean(weekStartDate) &&
+      Boolean(timezone),
+    staleTime: 15 * 1000,
+  });
+}
+
+export function useRescheduleSubscriptionSlotMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: RescheduleSubscriptionSlotPayload;
+      timezone: string;
+    }) =>
+      subscriptionApi.rescheduleSlot(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+        params.timezone,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-lessons"] });
+    },
+  });
+}
+
+export function useTutorSubscriptionSlotRescheduleRequestMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: { reason: string; message?: string; occurrenceStartAt: string };
+    }) =>
+      subscriptionApi.tutorRescheduleRequest(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.root,
+      });
+    },
+  });
+}
+
+export function useGetTutorSubscriptionWeekOccurrences(
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: subscriptionQueryKey.tutorWeekOccurrences(
+      weekStartDate,
+      timezone,
+    ),
+    queryFn: () =>
+      subscriptionApi.getTutorWeekOccurrences(weekStartDate, timezone),
+    enabled: Boolean(weekStartDate) && Boolean(timezone) && enabled,
+  });
 }

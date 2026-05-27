@@ -7,6 +7,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { HeaderNotificationItem } from '@/components/common/header-notification/HeaderNotificationItem';
 import { Button, Spinner } from '@/components/ui';
+import { useUserTimezone } from '@/hooks';
+import { formatInstantForLocale } from '@/lib/timezone';
+import type { NotificationItem } from '@/services/notification/notification.api';
 import {
   useInfiniteNotifications,
   useMarkAllNotificationsAsReadMutation,
@@ -21,8 +24,32 @@ type HeaderNotificationProps = {
   enabled: boolean;
 };
 
+function metadataStartAtIso(metadata: Record<string, unknown> | null): string | null {
+  if (!metadata || typeof metadata.startAt !== 'string') {
+    return null;
+  }
+  return metadata.startAt;
+}
+
+function withViewerTimezoneParams(
+  item: NotificationItem,
+  params: Record<string, string | number | Date>,
+  userTimezone: string,
+  locale: string,
+): Record<string, string | number | Date> {
+  const startAtIso = metadataStartAtIso(item.metadata);
+  if (!startAtIso) {
+    return params;
+  }
+  return {
+    ...params,
+    lessonStartAt: formatInstantForLocale(startAtIso, userTimezone, locale),
+  };
+}
+
 export function HeaderNotification({ enabled }: HeaderNotificationProps) {
   const locale = useLocale();
+  const userTimezone = useUserTimezone();
   const t = useTranslations(NOTIFICATION_I18N_NAMESPACE);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -83,11 +110,23 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     const rawParams = hasTitleParams
       ? (meta.titleI18nParams as Record<string, string | number | Date>)
       : {};
-    return translateWithFallback(titleKey, rawParams, item.title);
+    return translateWithFallback(
+      titleKey,
+      withViewerTimezoneParams(item, rawParams, userTimezone, locale),
+      item.title,
+    );
   };
 
   const getNotificationContent = (item: (typeof notificationItems)[number]) => {
-    return translateWithFallback(item.i18nKey, item.i18nParams, item.content);
+    const startAtIso = metadataStartAtIso(item.metadata);
+    if (!startAtIso || !item.i18nKey) {
+      return translateWithFallback(item.i18nKey, item.i18nParams, item.content);
+    }
+    return translateWithFallback(
+      item.i18nKey,
+      withViewerTimezoneParams(item, item.i18nParams ?? {}, userTimezone, locale),
+      item.content,
+    );
   };
 
   const rowVirtualizer = useVirtualizer({
@@ -228,6 +267,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
                       <HeaderNotificationItem
                         item={item}
                         locale={locale}
+                        userTimezone={userTimezone}
                         title={getNotificationTitle(item)}
                         content={getNotificationContent(item)}
                         typeLabel={getLabel(`types.${item.type}`, fallbackByType[item.type])}

@@ -3,6 +3,8 @@ import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { cookies } from "next/headers";
 import { DEFAULT_LOCALE } from "@/i18n/request";
+import { createRootMetadata, getSiteUrl } from "@/lib/seo";
+import { getSeoMessages } from "@/lib/seo-messages";
 import "./globals.css";
 import { Footer, Header } from "@/components/layouts";
 import { AppProvider } from "@/providers";
@@ -17,10 +19,49 @@ const notoSansMono = Noto_Sans_Mono({
   subsets: ["latin", "vietnamese"],
 });
 
-export const metadata: Metadata = {
-  title: "Mezonly",
-  description: "Mezon Tutors landing page",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoMessages();
+  const siteUrl = getSiteUrl();
+
+  return {
+    ...createRootMetadata(siteUrl),
+    title: seo.default.title,
+    description: seo.default.description,
+    keywords: [
+      "Mezonly",
+      "gia sư",
+      "tutor",
+      "học trực tuyến",
+      "Mezon",
+      "online tutoring",
+    ],
+    openGraph: {
+      type: "website",
+      siteName: seo.siteName,
+      title: seo.default.title,
+      description: seo.default.description,
+      url: siteUrl,
+      images: [
+        {
+          url: "/images/Mezonly-logo.png",
+          width: 512,
+          height: 512,
+          alt: seo.siteName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary",
+      title: seo.default.title,
+      description: seo.default.description,
+      images: [new URL("/images/Mezonly-logo.png", siteUrl).toString()],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

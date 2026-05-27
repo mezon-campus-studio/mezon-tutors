@@ -28,3 +28,12 @@ export function subscriptionSlotTutorAmount(
   const remainder = Number(totalTutorAmount % BigInt(slotCount));
   return base + (slotIndex < remainder ? 1n : 0n);
 }
+
+/** Student refund for one slot (prorated `grossAmount` across all slots in the enrollment). */
+export function subscriptionSlotGrossAmount(
+  totalGrossAmount: bigint,
+  slotCount: number,
+  slotIndex: number
+): bigint {
+  return subscriptionSlotTutorAmount(totalGrossAmount, slotCount, slotIndex);
+}

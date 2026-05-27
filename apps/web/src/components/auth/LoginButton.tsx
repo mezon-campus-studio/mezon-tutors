@@ -133,6 +133,9 @@ export function LoginButton({ label }: LoginButtonProps) {
     if (typeof window === "undefined") return;
 
     try {
+      setAccessToken(null);
+      setUser(null);
+
       const width = 800;
       const height = 500;
       const left = window.screenX + (window.outerWidth - width) / 2;
@@ -160,7 +163,7 @@ export function LoginButton({ label }: LoginButtonProps) {
     } catch {
       cleanup();
     }
-  }, [cleanup]);
+  }, [cleanup, setAccessToken, setUser]);
 
   if (isAuthLoading || isAuthenticated) return null;
 

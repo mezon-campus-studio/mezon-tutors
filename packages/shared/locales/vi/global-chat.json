@@ -13,9 +13,6 @@
   "noticeTitle": "HƯỚNG DẪN CHAT",
   "noticePrefix": "Để xem lịch sử chat và lịch sử giao dịch lâu dài, vui lòng truy cập ",
   "noticeLink": "Mezon.",
-  "noticeOpenChatPrefix": "Nhấn ",
-  "noticeOpenChatLink": "vào đây",
-  "noticeOpenChatSuffix": " để mở cuộc trò chuyện này trên Mezon.",
   "fakeSets": {
     "set1": [
       "Chào {peerName}, mình muốn đặt một buổi học thử trong tuần này.",
