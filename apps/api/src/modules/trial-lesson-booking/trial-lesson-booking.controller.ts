@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -29,15 +30,35 @@ export class TrialLessonBookingController {
   constructor(private readonly trialLessonBookingService: TrialLessonBookingService) {}
 
   @Get('occupied')
-  async getOccupiedByTutorAndDate(
+  async getOccupiedSlots(
     @Query('tutorId') tutorId: string,
-    @Query('date') date: string,
     @Query('timezone') timezone: string,
+    @Query('date') date?: string,
+    @Query('week_start_date') weekStartDate?: string,
     @Query('excludeBookingId') excludeBookingId?: string
   ) {
+    const week = weekStartDate?.trim() ?? ''
+    const day = date?.trim() ?? ''
+
+    if (week) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+        throw new BadRequestException('Invalid week_start_date')
+      }
+      return this.trialLessonBookingService.getOccupiedByTutorAndWeek(
+        tutorId,
+        week,
+        timezone,
+        excludeBookingId
+      )
+    }
+
+    if (!day) {
+      throw new BadRequestException('date or week_start_date is required')
+    }
+
     return this.trialLessonBookingService.getAcceptedByTutorAndDate(
       tutorId,
-      date,
+      day,
       timezone,
       excludeBookingId
     )

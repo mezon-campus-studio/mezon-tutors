@@ -362,6 +362,36 @@ export class TrialLessonBookingService {
     return { items }
   }
 
+  async getOccupiedByTutorAndWeek(
+    tutorId: string,
+    weekStartYmd: string,
+    timezoneName: string,
+    excludeBookingId?: string
+  ) {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      select: { id: true },
+    })
+
+    if (!tutor) {
+      throw new NotFoundException(`Tutor with ID ${tutorId} not found`)
+    }
+
+    const weekStart = dayjs.tz(weekStartYmd, timezoneName || 'UTC').startOf('day')
+    if (!weekStart.isValid()) {
+      throw new BadRequestException('Invalid week start date')
+    }
+
+    const items = await this.collectOccupiedSlotsForTutorWeek(
+      tutor.id,
+      weekStart.format('YYYY-MM-DD'),
+      timezoneName,
+      { excludeTrialBookingId: excludeBookingId }
+    )
+
+    return { items }
+  }
+
   async collectOccupiedSlotsForTutorWeek(
     tutorId: string,
     weekStartYmd: string,

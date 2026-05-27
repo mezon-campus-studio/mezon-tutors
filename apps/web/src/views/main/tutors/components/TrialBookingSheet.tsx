@@ -12,6 +12,8 @@ import {
   expandCalendarSlotToSteps,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { useAtomValue } from "jotai";
 import { CalendarClock, Clock, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
@@ -29,6 +31,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  Spinner,
   toast,
 } from "@/components/ui";
 import { useCurrency, useUserTimezone } from "@/hooks";
@@ -41,10 +44,50 @@ import {
 } from "@/lib/timezone";
 import {
   useGetAlreadyBookedTrialLesson,
-  useGetOccupiedTrialLessonSlots,
+  useGetOccupiedTrialLessonSlotsForWeek,
   useGetTutorAvailability,
 } from "@/services";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+type OccupiedSlotItem = { startAt: string; durationMinutes: number };
+
+function slotOverlapsOccupied(
+  date: string,
+  startTime: string,
+  durationMinutes: number,
+  occupied: OccupiedSlotItem[],
+  timezoneName: string,
+): boolean {
+  if (!occupied.length) {
+    return false;
+  }
+
+  const [hourText, minuteText] = startTime.split(":");
+  const slotStartLocal = parseYmdInTimezone(date, timezoneName)
+    .hour(Number(hourText) || 0)
+    .minute(Number(minuteText) || 0)
+    .second(0)
+    .millisecond(0);
+  if (!slotStartLocal.isValid()) {
+    return false;
+  }
+  const slotEndLocal = slotStartLocal.add(durationMinutes, "minute");
+
+  return occupied.some((booked) => {
+    const bookedStart = dayjs.utc(booked.startAt);
+    if (!bookedStart.isValid()) {
+      return false;
+    }
+    const bookedEnd = bookedStart.add(booked.durationMinutes, "minute");
+    return (
+      slotStartLocal.utc().isBefore(bookedEnd) &&
+      slotEndLocal.utc().isAfter(bookedStart)
+    );
+  });
+}
 
 function parseTimeParts(hhmm: string): { hour: number; minute: number } {
   const [h, m] = hhmm.split(":").map(Number);
@@ -71,8 +114,10 @@ export interface TrialBookingSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode?: TrialBookingSheetMode;
-  /** When rescheduling, exclude this booking from occupied slots. */
+  /** When rescheduling, exclude this booking from occupied API (other students still blocked). */
   rescheduleBookingId?: string;
+  /** UTC ISO start of the lesson being moved; hidden from the grid while rescheduling. */
+  rescheduleOriginalStartAt?: string;
   initialDurationMinutes?: number;
   lockDuration?: boolean;
   onConfirm?: (payload: TrialBookingPayload) => void | Promise<void>;
@@ -99,6 +144,7 @@ export function TrialBookingSheet({
   onOpenChange,
   mode = "book",
   rescheduleBookingId,
+  rescheduleOriginalStartAt,
   initialDurationMinutes,
   lockDuration = false,
   onConfirm,
@@ -114,7 +160,6 @@ export function TrialBookingSheet({
     initialDurationMinutes ?? DURATION_OPTIONS[0],
   );
   const [timeId, setTimeId] = useState<string>("");
-  const [nowTs, setNowTs] = useState<number>(Date.now());
   const [weekOffset, setWeekOffset] = useState<number>(0);
 
   const { data: schedule, isPending: isAvailabilityPending } =
@@ -195,6 +240,11 @@ export function TrialBookingSheet({
     });
   }, [shiftedSlots, selectedDateString]);
 
+  const weekStartYmd = useMemo(
+    () => baseWeekStart.add(weekOffset * DAYS_IN_WEEK, "day").format("YYYY-MM-DD"),
+    [baseWeekStart, weekOffset],
+  );
+
   const scheduleAvailableSlots = useMemo(() => {
     return shiftedSlots.map((slot) => ({
       date: slot.date,
@@ -202,13 +252,66 @@ export function TrialBookingSheet({
     }));
   }, [shiftedSlots]);
 
-  const { data: occupiedSlotsResponse } = useGetOccupiedTrialLessonSlots(
+  const {
+    data: occupiedWeekResponse,
+    isFetching: isOccupiedWeekFetching,
+    isSuccess: isOccupiedWeekReady,
+    isError: isOccupiedWeekError,
+  } = useGetOccupiedTrialLessonSlotsForWeek(
     tutor.id,
-    selectedDateString,
+    weekStartYmd,
     userTimezone,
     open && Boolean(tutor.id),
     isReschedule ? rescheduleBookingId : undefined,
   );
+
+  const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
+
+  const ownLessonOccupied = useMemo((): OccupiedSlotItem[] => {
+    if (!isReschedule || !rescheduleOriginalStartAt) {
+      return [];
+    }
+    return [
+      {
+        startAt: rescheduleOriginalStartAt,
+        durationMinutes: initialDurationMinutes ?? duration,
+      },
+    ];
+  }, [isReschedule, rescheduleOriginalStartAt, initialDurationMinutes, duration]);
+
+  const scheduleSelectableSlots = useMemo(() => {
+    return scheduleAvailableSlots.filter((slot) => {
+      if (
+        slotOverlapsOccupied(
+          slot.date,
+          slot.startTime,
+          duration,
+          ownLessonOccupied,
+          userTimezone,
+        )
+      ) {
+        return false;
+      }
+      if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+        return false;
+      }
+      return !slotOverlapsOccupied(
+        slot.date,
+        slot.startTime,
+        duration,
+        occupiedWeekItems,
+        userTimezone,
+      );
+    });
+  }, [
+    scheduleAvailableSlots,
+    ownLessonOccupied,
+    occupiedWeekItems,
+    duration,
+    userTimezone,
+    isOccupiedWeekReady,
+    isOccupiedWeekError,
+  ]);
   const { data: alreadyBookedResponse } = useGetAlreadyBookedTrialLesson(
     tutor.id,
     open && Boolean(tutor.id) && isAuthenticated && !isReschedule,
@@ -253,105 +356,18 @@ export function TrialBookingSheet({
     }
   }, [open, initialDurationMinutes]);
 
-  const pastSlotIds = useMemo(() => {
-    const now = dayjs(nowTs).tz(userTimezone);
-    const isToday = selectedDateString === now.format("YYYY-MM-DD");
-
-    if (!isToday) {
-      return new Set<string>();
-    }
-
-    const currentMinutes = now.hour() * 60 + now.minute();
-    const ids = new Set<string>();
-
-    for (const slot of timeSlots) {
-      const [hourText, minuteText] = slot.startTime.split(":");
-      const hour = Number.parseInt(hourText ?? "0", 10);
-      const minute = Number.parseInt(minuteText ?? "0", 10);
-      const slotMinutes = hour * 60 + minute;
-      if (slotMinutes <= currentMinutes) {
-        ids.add(slot.id);
-      }
-    }
-
-    return ids;
-  }, [nowTs, selectedDateString, timeSlots, userTimezone]);
-
-  const occupiedSlotIds = useMemo(() => {
-    const occupied = occupiedSlotsResponse?.items ?? [];
-    if (!occupied.length || !timeSlots.length) {
-      return new Set<string>();
-    }
-
-    const occupiedLocal = occupied.map((booked) => {
-      const local = dayjs(booked.startAt).tz(userTimezone);
-      return {
-        startTime: local.format("HH:mm"),
-        durationMinutes: booked.durationMinutes,
-      };
-    });
-
-    const ids = new Set<string>();
-    for (const slot of timeSlots) {
-      const slotStart = timeToMinutes(slot.startTime);
-      const slotEnd = slotStart + duration;
-
-      const overlapsBooked = occupiedLocal.some((booked) => {
-        const bookedStart = timeToMinutes(booked.startTime);
-        const bookedEnd = bookedStart + booked.durationMinutes;
-        return slotStart < bookedEnd && slotEnd > bookedStart;
-      });
-
-      if (overlapsBooked) {
-        ids.add(slot.id);
-      }
-    }
-
-    return ids;
-  }, [occupiedSlotsResponse?.items, timeSlots, duration, userTimezone]);
-
   useEffect(() => {
-    if (!timeSlots.length) {
+    if (!timeId || !selectedDateString) {
+      return;
+    }
+    const stillSelectable = scheduleSelectableSlots.some(
+      (slot) =>
+        slot.date === selectedDateString && slot.startTime === timeId,
+    );
+    if (!stillSelectable) {
       setTimeId("");
-      return;
     }
-
-    setTimeId((current) => {
-      if (!current) {
-        return "";
-      }
-      const exists = timeSlots.some((slot) => slot.id === current);
-      const isPast = pastSlotIds.has(current);
-      const isOccupied = occupiedSlotIds.has(current);
-      if (!exists || isPast || isOccupied) {
-        return "";
-      }
-
-      if (duration > SLOT_INTERVAL_MINUTES) {
-        const nextMinutes = timeToMinutes(current) + SLOT_INTERVAL_MINUTES;
-        const nextTime = `${String(Math.floor(nextMinutes / 60)).padStart(2, "0")}:${String(
-          nextMinutes % 60,
-        ).padStart(2, "0")}`;
-        const hasConsecutiveSlot = timeSlots.some(
-          (slot) => slot.startTime === nextTime,
-        );
-        if (!hasConsecutiveSlot) {
-          return "";
-        }
-      }
-
-      return current;
-    });
-  }, [duration, timeSlots, pastSlotIds, occupiedSlotIds]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    setNowTs(Date.now());
-    const timer = setInterval(() => setNowTs(Date.now()), 30_000);
-    return () => clearInterval(timer);
-  }, [open]);
+  }, [scheduleSelectableSlots, selectedDateString, timeId]);
 
   useEffect(() => {
     const currentOption = calendarDates.find((option) => option.id === dateId);
@@ -460,7 +476,10 @@ export function TrialBookingSheet({
   };
 
   const isConfirmDisabled =
-    isAvailabilityPending || isBookingLocked || !selectedTime;
+    isAvailabilityPending ||
+    isBookingLocked ||
+    !selectedTime ||
+    (isOccupiedWeekFetching && !isOccupiedWeekReady && !isOccupiedWeekError);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -496,11 +515,16 @@ export function TrialBookingSheet({
         </SheetHeader>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-3 pt-4 sm:px-6">
+          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col px-3 pt-4 sm:px-6">
+            {!isOccupiedWeekReady && isOccupiedWeekFetching ? (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-[1px]">
+                <Spinner className="size-8 text-violet-600" />
+              </div>
+            ) : null}
             <ScheduleSelection
               fillAvailableHeight
               className="min-h-0 flex-1"
-              availableSlots={scheduleAvailableSlots}
+              availableSlots={scheduleSelectableSlots}
               timezone={userTimezone}
               selectionMode="single"
               lessonDurationMinutes={duration}

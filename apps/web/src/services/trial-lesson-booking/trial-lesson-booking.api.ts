@@ -6,7 +6,7 @@ import type {
   PaginatedData,
   PaginatedResponse,
 } from "@mezon-tutors/shared";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "../api-client";
 import { trialLessonBookingQueryKey } from "./trial-lesson-booking.qkey";
 
@@ -132,6 +132,25 @@ export const trialLessonBookingApi = {
       params: {
         tutorId,
         date,
+        timezone,
+        ...(excludeBookingId ? { excludeBookingId } : {}),
+      },
+    });
+  },
+
+  getOccupiedByTutorAndWeek(
+    tutorId: string,
+    weekStartDate: string,
+    timezone: string,
+    excludeBookingId?: string,
+  ): Promise<OccupiedTrialLessonSlotsResponse> {
+    return apiClient.get<
+      ApiResponse<OccupiedTrialLessonSlotsResponse>,
+      OccupiedTrialLessonSlotsResponse
+    >("/trial-lesson-bookings/occupied", {
+      params: {
+        tutorId,
+        week_start_date: weekStartDate,
         timezone,
         ...(excludeBookingId ? { excludeBookingId } : {}),
       },
@@ -266,6 +285,34 @@ export function useGetOccupiedTrialLessonSlots(
         excludeBookingId,
       ),
     enabled: Boolean(tutorId) && Boolean(date) && Boolean(timezone) && enabled,
+  });
+}
+
+export function useGetOccupiedTrialLessonSlotsForWeek(
+  tutorId: string,
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+  excludeBookingId?: string,
+) {
+  return useQuery({
+    queryKey: trialLessonBookingQueryKey.occupiedWeek(
+      tutorId,
+      weekStartDate,
+      timezone,
+      excludeBookingId,
+    ),
+    queryFn: () =>
+      trialLessonBookingApi.getOccupiedByTutorAndWeek(
+        tutorId,
+        weekStartDate,
+        timezone,
+        excludeBookingId,
+      ),
+    enabled:
+      Boolean(tutorId) && Boolean(weekStartDate) && Boolean(timezone) && enabled,
+    staleTime: 15 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 
