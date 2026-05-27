@@ -19,6 +19,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Label,
 } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 
@@ -139,10 +140,10 @@ export function RescheduleLessonDialog({
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-900">
+              <div className="space-y-1">
+                <Label className="mb-2 text-xs font-semibold text-slate-900">
                   {t("dialog.reasonLabel")}
-                </label>
+                </Label>
                 <Select value={reason} onValueChange={(val) => setReason(val ?? "")}>
                   <SelectTrigger className="h-11 w-full rounded-xl border-violet-100 bg-white px-3.5 text-sm text-slate-700 focus:ring-2 focus:ring-violet-200">
                     <SelectValue placeholder={t("dialog.reasonPlaceholder")}>
@@ -160,9 +161,9 @@ export function RescheduleLessonDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-900">
+                <Label className="mb-2 text-xs font-semibold text-slate-900">
                   {t("dialog.messageLabel", { student: lesson.studentName })}
-                </label>
+                </Label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
