@@ -15,6 +15,7 @@
       "wallet": "Ví",
       "tutorApplications": "Hồ sơ gia sư",
       "dashboard": "Bảng điều khiển",
+      "profile": "Hồ sơ của tôi",
       "logout": "Đăng xuất",
       "fallbackTitle": "Bảng điều khiển",
       "syncMezon": {
@@ -234,6 +235,92 @@
     "placeholder": {
       "title": "Tính năng sắp ra mắt",
       "description": "Mục dashboard này đang được phát triển."
+    },
+    "profile": {
+      "eyebrow": "Khu vực gia sư",
+      "title": "Hồ sơ của tôi",
+      "subtitle": "Xem và cập nhật thông tin gia sư hiển thị công khai.",
+      "tabs": {
+        "stepLabel": "Bước {step}/{total}",
+        "progressLabel": "Hoàn thành {percent}%",
+        "back": "Quay lại",
+        "next": "Tiếp theo",
+        "general": "Thông tin chung",
+        "tutorInfo": "Thông tin gia sư",
+        "schedule": "Giá & lịch rảnh"
+      },
+      "edit": "Chỉnh sửa hồ sơ",
+      "cancel": "Hủy",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu…",
+      "loading": "Đang tải hồ sơ…",
+      "noProfile": {
+        "title": "Chưa có hồ sơ gia sư",
+        "description": "Hoàn tất quy trình đăng ký gia sư để tạo hồ sơ.",
+        "cta": "Trở thành gia sư"
+      },
+      "verification": {
+        "PENDING": "Đang duyệt",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Cần cập nhật"
+      },
+      "stats": {
+        "lessons": "Buổi đã dạy",
+        "students": "Học viên",
+        "rating": "Đánh giá TB",
+        "reviews": "Lượt đánh giá"
+      },
+      "sections": {
+        "personal": "Thông tin cá nhân",
+        "about": "Giới thiệu",
+        "languages": "Ngôn ngữ",
+        "pricing": "Giá buổi học thử",
+        "media": "Ảnh & video",
+        "documents": "Tài liệu",
+        "availability": "Lịch rảnh dạy"
+      },
+      "availability": {
+        "empty": "Chưa có khung giờ nào",
+        "slotRange": "{start} – {end}"
+      },
+      "fields": {
+        "firstName": "Tên",
+        "lastName": "Họ",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "country": "Quốc gia",
+        "subject": "Môn dạy",
+        "headline": "Tiêu đề",
+        "motivate": "Lý do dạy",
+        "introduce": "Giới thiệu bản thân",
+        "videoUrl": "Link video giới thiệu",
+        "pricePerHour": "Giá mỗi giờ",
+        "currency": "Tiền tệ",
+        "avatar": "Ảnh đại diện",
+        "specialization": "Chuyên môn",
+        "language": "Ngôn ngữ",
+        "proficiency": "Trình độ"
+      },
+      "documents": {
+        "certificate": "Chứng chỉ giảng dạy",
+        "degree": "Bằng cấp",
+        "identity": "Xác minh danh tính",
+        "viewFile": "Xem tệp",
+        "notUploaded": "Chưa tải lên",
+        "editHint": "Để thay chứng chỉ, bằng cấp hoặc giấy tờ tùy thân, hãy dùng luồng đăng ký gia sư hoặc liên hệ hỗ trợ."
+      },
+      "toast": {
+        "savedTitle": "Đã cập nhật hồ sơ",
+        "savedDescription": "Thay đổi đã được lưu.",
+        "errorTitle": "Không lưu được hồ sơ",
+        "errorDescription": "Vui lòng kiểm tra thông tin và thử lại."
+      },
+      "unsavedChanges": {
+        "title": "Bỏ thay đổi chưa lưu?",
+        "description": "Bạn đang có thay đổi chưa lưu. Nếu rời đi bây giờ, các chỉnh sửa sẽ bị mất.",
+        "confirm": "Bỏ thay đổi",
+        "stay": "Tiếp tục chỉnh sửa"
+      }
     }
   }
 }

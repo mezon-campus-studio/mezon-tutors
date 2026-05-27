@@ -38,6 +38,10 @@
     "title": "Trial bookings | Mezonly",
     "description": "Manage trial lessons with students on Mezonly."
   },
+  "tutorProfile": {
+    "title": "My tutor profile | Mezonly",
+    "description": "View and edit your tutor profile on Mezonly."
+  },
   "becomeTutor": {
     "title": "Become a tutor | Mezonly",
     "description": "Complete your tutor profile and start teaching on Mezonly."

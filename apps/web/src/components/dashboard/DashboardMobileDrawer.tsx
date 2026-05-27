@@ -9,7 +9,7 @@ import {
   isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, Wallet, X } from "lucide-react";
+import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, User, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -29,6 +29,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   wallet: Wallet,
   reports: LineChart,
   dashboard: LayoutDashboard,
+  profile: User,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -42,6 +43,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   wallet: "from-amber-500 to-orange-500",
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
+  profile: "from-violet-500 to-indigo-500",
 };
 
 type DashboardMobileDrawerProps = {

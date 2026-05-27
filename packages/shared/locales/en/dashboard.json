@@ -15,6 +15,7 @@
       "wallet": "Wallet",
       "tutorApplications": "Tutor applications",
       "dashboard": "Dashboard",
+      "profile": "My Profile",
       "logout": "Logout",
       "fallbackTitle": "Dashboard",
       "syncMezon": {
@@ -234,6 +235,92 @@
     "placeholder": {
       "title": "Feature Coming Soon",
       "description": "This dashboard section is under construction."
+    },
+    "profile": {
+      "eyebrow": "Tutor workspace",
+      "title": "My Profile",
+      "subtitle": "View and update your public tutor information.",
+      "tabs": {
+        "stepLabel": "Step {step} of {total}",
+        "progressLabel": "{percent}% complete",
+        "back": "Previous",
+        "next": "Next",
+        "general": "General info",
+        "tutorInfo": "Tutor info",
+        "schedule": "Price & schedule"
+      },
+      "edit": "Edit profile",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "loading": "Loading your profile…",
+      "noProfile": {
+        "title": "No tutor profile yet",
+        "description": "Complete the become-a-tutor flow to create your profile.",
+        "cta": "Become a tutor"
+      },
+      "verification": {
+        "PENDING": "Under review",
+        "APPROVED": "Approved",
+        "REJECTED": "Needs updates"
+      },
+      "stats": {
+        "lessons": "Lessons taught",
+        "students": "Students",
+        "rating": "Average rating",
+        "reviews": "Reviews"
+      },
+      "sections": {
+        "personal": "Personal information",
+        "about": "About you",
+        "languages": "Languages",
+        "pricing": "Trial lesson price",
+        "media": "Media",
+        "documents": "Documents",
+        "availability": "Teaching availability"
+      },
+      "availability": {
+        "empty": "No time slots set",
+        "slotRange": "{start} – {end}"
+      },
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "phone": "Phone",
+        "country": "Country",
+        "subject": "Subject",
+        "headline": "Headline",
+        "motivate": "Why you teach",
+        "introduce": "Introduction",
+        "videoUrl": "Intro video URL",
+        "pricePerHour": "Price per hour",
+        "currency": "Currency",
+        "avatar": "Profile photo",
+        "specialization": "Specialization",
+        "language": "Language",
+        "proficiency": "Proficiency"
+      },
+      "documents": {
+        "certificate": "Teaching certificate",
+        "degree": "Degree",
+        "identity": "Identity verification",
+        "viewFile": "View file",
+        "notUploaded": "Not uploaded",
+        "editHint": "To replace certificate, degree, or identity files, use the become-a-tutor flow or contact support."
+      },
+      "toast": {
+        "savedTitle": "Profile updated",
+        "savedDescription": "Your changes have been saved.",
+        "errorTitle": "Could not save profile",
+        "errorDescription": "Please check your information and try again."
+      },
+      "unsavedChanges": {
+        "title": "Discard unsaved changes?",
+        "description": "You have unsaved changes. If you leave now, your edits will be lost.",
+        "confirm": "Discard changes",
+        "stay": "Keep editing"
+      }
     }
   }
 }

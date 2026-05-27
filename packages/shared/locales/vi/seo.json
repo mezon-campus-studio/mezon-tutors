@@ -38,6 +38,10 @@
     "title": "Buổi học thử | Mezonly",
     "description": "Quản lý các buổi học thử với học viên trên Mezonly."
   },
+  "tutorProfile": {
+    "title": "Hồ sơ gia sư | Mezonly",
+    "description": "Xem và chỉnh sửa hồ sơ gia sư trên Mezonly."
+  },
   "becomeTutor": {
     "title": "Trở thành gia sư | Mezonly",
     "description": "Hoàn thiện hồ sơ gia sư và bắt đầu dạy trên Mezonly."

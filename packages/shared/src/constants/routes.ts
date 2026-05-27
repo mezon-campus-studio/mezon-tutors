@@ -32,6 +32,7 @@ export const ROUTES = {
   },
   DASHBOARD: {
     INDEX: '/dashboard',
+    TUTOR_PROFILE: '/dashboard/tutor/profile',
     TRIAL_BOOKING: '/dashboard/tutor/trial-bookings',
     TRIAL_BOOKING_DETAIL: (id: string) => `/dashboard/tutor/trial-bookings/${id}`,
     MY_SCHEDULE: '/dashboard/tutor/my-schedule',
