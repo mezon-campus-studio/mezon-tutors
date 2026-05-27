@@ -6,6 +6,7 @@ import {
   clearMezonLightSessionStorage,
   restoreMezonLightClientFromStorage,
 } from "@/services/mezon-light/mezon-light.client";
+import { releaseMezonLightSocket } from "@/services/mezon-light/mezon-light.service";
 import { MEZON_LIGHT_SERVER_KEY } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { LightClient } from "mezon-light-sdk";
@@ -37,6 +38,7 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
     if (!user) {
       initStartedRef.current = false;
       setLightClient(null);
+      releaseMezonLightSocket();
       void clearMezonLightSessionStorage();
       return;
     }
