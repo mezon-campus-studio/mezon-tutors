@@ -1,6 +1,12 @@
 export const trialLessonBookingQueryKey = {
-  occupied: (tutorId: string, date: string, timezone: string) =>
-    ["trial-lesson-booking-occupied", tutorId, date, timezone] as const,
+  occupied: (tutorId: string, date: string, timezone: string, excludeBookingId?: string) =>
+    [
+      "trial-lesson-booking-occupied",
+      tutorId,
+      date,
+      timezone,
+      excludeBookingId ?? "",
+    ] as const,
   alreadyBooked: (tutorId: string) =>
     ["trial-lesson-booking-already-booked", tutorId] as const,
   currentBooking: (tutorId: string) =>

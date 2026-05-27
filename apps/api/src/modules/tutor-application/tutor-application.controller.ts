@@ -4,7 +4,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { TutorApplicationService } from './tutor-application.service';
 import { CreateAdminNoteDto } from './dto/create-admin-note.dto';
-import type { FullTutorApplication, TutorAdminNote, TutorApplicationMetrics } from '@mezon-tutors/shared';
+import type {
+  AdminLessonChangeHistoryItem,
+  FullTutorApplication,
+  TutorAdminNote,
+  TutorApplicationMetrics,
+} from '@mezon-tutors/shared';
 import { TutorProfile } from '@mezon-tutors/db';
 
 @Controller('admin')
@@ -37,6 +42,13 @@ export class TutorApplicationController {
   @Get('tutor-profiles/:id')
   async getTutorProfile(@Param('id') id: string): Promise<FullTutorApplication> {
     return this.tutorApplicationService.getTutorProfile(id);
+  }
+
+  @Get('tutor-profiles/:id/lesson-change-history')
+  async getLessonChangeHistory(
+    @Param('id') id: string
+  ): Promise<AdminLessonChangeHistoryItem[]> {
+    return this.tutorApplicationService.getLessonChangeHistory(id);
   }
 
   @Post('tutor-admin-notes')

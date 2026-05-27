@@ -42,6 +42,40 @@
         "title": "Học vấn & Chứng chỉ",
         "verifyCredential": "Xác thực bằng cấp"
       },
+      "lessonChangeHistory": {
+        "title": "Lịch sử hủy / đổi lịch",
+        "subtitle": "Nhật ký yêu cầu hủy hoặc đổi lịch buổi học của gia sư này.",
+        "empty": "Chưa có yêu cầu hủy hoặc đổi lịch nào.",
+        "columns": {
+          "requestedAt": "Thời điểm yêu cầu",
+          "student": "Học sinh",
+          "lesson": "Buổi học",
+          "action": "Hành động",
+          "reason": "Lý do",
+          "message": "Tin nhắn"
+        },
+        "lessonRef": {
+          "trial": "Trial",
+          "subscription": "Subscription · slot {slot}"
+        },
+        "action": {
+          "CANCEL": "Hủy",
+          "RESCHEDULE": "Đổi lịch"
+        },
+        "reasons": {
+          "scheduleConflict": "Trùng lịch",
+          "personalEmergency": "Sự cố cá nhân",
+          "studentUnavailable": "Học sinh không thể tham gia",
+          "timeNotWork": "Thời gian này không còn phù hợp với tôi",
+          "technicalIssue": "Tôi gặp sự cố kỹ thuật",
+          "avoidBalanceLoss": "Tôi đặt giờ này để tránh mất số dư",
+          "notMotivated": "Tôi không còn hứng thú với buổi học này",
+          "tutorRescheduledUnavail": "Gia sư đổi sang giờ tôi không tham gia được",
+          "tutorAskedCancel": "Gia sư yêu cầu tôi hủy",
+          "noLongerLearnTutor": "Tôi không muốn học với gia sư này nữa",
+          "other": "Khác"
+        }
+      },
       "availability": {
         "title": "Lịch dạy & Giá dạy",
         "weeklySchedule": "Lịch dạy hàng tuần",

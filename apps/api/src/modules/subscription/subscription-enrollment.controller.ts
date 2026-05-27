@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
@@ -18,11 +19,18 @@ import type {
   SubscriptionEligibilityDto,
   SubscriptionEnrollmentDetailDto,
   SubscriptionEnrollmentDto,
+  SubscriptionSlotCancelResult,
+  SubscriptionSlotRescheduleOptionsResponse,
+  SubscriptionSlotRescheduleResult,
   TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
 import { SubscriptionService } from './subscription.service';
 import { getRequestClientIp } from '../../common/utils/request-ip.util';
 import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
+import { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
+import { RescheduleSubscriptionSlotBodyDto } from './dto/reschedule-subscription-slot.dto';
+import { TutorSubscriptionSlotRescheduleRequestDto } from './dto/tutor-subscription-slot-reschedule-request.dto';
+import type { TutorSubscriptionSlotRescheduleRequestResult } from '@mezon-tutors/shared';
 
 @Controller('subscription-enrollments')
 @ApiTags('Subscription enrollments')
@@ -62,6 +70,82 @@ export class SubscriptionEnrollmentController {
     }
     const user = req.user as AuthUserPayload;
     return this.subscriptionService.listTutorWeekOccurrences(user.sub, v, timezone);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/slots/:slotIndex/reschedule-options')
+  async getRescheduleOptions(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Query('week_start_date') weekStartDate: string,
+    @Query('timezone') timezone?: string
+  ): Promise<SubscriptionSlotRescheduleOptionsResponse> {
+    const v = weekStartDate?.trim() ?? '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      throw new BadRequestException('Invalid week_start_date');
+    }
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.getSubscriptionSlotRescheduleOptions(
+      user.sub,
+      id,
+      slotIndex,
+      v,
+      timezone?.trim() || 'UTC'
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/reschedule')
+  async rescheduleSlot(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: RescheduleSubscriptionSlotBodyDto,
+    @Query('timezone') timezone?: string
+  ): Promise<SubscriptionSlotRescheduleResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.rescheduleStudentSubscriptionSlot(
+      user.sub,
+      id,
+      slotIndex,
+      body,
+      timezone?.trim() || 'UTC'
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/tutor-reschedule-request')
+  async tutorRescheduleRequest(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: TutorSubscriptionSlotRescheduleRequestDto
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.requestTutorSubscriptionSlotReschedule(
+      user.sub,
+      id,
+      slotIndex,
+      body
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/cancel')
+  async cancelSlot(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: CancelSubscriptionSlotBodyDto
+  ): Promise<SubscriptionSlotCancelResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.cancelStudentSubscriptionSlot(
+      user.sub,
+      id,
+      slotIndex,
+      body
+    );
   }
 
   @UseGuards(JwtAuthGuard)

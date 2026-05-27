@@ -16,6 +16,8 @@ import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
+import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
+import { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.dto'
 import { GetMyTrialLessonBookingsDto } from './dto/get-my-trial-lesson-bookings.dto'
 import { getRequestClientIp } from '../../common/utils/request-ip.util'
 import { TrialLessonBookingService } from './trial-lesson-booking.service'
@@ -30,9 +32,15 @@ export class TrialLessonBookingController {
   async getOccupiedByTutorAndDate(
     @Query('tutorId') tutorId: string,
     @Query('date') date: string,
-    @Query('timezone') timezone: string
+    @Query('timezone') timezone: string,
+    @Query('excludeBookingId') excludeBookingId?: string
   ) {
-    return this.trialLessonBookingService.getAcceptedByTutorAndDate(tutorId, date, timezone)
+    return this.trialLessonBookingService.getAcceptedByTutorAndDate(
+      tutorId,
+      date,
+      timezone,
+      excludeBookingId
+    )
   }
 
   @UseGuards(JwtAuthGuard)
@@ -68,12 +76,10 @@ export class TrialLessonBookingController {
   ): Promise<PaginatedResponse<TutorTrialLessonBookingRequestDto>> {
     const user = req.user as AuthUserPayload
 
-    const status =
-      query.status && query.status !== ETrialLessonStatus.CANCELLED ? query.status : undefined
     const statusIn = query.statusIn?.length ? query.statusIn : undefined
 
     return this.trialLessonBookingService.getTutorBookingRequests(user.sub, {
-      status: statusIn?.length ? undefined : status,
+      status: statusIn?.length ? undefined : query.status,
       statusIn,
       orderBy: statusIn?.length ? 'startAt' : undefined,
       page: query.page,
@@ -87,4 +93,49 @@ export class TrialLessonBookingController {
     const user = req.user as AuthUserPayload
     return this.trialLessonBookingService.getStudentBookingDetail(user.sub, id)
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/reschedule')
+  async rescheduleBooking(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RescheduleTrialLessonBookingDto,
+    @Query('timezone') timezone?: string
+  ) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.rescheduleTrialLessonBooking(
+      user.sub,
+      id,
+      body,
+      timezone?.trim() || 'UTC'
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/tutor-reschedule-request')
+  async tutorRescheduleRequest(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: TutorRescheduleRequestDto
+  ) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.tutorRequestRescheduleTrialLesson(
+      user.sub,
+      id,
+      body
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/cancel')
+  async cancelBooking(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { reason?: string; message?: string }
+  ) {
+    const user = req.user as AuthUserPayload
+    const result = await this.trialLessonBookingService.cancelTrialLessonBooking(user.sub, id, body)
+    return { success: true, refunded: result.refunded }
+  }
+
 }

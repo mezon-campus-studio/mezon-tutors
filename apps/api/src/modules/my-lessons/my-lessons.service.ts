@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ELessonChangeAction,
   ETrialLessonStatus,
   ESubscriptionEnrollmentStatus,
   EPaymentStatus,
@@ -19,6 +20,7 @@ import {
   isSubscriptionSlotCompleted,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotGrossAmount,
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
   type SubscriptionWeeklySlotDto,
@@ -76,9 +78,15 @@ export class MyLessonsService {
       where: {
         studentId,
         status: {
-          in: [ETrialLessonStatus.CONFIRMED, ETrialLessonStatus.COMPLETED],
+          in: [
+            ETrialLessonStatus.CONFIRMED,
+            ETrialLessonStatus.COMPLETED,
+            ETrialLessonStatus.CANCELLED,
+          ],
         },
-        paymentStatus: EPaymentStatus.SUCCEEDED,
+        paymentStatus: {
+          in: [EPaymentStatus.SUCCEEDED, EPaymentStatus.REFUNDED],
+        },
       },
       include: {
         tutor: {
@@ -94,19 +102,17 @@ export class MyLessonsService {
     });
 
     const upcomingLessons = lessons
-      .filter(
-        (lesson) =>
-          lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson)
-      )
+      .filter((lesson) => this.isTrialInUpcomingList(lesson))
       .map((lesson) => this.toLessonApiItem(lesson, timezoneName))
       .filter((item): item is MyLessonApiItem => item !== null);
     const previousLessons = lessons
-      .filter((lesson) => lesson.status === ETrialLessonStatus.COMPLETED)
+      .filter((lesson) => this.isTrialInPreviousList(lesson))
       .map((lesson) => this.toLessonApiItem(lesson, timezoneName))
       .filter((item): item is MyLessonApiItem => item !== null);
 
     const upcomingLessonRows = lessons.filter(
-      (lesson) => lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson)
+      (lesson) =>
+        lesson.status === ETrialLessonStatus.CONFIRMED && this.isLessonEndAfterNow(lesson)
     );
     const calendarBaseDate = this.resolveCalendarBaseDate(
       upcomingLessonRows,
@@ -116,7 +122,8 @@ export class MyLessonsService {
     const calendarTrialRows = this.filterLessonsByWeek(
       lessons.filter(
         (l) =>
-          l.status === ETrialLessonStatus.CONFIRMED || l.status === ETrialLessonStatus.COMPLETED
+          l.status === ETrialLessonStatus.CONFIRMED ||
+          l.status === ETrialLessonStatus.COMPLETED
       ),
       calendarBaseDate,
       weekStartDate,
@@ -233,6 +240,10 @@ export class MyLessonsService {
       (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
     );
 
+    const rescheduleKeys = await this.loadRescheduleRequestKeys(studentId);
+    const annotate = (item: MyLessonApiItem) =>
+      this.annotateRescheduleRequestSubmitted(item, rescheduleKeys);
+
     return {
       ...this.buildCalendarMeta(
         calendarTrialRows,
@@ -241,11 +252,79 @@ export class MyLessonsService {
         subscriptionBounds,
         timezoneName
       ),
-      calendar_lessons: mergedCalendar,
-      upcoming_lessons: mergedUpcoming,
-      previous_lessons: mergedPrevious,
+      calendar_lessons: mergedCalendar.map(annotate),
+      upcoming_lessons: mergedUpcoming.map(annotate),
+      previous_lessons: mergedPrevious.map(annotate),
       tutors: this.buildTutorItems(lessons, timezoneName),
     };
+  }
+
+  private async loadRescheduleRequestKeys(studentId: string): Promise<{
+    trialBookingIds: Set<string>;
+    subscriptionSlotKeys: Set<string>;
+  }> {
+    const rows = await this.prisma.findCancelRescheduleReasons({
+      studentId,
+      action: ELessonChangeAction.RESCHEDULE,
+    });
+
+    const trialBookingIds = new Set<string>();
+    const subscriptionSlotKeys = new Set<string>();
+
+    for (const row of rows) {
+      if (row.trialLessonBookingId) {
+        trialBookingIds.add(row.trialLessonBookingId);
+      }
+      if (
+        row.subscriptionEnrollmentId != null &&
+        row.subscriptionSlotIndex != null &&
+        row.originalStartAt
+      ) {
+        subscriptionSlotKeys.add(
+          this.buildSubscriptionRescheduleKey(
+            row.subscriptionEnrollmentId,
+            row.subscriptionSlotIndex,
+            row.originalStartAt
+          )
+        );
+      }
+    }
+
+    return { trialBookingIds, subscriptionSlotKeys };
+  }
+
+  private buildSubscriptionRescheduleKey(
+    enrollmentId: string,
+    slotIndex: number,
+    startAt: string | Date
+  ): string {
+    return `${enrollmentId}:${slotIndex}:${dayjs(startAt).utc().toISOString()}`;
+  }
+
+  private annotateRescheduleRequestSubmitted(
+    item: MyLessonApiItem,
+    keys: { trialBookingIds: Set<string>; subscriptionSlotKeys: Set<string> }
+  ): MyLessonApiItem {
+    let submitted = false;
+
+    if (item.source === 'trial') {
+      submitted = keys.trialBookingIds.has(item.id);
+    } else if (
+      item.source === 'subscription' &&
+      item.subscription_enrollment_id &&
+      item.subscription_slot_index != null &&
+      item.start_at
+    ) {
+      submitted = keys.subscriptionSlotKeys.has(
+        this.buildSubscriptionRescheduleKey(
+          item.subscription_enrollment_id,
+          item.subscription_slot_index,
+          item.start_at
+        )
+      );
+    }
+
+    return { ...item, reschedule_request_submitted: submitted };
   }
 
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
@@ -271,6 +350,10 @@ export class MyLessonsService {
     enrollment: {
       id: string;
       tutorId: string;
+      status: ESubscriptionEnrollmentStatus;
+      paymentStatus: EPaymentStatus;
+      grossAmount: bigint;
+      currency: string | null;
       weeklySlots: Prisma.JsonValue;
       tutor: TrialLessonBookingWithTutor['tutor'];
     },
@@ -282,6 +365,12 @@ export class MyLessonsService {
   ): MyLessonApiItem {
     const ymd = dayjs(startAt).tz(timezoneName).format('YYYY-MM-DD');
     const subj = enrollment.tutor.subject?.trim();
+    const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
+    const slotRefundAmount = subscriptionSlotGrossAmount(
+      enrollment.grossAmount,
+      slots.length,
+      slotIdx
+    );
     return {
       id: `sub-${enrollment.id}-${slotIdx}-${ymd}`,
       source: 'subscription',
@@ -298,6 +387,14 @@ export class MyLessonsService {
       day_index: this.toCalendarDayIndex(startAt, timezoneName),
       start_hour: this.getCalendarHour(startAt, timezoneName),
       end_hour: this.getCalendarHour(endAt, timezoneName),
+      start_at: startAt.toISOString(),
+      duration_minutes: Math.round((endAt.getTime() - startAt.getTime()) / (60 * 1000)),
+      subscription_enrollment_id: enrollment.id,
+      subscription_slot_index: slotIdx,
+      enrollment_status: enrollment.status,
+      enrollment_payment_status: enrollment.paymentStatus,
+      gross_amount: Number(slotRefundAmount),
+      currency: enrollment.currency ?? undefined,
     };
   }
 
@@ -325,17 +422,48 @@ export class MyLessonsService {
     return this.toLessonApiItem(lesson, timezoneName);
   }
 
+  private isTrialInUpcomingList(lesson: {
+    status: ETrialLessonStatus;
+    startAt: Date;
+    durationMinutes: number;
+  }): boolean {
+    if (!this.isLessonEndAfterNow(lesson)) {
+      return false;
+    }
+    return (
+      lesson.status === ETrialLessonStatus.CONFIRMED ||
+      lesson.status === ETrialLessonStatus.CANCELLED
+    );
+  }
+
+  private isTrialInPreviousList(lesson: {
+    status: ETrialLessonStatus;
+    startAt: Date;
+    durationMinutes: number;
+  }): boolean {
+    if (lesson.status === ETrialLessonStatus.COMPLETED) {
+      return true;
+    }
+    if (lesson.status === ETrialLessonStatus.CANCELLED) {
+      return !this.isLessonEndAfterNow(lesson);
+    }
+    return false;
+  }
+
   private toLessonApiItem(
     lesson: TrialLessonBookingWithTutor,
     timezoneName: string
   ): MyLessonApiItem | null {
-    const status = this.mapLessonStatus(lesson.status);
-
-    if (!status) {
+    const trialBookingStatus = this.mapTrialBookingStatus(lesson.status);
+    if (!trialBookingStatus) {
       return null;
     }
 
     const endAt = this.toUtc(lesson.startAt).add(lesson.durationMinutes, 'minutes').toDate();
+    const listStatus: MyLessonApiItem['status'] =
+      lesson.status === ETrialLessonStatus.COMPLETED || !this.isLessonEndAfterNow(lesson)
+        ? 'completed'
+        : 'upcoming';
 
     return {
       id: lesson.id,
@@ -346,12 +474,18 @@ export class MyLessonsService {
       tutor_avatar: lesson.tutor.avatar || lesson.tutor.user.avatar,
       tutor_mezon_user_id: lesson.tutor.user.mezonUserId,
       category: this.buildCategoryKey(lesson.tutor.subject, lesson.tutor.subject),
-      status,
+      status: listStatus,
       date_label: this.formatDateLabel(lesson.startAt, timezoneName),
       time_label: this.formatTimeLabel(lesson.startAt, endAt, timezoneName),
       day_index: this.toCalendarDayIndex(lesson.startAt, timezoneName),
       start_hour: this.getCalendarHour(lesson.startAt, timezoneName),
       end_hour: this.getCalendarHour(endAt, timezoneName),
+      source: 'trial',
+      start_at: lesson.startAt.toISOString(),
+      duration_minutes: lesson.durationMinutes,
+      gross_amount: Number(lesson.grossAmount),
+      currency: lesson.currency,
+      trial_booking_status: trialBookingStatus,
     };
   }
 
@@ -472,10 +606,14 @@ export class MyLessonsService {
     return fallbackCategory.toLowerCase();
   }
 
-  private mapLessonStatus(status: ETrialLessonStatus): MyLessonApiItem['status'] | null {
+  private mapTrialBookingStatus(
+    status: ETrialLessonStatus
+  ): MyLessonApiItem['trial_booking_status'] | null {
     switch (status) {
       case ETrialLessonStatus.CONFIRMED:
-        return 'upcoming';
+        return 'confirmed';
+      case ETrialLessonStatus.CANCELLED:
+        return 'cancelled';
       case ETrialLessonStatus.COMPLETED:
         return 'completed';
       default:

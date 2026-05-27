@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ENotificationType, Role, TutorProfile, VerificationStatus } from '@mezon-tutors/db';
 import { ChannelMessageContent } from 'mezon-sdk';
 import {
+  AdminLessonChangeHistoryItem,
   FullTutorApplication,
   TutorAdminNote,
   TutorApplicationMetrics,
@@ -126,6 +127,46 @@ export class TutorApplicationService {
     });
 
     return note;
+  }
+
+  async getLessonChangeHistory(tutorId: string): Promise<AdminLessonChangeHistoryItem[]> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      select: { id: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundException(`Tutor profile with ID ${tutorId} not found`);
+    }
+
+    const rows = await this.prisma.cancelRescheduleReason.findMany({
+      where: { tutorId },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      include: {
+        student: { select: { id: true, username: true, email: true } },
+        initiatedBy: { select: { username: true } },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      studentId: row.studentId,
+      studentName: row.student.username,
+      studentEmail: row.student.email,
+      action: row.action,
+      lessonType: row.lessonType,
+      initiatedByRole: row.initiatedByRole,
+      initiatedByName: row.initiatedBy.username,
+      reason: row.reason,
+      message: row.message,
+      originalStartAt: row.originalStartAt.toISOString(),
+      originalDurationMinutes: row.originalDurationMinutes,
+      trialLessonBookingId: row.trialLessonBookingId,
+      subscriptionEnrollmentId: row.subscriptionEnrollmentId,
+      subscriptionSlotIndex: row.subscriptionSlotIndex,
+      createdAt: row.createdAt.toISOString(),
+    }));
   }
 
   async listApplications(): Promise<TutorProfile[]> {

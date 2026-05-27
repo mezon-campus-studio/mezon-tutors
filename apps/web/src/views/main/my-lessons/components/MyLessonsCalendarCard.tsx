@@ -45,6 +45,17 @@ export default function MyLessonsCalendarCard({
 
   const formattedTitle = formatCalendarTitle(calendar.title, locale);
 
+  const calendarEvents = useMemo(
+    () =>
+      lessons.filter(
+        (lesson) =>
+          lesson.source !== 'trial' ||
+          lesson.trialBookingStatus === 'confirmed' ||
+          lesson.trialBookingStatus === 'completed',
+      ),
+    [lessons],
+  );
+
   const displayWeekDays = useMemo(() => {
     const monday = parseYmdInTimezone(weekStartYmd, timezoneName);
     return Array.from({ length: 7 }, (_, index) => {
@@ -81,7 +92,7 @@ export default function MyLessonsCalendarCard({
       <DashboardScheduleCalendar<LessonItem>
         title={formattedTitle}
         weekDays={displayWeekDays}
-        events={lessons}
+        events={calendarEvents}
         currentDayIndex={calendar.currentDayIndex}
         currentHour={calendar.currentHour}
         isCurrentWeek={isCurrentWeek}

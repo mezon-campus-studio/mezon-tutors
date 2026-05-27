@@ -72,9 +72,13 @@ export type TrialLessonBookingRequestItem = {
   grossAmount: number;
   platformFee: number;
   tutorAmount: number;
+  currency?: string;
   status: ETrialLessonBookingStatus;
   createdAt: string;
+  rescheduleRequestSubmitted?: boolean;
   scheduleKind?: "subscription";
+  subscriptionEnrollmentId?: string;
+  subscriptionSlotIndex?: number;
 };
 
 export type TrialLessonBookingRequestsResponse =
@@ -83,7 +87,8 @@ export type TrialLessonBookingRequestsResponse =
 export type TrialLessonBookingRequestStatusFilter =
   | "PENDING"
   | "CONFIRMED"
-  | "COMPLETED";
+  | "COMPLETED"
+  | "CANCELLED";
 
 export type TrialLessonBookingDetail = {
   id: string;
@@ -118,13 +123,31 @@ export const trialLessonBookingApi = {
     tutorId: string,
     date: string,
     timezone: string,
+    excludeBookingId?: string,
   ): Promise<OccupiedTrialLessonSlotsResponse> {
     return apiClient.get<
       ApiResponse<OccupiedTrialLessonSlotsResponse>,
       OccupiedTrialLessonSlotsResponse
     >("/trial-lesson-bookings/occupied", {
-      params: { tutorId, date, timezone },
+      params: {
+        tutorId,
+        date,
+        timezone,
+        ...(excludeBookingId ? { excludeBookingId } : {}),
+      },
     });
+  },
+
+  rescheduleTrialLessonBooking(
+    bookingId: string,
+    payload: { startAt: string; durationMinutes: number },
+    timezone: string,
+  ): Promise<{ success: boolean }> {
+    return apiClient.post<{ success: boolean }, { success: boolean }>(
+      `/trial-lesson-bookings/${bookingId}/reschedule`,
+      payload,
+      { params: { timezone } },
+    );
   },
 
   getAlreadyBookedStatus(
@@ -163,6 +186,26 @@ export const trialLessonBookingApi = {
       ApiResponse<TrialLessonBookingDetail>,
       TrialLessonBookingDetail
     >(`/trial-lesson-bookings/${bookingId}`);
+  },
+
+  cancelTrialLessonBooking(
+    bookingId: string,
+    payload?: { reason?: string; message?: string },
+  ): Promise<{ success: boolean; refunded: boolean }> {
+    return apiClient.post<
+      { success: boolean; refunded: boolean },
+      { success: boolean; refunded: boolean }
+    >(`/trial-lesson-bookings/${bookingId}/cancel`, payload);
+  },
+
+  tutorRescheduleRequest(
+    bookingId: string,
+    payload: { reason: string; message?: string },
+  ): Promise<{ success: boolean; logId: string }> {
+    return apiClient.post<
+      { success: boolean; logId: string },
+      { success: boolean; logId: string }
+    >(`/trial-lesson-bookings/${bookingId}/tutor-reschedule-request`, payload);
   },
 
   async getMyTrialLessonBookingRequests(params?: {
@@ -206,12 +249,38 @@ export function useGetOccupiedTrialLessonSlots(
   date: string,
   timezone: string,
   enabled = true,
+  excludeBookingId?: string,
 ) {
   return useQuery({
-    queryKey: trialLessonBookingQueryKey.occupied(tutorId, date, timezone),
+    queryKey: trialLessonBookingQueryKey.occupied(
+      tutorId,
+      date,
+      timezone,
+      excludeBookingId,
+    ),
     queryFn: () =>
-      trialLessonBookingApi.getOccupiedByTutorAndDate(tutorId, date, timezone),
+      trialLessonBookingApi.getOccupiedByTutorAndDate(
+        tutorId,
+        date,
+        timezone,
+        excludeBookingId,
+      ),
     enabled: Boolean(tutorId) && Boolean(date) && Boolean(timezone) && enabled,
+  });
+}
+
+export function useRescheduleTrialLessonBookingMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload: { startAt: string; durationMinutes: number };
+      timezone: string;
+    }) =>
+      trialLessonBookingApi.rescheduleTrialLessonBooking(
+        args.bookingId,
+        args.payload,
+        args.timezone,
+      ),
   });
 }
 
@@ -278,3 +347,26 @@ export function useGetTrialLessonBookingDetail(
     enabled: Boolean(bookingId) && enabled,
   });
 }
+
+export function useCancelTrialLessonBookingMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload?: { reason?: string; message?: string };
+    }) => trialLessonBookingApi.cancelTrialLessonBooking(args.bookingId, args.payload),
+  });
+}
+
+export function useTutorRescheduleRequestMutation() {
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload: { reason: string; message?: string };
+    }) =>
+      trialLessonBookingApi.tutorRescheduleRequest(
+        args.bookingId,
+        args.payload,
+      ),
+  });
+}
+

@@ -13,17 +13,34 @@ import { CalendarRange, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { SendMessageModal } from '@/components/common/SendMessageModal';
 import { useUserTimezone } from '@/hooks';
 import { DashboardScheduleCalendar } from '@/components/schedule';
 import { Button } from '@/components/ui';
+import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import {
   type TrialLessonBookingRequestItem,
   useGetMyTrialLessonBookingRequests,
   useGetTutorSubscriptionWeekOccurrences,
+  useTutorSubscriptionSlotRescheduleRequestMutation,
+  createMezonLightDM,
+  persistMezonLightSession,
+  refreshMezonLightSession,
+  restoreMezonLightClientFromStorage,
+  sendMezonLightDMWithRefreshFallback,
+  useGetDmChannel,
+  useCreateDmChannelMutation,
 } from '@/services';
+import { subscriptionQueryKey } from '@/services/subscription/subscription.qkey';
+import { useMezonLight } from '@/providers';
+import {
+  RescheduleLessonDialog,
+  type TutorRescheduleLessonTarget,
+} from '@/views/main/trial-bookings/components/RescheduleLessonDialog';
 import { userAtom } from '@/store';
-import { mapTutorBookingStatusToUi } from '../trial-bookings';
+import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 import MyScheduleEventCard from './components/MyScheduleEventCard';
 import MyScheduleUpcomingList from './components/MyScheduleUpcomingList';
 import ScheduleEventModal from './components/ScheduleEventModal';
@@ -119,21 +136,60 @@ function subscriptionOccurrenceToRequestItem(
     status: 'CONFIRMED' as ETrialLessonBookingStatus,
     createdAt: o.startAt,
     scheduleKind: 'subscription',
+    subscriptionEnrollmentId: o.enrollmentId,
+    subscriptionSlotIndex: o.slotIndex,
+    rescheduleRequestSubmitted: o.rescheduleRequestSubmitted ?? false,
+  };
+}
+
+function itemToRescheduleTarget(
+  item: TrialLessonBookingRequestItem,
+  locale: string,
+  timezoneName: string,
+  planLessonLabel: string,
+): TutorRescheduleLessonTarget {
+  const start = dayjs(item.startAt).tz(timezoneName).locale(locale);
+  const end = start.add(item.durationMinutes, 'minute');
+
+  return {
+    id: item.id,
+    studentName: item.studentName,
+    studentAvatarUrl: item.studentAvatarUrl,
+    dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
+    timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
+    subject: planLessonLabel,
   };
 }
 
 export default function MyScheduleView() {
   const t = useTranslations('Dashboard.mySchedule');
   const tModal = useTranslations('Dashboard.scheduleEventModal');
+  const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule');
   const locale = useLocale();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAtomValue(userAtom);
   const userTimezone = useUserTimezone();
+  const senderId = user?.id ?? '';
+  const senderMezonUserId = user?.mezonUserId ?? '';
 
   const [selectedDate, setSelectedDate] = useState(dayjs().tz(userTimezone));
   const [pickedEvent, setPickedEvent] = useState<ScheduleEventItem | null>(null);
   const [eventAnchorRect, setEventAnchorRect] = useState<DOMRect | null>(null);
   const [messageOpen, setMessageOpen] = useState(false);
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
+  const [rescheduleTarget, setRescheduleTarget] = useState<TutorRescheduleLessonTarget | null>(
+    null,
+  );
+  const [rescheduleItem, setRescheduleItem] = useState<TrialLessonBookingRequestItem | null>(null);
+  const [isRescheduleSubmitting, setIsRescheduleSubmitting] = useState(false);
+
+  const tutorSubscriptionRescheduleMutation = useTutorSubscriptionSlotRescheduleRequestMutation();
+  const { lightClient, setLightClient } = useMezonLight();
+  const recipientId = rescheduleItem?.studentId ?? '';
+  const recipientMezonUserId = rescheduleItem?.studentMezonUserId ?? '';
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
 
   const weekStart = useMemo(() => buildWeekStartMonday(selectedDate), [selectedDate]);
   const weekEnd = useMemo(() => weekStart.add(7, 'day'), [weekStart]);
@@ -205,6 +261,108 @@ export default function MyScheduleView() {
   const handleGoToToday = () => setSelectedDate(dayjs().tz(userTimezone));
 
   const isCurrentWeek = weekStart.isSame(buildWeekStartMonday(dayjs().tz(userTimezone)), 'day');
+
+  const handleRescheduleSubscription = (item: TrialLessonBookingRequestItem) => {
+    if (item.rescheduleRequestSubmitted) {
+      toast.error(tReschedule('alreadyRequested'));
+      return;
+    }
+    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+      toast.error(tReschedule('within12Hours'));
+      return;
+    }
+    if (
+      item.subscriptionEnrollmentId == null ||
+      item.subscriptionSlotIndex == null
+    ) {
+      toast.error(tReschedule('failed'));
+      return;
+    }
+    setRescheduleItem(item);
+    setRescheduleTarget(itemToRescheduleTarget(item, locale, userTimezone, t('lessonTypePlan')));
+    setIsRescheduleDialogOpen(true);
+  };
+
+  const handleConfirmReschedule = async (reason: string, message?: string) => {
+    if (!rescheduleItem) return;
+    if (
+      rescheduleItem.subscriptionEnrollmentId == null ||
+      rescheduleItem.subscriptionSlotIndex == null
+    ) {
+      return;
+    }
+
+    try {
+      setIsRescheduleSubmitting(true);
+      await tutorSubscriptionRescheduleMutation.mutateAsync({
+        enrollmentId: rescheduleItem.subscriptionEnrollmentId,
+        slotIndex: rescheduleItem.subscriptionSlotIndex,
+        payload: {
+          reason,
+          message: message?.trim() || undefined,
+          occurrenceStartAt: rescheduleItem.startAt,
+        },
+      });
+
+      if (message?.trim()) {
+        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
+          toast.error(tReschedule('messageMissingUser'));
+        } else {
+          try {
+            let client = lightClient;
+            if (!client) {
+              client = await restoreMezonLightClientFromStorage();
+              if (!client) {
+                throw new Error('Cannot restore Mezon client. Please login again.');
+              }
+              setLightClient(client);
+            }
+
+            const isSessionExpired = await client.isSessionExpired();
+            if (isSessionExpired) {
+              await refreshMezonLightSession(client);
+              await persistMezonLightSession(client);
+            }
+
+            let channelId = (await refetchDmChannel()).data?.channelId;
+            if (!channelId) {
+              const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
+              channelId = dmChannel?.channel_id;
+              if (!channelId) {
+                throw new Error('Could not create DM channel.');
+              }
+
+              await createDmChannelMutation.mutateAsync({
+                senderId,
+                recipientId,
+                channelId,
+              });
+            }
+
+            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim());
+            toast.success(tReschedule('messageSent'));
+          } catch (error) {
+            console.error('DM Error:', error);
+            toast.error(tReschedule('messageFailed'));
+          }
+        }
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: subscriptionQueryKey.tutorWeekOccurrences(weekStartYmd, userTimezone),
+      });
+
+      toast.success(tReschedule('success'));
+      setIsRescheduleDialogOpen(false);
+      setRescheduleTarget(null);
+      setRescheduleItem(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : tReschedule('failed'));
+    } finally {
+      setIsRescheduleSubmitting(false);
+    }
+  };
 
   const scheduleEventDetailRows = useMemo(() => {
     if (!pickedEvent) return undefined;
@@ -288,6 +446,7 @@ export default function MyScheduleView() {
                 <MyScheduleUpcomingList
                   items={weekListItems}
                   timezoneName={userTimezone}
+                  onRescheduleSubscription={handleRescheduleSubscription}
                 />
               </div>
             </div>
@@ -312,6 +471,18 @@ export default function MyScheduleView() {
         avatarAlt={pickedEvent?.studentName}
         detailRows={scheduleEventDetailRows}
         onSendMessage={() => setMessageOpen(true)}
+      />
+
+      <RescheduleLessonDialog
+        isOpen={isRescheduleDialogOpen}
+        onClose={() => {
+          setIsRescheduleDialogOpen(false);
+          setRescheduleTarget(null);
+          setRescheduleItem(null);
+        }}
+        onConfirm={handleConfirmReschedule}
+        lesson={rescheduleTarget}
+        isLoading={isRescheduleSubmitting}
       />
 
       <SendMessageModal

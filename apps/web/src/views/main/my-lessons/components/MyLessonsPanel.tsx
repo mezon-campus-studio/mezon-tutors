@@ -7,18 +7,104 @@ import {
   Sparkles,
   Star,
   Video,
+  CalendarClock,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/store/auth.atom";
+import { useMezonLight } from "@/providers";
+import { Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
+import { ActionMenu } from "@/components/common/ActionMenu";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
+import { useCancelSubscriptionSlotMutation } from "@/services/subscription/subscription.api";
+import {
+  useCancelTrialLessonBookingMutation,
+  useRescheduleTrialLessonBookingMutation,
+} from "@/services/trial-lesson-booking/trial-lesson-booking.api";
+import { useGetVerifiedTutorAbout } from "@/services/tutor-profile/tutor-profile.api";
+import { walletQueryKey } from "@/services/wallet/wallet.qkey";
+import { useUserTimezone } from "@/hooks";
+import { isTrialLessonRescheduleEligible } from "@/lib/trial-lesson-cancellation";
+import {
+  TrialBookingSheet,
+  type TrialBookingPayload,
+} from "@/views/main/tutors/components/TrialBookingSheet";
+import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
+import {
+  createMezonLightDM,
+  persistMezonLightSession,
+  refreshMezonLightSession,
+  restoreMezonLightClientFromStorage,
+  sendMezonLightDMWithRefreshFallback,
+  useGetDmChannel,
+  useCreateDmChannelMutation,
+} from "@/services";
+import { CancelLessonDialog } from "./CancelLessonDialog";
+import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLessonDialog";
 
 type LessonPersonBadgeProps = {
   name: string;
   avatar: string;
 };
+
+function isCancelledTrialLesson(lesson: LessonItem): boolean {
+  return lesson.source === "trial" && lesson.trialBookingStatus === "cancelled";
+}
+
+function isReschedulableTrialLesson(lesson: LessonItem): boolean {
+  return (
+    lesson.source === "trial" &&
+    lesson.trialBookingStatus === "confirmed" &&
+    Boolean(lesson.startAt) &&
+    isTrialLessonRescheduleEligible(lesson.startAt!) &&
+    !lesson.rescheduleRequestSubmitted
+  );
+}
+
+function isReschedulableSubscriptionLesson(lesson: LessonItem): boolean {
+  return (
+    isActivePaidSubscriptionLesson(lesson) &&
+    Boolean(lesson.startAt) &&
+    isTrialLessonRescheduleEligible(lesson.startAt!) &&
+    !lesson.rescheduleRequestSubmitted
+  );
+}
+
+function isActivePaidSubscriptionLesson(lesson: LessonItem): boolean {
+  return (
+    lesson.source === "subscription" &&
+    lesson.status === "upcoming" &&
+    lesson.enrollmentStatus?.toUpperCase() === "ACTIVE" &&
+    lesson.enrollmentPaymentStatus?.toUpperCase() === "SUCCEEDED"
+  );
+}
+
+function canShowRescheduleOrCancelMenu(lesson: LessonItem): boolean {
+  if (isCancelledTrialLesson(lesson)) {
+    return false;
+  }
+  if (lesson.source === "trial" && lesson.trialBookingStatus === "confirmed") {
+    return true;
+  }
+  return isActivePaidSubscriptionLesson(lesson);
+}
+
+function LessonCancelledBadge({ label }: { label: string }) {
+  return (
+    <Badge
+      variant="secondary"
+      className="h-9 rounded-full border-0 bg-slate-100 px-4 text-xs font-bold text-slate-600 ring-1 ring-slate-200"
+    >
+      {label}
+    </Badge>
+  );
+}
 
 function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
   return (
@@ -38,6 +124,7 @@ type PastLessonListItemProps = {
   lesson: LessonItem;
   rateLabel: string;
   ratedLabel: string;
+  cancelledLabel: string;
   onRate: (tutorId: string) => void;
 };
 
@@ -45,10 +132,12 @@ function PastLessonListItem({
   lesson,
   rateLabel,
   ratedLabel,
+  cancelledLabel,
   onRate,
 }: PastLessonListItemProps) {
   const locale = useLocale();
   const rated = lesson.rating !== undefined;
+  const cancelled = isCancelledTrialLesson(lesson);
 
   return (
     <div className="group flex w-full flex-wrap items-center justify-between gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
@@ -70,7 +159,9 @@ function PastLessonListItem({
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {rated ? (
+        {cancelled ? (
+          <LessonCancelledBadge label={cancelledLabel} />
+        ) : rated ? (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-100">
             <Star className="size-3.5 fill-amber-400 text-amber-400" />
             <span className="text-sm font-bold text-amber-700">
@@ -99,14 +190,39 @@ type UpcomingLessonItemProps = {
   lesson: LessonItem;
   rescheduleOrCancelLabel: string;
   joinLessonLabel: string;
+  cancelledLabel: string;
+  onReschedule: (lesson: LessonItem) => void;
+  onCancel: (lesson: LessonItem) => void;
 };
 
 function UpcomingLessonItem({
   lesson,
   rescheduleOrCancelLabel,
   joinLessonLabel,
+  cancelledLabel,
+  onReschedule,
+  onCancel,
 }: UpcomingLessonItemProps) {
   const locale = useLocale();
+  const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
+  const cancelled = isCancelledTrialLesson(lesson);
+
+  const canReschedule = isReschedulableTrialLesson(lesson) || isReschedulableSubscriptionLesson(lesson);
+
+  const actionItems = [
+    {
+      label: t("reschedule"),
+      icon: <CalendarClock className="size-4" />,
+      onClick: () => onReschedule(lesson),
+      disabled: !canReschedule,
+    },
+    {
+      label: t("cancel"),
+      icon: <Trash2 className="size-4 text-destructive" />,
+      onClick: () => onCancel(lesson),
+      variant: "destructive" as const,
+    },
+  ];
   return (
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -127,16 +243,32 @@ function UpcomingLessonItem({
       </div>
 
       <div className="flex shrink-0 gap-2">
-        <Button
-          variant="outline"
-          className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
-        >
-          {rescheduleOrCancelLabel}
-        </Button>
-        <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
-          <Video className="mr-1.5 size-3.5" />
-          {joinLessonLabel}
-        </Button>
+        {cancelled ? (
+          <LessonCancelledBadge label={cancelledLabel} />
+        ) : canShowRescheduleOrCancelMenu(lesson) ? (
+          <>
+            <ActionMenu
+              trigger={
+                <Button
+                  variant="outline"
+                  className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                >
+                  {rescheduleOrCancelLabel}
+                </Button>
+              }
+              items={actionItems}
+            />
+            <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+              <Video className="mr-1.5 size-3.5" />
+              {joinLessonLabel}
+            </Button>
+          </>
+        ) : (
+          <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+            <Video className="mr-1.5 size-3.5" />
+            {joinLessonLabel}
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -231,6 +363,9 @@ type LessonsSectionProps = {
   emptyState?: React.ReactNode;
   rescheduleOrCancelLabel: string;
   joinLessonLabel: string;
+  cancelledLabel: string;
+  onReschedule: (lesson: LessonItem) => void;
+  onCancel: (lesson: LessonItem) => void;
 };
 
 function LessonsSection({
@@ -239,6 +374,9 @@ function LessonsSection({
   emptyState,
   rescheduleOrCancelLabel,
   joinLessonLabel,
+  cancelledLabel,
+  onReschedule,
+  onCancel,
 }: LessonsSectionProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -258,6 +396,9 @@ function LessonsSection({
                 lesson={lesson}
                 rescheduleOrCancelLabel={rescheduleOrCancelLabel}
                 joinLessonLabel={joinLessonLabel}
+                cancelledLabel={cancelledLabel}
+                onReschedule={onReschedule}
+                onCancel={onCancel}
               />
             ))
           : emptyState}
@@ -271,6 +412,7 @@ type PastLessonsSectionProps = {
   lessons: LessonItem[];
   rateLabel: string;
   ratedLabel: string;
+  cancelledLabel: string;
   onRate: (tutorId: string) => void;
 };
 
@@ -279,6 +421,7 @@ function PastLessonsSection({
   lessons,
   rateLabel,
   ratedLabel,
+  cancelledLabel,
   onRate,
 }: PastLessonsSectionProps) {
   return (
@@ -298,6 +441,7 @@ function PastLessonsSection({
             lesson={lesson}
             rateLabel={rateLabel}
             ratedLabel={ratedLabel}
+            cancelledLabel={cancelledLabel}
             onRate={onRate}
           />
         ))}
@@ -318,8 +462,199 @@ export default function MyLessonsPanel({
   const t = useTranslations("MyLessons");
   const router = useRouter();
 
+  const currentUser = useAtomValue(userAtom);
+  const senderId = currentUser?.id ?? "";
+  const senderMezonUserId = currentUser?.mezonUserId ?? "";
+
   const handleRate = (tutorId: string) => {
     router.push(`/tutors/${tutorId}`);
+  };
+
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
+  const [isCanceling, setIsCanceling] = useState(false);
+
+  const recipientId = selectedLesson?.tutorUserId ?? "";
+  const recipientMezonUserId = selectedLesson?.tutorMezonUserId ?? "";
+
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
+  const { lightClient, setLightClient } = useMezonLight();
+  const queryClient = useQueryClient();
+  const cancelMutation = useCancelTrialLessonBookingMutation();
+  const cancelSubscriptionMutation = useCancelSubscriptionSlotMutation();
+  const rescheduleMutation = useRescheduleTrialLessonBookingMutation();
+  const userTimezone = useUserTimezone();
+
+  const [rescheduleLesson, setRescheduleLesson] = useState<LessonItem | null>(null);
+  const [rescheduleSubscriptionLesson, setRescheduleSubscriptionLesson] =
+    useState<LessonItem | null>(null);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+
+  const { data: rescheduleTutorAbout } = useGetVerifiedTutorAbout(
+    rescheduleLesson?.tutorId ?? "",
+  );
+
+  const handleReschedule = (lesson: LessonItem) => {
+    if (lesson.rescheduleRequestSubmitted) {
+      toast.error(t("panels.lessons.reschedule.alreadyRequested"));
+      return;
+    }
+    if (lesson.source === "subscription") {
+      if (!isReschedulableSubscriptionLesson(lesson)) {
+        toast.error(t("panels.lessons.reschedule.within12Hours"));
+        return;
+      }
+      setRescheduleSubscriptionLesson(lesson);
+      return;
+    }
+    if (!isReschedulableTrialLesson(lesson)) {
+      toast.error(t("panels.lessons.reschedule.within12Hours"));
+      return;
+    }
+    setRescheduleLesson(lesson);
+  };
+
+  const handleConfirmReschedule = async (payload: TrialBookingPayload) => {
+    if (!rescheduleLesson) return;
+
+    try {
+      setIsRescheduling(true);
+      await rescheduleMutation.mutateAsync({
+        bookingId: rescheduleLesson.id,
+        payload: {
+          startAt: payload.startAt,
+          durationMinutes: payload.duration,
+        },
+        timezone: userTimezone,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["my-lessons"] });
+      toast.success(t("panels.lessons.reschedule.success"));
+      setRescheduleLesson(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : t("panels.lessons.reschedule.failed"),
+      );
+    } finally {
+      setIsRescheduling(false);
+    }
+  };
+
+  const handleCancelClick = (lesson: LessonItem) => {
+    setSelectedLesson(lesson);
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = async (reason: string, message?: string) => {
+    if (!selectedLesson) return;
+
+    if (message?.trim()) {
+      if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
+        toast.error("Missing user information to send message.");
+      } else {
+        setIsCanceling(true);
+        try {
+          let client = lightClient;
+          if (!client) {
+            client = await restoreMezonLightClientFromStorage();
+            if (!client) {
+              throw new Error("Cannot restore Mezon client. Please login again.");
+            }
+            setLightClient(client);
+          }
+
+          const isSessionExpired = await client.isSessionExpired();
+          if (isSessionExpired) {
+            await refreshMezonLightSession(client);
+            await persistMezonLightSession(client);
+          }
+
+          let channelId = (await refetchDmChannel()).data?.channelId;
+          if (!channelId) {
+            const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
+            channelId = dmChannel?.channel_id;
+            if (!channelId) {
+              throw new Error("Could not create DM channel.");
+            }
+
+            await createDmChannelMutation.mutateAsync({
+              senderId,
+              recipientId,
+              channelId,
+            });
+          }
+
+          await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim());
+          toast.success(t("panels.lessons.cancellation.dialog.messageSent"));
+        } catch (error) {
+          console.error("DM Error:", error);
+          // Allow lesson cancellation to proceed even if DM fails
+          toast.error("Failed to send message, but proceeding with cancellation...");
+        }
+      }
+    }
+
+    try {
+      setIsCanceling(true);
+
+      if (selectedLesson.source === "subscription") {
+        const enrollmentId = selectedLesson.subscriptionEnrollmentId;
+        const slotIndex = selectedLesson.subscriptionSlotIndex;
+        if (enrollmentId == null || slotIndex == null) {
+          throw new Error("Missing subscription lesson reference");
+        }
+        const result = await cancelSubscriptionMutation.mutateAsync({
+          enrollmentId,
+          slotIndex,
+          payload: { reason, message: message?.trim() },
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
+          result.credited
+            ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
+            : Promise.resolve(),
+        ]);
+        const amountLabel =
+          result.refundAmount > 0 && result.currency
+            ? formatToCurrency(
+                result.currency as ECurrency,
+                result.refundAmount,
+              )
+            : null;
+        toast.success(
+          result.credited && amountLabel
+            ? t("panels.lessons.subscription.cancellation.dialog.successCredited", {
+                amount: amountLabel,
+              })
+            : t("panels.lessons.subscription.cancellation.dialog.successNoCredit"),
+        );
+      } else {
+        const result = await cancelMutation.mutateAsync({
+          bookingId: selectedLesson.id,
+          payload: { reason, message: message?.trim() },
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
+          result.refunded
+            ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
+            : Promise.resolve(),
+        ]);
+        toast.success(
+          result.refunded
+            ? t("panels.lessons.cancellation.dialog.successRefunded")
+            : t("panels.lessons.cancellation.dialog.successNoRefund"),
+        );
+      }
+
+      setIsCancelDialogOpen(false);
+      setSelectedLesson(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to cancel lesson.");
+    } finally {
+      setIsCanceling(false);
+    }
   };
 
   return (
@@ -331,6 +666,9 @@ export default function MyLessonsPanel({
           "panels.lessons.upcoming.rescheduleOrCancel",
         )}
         joinLessonLabel={t("panels.lessons.upcoming.joinLesson")}
+        cancelledLabel={t("panels.lessons.upcoming.statusCancelled")}
+        onReschedule={handleReschedule}
+        onCancel={handleCancelClick}
         emptyState={
           <EmptyUpcomingCard
             scheduleNowLabel={t("panels.lessons.upcoming.scheduleNow")}
@@ -347,9 +685,52 @@ export default function MyLessonsPanel({
           lessons={previousLessons}
           rateLabel={t("panels.lessons.past.rate")}
           ratedLabel={t("panels.lessons.past.rated")}
+          cancelledLabel={t("panels.lessons.past.statusCancelled")}
           onRate={handleRate}
         />
       )}
+
+      <CancelLessonDialog
+        isOpen={isCancelDialogOpen}
+        onClose={() => setIsCancelDialogOpen(false)}
+        onConfirm={handleConfirmCancel}
+        lesson={selectedLesson}
+        isLoading={isCanceling}
+      />
+
+      {rescheduleLesson && rescheduleTutorAbout ? (
+        <TrialBookingSheet
+          open
+          mode="reschedule"
+          rescheduleBookingId={rescheduleLesson.id}
+          initialDurationMinutes={rescheduleLesson.durationMinutes ?? 30}
+          lockDuration
+          onOpenChange={(open) => {
+            if (!open && !isRescheduling) {
+              setRescheduleLesson(null);
+            }
+          }}
+          onConfirm={handleConfirmReschedule}
+          tutor={{
+            id: rescheduleTutorAbout.id,
+            name: rescheduleLesson.tutor,
+            title: rescheduleLesson.subject,
+            prices: {
+              baseCurrency: rescheduleTutorAbout.prices.baseCurrency ?? ECurrency.VND,
+              usd: rescheduleTutorAbout.prices.usd,
+              vnd: rescheduleTutorAbout.prices.vnd,
+              php: rescheduleTutorAbout.prices.php,
+            },
+            avatar: rescheduleLesson.tutorAvatar || rescheduleTutorAbout.avatar,
+          }}
+        />
+      ) : null}
+
+      <RescheduleSubscriptionLessonDialog
+        lesson={rescheduleSubscriptionLesson}
+        open={Boolean(rescheduleSubscriptionLesson)}
+        onClose={() => setRescheduleSubscriptionLesson(null)}
+      />
     </div>
   );
 }

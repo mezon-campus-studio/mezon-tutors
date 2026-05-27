@@ -5,13 +5,13 @@ import { cn } from '@/lib/utils';
 import {
   mapTutorBookingStatusToUi,
   type TutorBookingRequestUiStatus,
-} from '@/views/main/trial-bookings';
+} from '@/lib/trial-booking-status';
 
 const STATUS_CLASS: Record<TutorBookingRequestUiStatus, string> = {
   pending: 'bg-amber-100 text-amber-800 border-amber-200',
   confirmed: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200',
   completed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  cancelled: 'bg-rose-100 text-rose-800 border-rose-200',
+  cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
 };
 
 type BookingRequestStatusBadgeProps = {

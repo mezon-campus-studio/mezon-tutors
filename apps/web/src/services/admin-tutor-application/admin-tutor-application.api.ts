@@ -1,4 +1,5 @@
 import type {
+  AdminLessonChangeHistoryItem,
   FullTutorApplication,
   TutorAdminNote,
   TutorApplicationMetrics,
@@ -30,6 +31,12 @@ export const adminTutorApplicationApi = {
 
   detail(id: string): Promise<FullTutorApplication> {
     return apiClient.get<FullTutorApplication>(`${BASE}/tutor-profiles/${id}`);
+  },
+
+  lessonChangeHistory(tutorId: string): Promise<AdminLessonChangeHistoryItem[]> {
+    return apiClient.get<AdminLessonChangeHistoryItem[]>(
+      `${BASE}/tutor-profiles/${tutorId}/lesson-change-history`,
+    );
   },
 
   approve(id: string): Promise<{ success: boolean }> {
@@ -72,6 +79,18 @@ export const useAdminTutorApplicationDetail = (id: string, enabled = true) => {
     queryKey: adminTutorApplicationQueryKey.detail(id),
     queryFn: () => adminTutorApplicationApi.detail(id),
     enabled: enabled && !!id,
+  });
+};
+
+export const useAdminTutorLessonChangeHistory = (
+  tutorId: string,
+  enabled = true,
+) => {
+  return useQuery({
+    queryKey: adminTutorApplicationQueryKey.lessonChangeHistory(tutorId),
+    queryFn: () => adminTutorApplicationApi.lessonChangeHistory(tutorId),
+    enabled: enabled && !!tutorId,
+    staleTime: 30 * 1000,
   });
 };
 

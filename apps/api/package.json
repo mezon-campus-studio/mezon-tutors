@@ -13,6 +13,7 @@
     "start:prod": "node dist/main"
   },
   "dependencies": {
+    "@prisma/client": "^6.2.1",
     "@mezon-tutors/db": "*",
     "@mezon-tutors/shared": "0.0.1",
     "@nestjs/common": "^11.1.18",
