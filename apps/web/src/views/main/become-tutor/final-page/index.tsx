@@ -10,9 +10,8 @@ import { Spinner } from '@/components/ui';
 import {
   ROUTES,
   VerificationStatus,
-  DAY_KEYS,
   PROFESSIONAL_DOCUMENT_TYPE,
-  utcWeeklySlotsToTimezone,
+  normalizeUtcAvailabilityRows,
 } from '@mezon-tutors/shared';
 import { useGetMyProfile } from '@/services';
 import {
@@ -180,27 +179,6 @@ export default function FinalPage() {
       videoId: null,
     });
 
-    const slotsByDay: Record<string, any[]> = Object.fromEntries(DAY_KEYS.map(d => [d, []]));
-    const tutorTz = profile.timezone ?? 'UTC';
-    const localSlots = utcWeeklySlotsToTimezone(
-      profile.availability.map((slot: { dayOfWeek: number; startTime: string; endTime: string }) => ({
-        dayOfWeek: slot.dayOfWeek,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        isActive: true,
-      })),
-      tutorTz,
-    );
-    localSlots.forEach((slot) => {
-      const dayKey = DAY_KEYS[slot.dayOfWeek];
-      if (dayKey) {
-        slotsByDay[dayKey].push({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        });
-      }
-    });
-
     const baseCurrency = profile.trialLessonPrice?.baseCurrency || 'VND';
     let hourlyRate = '';
     
@@ -222,7 +200,7 @@ export default function FinalPage() {
     setAvailability({
       hourlyRate,
       currency: baseCurrency,
-      slotsByDay,
+      utcAvailability: normalizeUtcAvailabilityRows(profile.availability ?? []),
       selectedDayIndex: 0,
     });
 

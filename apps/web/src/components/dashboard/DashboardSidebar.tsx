@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  User,
   Wallet,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
@@ -33,6 +34,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   wallet: Wallet,
   reports: LineChart,
   dashboard: LayoutDashboard,
+  profile: User,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -46,6 +48,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   wallet: "from-amber-500 to-orange-500",
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
+  profile: "from-violet-500 to-indigo-500",
 };
 
 type DashboardSidebarProps = {

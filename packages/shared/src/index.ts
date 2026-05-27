@@ -64,6 +64,7 @@ export * from './utils/rating';
 export * from './utils/pagination';
 export * from './utils/tutor-availability-time-slots';
 export * from './utils/tutor-availability-utc';
+export * from './utils/availability-utils';
 export * from './utils/subscription-week-occurrences';
 export * from './utils/subscription-slot-status';
 export * from './utils/currency';

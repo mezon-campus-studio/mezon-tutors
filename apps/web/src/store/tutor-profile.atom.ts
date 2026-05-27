@@ -1,7 +1,6 @@
 import { atomWithStorage, RESET } from 'jotai/utils'
 import { atom } from 'jotai'
 import {
-  DAY_KEYS,
   TutorProfileAboutState,
   TutorProfilePhotoState,
   TutorProfileCertificationState,
@@ -68,7 +67,7 @@ export const defaultAvailabilityState: TutorProfileAvailabilityState = {
   selectedDayIndex: 0,
   hourlyRate: '',
   currency: ECurrency.VND,
-  slotsByDay: Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
+  utcAvailability: [],
 }
 
 function stripPhotoDataUrlsForStorage(state: TutorProfilePhotoState): TutorProfilePhotoState {

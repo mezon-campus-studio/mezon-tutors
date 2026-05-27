@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Input,
-  TimePicker,
   Select,
   SelectContent,
   SelectItem,
@@ -17,7 +16,7 @@ import {
   SelectValue,
   toast,
 } from '@/components/ui';
-import { Plus, Trash2, ArrowRight, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { BecomeTutorSection, BecomeTutorShell } from '../_shared/BecomeTutorShell';
 import {
   tutorProfileAvailabilityAtom,
@@ -31,7 +30,6 @@ import {
 import {
   DAY_KEYS,
   HOURLY_RATE_REGEX,
-  DEFAULT_AVAILABILITY_SLOT,
   DEFAULT_AVATAR_URL,
   timeToMinutes,
   BECOME_TUTOR_STEPS,
@@ -44,7 +42,9 @@ import {
   MIN_PRICE,
   VerificationStatus,
   convertToAllCurrencies,
-  weeklySlotsInTimezoneToUtc,
+  emptySlotsByDay,
+  readAvailabilityDraftToLocalSlots,
+  writeLocalSlotsToAvailabilityDraftUtc,
 } from '@mezon-tutors/shared';
 import {
   useSubmitTutorProfileMutation,
@@ -52,6 +52,7 @@ import {
   useGetCurrencyRates,
 } from '@/services';
 import { useUserTimezone } from '@/hooks';
+import { TutorAvailabilitySelection } from '@/components/common/TutorAvailabilitySelection';
 import type { SubmitTutorProfileDto, TimeSlot } from '@mezon-tutors/shared';
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.AVAILABILITY;
@@ -80,14 +81,16 @@ export default function AvailabilityPage() {
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const availabilityCardRef = useRef<HTMLDivElement>(null);
 
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const draftLocalSlots = useMemo(
+    () => readAvailabilityDraftToLocalSlots(tutorProfileAvailability, tutorTimezone),
+    [tutorProfileAvailability, tutorTimezone]
+  );
 
   const form = useForm<AvailabilityFormValues>({
     defaultValues: {
       hourlyRate: tutorProfileAvailability.hourlyRate ?? '',
       currency: tutorProfileAvailability.currency ?? ECurrency.VND,
-      slotsByDay:
-        tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
+      slotsByDay: draftLocalSlots,
     },
     mode: 'onChange',
   });
@@ -105,19 +108,46 @@ export default function AvailabilityPage() {
     formState: { errors },
   } = form;
 
+  const draftSyncKey = useMemo(
+    () =>
+      JSON.stringify({
+        utc: tutorProfileAvailability.utcAvailability ?? [],
+        legacy: tutorProfileAvailability.slotsByDay,
+        rate: tutorProfileAvailability.hourlyRate,
+        currency: tutorProfileAvailability.currency,
+        tz: tutorTimezone,
+      }),
+    [
+      tutorProfileAvailability.utcAvailability,
+      tutorProfileAvailability.slotsByDay,
+      tutorProfileAvailability.hourlyRate,
+      tutorProfileAvailability.currency,
+      tutorTimezone,
+    ]
+  );
+
+  const lastDraftSyncKeyRef = useRef<string | null>(null);
   useEffect(() => {
+    if (lastDraftSyncKeyRef.current === draftSyncKey) return;
+    lastDraftSyncKeyRef.current = draftSyncKey;
     reset({
       hourlyRate: tutorProfileAvailability.hourlyRate ?? '',
       currency: tutorProfileAvailability.currency ?? ECurrency.VND,
-      slotsByDay:
-        tutorProfileAvailability.slotsByDay ?? Object.fromEntries(DAY_KEYS.map((d) => [d, []])),
+      slotsByDay: readAvailabilityDraftToLocalSlots(tutorProfileAvailability, tutorTimezone),
     });
-  }, [
-    tutorProfileAvailability.hourlyRate,
-    tutorProfileAvailability.currency,
-    tutorProfileAvailability.slotsByDay,
-    reset,
-  ]);
+  }, [draftSyncKey, reset, tutorProfileAvailability, tutorTimezone]);
+
+  const persistLocalSlotsToDraft = useCallback(
+    (localSlots: Record<string, TimeSlot[]>) => {
+      const utcAvailability = writeLocalSlotsToAvailabilityDraftUtc(localSlots, tutorTimezone);
+      setTutorProfileAvailability((prev) => {
+        const { slotsByDay: _legacy, ...rest } = prev;
+        return { ...rest, utcAvailability };
+      });
+      return utcAvailability;
+    },
+    [setTutorProfileAvailability, tutorTimezone]
+  );
 
   const handleHourlyRateChange = (value: string) => {
     setValue('hourlyRate', value);
@@ -127,7 +157,7 @@ export default function AvailabilityPage() {
 
   const handleAvailabilityChange = (slotsByDay: Record<string, TimeSlot[]>) => {
     setValue('slotsByDay', slotsByDay);
-    setTutorProfileAvailability((prev) => ({ ...prev, slotsByDay }));
+    persistLocalSlotsToDraft(slotsByDay);
     setLastSavedAt(new Date().toISOString());
   };
 
@@ -139,51 +169,23 @@ export default function AvailabilityPage() {
     void trigger('hourlyRate');
   };
 
-  const handleSaveExit = useCallback(async () => {
+  const handleSaveExit = useCallback(() => {
     const v = getValues();
+    persistLocalSlotsToDraft(v.slotsByDay ?? emptySlotsByDay());
     setTutorProfileAvailability((prev) => ({
       ...prev,
       hourlyRate: v.hourlyRate,
       currency: v.currency,
-      slotsByDay: v.slotsByDay,
     }));
     setLastSavedAt(new Date().toISOString());
-  }, [getValues, setLastSavedAt, setTutorProfileAvailability]);
+  }, [getValues, persistLocalSlotsToDraft, setLastSavedAt, setTutorProfileAvailability]);
 
-  const dayKey = DAY_KEYS[selectedDayIndex];
-  const slotsByDayForm = watch('slotsByDay');
+  const slotsByDayForm = watch('slotsByDay') ?? emptySlotsByDay();
   const selectedCurrency = watch('currency') ?? ECurrency.VND;
   const { data: currentRates } = useGetCurrencyRates(selectedCurrency);
-  const daySlots = slotsByDayForm?.[dayKey] ?? [];
 
   const formatRecommendedAmount = (amount: number) => {
     return formatToCurrency(selectedCurrency, amount);
-  };
-
-  const addSlot = () => {
-    const current = form.getValues('slotsByDay') ?? {};
-    const currentDaySlots = current[dayKey] ?? [];
-    const nextSlotsByDay = {
-      ...current,
-      [dayKey]: [...currentDaySlots, { ...DEFAULT_AVAILABILITY_SLOT }],
-    };
-    handleAvailabilityChange(nextSlotsByDay);
-    clearErrors('slotsByDay');
-  };
-
-  const removeSlot = (index: number) => {
-    const current = form.getValues('slotsByDay') ?? {};
-    const currentDaySlots = (current[dayKey] ?? []).filter((_, i) => i !== index);
-    const nextSlotsByDay = { ...current, [dayKey]: currentDaySlots };
-    handleAvailabilityChange(nextSlotsByDay);
-  };
-
-  const updateSlot = (index: number, patch: Partial<TimeSlot>) => {
-    const current = form.getValues('slotsByDay') ?? {};
-    const list = [...(current[dayKey] ?? [])];
-    list[index] = { ...list[index], ...patch };
-    const nextSlotsByDay = { ...current, [dayKey]: list };
-    handleAvailabilityChange(nextSlotsByDay);
   };
 
   const validateWeeklySlots = (values: AvailabilityFormValues): boolean => {
@@ -280,6 +282,8 @@ export default function AvailabilityPage() {
       return;
     }
 
+    const availability = persistLocalSlotsToDraft(slotsByDay);
+
     const proficiencies = (about.proficiencies || '')
       .split(',')
       .map((s) => s.trim())
@@ -293,21 +297,6 @@ export default function AvailabilityPage() {
         languageCode,
         proficiency: proficiencies[i] ?? '',
       }));
-
-    const localAvailability: SubmitTutorProfileDto['availability'] = [];
-    Object.entries(slotsByDay).forEach(([dayKey, slots]) => {
-      const dayIndex = DAY_KEYS.indexOf(dayKey as (typeof DAY_KEYS)[number]);
-      if (dayIndex === -1) return;
-      for (const slot of slots) {
-        localAvailability.push({
-          dayOfWeek: dayIndex,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        });
-      }
-    });
-
-    const availability = weeklySlotsInTimezoneToUtc(localAvailability, tutorTimezone);
 
     const payload: SubmitTutorProfileDto = {
       firstName: about.firstName,
@@ -364,8 +353,6 @@ export default function AvailabilityPage() {
     sessionStorage.setItem('become-tutor:clear-draft', '1');
     router.replace('/become-tutor/final');
   };
-
-  const dayTabs = t.raw('availability.tabs') as string[];
 
   return (
     <BecomeTutorShell
@@ -484,83 +471,17 @@ export default function AvailabilityPage() {
         title={t('availabilityCardTitle')}
         contentRef={availabilityCardRef}
       >
-        <div className="mb-5 flex flex-wrap gap-1.5 rounded-full border border-violet-100 bg-violet-50/40 p-1">
-          {dayTabs.map((label, index) => {
-            const isActive = selectedDayIndex === index;
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => setSelectedDayIndex(index)}
-                className={`flex-1 min-w-fit rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${
-                  isActive
-                    ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-sm shadow-violet-300/40'
-                    : 'text-slate-600 hover:bg-white hover:text-violet-700'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="space-y-3">
-          {daySlots.map((slot, index) => (
-            <div
-              key={index}
-              className="flex flex-wrap items-end gap-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-3"
-            >
-              <div className="min-w-[120px] flex-1 space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  {t('availability.from')}
-                </label>
-                <TimePicker
-                  value={slot.startTime}
-                  onChange={(v) => updateSlot(index, { startTime: v })}
-                  placeholder={DEFAULT_AVAILABILITY_SLOT.startTime}
-                />
-              </div>
-              <div className="flex items-center justify-center pb-2">
-                <ArrowRight className="size-4 text-violet-400" />
-              </div>
-              <div className="min-w-[120px] flex-1 space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  {t('availability.to')}
-                </label>
-                <TimePicker
-                  value={slot.endTime}
-                  onChange={(v) => updateSlot(index, { endTime: v })}
-                  placeholder={DEFAULT_AVAILABILITY_SLOT.endTime}
-                />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => removeSlot(index)}
-                className="h-10 rounded-xl border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))}
-
-          <Button
-            type="button"
-            onClick={addSlot}
-            variant="outline"
-            className="h-11 w-full rounded-full border-dashed border-violet-300 bg-white text-violet-700 hover:bg-violet-50"
-          >
-            <Plus className="mr-1 size-4" />
-            {t('availability.addSlot')}
-          </Button>
-
-          {errors.slotsByDay?.message && typeof errors.slotsByDay.message === 'string' && (
-            <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-              <span>{errors.slotsByDay.message}</span>
-            </div>
-          )}
-        </div>
+        <TutorAvailabilitySelection
+          slotsByDay={slotsByDayForm}
+          onSlotsByDayChange={handleAvailabilityChange}
+          syncFromUtc={false}
+          onSlotAdded={() => clearErrors('slotsByDay')}
+          slotsError={
+            typeof errors.slotsByDay?.message === 'string' ? errors.slotsByDay.message : null
+          }
+          contentRef={availabilityCardRef}
+          showTimezoneLabel
+        />
       </BecomeTutorSection>
     </BecomeTutorShell>
   );

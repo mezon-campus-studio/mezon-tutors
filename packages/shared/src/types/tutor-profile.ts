@@ -60,6 +60,48 @@ export interface SubmitTutorProfileDto {
   availability: TutorAvailabilitySlotDto[]
 }
 
+export const TUTOR_PROFILE_UPDATE_SECTION = {
+  GENERAL: 'general',
+  TUTOR_INFO: 'tutorInfo',
+  SCHEDULE: 'schedule',
+} as const
+
+export type TutorProfileUpdateSection =
+  (typeof TUTOR_PROFILE_UPDATE_SECTION)[keyof typeof TUTOR_PROFILE_UPDATE_SECTION]
+
+export interface UpdateMyTutorProfileGeneralDto {
+  firstName: string
+  lastName: string
+  country: CountryEnum
+  phone: string
+  subject: string
+  languages: TutorLanguageDto[]
+}
+
+export interface UpdateMyTutorProfileTutorInfoDto {
+  headline: string
+  motivate: string
+  introduce: string
+  videoUrl: string
+}
+
+export interface UpdateMyTutorProfileScheduleDto {
+  currency: ECurrency
+  prices: {
+    usd: number
+    vnd: number
+    php: number
+  }
+  availability: TutorAvailabilitySlotDto[]
+}
+
+export interface UpdateMyTutorProfileDto {
+  section: TutorProfileUpdateSection
+  general?: UpdateMyTutorProfileGeneralDto
+  tutorInfo?: UpdateMyTutorProfileTutorInfoDto
+  schedule?: UpdateMyTutorProfileScheduleDto
+}
+
 // --- From admin-tutor-application.ts ---
 
 export type TutorAdminNote = {
@@ -333,9 +375,16 @@ export type TimeSlot = {
   endTime: string
 }
 
+export type TutorProfileAvailabilityUtcSlot = {
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+}
+
 export type TutorProfileAvailabilityState = {
   selectedDayIndex: number
   hourlyRate: string
   currency: ECurrency
-  slotsByDay: Record<string, TimeSlot[]>
+  utcAvailability: TutorProfileAvailabilityUtcSlot[]
+  slotsByDay?: Record<string, TimeSlot[]>
 }

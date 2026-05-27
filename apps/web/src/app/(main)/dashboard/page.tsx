@@ -19,7 +19,7 @@ export default function DashboardPage() {
     if (user.role === 'STUDENT') {
       router.replace(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === 'TUTOR') {
-      router.replace(ROUTES.DASHBOARD.TRIAL_BOOKING);
+      router.replace(ROUTES.DASHBOARD.TUTOR_PROFILE);
     } else if (user.role === 'ADMIN') {
       router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }

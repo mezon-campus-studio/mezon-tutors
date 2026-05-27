@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
 import type {
   PaginatedResponse,
   SubmitTutorProfileDto,
+  UpdateMyTutorProfileDto,
   TutorAboutDto,
   TutorScheduleDto,
   TutorReviewsDto,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { TutorProfileService } from './tutor-profile.service'
 import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto'
 import { UpdateAvailabilityDto } from './dto/update-availability.dto'
+import { UpdateMyTutorProfileBodyDto } from './dto/update-my-tutor-profile.dto'
 import { PrismaService } from '../../prisma/prisma.service'
 
 @Controller('tutor-profiles')
@@ -50,6 +52,17 @@ export class TutorProfileController {
   async getMyProfile(@Req() req: Request) {
     const user = req.user as AuthUserPayload
     return this.tutorProfileService.getMyProfile(user.sub)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me')
+  async patchMyProfile(@Req() req: Request, @Body() body: UpdateMyTutorProfileBodyDto) {
+    const user = req.user as AuthUserPayload
+    await this.tutorProfileService.patchMyProfileByUserId(
+      user.sub,
+      body as UpdateMyTutorProfileDto
+    )
+    return { success: true }
   }
 
   @Get('verified')

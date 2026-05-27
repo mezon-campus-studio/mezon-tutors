@@ -164,7 +164,31 @@ export function mergeWeeklySlots(slots: WeeklyAvailabilitySlot[]): WeeklyAvailab
   return merged
 }
 
-/** Tutor local weekly pattern → UTC rows for `tutor_availability`. */
+export function normalizeUtcAvailabilityRowsForStorage(
+  slots: WeeklyAvailabilitySlot[],
+): WeeklyAvailabilitySlot[] {
+  const monday = getWeekMondayUtc()
+  const expanded: WeeklyAvailabilitySlot[] = []
+
+  for (const slot of slots) {
+    if (slot.isActive === false) {
+      continue
+    }
+
+    const utcDay = monday.add(slot.dayOfWeek, 'day')
+    const start = parseStartTimeOnDay(utcDay, slot.startTime, true)
+    let end = parseEndTimeOnDay(utcDay, slot.endTime, true)
+
+    if (!end.isAfter(start)) {
+      end = parseEndTimeOnDay(utcDay.add(1, 'day'), slot.endTime, true)
+    }
+
+    expanded.push(...splitInstantRangeToWeeklySlots(start, end, true))
+  }
+
+  return mergeWeeklySlots(expanded)
+}
+
 export function weeklySlotsInTimezoneToUtc(
   slots: WeeklyAvailabilitySlot[],
   sourceTimezone: string,
@@ -183,7 +207,7 @@ export function weeklySlotsInTimezoneToUtc(
     expanded.push(...splitInstantRangeToWeeklySlots(start.utc(), end.utc(), true))
   }
 
-  return mergeWeeklySlots(expanded)
+  return normalizeUtcAvailabilityRowsForStorage(expanded)
 }
 
 /** UTC weekly rows → tutor (or viewer) local weekly pattern for editing UI. */

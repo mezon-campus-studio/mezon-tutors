@@ -11,7 +11,10 @@ import {
   SubmitTutorProfileDto,
   TutorAvailabilitySlotDto,
   TutorLanguageDto,
+  UpdateMyTutorProfileDto,
+  TUTOR_PROFILE_UPDATE_SECTION,
   VerifiedTutorProfileDto,
+  normalizeUtcAvailabilityRowsForStorage,
 } from '@mezon-tutors/shared';
 import {
   ETrialLessonStatus,
@@ -34,6 +37,180 @@ export class TutorProfileService {
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService
   ) {}
+
+  private buildTrialLessonPriceDataFromPrices(currency: ECurrency, prices: { usd: number; vnd: number; php: number }) {
+    return {
+      baseCurrency: currency,
+      usd: Number(prices.usd).toFixed(2),
+      vnd: BigInt(Math.round(prices.vnd)),
+      php: Number(prices.php).toFixed(2),
+    };
+  }
+
+  private async upsertTrialLessonPrice(
+    tutorId: string,
+    currency: ECurrency,
+    prices: { usd: number; vnd: number; php: number }
+  ): Promise<void> {
+    const trialLessonPriceData = this.buildTrialLessonPriceDataFromPrices(currency, prices);
+    const trialLessonPriceDelegate = (
+      this.prisma as unknown as {
+        trialLessonPrice: {
+          upsert: (args: {
+            where: { tutorId: string };
+            update: {
+              baseCurrency: ECurrency;
+              usd: string;
+              vnd: bigint;
+              php: string;
+            };
+            create: {
+              tutorId: string;
+              baseCurrency: ECurrency;
+              usd: string;
+              vnd: bigint;
+              php: string;
+            };
+          }) => Promise<unknown>;
+        };
+      }
+    ).trialLessonPrice;
+
+    await trialLessonPriceDelegate.upsert({
+      where: { tutorId },
+      update: trialLessonPriceData,
+      create: {
+        tutorId,
+        ...trialLessonPriceData,
+      },
+    });
+  }
+
+  private languagesEqual(
+    current: Array<{ languageCode: string; proficiency: string }>,
+    next: TutorLanguageDto[]
+  ): boolean {
+    const normalize = (rows: Array<{ languageCode: string; proficiency: string }>) =>
+      [...rows]
+        .map((r) => `${r.languageCode}:${r.proficiency}`)
+        .sort()
+        .join('|');
+
+    return normalize(current) === normalize(next);
+  }
+
+  private availabilityEqual(
+    current: Array<{ dayOfWeek: number; startTime: string; endTime: string }>,
+    next: TutorAvailabilitySlotDto[]
+  ): boolean {
+    const normalize = (rows: Array<{ dayOfWeek: number; startTime: string; endTime: string }>) =>
+      [...rows]
+        .map((r) => `${r.dayOfWeek}_${r.startTime}_${r.endTime}`)
+        .sort()
+        .join('|');
+
+    return normalize(current) === normalize(next);
+  }
+
+  private trialPriceEqual(
+    current: { baseCurrency: string; usd: unknown; vnd: unknown; php: unknown } | null,
+    currency: ECurrency,
+    prices: { usd: number; vnd: number; php: number }
+  ): boolean {
+    if (!current) return false;
+    return (
+      current.baseCurrency === currency &&
+      Number(current.usd) === Number(prices.usd.toFixed(2)) &&
+      Number(current.vnd) === prices.vnd &&
+      Number(current.php) === Number(prices.php.toFixed(2))
+    );
+  }
+
+  async patchMyProfileByUserId(userId: string, dto: UpdateMyTutorProfileDto): Promise<void> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      include: {
+        languages: true,
+        availability: { where: { isActive: true } },
+        trialLessonPrice: true,
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    switch (dto.section) {
+      case TUTOR_PROFILE_UPDATE_SECTION.GENERAL: {
+        const general = dto.general;
+        if (!general) {
+          throw new Error('general section payload is required');
+        }
+
+        const profileUpdate: Prisma.TutorProfileUpdateInput = {};
+        if (general.firstName !== profile.firstName) profileUpdate.firstName = general.firstName;
+        if (general.lastName !== profile.lastName) profileUpdate.lastName = general.lastName;
+        if (general.country !== profile.country) profileUpdate.country = general.country;
+        if (general.phone !== profile.phone) profileUpdate.phone = general.phone;
+        if (general.subject !== profile.subject) profileUpdate.subject = general.subject;
+
+        if (Object.keys(profileUpdate).length > 0) {
+          await this.prisma.tutorProfile.update({
+            where: { userId },
+            data: profileUpdate,
+          });
+        }
+
+        if (!this.languagesEqual(profile.languages, general.languages)) {
+          await this.upsertTutorLanguageByUserId(profile.id, general.languages);
+        }
+        break;
+      }
+      case TUTOR_PROFILE_UPDATE_SECTION.TUTOR_INFO: {
+        const tutorInfo = dto.tutorInfo;
+        if (!tutorInfo) {
+          throw new Error('tutorInfo section payload is required');
+        }
+
+        const profileUpdate: Prisma.TutorProfileUpdateInput = {};
+        if (tutorInfo.headline !== profile.headline) profileUpdate.headline = tutorInfo.headline;
+        if (tutorInfo.motivate !== profile.motivate) profileUpdate.motivate = tutorInfo.motivate;
+        if (tutorInfo.introduce !== profile.introduce) profileUpdate.introduce = tutorInfo.introduce;
+        const nextVideoUrl = tutorInfo.videoUrl ?? '';
+        if (nextVideoUrl !== (profile.videoUrl ?? '')) profileUpdate.videoUrl = nextVideoUrl;
+
+        if (Object.keys(profileUpdate).length > 0) {
+          await this.prisma.tutorProfile.update({
+            where: { userId },
+            data: profileUpdate,
+          });
+        }
+        break;
+      }
+      case TUTOR_PROFILE_UPDATE_SECTION.SCHEDULE: {
+        const schedule = dto.schedule;
+        if (!schedule) {
+          throw new Error('schedule section payload is required');
+        }
+
+        if (
+          !this.trialPriceEqual(profile.trialLessonPrice, schedule.currency, schedule.prices)
+        ) {
+          await this.upsertTrialLessonPrice(profile.id, schedule.currency, schedule.prices);
+        }
+
+        const normalizedAvailability = normalizeUtcAvailabilityRowsForStorage(
+          schedule.availability.map((slot) => ({ ...slot, isActive: true }))
+        );
+        if (!this.availabilityEqual(profile.availability, normalizedAvailability)) {
+          await this.upsertTutorAvailabilitySlotByUserId(profile.id, normalizedAvailability);
+        }
+        break;
+      }
+      default:
+        throw new Error(`Unsupported profile update section: ${dto.section as string}`);
+    }
+  }
 
   private buildTrialLessonPriceData(dto: SubmitTutorProfileDto) {
     const baseCurrency = dto.currency ?? ECurrency.VND;
@@ -409,6 +586,10 @@ export class TutorProfileService {
     userId: string,
     dto: TutorAvailabilitySlotDto[]
   ): Promise<void> {
+    const normalizedDto = normalizeUtcAvailabilityRowsForStorage(
+      dto.map((slot) => ({ ...slot, isActive: true }))
+    );
+
     const current = await this.prisma.tutorAvailability.findMany({
       where: { tutorId: userId },
     });
@@ -418,9 +599,11 @@ export class TutorProfileService {
         current.map((s) => [`${s.dayOfWeek}_${s.startTime}_${s.endTime}`, s])
       );
 
-      const dtoMap = new Map(dto.map((s) => [`${s.dayOfWeek}_${s.startTime}_${s.endTime}`, s]));
+      const dtoMap = new Map(
+        normalizedDto.map((s) => [`${s.dayOfWeek}_${s.startTime}_${s.endTime}`, s])
+      );
 
-      const toCreate = dto.filter(
+      const toCreate = normalizedDto.filter(
         (s) => !currentMap.has(`${s.dayOfWeek}_${s.startTime}_${s.endTime}`)
       );
 

@@ -15,6 +15,7 @@ import {
   TutorReviewsDto,
   TutorResourcesDto,
   SubmitTutorProfileDto,
+  UpdateMyTutorProfileDto,
   VerificationStatus,
 } from "@mezon-tutors/shared";
 
@@ -77,6 +78,10 @@ export const tutorProfileApi = {
 
   submit(payload: SubmitTutorProfileDto): Promise<boolean> {
     return apiClient.post<ApiResponse<boolean>, boolean>("/tutor-profiles", payload);
+  },
+
+  updateMyProfile(payload: UpdateMyTutorProfileDto): Promise<boolean> {
+    return apiClient.patch<ApiResponse<boolean>, boolean>("/tutor-profiles/me", payload);
   },
 
   getMyProfile(): Promise<{
@@ -160,6 +165,17 @@ const useSubmitTutorProfileMutation = () => {
   });
 };
 
+const useUpdateMyTutorProfileMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateMyTutorProfileDto) => tutorProfileApi.updateMyProfile(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.myTutorProfile() });
+    },
+  });
+};
+
 export function submitTutorProfile(payload: SubmitTutorProfileDto): Promise<boolean> {
   return tutorProfileApi.submit(payload);
 }
@@ -180,5 +196,6 @@ export {
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
   useSubmitTutorProfileMutation,
+  useUpdateMyTutorProfileMutation,
   useGetMyProfile,
 };
