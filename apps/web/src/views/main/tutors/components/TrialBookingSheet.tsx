@@ -249,6 +249,7 @@ export function TrialBookingSheet({
     return shiftedSlots.map((slot) => ({
       date: slot.date,
       startTime: slot.startTime,
+      endTime: slot.endTime,
     }));
   }, [shiftedSlots]);
 
