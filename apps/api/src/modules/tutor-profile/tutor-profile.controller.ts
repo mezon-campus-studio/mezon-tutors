@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
@@ -55,10 +55,10 @@ export class TutorProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('me')
-  async patchMyProfile(@Req() req: Request, @Body() body: UpdateMyTutorProfileBodyDto) {
+  @Put('me')
+  async putMyProfile(@Req() req: Request, @Body() body: UpdateMyTutorProfileBodyDto) {
     const user = req.user as AuthUserPayload
-    await this.tutorProfileService.patchMyProfileByUserId(
+    await this.tutorProfileService.putMyProfileByUserId(
       user.sub,
       body as UpdateMyTutorProfileDto
     )

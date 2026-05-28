@@ -30,7 +30,7 @@ export const reviewApi = {
   },
 
   updateReview(reviewId: string, data: UpdateReviewDto): Promise<ReviewDto> {
-    return apiClient.patch<ApiResponse<ReviewDto>, ReviewDto>(`/reviews/${reviewId}`, data);
+    return apiClient.put<ApiResponse<ReviewDto>, ReviewDto>(`/reviews/${reviewId}`, data);
   },
 };
 

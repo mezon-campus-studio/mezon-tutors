@@ -52,14 +52,14 @@ export const notificationApi = {
   },
 
   markAsRead(recipientId: string): Promise<{ success: boolean }> {
-    return apiClient.patch<
+    return apiClient.put<
       ApiResponse<{ success: boolean }>,
       { success: boolean }
     >(`/notifications/${recipientId}/read`);
   },
 
   markAllAsRead(): Promise<{ success: boolean }> {
-    return apiClient.patch<
+    return apiClient.put<
       ApiResponse<{ success: boolean }>,
       { success: boolean }
     >("/notifications/read-all");

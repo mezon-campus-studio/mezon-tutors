@@ -126,7 +126,7 @@ export class TutorProfileService {
     );
   }
 
-  async patchMyProfileByUserId(userId: string, dto: UpdateMyTutorProfileDto): Promise<void> {
+  async putMyProfileByUserId(userId: string, dto: UpdateMyTutorProfileDto): Promise<void> {
     const profile = await this.prisma.tutorProfile.findUnique({
       where: { userId },
       include: {
