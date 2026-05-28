@@ -958,6 +958,12 @@ export class TrialLessonBookingService {
     if (startAt.isBefore(dayjs())) {
       throw new BadRequestException('Cannot reschedule to a time in the past')
     }
+    const hoursUntilNewStart = startAt.utc().diff(dayjs().utc(), 'hour', true)
+    if (hoursUntilNewStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot reschedule to a time within 12 hours from now. Please choose a later slot.'
+      )
+    }
 
     const tz = timezoneName?.trim() || booking.tutor.user?.timezone || 'UTC'
     await this.assertTrialSlotAvailableForTutor(

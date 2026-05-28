@@ -3,6 +3,7 @@
 import {
   ECurrency,
   EPeriod,
+  TRIAL_LESSON_CANCEL_REFUND_HOURS,
   ETrialLessonBookingStatus,
   formatToCurrency,
   jsDayToDbDayOfWeek,
@@ -282,6 +283,17 @@ export function TrialBookingSheet({
 
   const scheduleSelectableSlots = useMemo(() => {
     return scheduleAvailableSlots.filter((slot) => {
+      // For reschedule flows, require at least 12-hour lead time from now.
+      if (isReschedule) {
+        const slotStart = dayjs.tz(`${slot.date} ${slot.startTime}`, userTimezone);
+        if (!slotStart.isValid()) {
+          return false;
+        }
+        const hoursUntilSlot = slotStart.diff(dayjs().tz(userTimezone), "hour", true);
+        if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+          return false;
+        }
+      }
       if (
         slotOverlapsOccupied(
           slot.date,
@@ -310,6 +322,7 @@ export function TrialBookingSheet({
     occupiedWeekItems,
     duration,
     userTimezone,
+    isReschedule,
     isOccupiedWeekReady,
     isOccupiedWeekError,
   ]);

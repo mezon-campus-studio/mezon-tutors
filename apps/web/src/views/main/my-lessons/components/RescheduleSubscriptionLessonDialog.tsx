@@ -19,6 +19,8 @@ import { useUserTimezone } from "@/hooks";
 import {
   convertWallClockSlotBetweenTimezones,
   getWeekStartMondayInTimezone,
+  nowInTimezone,
+  parseYmdInTimezone,
 } from "@/lib/timezone";
 import {
   useGetSubscriptionSlotRescheduleOptions,
@@ -106,8 +108,22 @@ export function RescheduleSubscriptionLessonDialog({
   }, [error, open, t]);
 
   const scheduleAvailableSlots = useMemo(
-    () => options?.slots ?? [],
-    [options?.slots],
+    () =>
+      (options?.slots ?? []).filter((slot) => {
+        const [hourText, minuteText] = slot.startTime.split(":");
+        const slotStart = parseYmdInTimezone(slot.date, userTimezone)
+          .hour(Number(hourText) || 0)
+          .minute(Number(minuteText) || 0)
+          .second(0)
+          .millisecond(0);
+        const hoursUntilSlot = slotStart.diff(
+          nowInTimezone(userTimezone),
+          "hour",
+          true,
+        );
+        return hoursUntilSlot > 12;
+      }),
+    [options?.slots, userTimezone],
   );
 
   const tutorTimezone = options?.tutorTimezone ?? "UTC";

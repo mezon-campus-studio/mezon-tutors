@@ -1028,6 +1028,10 @@ export class SubscriptionService {
       if (!startLocal.isValid() || startLocal.isBefore(dayjs())) {
         return false;
       }
+      const hoursUntilSlot = startLocal.utc().diff(dayjs().utc(), 'hour', true);
+      if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+        return false;
+      }
       const candStart = startLocal.utc().toDate();
       const candEnd = startLocal.add(durationMinutes, 'minute').utc().toDate();
       return !occupied.some((busy) => {
@@ -1106,6 +1110,12 @@ export class SubscriptionService {
     );
     if (!newStartLocal.isValid() || newStartLocal.isBefore(dayjs())) {
       throw new BadRequestException('Cannot reschedule to a time in the past');
+    }
+    const hoursUntilNewStart = newStartLocal.utc().diff(dayjs().utc(), 'hour', true);
+    if (hoursUntilNewStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot reschedule to a time within 12 hours from now'
+      );
     }
 
     await this.trialLessonBookingService.assertTutorSlotAvailable(
