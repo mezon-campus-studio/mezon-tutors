@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
@@ -18,14 +18,14 @@ export class NotificationController {
     return this.notificationService.getMyNotifications(user.sub, query)
   }
 
-  @Patch(':id/read')
+  @Put(':id/read')
   async markAsRead(@Req() req: Request, @Param('id') id: string) {
     const user = req.user as AuthUserPayload
     await this.notificationService.markAsRead(id, user.sub)
     return { success: true }
   }
 
-  @Patch('read-all')
+  @Put('read-all')
   async markAllAsRead(@Req() req: Request) {
     const user = req.user as AuthUserPayload
     await this.notificationService.markAllAsRead(user.sub)

@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Put, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
@@ -18,7 +18,7 @@ export class ReviewsController {
     return this.reviewsService.createReview(user.sub, dto);
   }
 
-  @Patch(':reviewId')
+  @Put(':reviewId')
   async updateReview(
     @Req() req: Request,
     @Param('reviewId') reviewId: string,

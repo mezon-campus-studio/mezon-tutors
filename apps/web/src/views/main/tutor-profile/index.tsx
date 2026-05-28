@@ -103,8 +103,11 @@ function ProfileField({
 }
 
 function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return <p className="text-xs text-rose-600">{message}</p>;
+  return (
+    <p className="min-h-5 text-xs leading-5 text-rose-600" role="alert" aria-live="polite">
+      {message ?? ''}
+    </p>
+  );
 }
 
 function SectionCard({
@@ -170,8 +173,7 @@ function TabEditActions({
         <Button
           type="button"
           variant="outline"
-          size="sm"
-          className="rounded-lg"
+          className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
           onClick={onCancel}
           disabled={isSaving}
         >
@@ -179,8 +181,8 @@ function TabEditActions({
         </Button>
         <Button
           type="button"
-          size="sm"
-          className="rounded-lg"
+          variant="gradient"
+          className="h-9 rounded-full px-4 text-xs font-semibold"
           onClick={onSave}
           disabled={isSaving}
         >
@@ -193,9 +195,9 @@ function TabEditActions({
   return (
     <Button
       type="button"
-      variant="outline"
-      size="sm"
-      className="gap-1.5 rounded-lg"
+      variant="gradient"
+      size="lg"
+      className="gap-1.5 rounded-full"
       onClick={onEdit}
     >
       <Pencil className="size-3.5" />
@@ -532,7 +534,7 @@ export default function TutorProfileView() {
 
       <div className="overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf5ff,#fdf2f8)] p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <Avatar className="size-20 rounded-2xl border-2 border-white ring-2 ring-violet-100 sm:size-24">
+          <Avatar className="size-20 rounded-full border-2 border-white ring-2 ring-violet-100 sm:size-24">
             {profile.avatar ? (
               <AvatarImage
                 src={profile.avatar}
@@ -713,7 +715,7 @@ export default function TutorProfileView() {
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end"
+                  className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-start"
                 >
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700">
@@ -782,15 +784,24 @@ export default function TutorProfileView() {
                     <FieldError message={errors.languageEntries?.[index]?.proficiency?.message} />
                   </div>
                   {fields.length > 1 ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => remove(index)}
-                      className="h-11 rounded-xl mb-[6px] border-rose-200 px-3 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
-                      aria-label={tAbout('removeLanguage')}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <div className="space-y-1.5">
+                      <span
+                        className="block text-xs font-semibold opacity-0"
+                        aria-hidden="true"
+                      >
+                        &nbsp;
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => remove(index)}
+                        className="h-11 rounded-xl border-rose-200 px-3 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
+                        aria-label={tAbout('removeLanguage')}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                      <div className="min-h-5" aria-hidden="true" />
+                    </div>
                   ) : null}
                 </div>
               ))}
@@ -1080,17 +1091,19 @@ export default function TutorProfileView() {
             <DialogTitle>{t('unsavedChanges.title')}</DialogTitle>
             <DialogDescription>{t('unsavedChanges.description')}</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
+              className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
               onClick={cancelDiscardLeave}
             >
               {t('unsavedChanges.stay')}
             </Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="gradient"
+              className="h-9 rounded-full px-4 text-xs font-semibold"
               onClick={confirmDiscardLeave}
             >
               {t('unsavedChanges.confirm')}

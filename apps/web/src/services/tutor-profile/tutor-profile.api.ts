@@ -81,7 +81,7 @@ export const tutorProfileApi = {
   },
 
   updateMyProfile(payload: UpdateMyTutorProfileDto): Promise<boolean> {
-    return apiClient.patch<ApiResponse<boolean>, boolean>("/tutor-profiles/me", payload);
+    return apiClient.put<ApiResponse<boolean>, boolean>("/tutor-profiles/me", payload);
   },
 
   getMyProfile(): Promise<{
