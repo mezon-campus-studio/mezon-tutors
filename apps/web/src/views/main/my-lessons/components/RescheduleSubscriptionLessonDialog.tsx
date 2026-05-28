@@ -24,8 +24,21 @@ import {
   useGetSubscriptionSlotRescheduleOptions,
   useRescheduleSubscriptionSlotMutation,
 } from "@/services/subscription/subscription.api";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/store/auth.atom";
+import { useMezonLight } from "@/providers";
+import {
+  buildStudentLessonRescheduledDmContent,
+  formatLessonRangeFromWallClock,
+  formatLessonRangeInTimezone,
+} from "@mezon-tutors/shared";
+import { sendStudentLessonDmToTutor } from "@/lib/send-student-lesson-dm-to-tutor";
+import {
+  useCreateDmChannelMutation,
+  useGetDmChannel,
+} from "@/services";
 
 type RescheduleSubscriptionLessonDialogProps = {
   lesson: LessonItem | null;
@@ -47,7 +60,17 @@ export function RescheduleSubscriptionLessonDialog({
   onClose,
 }: RescheduleSubscriptionLessonDialogProps) {
   const t = useTranslations("MyLessons.panels.lessons.subscription.reschedule");
+  const tDm = useTranslations("MyLessons.panels.lessons.cancellation");
+  const locale = useLocale();
   const userTimezone = useUserTimezone();
+  const currentUser = useAtomValue(userAtom);
+  const senderId = currentUser?.id ?? "";
+  const senderMezonUserId = currentUser?.mezonUserId ?? "";
+  const recipientId = lesson?.tutorUserId ?? "";
+  const recipientMezonUserId = lesson?.tutorMezonUserId ?? "";
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
+  const { lightClient, setLightClient } = useMezonLight();
   const [weekBounds, setWeekBounds] = useState(() =>
     getInitialWeekBounds(userTimezone),
   );
@@ -105,6 +128,9 @@ export function RescheduleSubscriptionLessonDialog({
       return;
     }
 
+    const originalStartAt = lesson.startAt;
+    const durationMinutes = lesson.durationMinutes ?? lessonDuration;
+
     const converted = convertWallClockSlotBetweenTimezones(
       picked.date,
       picked.startTime,
@@ -120,6 +146,47 @@ export function RescheduleSubscriptionLessonDialog({
         payload: converted,
         timezone: userTimezone,
       });
+
+      if (originalStartAt && recipientMezonUserId) {
+        try {
+          const dmContent = buildStudentLessonRescheduledDmContent({
+            lessonKind: "subscription",
+            originalLabel: formatLessonRangeInTimezone(
+              originalStartAt,
+              durationMinutes,
+              userTimezone,
+              locale,
+            ),
+            newLabel: formatLessonRangeFromWallClock(
+              picked.date,
+              picked.startTime,
+              picked.endTime,
+              userTimezone,
+              locale,
+            ),
+            locale,
+            senderAvatarUrl: currentUser?.avatar,
+          });
+          await sendStudentLessonDmToTutor({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel();
+              return { data: r.data ?? null };
+            },
+            createDmChannelMutation,
+            content: dmContent,
+          });
+        } catch (dmError) {
+          console.error("DM Error:", dmError);
+          toast.error(tDm("dialog.messageFailed"));
+        }
+      }
+
       toast.success(t("dialog.success"));
       onClose();
     } catch (e) {
@@ -131,7 +198,7 @@ export function RescheduleSubscriptionLessonDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="flex max-h-[min(92vh,880px)] w-full max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-violet-100 p-0 sm:max-w-[min(66.666vw,1400px)] sm:w-[min(66.666vw,1400px)]">
+      <DialogContent className="flex max-h-[min(96vh,900px)] w-full max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-violet-100 p-2 [&>button]:top-5 sm:max-w-[min(66.666vw,1400px)] sm:w-[min(66.666vw,1400px)]">
         <DialogHeader className="border-b border-violet-50 px-5 py-4">
           <DialogTitle className="font-heading text-lg font-extrabold text-slate-900">
             {t("dialog.title")}
@@ -147,9 +214,9 @@ export function RescheduleSubscriptionLessonDialog({
           ) : null}
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-hidden px-4 py-4">
+        <div className="min-h-0 flex-1 overflow-hidden px-2 py-2">
           {loading ? (
-            <div className="flex min-h-[320px] items-center justify-center">
+            <div className="flex min-h-[300px] items-center justify-center">
               <Spinner className="size-8 text-violet-600" />
             </div>
           ) : (
@@ -170,11 +237,11 @@ export function RescheduleSubscriptionLessonDialog({
         </div>
 
         <DialogFooter className="gap-2 border-t border-violet-50 px-5 py-4 sm:flex-row">
-          <Button variant="outline" className="rounded-full" onClick={onClose}>
+          <Button variant="outline" className="h-11 px-6 rounded-full border-slate-200 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 sm:order-1" onClick={onClose}>
             {t("dialog.dismiss")}
           </Button>
           <Button
-            className="rounded-full"
+            className="h-11 px-6 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
             disabled={selectedSlots.length !== 1 || rescheduleMutation.isPending}
             onClick={handleConfirm}
           >

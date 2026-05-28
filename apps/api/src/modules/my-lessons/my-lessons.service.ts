@@ -230,15 +230,22 @@ export class MyLessonsService {
       }
     }
 
+    const compareByStartAtAsc = (a: MyLessonApiItem, b: MyLessonApiItem) => {
+      const aTs = a.start_at ? dayjs(a.start_at).valueOf() : Number.POSITIVE_INFINITY;
+      const bTs = b.start_at ? dayjs(b.start_at).valueOf() : Number.POSITIVE_INFINITY;
+      return aTs - bTs || a.id.localeCompare(b.id);
+    };
+    const compareByStartAtDesc = (a: MyLessonApiItem, b: MyLessonApiItem) => {
+      const aTs = a.start_at ? dayjs(a.start_at).valueOf() : Number.NEGATIVE_INFINITY;
+      const bTs = b.start_at ? dayjs(b.start_at).valueOf() : Number.NEGATIVE_INFINITY;
+      return bTs - aTs || a.id.localeCompare(b.id);
+    };
+
     const mergedCalendar = [...calendarLessons, ...subscriptionCalendarItems].sort(
       (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
     );
-    const mergedUpcoming = [...upcomingLessons, ...subscriptionUpcomingItems].sort(
-      (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
-    );
-    const mergedPrevious = [...previousLessons, ...subscriptionPreviousItems].sort(
-      (a, b) => a.day_index - b.day_index || a.start_hour - b.start_hour || a.id.localeCompare(b.id)
-    );
+    const mergedUpcoming = [...upcomingLessons, ...subscriptionUpcomingItems].sort(compareByStartAtAsc);
+    const mergedPrevious = [...previousLessons, ...subscriptionPreviousItems].sort(compareByStartAtDesc);
 
     const rescheduleKeys = await this.loadRescheduleRequestKeys(studentId);
     const annotate = (item: MyLessonApiItem) =>
@@ -338,7 +345,7 @@ export class MyLessonsService {
     slotStatus: string | undefined
   ): MyLessonApiItem['status'] | null {
     if (normalizeSubscriptionSlotStatus(slotStatus) === ESubscriptionLessonSlotStatus.CANCELLED) {
-      return null;
+      return 'completed';
     }
     if (isSubscriptionSlotCompleted(slotStatus)) {
       return 'completed';
@@ -391,6 +398,7 @@ export class MyLessonsService {
       duration_minutes: Math.round((endAt.getTime() - startAt.getTime()) / (60 * 1000)),
       subscription_enrollment_id: enrollment.id,
       subscription_slot_index: slotIdx,
+      subscription_slot_status: slots[slotIdx]?.status ?? undefined,
       enrollment_status: enrollment.status,
       enrollment_payment_status: enrollment.paymentStatus,
       gross_amount: Number(slotRefundAmount),
@@ -427,13 +435,10 @@ export class MyLessonsService {
     startAt: Date;
     durationMinutes: number;
   }): boolean {
-    if (!this.isLessonEndAfterNow(lesson)) {
+    if (lesson.status !== ETrialLessonStatus.CONFIRMED) {
       return false;
     }
-    return (
-      lesson.status === ETrialLessonStatus.CONFIRMED ||
-      lesson.status === ETrialLessonStatus.CANCELLED
-    );
+    return this.isLessonEndAfterNow(lesson);
   }
 
   private isTrialInPreviousList(lesson: {
@@ -445,6 +450,9 @@ export class MyLessonsService {
       return true;
     }
     if (lesson.status === ETrialLessonStatus.CANCELLED) {
+      return true;
+    }
+    if (lesson.status === ETrialLessonStatus.CONFIRMED) {
       return !this.isLessonEndAfterNow(lesson);
     }
     return false;

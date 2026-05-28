@@ -1,7 +1,11 @@
 'use client';
 
 import {
+  buildTutorLessonCancelledDmContent,
+  buildTutorLessonRescheduleRequestDmContent,
+  ECurrency,
   type ETrialLessonBookingStatus,
+  formatLessonRangeInTimezone,
   ROUTES,
   type TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
@@ -24,17 +28,23 @@ import {
   type TrialLessonBookingRequestItem,
   useGetMyTrialLessonBookingRequests,
   useGetTutorSubscriptionWeekOccurrences,
+  useTutorCancelSubscriptionSlotMutation,
+  useTutorCancelTrialLessonMutation,
   useTutorSubscriptionSlotRescheduleRequestMutation,
-  createMezonLightDM,
-  persistMezonLightSession,
-  refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
-  sendMezonLightDMWithRefreshFallback,
   useGetDmChannel,
   useCreateDmChannelMutation,
 } from '@/services';
+import { sendLessonDmToPeer } from '@/lib/send-lesson-dm';
+import {
+  getStudentFacingCancelReasonLabel,
+  getTutorRescheduleReasonLabel,
+} from '@/lib/tutor-lesson-dm-reasons';
 import { subscriptionQueryKey } from '@/services/subscription/subscription.qkey';
 import { useMezonLight } from '@/providers';
+import {
+  CancelLessonDialog,
+  type TrialCancelLessonTarget,
+} from '@/views/main/my-lessons/components/CancelLessonDialog';
 import {
   RescheduleLessonDialog,
   type TutorRescheduleLessonTarget,
@@ -142,6 +152,31 @@ function subscriptionOccurrenceToRequestItem(
   };
 }
 
+function itemToCancelTarget(
+  item: TrialLessonBookingRequestItem,
+  locale: string,
+  timezoneName: string,
+  trialLabel: string,
+  planLabel: string,
+): TrialCancelLessonTarget {
+  const start = dayjs(item.startAt).tz(timezoneName).locale(locale);
+  const end = start.add(item.durationMinutes, 'minute');
+  const isSubscription = item.scheduleKind === 'subscription';
+
+  return {
+    id: item.id,
+    source: isSubscription ? 'subscription' : 'trial',
+    peerName: item.studentName,
+    peerAvatarUrl: item.studentAvatarUrl,
+    dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
+    timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
+    subject: isSubscription ? planLabel : trialLabel,
+    startAt: item.startAt,
+    grossAmount: item.grossAmount > 0 ? item.grossAmount : undefined,
+    currency: ECurrency.VND,
+  };
+}
+
 function itemToRescheduleTarget(
   item: TrialLessonBookingRequestItem,
   locale: string,
@@ -165,6 +200,8 @@ export default function MyScheduleView() {
   const t = useTranslations('Dashboard.mySchedule');
   const tModal = useTranslations('Dashboard.scheduleEventModal');
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule');
+  const tCancel = useTranslations('Dashboard.bookingRequests.cancellation');
+  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation');
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -184,10 +221,18 @@ export default function MyScheduleView() {
   const [rescheduleItem, setRescheduleItem] = useState<TrialLessonBookingRequestItem | null>(null);
   const [isRescheduleSubmitting, setIsRescheduleSubmitting] = useState(false);
 
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<TrialCancelLessonTarget | null>(null);
+  const [cancelItem, setCancelItem] = useState<TrialLessonBookingRequestItem | null>(null);
+  const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
+
   const tutorSubscriptionRescheduleMutation = useTutorSubscriptionSlotRescheduleRequestMutation();
+  const tutorCancelTrialMutation = useTutorCancelTrialLessonMutation();
+  const tutorCancelSubscriptionMutation = useTutorCancelSubscriptionSlotMutation();
   const { lightClient, setLightClient } = useMezonLight();
-  const recipientId = rescheduleItem?.studentId ?? '';
-  const recipientMezonUserId = rescheduleItem?.studentMezonUserId ?? '';
+  const recipientId = cancelItem?.studentId ?? rescheduleItem?.studentId ?? '';
+  const recipientMezonUserId =
+    cancelItem?.studentMezonUserId ?? rescheduleItem?.studentMezonUserId ?? '';
   const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
   const createDmChannelMutation = useCreateDmChannelMutation();
 
@@ -262,6 +307,102 @@ export default function MyScheduleView() {
 
   const isCurrentWeek = weekStart.isSame(buildWeekStartMonday(dayjs().tz(userTimezone)), 'day');
 
+  const handleCancelLesson = (item: TrialLessonBookingRequestItem) => {
+    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+      toast.error(tCancel('within12Hours'));
+      return;
+    }
+    setCancelItem(item);
+    setCancelTarget(
+      itemToCancelTarget(item, locale, userTimezone, t('lessonTypeTrial'), t('lessonTypePlan')),
+    );
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = async (reason: string, message?: string) => {
+    if (!cancelItem) return;
+
+    const lessonForDm = cancelItem;
+
+    try {
+      setIsCancelSubmitting(true);
+
+      if (cancelItem.scheduleKind === 'subscription') {
+        if (
+          cancelItem.subscriptionEnrollmentId == null ||
+          cancelItem.subscriptionSlotIndex == null
+        ) {
+          throw new Error('Missing subscription lesson reference');
+        }
+        await tutorCancelSubscriptionMutation.mutateAsync({
+          enrollmentId: cancelItem.subscriptionEnrollmentId,
+          slotIndex: cancelItem.subscriptionSlotIndex,
+          payload: {
+            reason,
+            message: message?.trim(),
+            occurrenceStartAt: cancelItem.startAt,
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: subscriptionQueryKey.tutorWeekOccurrences(weekStartYmd, userTimezone),
+        });
+      } else {
+        await tutorCancelTrialMutation.mutateAsync({
+          bookingId: cancelItem.id,
+          payload: { reason, message: message?.trim() },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['trial-lesson-booking-my-requests'],
+        });
+      }
+
+      if (lessonForDm.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel();
+              return { data: r.data ?? null };
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonCancelledDmContent({
+              lessonKind:
+                lessonForDm.scheduleKind === 'subscription' ? 'subscription' : 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                lessonForDm.startAt,
+                lessonForDm.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              message,
+              locale,
+              senderAvatarUrl: user?.avatar,
+            }),
+          });
+        } catch (dmError) {
+          console.error('DM Error:', dmError);
+          toast.error(tCancel('messageFailed'));
+        }
+      }
+
+      toast.success(tCancel('success'));
+      setIsCancelDialogOpen(false);
+      setCancelTarget(null);
+      setCancelItem(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : tCancel('failed'));
+    } finally {
+      setIsCancelSubmitting(false);
+    }
+  };
+
   const handleRescheduleSubscription = (item: TrialLessonBookingRequestItem) => {
     if (item.rescheduleRequestSubmitted) {
       toast.error(tReschedule('alreadyRequested'));
@@ -304,47 +445,37 @@ export default function MyScheduleView() {
         },
       });
 
-      if (message?.trim()) {
-        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-          toast.error(tReschedule('messageMissingUser'));
-        } else {
-          try {
-            let client = lightClient;
-            if (!client) {
-              client = await restoreMezonLightClientFromStorage();
-              if (!client) {
-                throw new Error('Cannot restore Mezon client. Please login again.');
-              }
-              setLightClient(client);
-            }
-
-            const isSessionExpired = await client.isSessionExpired();
-            if (isSessionExpired) {
-              await refreshMezonLightSession(client);
-              await persistMezonLightSession(client);
-            }
-
-            let channelId = (await refetchDmChannel()).data?.channelId;
-            if (!channelId) {
-              const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
-              channelId = dmChannel?.channel_id;
-              if (!channelId) {
-                throw new Error('Could not create DM channel.');
-              }
-
-              await createDmChannelMutation.mutateAsync({
-                senderId,
-                recipientId,
-                channelId,
-              });
-            }
-
-            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim());
-            toast.success(tReschedule('messageSent'));
-          } catch (error) {
-            console.error('DM Error:', error);
-            toast.error(tReschedule('messageFailed'));
-          }
+      if (rescheduleItem.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel();
+              return { data: r.data ?? null };
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonRescheduleRequestDmContent({
+              lessonKind: 'subscription',
+              originalLabel: formatLessonRangeInTimezone(
+                rescheduleItem.startAt,
+                rescheduleItem.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
+              message,
+              locale,
+              senderAvatarUrl: user?.avatar,
+            }),
+          });
+        } catch (dmError) {
+          console.error('DM Error:', dmError);
+          toast.error(tReschedule('messageFailed'));
         }
       }
 
@@ -447,6 +578,7 @@ export default function MyScheduleView() {
                   items={weekListItems}
                   timezoneName={userTimezone}
                   onRescheduleSubscription={handleRescheduleSubscription}
+                  onCancelLesson={handleCancelLesson}
                 />
               </div>
             </div>
@@ -483,6 +615,18 @@ export default function MyScheduleView() {
         onConfirm={handleConfirmReschedule}
         lesson={rescheduleTarget}
         isLoading={isRescheduleSubmitting}
+      />
+
+      <CancelLessonDialog
+        isOpen={isCancelDialogOpen}
+        onClose={() => {
+          setIsCancelDialogOpen(false);
+          setCancelTarget(null);
+          setCancelItem(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        lesson={cancelTarget}
+        isLoading={isCancelSubmitting}
       />
 
       <SendMessageModal

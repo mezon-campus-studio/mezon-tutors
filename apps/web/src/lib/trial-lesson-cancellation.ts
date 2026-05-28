@@ -10,7 +10,7 @@ export function getTrialLessonHoursUntilStartUtc(
   startAt: string | Date,
   now: string | Date = new Date(),
 ): number {
-  return dayjs(startAt).utc().diff(dayjs(now).utc(), "hour", true);
+  return dayjs.utc(startAt).diff(dayjs.utc(now), "hour", true);
 }
 
 export function isTrialLessonRefundEligible(

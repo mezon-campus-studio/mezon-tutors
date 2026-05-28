@@ -4,7 +4,7 @@ import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { CalendarClock, CalendarPlus, Clock4, MoreVertical, Sparkles } from 'lucide-react';
+import { CalendarClock, CalendarPlus, Clock4, MoreVertical, Sparkles, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
@@ -18,6 +18,7 @@ type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];
   timezoneName: string;
   onRescheduleSubscription?: (item: TrialLessonBookingRequestItem) => void;
+  onCancelLesson?: (item: TrialLessonBookingRequestItem) => void;
 };
 
 dayjs.extend(utc);
@@ -39,29 +40,44 @@ export default function MyScheduleUpcomingList({
   items,
   timezoneName,
   onRescheduleSubscription,
+  onCancelLesson,
 }: MyScheduleUpcomingListProps) {
   const t = useTranslations('Dashboard.mySchedule.upcoming');
   const tSchedule = useTranslations('Dashboard.mySchedule');
   const locale = useLocale();
   const nowInTimezone = dayjs().tz(timezoneName);
 
-  const buildSubscriptionMenuItems = (
+  const buildLessonMenuItems = (
     item: TrialLessonBookingRequestItem,
+    isSubscription: boolean,
     isCompleted: boolean,
   ): ActionMenuItem[] => {
+    const canModify =
+      !isCompleted && isTrialLessonRescheduleEligible(item.startAt);
     const canReschedule =
-      !isCompleted &&
-      isTrialLessonRescheduleEligible(item.startAt) &&
+      isSubscription &&
+      canModify &&
       !item.rescheduleRequestSubmitted;
 
-    return [
-      {
+    const items: ActionMenuItem[] = [];
+
+    if (isSubscription) {
+      items.push({
         label: t('reschedule'),
         icon: <CalendarClock className="size-4" />,
         onClick: () => onRescheduleSubscription?.(item),
         disabled: !canReschedule || !onRescheduleSubscription,
-      },
-    ];
+      });
+    }
+
+    items.push({
+      label: t('cancel'),
+      icon: <Trash2 className="size-4" />,
+      onClick: () => onCancelLesson?.(item),
+      disabled: !canModify || !onCancelLesson,
+    });
+
+    return items;
   };
 
   return (
@@ -104,9 +120,8 @@ export default function MyScheduleUpcomingList({
             const end = start.add(item.durationMinutes, 'minute');
             const isCompleted =
               end.isBefore(nowInTimezone) || mapTutorBookingStatusToUi(item.status) === 'completed';
-            const menuItems = isSubscription
-              ? buildSubscriptionMenuItems(item, isCompleted)
-              : [];
+            const menuItems = buildLessonMenuItems(item, isSubscription, isCompleted);
+            const showActionMenu = !isCompleted && menuItems.length > 0;
 
             return (
               <div
@@ -157,7 +172,7 @@ export default function MyScheduleUpcomingList({
                           </Badge>
                         ) : null}
                       </div>
-                      {isSubscription ? (
+                      {showActionMenu ? (
                         <ActionMenu
                           items={menuItems}
                           trigger={
@@ -166,7 +181,7 @@ export default function MyScheduleUpcomingList({
                               variant="ghost"
                               size="icon-sm"
                               className="size-8 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
-                              aria-label={t('reschedule')}
+                              aria-label={t('cancel')}
                             >
                               <MoreVertical className="size-4" />
                             </Button>

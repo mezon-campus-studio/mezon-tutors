@@ -55,7 +55,8 @@
         "scheduleNow": "Đặt lịch ngay",
         "rescheduleOrCancel": "Đổi lịch/Hủy",
         "joinLesson": "Vào lớp",
-        "statusCancelled": "Đã hủy"
+        "statusCancelled": "Đã hủy",
+        "rescheduleNotice": "Buổi học sắp diễn ra trong vòng 12 tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần."
       },
       "subscription": {
         "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",
@@ -101,6 +102,7 @@
           "messageLabel": "Tin nhắn cho {tutor} (tùy chọn)",
           "messagePlaceholder": "Tôi cần hủy vì...",
           "messageSent": "Đã gửi tin nhắn thành công",
+          "messageFailed": "Đã hủy buổi học nhưng không gửi được thông báo cho gia sư.",
           "successRefunded": "Đã hủy buổi học. Số tiền thanh toán sẽ được hoàn vào ví của bạn.",
           "successNoRefund": "Đã hủy buổi học. Vì buổi học còn dưới 12 giờ nên bạn không được hoàn tiền.",
           "policy": {

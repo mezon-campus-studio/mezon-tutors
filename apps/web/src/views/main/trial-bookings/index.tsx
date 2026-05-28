@@ -31,30 +31,38 @@ import {
 
 import {
   useGetMyTrialLessonBookingRequests,
+  useTutorCancelTrialLessonMutation,
   useTutorRescheduleRequestMutation,
   type TrialLessonBookingRequestItem,
   type TrialLessonBookingRequestStatusFilter,
 } from '@/services'
-import {
-  createMezonLightDM,
-  persistMezonLightSession,
-  refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
-  sendMezonLightDMWithRefreshFallback,
-  useGetDmChannel,
-  useCreateDmChannelMutation,
-} from '@/services'
+import { useGetDmChannel, useCreateDmChannelMutation } from '@/services'
 import { useMezonLight } from '@/providers'
 import { userAtom } from '@/store'
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
 import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation'
 
-import { ROUTES } from '@mezon-tutors/shared'
+import {
+  buildTutorLessonCancelledDmContent,
+  buildTutorLessonRescheduleRequestDmContent,
+  ECurrency,
+  formatLessonRangeInTimezone,
+  ROUTES,
+} from '@mezon-tutors/shared'
+import { sendLessonDmToPeer } from '@/lib/send-lesson-dm'
+import {
+  getStudentFacingCancelReasonLabel,
+  getTutorRescheduleReasonLabel,
+} from '@/lib/tutor-lesson-dm-reasons'
 
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
 
 import BookingRequestsMetrics from './components/BookingRequestsMetrics'
 import BookingRequestsTable from './components/BookingRequestsTable'
+import {
+  CancelLessonDialog,
+  type TrialCancelLessonTarget,
+} from '@/views/main/my-lessons/components/CancelLessonDialog'
 import {
   RescheduleLessonDialog,
   type TutorRescheduleLessonTarget,
@@ -78,6 +86,28 @@ const STATUS_FILTERS: Array<{
 
 const PAGE_SIZE = 10
 
+function bookingToCancelTarget(
+  item: TrialLessonBookingRequestItem,
+  locale: string,
+  timezoneName: string,
+): TrialCancelLessonTarget {
+  const start = dayjs(item.startAt).tz(timezoneName).locale(locale)
+  const end = start.add(item.durationMinutes, 'minute')
+
+  return {
+    id: item.id,
+    source: 'trial',
+    peerName: item.studentName,
+    peerAvatarUrl: item.studentAvatarUrl,
+    dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
+    timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
+    subject: 'Trial lesson',
+    startAt: item.startAt,
+    grossAmount: item.grossAmount > 0 ? item.grossAmount : undefined,
+    currency: ECurrency.VND,
+  }
+}
+
 function bookingToRescheduleTarget(
   item: TrialLessonBookingRequestItem,
   locale: string,
@@ -99,6 +129,8 @@ function bookingToRescheduleTarget(
 export default function BookingRequestsView() {
   const t = useTranslations('Dashboard.bookingRequests')
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule')
+  const tCancel = useTranslations('Dashboard.bookingRequests.cancellation')
+  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation')
 
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -128,10 +160,18 @@ export default function BookingRequestsView() {
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const tutorRescheduleMutation = useTutorRescheduleRequestMutation()
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<TrialCancelLessonTarget | null>(null)
+  const [cancelBooking, setCancelBooking] = useState<TrialLessonBookingRequestItem | null>(null)
+  const [isCancelSubmitting, setIsCancelSubmitting] = useState(false)
 
-  const recipientId = rescheduleBooking?.studentId ?? ''
-  const recipientMezonUserId = rescheduleBooking?.studentMezonUserId ?? ''
+  const tutorRescheduleMutation = useTutorRescheduleRequestMutation()
+  const tutorCancelMutation = useTutorCancelTrialLessonMutation()
+
+  const recipientId =
+    cancelBooking?.studentId ?? rescheduleBooking?.studentId ?? ''
+  const recipientMezonUserId =
+    cancelBooking?.studentMezonUserId ?? rescheduleBooking?.studentMezonUserId ?? ''
 
   const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false)
   const createDmChannelMutation = useCreateDmChannelMutation()
@@ -178,6 +218,78 @@ export default function BookingRequestsView() {
     router.push(ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(bookingId))
   }
 
+  const handleCancel = (item: TrialLessonBookingRequestItem) => {
+    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+      toast.error(tCancel('within12Hours'))
+      return
+    }
+    setCancelBooking(item)
+    setCancelTarget(bookingToCancelTarget(item, locale, userTimezone))
+    setIsCancelDialogOpen(true)
+  }
+
+  const handleConfirmCancel = async (reason: string, message?: string) => {
+    if (!cancelBooking) return
+
+    const lessonForDm = cancelBooking
+
+    try {
+      setIsCancelSubmitting(true)
+      await tutorCancelMutation.mutateAsync({
+        bookingId: cancelBooking.id,
+        payload: { reason, message: message?.trim() },
+      })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['trial-lesson-booking-my-requests'],
+      })
+
+      if (lessonForDm.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel()
+              return { data: r.data ?? null }
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonCancelledDmContent({
+              lessonKind: 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                lessonForDm.startAt,
+                lessonForDm.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              message,
+              locale,
+              senderAvatarUrl: currentUser?.avatar,
+            }),
+          })
+        } catch (dmError) {
+          console.error('DM Error:', dmError)
+          toast.error(tCancel('messageFailed'))
+        }
+      }
+
+      toast.success(tCancel('success'))
+      setIsCancelDialogOpen(false)
+      setCancelTarget(null)
+      setCancelBooking(null)
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : tCancel('failed'))
+    } finally {
+      setIsCancelSubmitting(false)
+    }
+  }
+
   const handleReschedule = (item: TrialLessonBookingRequestItem) => {
     if (item.rescheduleRequestSubmitted) {
       toast.error(tReschedule('alreadyRequested'))
@@ -203,47 +315,37 @@ export default function BookingRequestsView() {
         payload: { reason, message: message?.trim() || undefined },
       })
 
-      if (message?.trim()) {
-        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-          toast.error(tReschedule('messageMissingUser'))
-        } else {
-          try {
-            let client = lightClient
-            if (!client) {
-              client = await restoreMezonLightClientFromStorage()
-              if (!client) {
-                throw new Error('Cannot restore Mezon client. Please login again.')
-              }
-              setLightClient(client)
-            }
-
-            const isSessionExpired = await client.isSessionExpired()
-            if (isSessionExpired) {
-              await refreshMezonLightSession(client)
-              await persistMezonLightSession(client)
-            }
-
-            let channelId = (await refetchDmChannel()).data?.channelId
-            if (!channelId) {
-              const dmChannel = await createMezonLightDM(client, recipientMezonUserId)
-              channelId = dmChannel?.channel_id
-              if (!channelId) {
-                throw new Error('Could not create DM channel.')
-              }
-
-              await createDmChannelMutation.mutateAsync({
-                senderId,
-                recipientId,
-                channelId,
-              })
-            }
-
-            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim())
-            toast.success(tReschedule('messageSent'))
-          } catch (error) {
-            console.error('DM Error:', error)
-            toast.error(tReschedule('messageFailed'))
-          }
+      if (rescheduleBooking.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel()
+              return { data: r.data ?? null }
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonRescheduleRequestDmContent({
+              lessonKind: 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                rescheduleBooking.startAt,
+                rescheduleBooking.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
+              message,
+              locale,
+              senderAvatarUrl: currentUser?.avatar,
+            }),
+          })
+        } catch (dmError) {
+          console.error('DM Error:', dmError)
+          toast.error(tReschedule('messageFailed'))
         }
       }
 
@@ -332,6 +434,7 @@ export default function BookingRequestsView() {
         isFetching={isFetching}
         onViewDetail={handleViewDetail}
         onReschedule={handleReschedule}
+        onCancel={handleCancel}
       />
 
       <div className="pt-6">
@@ -353,6 +456,18 @@ export default function BookingRequestsView() {
         onConfirm={handleConfirmReschedule}
         lesson={rescheduleTarget}
         isLoading={isSubmitting}
+      />
+
+      <CancelLessonDialog
+        isOpen={isCancelDialogOpen}
+        onClose={() => {
+          setIsCancelDialogOpen(false)
+          setCancelTarget(null)
+          setCancelBooking(null)
+        }}
+        onConfirm={handleConfirmCancel}
+        lesson={cancelTarget}
+        isLoading={isCancelSubmitting}
       />
     </div>
   )

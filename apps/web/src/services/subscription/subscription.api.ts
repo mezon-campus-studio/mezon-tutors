@@ -103,6 +103,20 @@ export const subscriptionApi = {
     );
   },
 
+  tutorCancelSlot(
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string; occurrenceStartAt: string },
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    return apiClient.post<
+      TutorSubscriptionSlotRescheduleRequestResult,
+      TutorSubscriptionSlotRescheduleRequestResult
+    >(
+      `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/tutor-cancel`,
+      payload,
+    );
+  },
+
   getTutorWeekOccurrences(
     weekStartDate: string,
     timezone: string,
@@ -243,6 +257,27 @@ export function useTutorSubscriptionSlotRescheduleRequestMutation() {
       payload: { reason: string; message?: string; occurrenceStartAt: string };
     }) =>
       subscriptionApi.tutorRescheduleRequest(
+        params.enrollmentId,
+        params.slotIndex,
+        params.payload,
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.root,
+      });
+    },
+  });
+}
+
+export function useTutorCancelSubscriptionSlotMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: {
+      enrollmentId: string;
+      slotIndex: number;
+      payload: { reason: string; message?: string; occurrenceStartAt: string };
+    }) =>
+      subscriptionApi.tutorCancelSlot(
         params.enrollmentId,
         params.slotIndex,
         params.payload,

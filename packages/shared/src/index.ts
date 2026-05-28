@@ -69,3 +69,5 @@ export * from './utils/subscription-week-occurrences';
 export * from './utils/subscription-slot-status';
 export * from './utils/currency';
 export * from './utils/trial-lesson-cancellation';
+export * from './utils/student-lesson-dm';
+export * from './utils/tutor-lesson-dm';

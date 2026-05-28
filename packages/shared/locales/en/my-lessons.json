@@ -55,7 +55,8 @@
         "scheduleNow": "Schedule now",
         "rescheduleOrCancel": "Reschedule/Cancel",
         "joinLesson": "Join lesson",
-        "statusCancelled": "Cancelled"
+        "statusCancelled": "Cancelled",
+        "rescheduleNotice": "This lesson starts in less than 12 hours and can no longer be rescheduled. You can still cancel if needed."
       },
       "subscription": {
         "rescheduleComingSoon": "Subscription reschedule will be available soon.",
@@ -101,6 +102,7 @@
           "messageLabel": "Message for {tutor} (optional)",
           "messagePlaceholder": "I need to cancel because...",
           "messageSent": "Message sent successfully",
+          "messageFailed": "Lesson was cancelled but the tutor notification could not be sent.",
           "successRefunded": "Lesson cancelled. The payment will be refunded to your wallet.",
           "successNoRefund": "Lesson cancelled. Because your lesson was less than 12 hours away, no refund was issued.",
           "policy": {
