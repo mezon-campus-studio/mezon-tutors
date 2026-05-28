@@ -963,15 +963,6 @@ export class SubscriptionService {
       );
     }
 
-    const existingReschedule = await this.prisma.findCancelRescheduleReasons({
-      subscriptionEnrollmentId: enrollmentId,
-      subscriptionSlotIndex: slotIndex,
-      action: ELessonChangeAction.RESCHEDULE,
-    });
-    if (existingReschedule.length > 0) {
-      throw new BadRequestException('A reschedule request was already submitted for this lesson');
-    }
-
     const durationMinutes = slot.durationMinutes || SUBSCRIPTION_SLOT_DURATION_MINUTES;
     const availability = await this.prisma.tutorAvailability.findMany({
       where: { tutorId: enrollment.tutorId, isActive: true },
@@ -1065,15 +1056,6 @@ export class SubscriptionService {
       throw new BadRequestException(
         'Cannot reschedule within 12 hours of the lesson start time'
       );
-    }
-
-    const existingReschedule = await this.prisma.findCancelRescheduleReasons({
-      subscriptionEnrollmentId: enrollmentId,
-      subscriptionSlotIndex: slotIndex,
-      action: ELessonChangeAction.RESCHEDULE,
-    });
-    if (existingReschedule.length > 0) {
-      throw new BadRequestException('A reschedule request was already submitted for this lesson');
     }
 
     const startM = timeToMinutes(payload.startTime);

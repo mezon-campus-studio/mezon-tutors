@@ -81,8 +81,7 @@ function isReschedulableSubscriptionLesson(lesson: LessonItem): boolean {
   return (
     isActivePaidSubscriptionLesson(lesson) &&
     Boolean(lesson.startAt) &&
-    isTrialLessonRescheduleEligible(lesson.startAt!) &&
-    !lesson.rescheduleRequestSubmitted
+    isTrialLessonRescheduleEligible(lesson.startAt!)
   );
 }
 
@@ -527,10 +526,6 @@ export default function MyLessonsPanel({
 
   const handleReschedule = (lesson: LessonItem) => {
     if (lesson.source === "subscription") {
-      if (lesson.rescheduleRequestSubmitted) {
-        toast.error(t("panels.lessons.reschedule.alreadyRequested"));
-        return;
-      }
       if (!isReschedulableSubscriptionLesson(lesson)) {
         toast.error(t("panels.lessons.reschedule.within12Hours"));
         return;
