@@ -65,6 +65,7 @@ export type LessonItem = {
   trialBookingStatus?: "confirmed" | "cancelled" | "completed";
   subscriptionEnrollmentId?: string;
   subscriptionSlotIndex?: number;
+  subscriptionSlotStatus?: string;
   enrollmentStatus?: string;
   enrollmentPaymentStatus?: string;
   rescheduleRequestSubmitted?: boolean;
@@ -160,6 +161,7 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     trialBookingStatus: item.trial_booking_status,
     subscriptionEnrollmentId: item.subscription_enrollment_id,
     subscriptionSlotIndex: item.subscription_slot_index,
+    subscriptionSlotStatus: item.subscription_slot_status,
     enrollmentStatus: item.enrollment_status,
     enrollmentPaymentStatus: item.enrollment_payment_status,
     rescheduleRequestSubmitted: item.reschedule_request_submitted ?? false,

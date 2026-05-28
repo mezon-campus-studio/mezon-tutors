@@ -90,8 +90,18 @@
         "actions": "Actions",
         "view": "View",
         "reschedule": "Reschedule",
+        "cancel": "Cancel lesson",
         "rescheduleComingSoon": "Reschedule will be available soon.",
         "noResults": "No booking requests found for this filter."
+      },
+      "cancellation": {
+        "within12Hours": "You can only request cancellation more than 12 hours before the lesson starts.",
+        "alreadyRequested": "A cancellation request was already submitted for this lesson.",
+        "success": "Cancellation request recorded. The student has been notified.",
+        "failed": "Could not submit cancellation request.",
+        "messageSent": "Message sent to the student.",
+        "messageFailed": "Request saved but the message could not be sent.",
+        "messageMissingUser": "Missing user information to send message."
       },
       "reschedule": {
         "within12Hours": "You can only request a reschedule more than 12 hours before the lesson starts.",
@@ -213,6 +223,7 @@
         "durationLabel": "{minutes} min",
         "viewDetail": "Details",
         "reschedule": "Reschedule",
+        "cancel": "Cancel lesson",
         "joinLesson": "Join",
         "subscriptionBadge": "Monthly subscription"
       }

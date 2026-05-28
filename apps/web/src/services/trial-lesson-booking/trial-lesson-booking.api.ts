@@ -6,7 +6,12 @@ import type {
   PaginatedData,
   PaginatedResponse,
 } from "@mezon-tutors/shared";
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { apiClient } from "../api-client";
 import { trialLessonBookingQueryKey } from "./trial-lesson-booking.qkey";
 
@@ -227,6 +232,16 @@ export const trialLessonBookingApi = {
     >(`/trial-lesson-bookings/${bookingId}/tutor-reschedule-request`, payload);
   },
 
+  tutorCancelBooking(
+    bookingId: string,
+    payload: { reason: string; message?: string },
+  ): Promise<{ success: boolean; logId: string }> {
+    return apiClient.post<
+      { success: boolean; logId: string },
+      { success: boolean; logId: string }
+    >(`/trial-lesson-bookings/${bookingId}/tutor-cancel`, payload);
+  },
+
   async getMyTrialLessonBookingRequests(params?: {
     status?: TrialLessonBookingRequestStatusFilter;
     statusIn?: TrialLessonBookingRequestStatusFilter[];
@@ -414,6 +429,19 @@ export function useTutorRescheduleRequestMutation() {
         args.bookingId,
         args.payload,
       ),
+  });
+}
+
+export function useTutorCancelTrialLessonMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: {
+      bookingId: string;
+      payload: { reason: string; message?: string };
+    }) => trialLessonBookingApi.tutorCancelBooking(args.bookingId, args.payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['trial-lesson-booking-my-requests'] });
+    },
   });
 }
 

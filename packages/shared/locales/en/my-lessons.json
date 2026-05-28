@@ -55,7 +55,8 @@
         "scheduleNow": "Schedule now",
         "rescheduleOrCancel": "Reschedule/Cancel",
         "joinLesson": "Join lesson",
-        "statusCancelled": "Cancelled"
+        "statusCancelled": "Cancelled",
+        "rescheduleNotice": "This lesson starts in less than 12 hours and can no longer be rescheduled. You can still cancel if needed."
       },
       "subscription": {
         "rescheduleComingSoon": "Subscription reschedule will be available soon.",

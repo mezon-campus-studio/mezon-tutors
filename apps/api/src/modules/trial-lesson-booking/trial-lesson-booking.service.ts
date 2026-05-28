@@ -1078,6 +1078,81 @@ export class TrialLessonBookingService {
     return { success: true, logId: log.id }
   }
 
+  /**
+   * Tutor requests to cancel a confirmed trial lesson: audit log only (no booking update, no refund).
+   */
+  async tutorRequestCancelTrialLesson(
+    tutorUserId: string,
+    bookingId: string,
+    payload: { reason: string; message?: string }
+  ): Promise<{ success: true; logId: string }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    })
+
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found for current user')
+    }
+
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        tutorId: true,
+        studentId: true,
+        startAt: true,
+        durationMinutes: true,
+        status: true,
+      },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to cancel this booking')
+    }
+
+    if (booking.status !== ETrialLessonStatus.CONFIRMED) {
+      throw new BadRequestException('Only confirmed lessons can be cancelled')
+    }
+
+    const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot request cancellation within 12 hours of the lesson start time'
+      )
+    }
+
+    const existingRequest = await this.prisma.findCancelRescheduleReasons({
+      trialLessonBookingId: booking.id,
+      action: ELessonChangeAction.CANCEL,
+    })
+    if (existingRequest.length > 0) {
+      throw new BadRequestException('A cancellation request was already submitted for this lesson')
+    }
+
+    const log = await this.prisma.createCancelRescheduleReason({
+      data: {
+        studentId: booking.studentId,
+        tutorId: booking.tutorId,
+        initiatedByUserId: tutorUserId,
+        initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
+        action: ELessonChangeAction.CANCEL,
+        lessonType: ELessonChangeLessonType.TRIAL,
+        reason: payload.reason.trim(),
+        message: payload.message?.trim() || null,
+        trialLessonBookingId: booking.id,
+        originalStartAt: booking.startAt,
+        originalDurationMinutes: booking.durationMinutes,
+      },
+    })
+
+    return { success: true, logId: log.id }
+  }
+
   private isTrialLessonPaymentRefundable(booking: {
     paymentStatus: EPaymentStatus
     paidAt: Date | null

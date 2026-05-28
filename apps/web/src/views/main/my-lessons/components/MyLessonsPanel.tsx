@@ -4,6 +4,7 @@ import {
   CalendarPlus,
   CalendarX,
   History,
+  Info,
   Sparkles,
   Star,
   Video,
@@ -53,8 +54,18 @@ type LessonPersonBadgeProps = {
   avatar: string;
 };
 
+function isCancelledLesson(lesson: LessonItem): boolean {
+  if (lesson.source === "trial") {
+    return lesson.trialBookingStatus === "cancelled";
+  }
+  if (lesson.source === "subscription") {
+    return lesson.subscriptionSlotStatus?.toUpperCase() === "CANCELLED";
+  }
+  return false;
+}
+
 function isCancelledTrialLesson(lesson: LessonItem): boolean {
-  return lesson.source === "trial" && lesson.trialBookingStatus === "cancelled";
+  return isCancelledLesson(lesson);
 }
 
 function isReschedulableTrialLesson(lesson: LessonItem): boolean {
@@ -204,9 +215,17 @@ function UpcomingLessonItem({
 }: UpcomingLessonItemProps) {
   const locale = useLocale();
   const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
+  const tUpcoming = useTranslations("MyLessons.panels.lessons.upcoming");
   const cancelled = isCancelledTrialLesson(lesson);
 
   const canReschedule = isReschedulableTrialLesson(lesson) || isReschedulableSubscriptionLesson(lesson);
+
+  const showRescheduleNotice =
+    !cancelled &&
+    canShowRescheduleOrCancelMenu(lesson) &&
+    !canReschedule &&
+    Boolean(lesson.startAt) &&
+    !isTrialLessonRescheduleEligible(lesson.startAt!);
 
   const actionItems = [
     {
@@ -222,53 +241,65 @@ function UpcomingLessonItem({
       variant: "destructive" as const,
     },
   ];
-  return (
-    <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:items-center">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
-        <div className="min-w-0 flex flex-col gap-0.5">
-          <p className="text-xs font-semibold text-violet-600">
-            {formatLessonDateLabel(lesson.dateLabel, locale)}
-          </p>
-          <p className="text-lg font-extrabold leading-none text-slate-900">
-            {lesson.timeLabel}
-          </p>
-          <p className="mt-1 truncate text-xs text-slate-600">
-            <span className="font-semibold text-violet-700">{lesson.subject}</span>
-            <span className="mx-1.5 text-slate-300">·</span>
-            <span>{lesson.tutor}</span>
-          </p>
-        </div>
-      </div>
 
-      <div className="flex shrink-0 gap-2">
-        {cancelled ? (
-          <LessonCancelledBadge label={cancelledLabel} />
-        ) : canShowRescheduleOrCancelMenu(lesson) ? (
-          <>
-            <ActionMenu
-              trigger={
-                <Button
-                  variant="outline"
-                  className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
-                >
-                  {rescheduleOrCancelLabel}
-                </Button>
-              }
-              items={actionItems}
-            />
-            <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+  return (
+    <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
+      <div className="flex w-full flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
+          <div className="min-w-0 flex flex-col gap-0.5">
+            <p className="text-xs font-semibold text-violet-600">
+              {formatLessonDateLabel(lesson.dateLabel, locale)}
+            </p>
+            <p className="text-lg font-extrabold leading-none text-slate-900">
+              {lesson.timeLabel}
+            </p>
+            <p className="mt-1 truncate text-xs text-slate-600">
+              <span className="font-semibold text-violet-700">{lesson.subject}</span>
+              <span className="mx-1.5 text-slate-300">·</span>
+              <span>{lesson.tutor}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 gap-2">
+          {cancelled ? (
+            <LessonCancelledBadge label={cancelledLabel} />
+          ) : canShowRescheduleOrCancelMenu(lesson) ? (
+            <>
+              <ActionMenu
+                trigger={
+                  <Button
+                    variant="outline"
+                    className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                  >
+                    {rescheduleOrCancelLabel}
+                  </Button>
+                }
+                items={actionItems}
+              />
+              <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+                <Video className="mr-1.5 size-3.5" />
+                {joinLessonLabel}
+              </Button>
+            </>
+          ) : (
+            <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2877_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
               <Video className="mr-1.5 size-3.5" />
               {joinLessonLabel}
             </Button>
-          </>
-        ) : (
-          <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
-            <Video className="mr-1.5 size-3.5" />
-            {joinLessonLabel}
-          </Button>
-        )}
+          )}
+        </div>
       </div>
+
+      {showRescheduleNotice && (
+        <div className="flex items-start gap-2.5 rounded-b-2xl border-t border-amber-100 bg-amber-50/70 px-5 py-3">
+          <Info className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
+          <p className="text-xs leading-relaxed text-amber-700">
+            {tUpcoming("rescheduleNotice")}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

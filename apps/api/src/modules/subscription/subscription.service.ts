@@ -213,7 +213,8 @@ export class SubscriptionService {
         tutor: {
           select: {
             id: true,
-            user: { select: { timezone: true } },
+            userId: true,
+            user: { select: { timezone: true, username: true } },
           },
         },
       },
@@ -663,6 +664,12 @@ export class SubscriptionService {
         if (!slot) {
           continue;
         }
+        if (
+          normalizeSubscriptionSlotStatus(slot.status) ===
+          ESubscriptionLessonSlotStatus.CANCELLED
+        ) {
+          continue;
+        }
         out.push({
           scheduleKind: 'subscription',
           id: `sub-${e.id}-${t.slotIndex}-${t.startAt.toISOString()}`,
@@ -748,6 +755,59 @@ export class SubscriptionService {
         initiatedByUserId: tutorUserId,
         initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
         action: ELessonChangeAction.RESCHEDULE,
+        lessonType: ELessonChangeLessonType.SUBSCRIPTION,
+        reason: payload.reason.trim(),
+        message: payload.message?.trim() || null,
+        subscriptionEnrollmentId: enrollmentId,
+        subscriptionSlotIndex: slotIndex,
+        originalStartAt: occurrence.startAt,
+        originalDurationMinutes: slot.durationMinutes,
+      },
+    });
+
+    return { success: true, logId: log.id };
+  }
+
+  /**
+   * Tutor requests to cancel a subscription lesson occurrence: audit log only (no slot/enrollment update, no refund).
+   */
+  async requestTutorSubscriptionSlotCancel(
+    tutorUserId: string,
+    enrollmentId: string,
+    slotIndex: number,
+    payload: { reason: string; message?: string; occurrenceStartAt: string }
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    const { enrollment, slot, occurrence } = await this.loadTutorSubscriptionSlotContext(
+      tutorUserId,
+      enrollmentId,
+      slotIndex,
+      payload.occurrenceStartAt
+    );
+
+    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
+    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot request cancellation within 12 hours of the lesson start time'
+      );
+    }
+
+    const existingRequest = await this.prisma.findCancelRescheduleReasons({
+      subscriptionEnrollmentId: enrollmentId,
+      subscriptionSlotIndex: slotIndex,
+      originalStartAt: occurrence.startAt,
+      action: ELessonChangeAction.CANCEL,
+    });
+    if (existingRequest.length > 0) {
+      throw new BadRequestException('A cancellation request was already submitted for this lesson');
+    }
+
+    const log = await this.prisma.createCancelRescheduleReason({
+      data: {
+        studentId: enrollment.studentId,
+        tutorId: enrollment.tutorId,
+        initiatedByUserId: tutorUserId,
+        initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
+        action: ELessonChangeAction.CANCEL,
         lessonType: ELessonChangeLessonType.SUBSCRIPTION,
         reason: payload.reason.trim(),
         message: payload.message?.trim() || null,

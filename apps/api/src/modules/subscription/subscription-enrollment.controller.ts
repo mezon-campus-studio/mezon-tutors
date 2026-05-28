@@ -30,7 +30,10 @@ import { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-e
 import { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
 import { RescheduleSubscriptionSlotBodyDto } from './dto/reschedule-subscription-slot.dto';
 import { TutorSubscriptionSlotRescheduleRequestDto } from './dto/tutor-subscription-slot-reschedule-request.dto';
-import type { TutorSubscriptionSlotRescheduleRequestResult } from '@mezon-tutors/shared';
+import { TutorSubscriptionSlotCancelRequestDto } from './dto/tutor-subscription-slot-cancel-request.dto';
+import type {
+  TutorSubscriptionSlotRescheduleRequestResult,
+} from '@mezon-tutors/shared';
 
 @Controller('subscription-enrollments')
 @ApiTags('Subscription enrollments')
@@ -124,6 +127,23 @@ export class SubscriptionEnrollmentController {
   ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
     const user = req.user as AuthUserPayload;
     return this.subscriptionService.requestTutorSubscriptionSlotReschedule(
+      user.sub,
+      id,
+      slotIndex,
+      body
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/slots/:slotIndex/tutor-cancel')
+  async tutorCancelSlot(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('slotIndex', ParseIntPipe) slotIndex: number,
+    @Body() body: TutorSubscriptionSlotCancelRequestDto
+  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.requestTutorSubscriptionSlotCancel(
       user.sub,
       id,
       slotIndex,

@@ -44,6 +44,8 @@ export type MyLessonApiItem = {
   enrollment_payment_status?: string
   /** Index in enrollment `weekly_slots`; subscription only. */
   subscription_slot_index?: number
+  /** Raw slot status from weekly_slots; subscription only. e.g. 'SCHEDULED' | 'CANCELLED' | 'COMPLETED' */
+  subscription_slot_status?: string
   /** True when a RESCHEDULE row exists in `cancel_reschedule_reason` for this lesson occurrence. */
   reschedule_request_submitted?: boolean
 }

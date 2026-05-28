@@ -133,6 +133,21 @@ export class TrialLessonBookingController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(':id/tutor-cancel')
+  async tutorCancelBooking(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: TutorRescheduleRequestDto
+  ) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.tutorRequestCancelTrialLesson(
+      user.sub,
+      id,
+      body
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post(':id/tutor-reschedule-request')
   async tutorRescheduleRequest(
     @Req() req: Request,

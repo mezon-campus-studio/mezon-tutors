@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useAtomValue } from 'jotai';
-import { CalendarClock, Eye, MoreVertical } from 'lucide-react';
+import { CalendarClock, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
 import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
@@ -27,6 +27,7 @@ type BookingRequestsTableProps = {
   isFetching?: boolean;
   onViewDetail: (bookingId: string) => void;
   onReschedule: (item: TrialLessonBookingRequestItem) => void;
+  onCancel: (item: TrialLessonBookingRequestItem) => void;
 };
 
 dayjs.extend(utc);
@@ -74,6 +75,7 @@ function buildActionMenuItems(
   t: (key: string) => string,
   onViewDetail: (bookingId: string) => void,
   onReschedule: (item: TrialLessonBookingRequestItem) => void,
+  onCancel: (item: TrialLessonBookingRequestItem) => void,
 ): ActionMenuItem[] {
   const cancelled = isCancelledTrial(item.status);
   const confirmed = isConfirmedTrial(item.status);
@@ -97,13 +99,19 @@ function buildActionMenuItems(
   }
 
   if (confirmed) {
-    const canReschedule =
-      isTrialLessonRescheduleEligible(item.startAt) && !item.rescheduleRequestSubmitted;
+    const canModify = isTrialLessonRescheduleEligible(item.startAt);
+    const canReschedule = canModify && !item.rescheduleRequestSubmitted;
     items.push({
       label: t('reschedule'),
       icon: <CalendarClock className="size-4" />,
       onClick: () => onReschedule(item),
       disabled: !canReschedule,
+    });
+    items.push({
+      label: t('cancel'),
+      icon: <Trash2 className="size-4" />,
+      onClick: () => onCancel(item),
+      disabled: !canModify,
     });
   }
 
@@ -115,6 +123,7 @@ export default function BookingRequestsTable({
   isLoading,
   onViewDetail,
   onReschedule,
+  onCancel,
 }: BookingRequestsTableProps) {
   const t = useTranslations('Dashboard.bookingRequests.table');
   const locale = useLocale();
@@ -180,6 +189,7 @@ export default function BookingRequestsTable({
                 t,
                 onViewDetail,
                 onReschedule,
+                onCancel,
               );
 
               return (

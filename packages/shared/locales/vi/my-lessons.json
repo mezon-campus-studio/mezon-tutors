@@ -55,7 +55,8 @@
         "scheduleNow": "Đặt lịch ngay",
         "rescheduleOrCancel": "Đổi lịch/Hủy",
         "joinLesson": "Vào lớp",
-        "statusCancelled": "Đã hủy"
+        "statusCancelled": "Đã hủy",
+        "rescheduleNotice": "Buổi học sắp diễn ra trong vòng 12 tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần."
       },
       "subscription": {
         "rescheduleComingSoon": "Tính năng đổi lịch gói học sẽ sớm có mặt.",

@@ -90,8 +90,18 @@
         "actions": "Hành động",
         "view": "Xem",
         "reschedule": "Dời lịch",
+        "cancel": "Hủy buổi học",
         "rescheduleComingSoon": "Tính năng dời lịch sẽ sớm có mặt.",
         "noResults": "Không có yêu cầu đặt lịch nào với bộ lọc này."
+      },
+      "cancellation": {
+        "within12Hours": "Bạn chỉ có thể yêu cầu hủy khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
+        "alreadyRequested": "Buổi học này đã có yêu cầu hủy.",
+        "success": "Đã ghi nhận yêu cầu hủy. Học sinh đã được thông báo.",
+        "failed": "Không thể gửi yêu cầu hủy.",
+        "messageSent": "Đã gửi tin nhắn cho học sinh.",
+        "messageFailed": "Đã lưu yêu cầu nhưng không gửi được tin nhắn.",
+        "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn."
       },
       "reschedule": {
         "within12Hours": "Bạn chỉ có thể yêu cầu dời lịch khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
@@ -213,6 +223,7 @@
         "durationLabel": "{minutes} phút",
         "viewDetail": "Chi tiết",
         "reschedule": "Dời lịch",
+        "cancel": "Hủy buổi học",
         "joinLesson": "Vào lớp",
         "subscriptionBadge": "Gói theo tháng"
       }
