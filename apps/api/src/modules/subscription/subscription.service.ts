@@ -550,6 +550,16 @@ export class SubscriptionService {
       ) {
         throw new BadRequestException('Slot outside tutor availability');
       }
+      const slotStart = dayjs.tz(`${s.date} ${s.startTime}`, tutorTimezone);
+      if (!slotStart.isValid()) {
+        throw new BadRequestException('Invalid slot start time');
+      }
+      await this.trialLessonBookingService.assertTutorSlotAvailable(
+        dto.tutorId,
+        slotStart.utc().toISOString(),
+        durationMinutes,
+        tutorTimezone
+      );
       const dbDay = jsDayToDbDayOfWeek(d.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
