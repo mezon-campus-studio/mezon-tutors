@@ -13,6 +13,9 @@ export const NOTIFICATION_I18N_KEYS = {
     systemAnnouncement: 'templates.systemAnnouncement',
     lessonStartingSoon: 'templates.lessonStartingSoon',
     tutorEarningsReleased: 'templates.tutorEarningsReleased',
+    lessonComplaintApproved: 'templates.lessonComplaintApproved',
+    lessonComplaintApprovedRefunded: 'templates.lessonComplaintApprovedRefunded',
+    lessonComplaintRejected: 'templates.lessonComplaintRejected',
   },
   titles: {
     bookingCreated: 'titles.bookingCreated',
@@ -23,6 +26,8 @@ export const NOTIFICATION_I18N_KEYS = {
     systemAnnouncement: 'titles.systemAnnouncement',
     lessonStartingSoon: 'titles.lessonStartingSoon',
     tutorEarningsReleased: 'titles.tutorEarningsReleased',
+    lessonComplaintApproved: 'titles.lessonComplaintApproved',
+    lessonComplaintRejected: 'titles.lessonComplaintRejected',
   },
 } as const
 

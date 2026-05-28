@@ -12,6 +12,7 @@
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
+      "complaints": "Complaints",
       "wallet": "Wallet",
       "tutorApplications": "Tutor applications",
       "dashboard": "Dashboard",
@@ -26,6 +27,38 @@
         "errorTitle": "Sync failed",
         "errorDescription": "Something went wrong. Try again or sign in with Mezon again.",
         "popupBlocked": "Allow pop-ups for this site to continue with Mezon."
+      }
+    },
+    "complaintsPage": {
+      "title": "Lesson complaints",
+      "description": "Track all complaints you submitted and their refund review status.",
+      "searchPlaceholder": "Search by tutor, subject, or reason...",
+      "loading": "Loading complaints...",
+      "emptyTitle": "No complaints yet",
+      "emptyDescription": "When you submit a lesson complaint, its review status will appear here.",
+      "metrics": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "filters": {
+        "all": "All",
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Refund approved",
+        "REJECTED": "Rejected"
+      },
+      "list": {
+        "title": "Complaint list",
+        "subtitle": "{count} requests",
+        "lessonTime": "Lesson time",
+        "submittedAt": "Submitted at",
+        "reason": "Reason",
+        "adminNote": "Admin note"
       }
     },
     "bookingRequests": {

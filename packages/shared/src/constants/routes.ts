@@ -23,6 +23,7 @@ export const ROUTES = {
     TUTOR_APPLICATIONS: '/admin/tutor-applications',
     TUTOR_APPLICATION_DETAIL: (id: string | number) =>
       `/admin/tutor-applications/${id}`,
+    LESSON_COMPLAINTS: '/admin/lesson-complaints',
   },
   AUTH: {
     MEZON_CALLBACK: '/auth/mezon/callback',
@@ -37,6 +38,7 @@ export const ROUTES = {
     TRIAL_BOOKING_DETAIL: (id: string) => `/dashboard/tutor/trial-bookings/${id}`,
     MY_SCHEDULE: '/dashboard/tutor/my-schedule',
     MY_LESSONS: '/dashboard/my-lesson',
+    COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
   },
   CHECKOUT: {

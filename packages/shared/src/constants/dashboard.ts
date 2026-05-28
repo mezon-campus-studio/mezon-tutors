@@ -2,6 +2,7 @@ import { ROUTES } from './routes';
 
 export type DashboardMenuIconKey =
   | 'document'
+  | 'complaints'
   | 'trialBookings'
   | 'calendar'
   | 'logout'
@@ -14,6 +15,7 @@ export type DashboardMenuIconKey =
   | 'profile';
 export type DashboardMenuLabelKey =
   | 'myLessons'
+  | 'complaints'
   | 'trialBookings'
   | 'mySchedule'
   | 'logout'
@@ -50,6 +52,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'myLessons',
     iconKey: 'document',
     href: ROUTES.DASHBOARD.MY_LESSONS,
+    roles: ['STUDENT'],
+  },
+  {
+    key: 'complaints',
+    type: 'link',
+    labelKey: 'complaints',
+    iconKey: 'complaints',
+    href: ROUTES.DASHBOARD.COMPLAINTS,
     roles: ['STUDENT'],
   },
   {
@@ -154,6 +164,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-lessons') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);
+  }
+  if (item.key === 'complaints') {
+    return pathname.startsWith(ROUTES.DASHBOARD.COMPLAINTS);
   }
   if (item.key === 'wallet') {
     return pathname.startsWith(ROUTES.DASHBOARD.WALLET);

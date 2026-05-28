@@ -17,7 +17,9 @@ import type {
 } from '@mezon-tutors/shared';
 import {
   ESubscriptionLessonSlotStatus,
+  isLessonFinishedForComplaint,
   isSubscriptionSlotCompleted,
+  isWithinLessonComplaintWindow,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
@@ -59,8 +61,7 @@ export class MyLessonsService {
   }
 
   private isLessonEndAfterNow(lesson: { startAt: Date; durationMinutes: number }): boolean {
-    const end = dayjs(lesson.startAt).add(lesson.durationMinutes, 'minute');
-    return end.isAfter(dayjs());
+    return !isLessonFinishedForComplaint(lesson.startAt, lesson.durationMinutes);
   }
 
   async getOverview(
@@ -184,7 +185,14 @@ export class MyLessonsService {
         const range = { startAt: occ.startAt, endAt: occ.endAt };
         subscriptionBounds.push(range);
         const slot = slots[occ.slotIndex];
-        const calendarStatus = this.subscriptionSlotToLessonStatus(slot?.status);
+        const durationMinutes =
+          slot?.durationMinutes ??
+          Math.max(1, Math.round((range.endAt.getTime() - range.startAt.getTime()) / 60_000));
+        const calendarStatus = this.subscriptionSlotToLessonStatus(
+          slot?.status,
+          range.startAt,
+          durationMinutes
+        );
         if (!calendarStatus) {
           continue;
         }
@@ -210,7 +218,14 @@ export class MyLessonsService {
 
       for (const occ of allOccs) {
         const slot = slots[occ.slotIndex];
-        const lessonStatus = this.subscriptionSlotToLessonStatus(slot?.status);
+        const durationMinutes =
+          slot?.durationMinutes ??
+          Math.max(1, Math.round((occ.endAt.getTime() - occ.startAt.getTime()) / 60_000));
+        const lessonStatus = this.subscriptionSlotToLessonStatus(
+          slot?.status,
+          occ.startAt,
+          durationMinutes
+        );
         if (!lessonStatus) {
           continue;
         }
@@ -248,8 +263,12 @@ export class MyLessonsService {
     const mergedPrevious = [...previousLessons, ...subscriptionPreviousItems].sort(compareByStartAtDesc);
 
     const rescheduleKeys = await this.loadRescheduleRequestKeys(studentId);
+    const complaintKeys = await this.loadComplaintKeys(studentId);
     const annotate = (item: MyLessonApiItem) =>
-      this.annotateRescheduleRequestSubmitted(item, rescheduleKeys);
+      this.annotateComplaintFields(
+        this.annotateRescheduleRequestSubmitted(item, rescheduleKeys),
+        complaintKeys
+      );
 
     return {
       ...this.buildCalendarMeta(
@@ -334,6 +353,123 @@ export class MyLessonsService {
     return { ...item, reschedule_request_submitted: submitted };
   }
 
+  private async loadComplaintKeys(studentId: string): Promise<{
+    trialByBookingId: Map<string, string>;
+    subscriptionByKey: Map<string, string>;
+  }> {
+    try {
+      return await this.fetchComplaintKeys(studentId);
+    } catch {
+      return { trialByBookingId: new Map(), subscriptionByKey: new Map() };
+    }
+  }
+
+  private async fetchComplaintKeys(studentId: string): Promise<{
+    trialByBookingId: Map<string, string>;
+    subscriptionByKey: Map<string, string>;
+  }> {
+    const rows = await this.prisma.lessonComplaint.findMany({
+      where: { studentId },
+      select: {
+        status: true,
+        trialLessonBookingId: true,
+        subscriptionEnrollmentId: true,
+        subscriptionSlotIndex: true,
+        lessonStartAt: true,
+      },
+    });
+
+    const trialByBookingId = new Map<string, string>();
+    const subscriptionByKey = new Map<string, string>();
+
+    for (const row of rows) {
+      if (row.trialLessonBookingId) {
+        trialByBookingId.set(row.trialLessonBookingId, row.status);
+      }
+      if (
+        row.subscriptionEnrollmentId != null &&
+        row.subscriptionSlotIndex != null
+      ) {
+        subscriptionByKey.set(
+          this.buildSubscriptionRescheduleKey(
+            row.subscriptionEnrollmentId,
+            row.subscriptionSlotIndex,
+            row.lessonStartAt
+          ),
+          row.status
+        );
+      }
+    }
+
+    return { trialByBookingId, subscriptionByKey };
+  }
+
+  private annotateComplaintFields(
+    item: MyLessonApiItem,
+    keys: {
+      trialByBookingId: Map<string, string>;
+      subscriptionByKey: Map<string, string>;
+    }
+  ): MyLessonApiItem {
+    const now = new Date();
+    const duration = item.duration_minutes ?? 0;
+    const startAt = item.start_at;
+
+    let complaintStatus: string | undefined;
+    if (item.source === 'trial') {
+      complaintStatus = keys.trialByBookingId.get(item.id);
+    } else if (
+      item.source === 'subscription' &&
+      item.subscription_enrollment_id &&
+      item.subscription_slot_index != null &&
+      startAt
+    ) {
+      complaintStatus = keys.subscriptionByKey.get(
+        this.buildSubscriptionRescheduleKey(
+          item.subscription_enrollment_id,
+          item.subscription_slot_index,
+          startAt
+        )
+      );
+    }
+
+    const cancelledTrial =
+      item.source === 'trial' && item.trial_booking_status === 'cancelled';
+
+    const trialPaymentOk =
+      item.source !== 'trial' ||
+      (item.trial_payment_status?.toUpperCase() ?? 'SUCCEEDED') === 'SUCCEEDED';
+
+    const subscriptionPaymentOk =
+      item.source !== 'subscription' ||
+      item.enrollment_payment_status?.toUpperCase() === 'SUCCEEDED';
+
+    const lessonFinished =
+      startAt && duration > 0
+        ? isLessonFinishedForComplaint(startAt, duration, now)
+        : item.status === 'completed';
+
+    const withinWindow =
+      startAt && duration > 0
+        ? isWithinLessonComplaintWindow(startAt, duration, now)
+        : false;
+
+    const canComplain =
+      !complaintStatus &&
+      !cancelledTrial &&
+      item.status === 'completed' &&
+      lessonFinished &&
+      withinWindow &&
+      trialPaymentOk &&
+      subscriptionPaymentOk;
+
+    return {
+      ...item,
+      complaint_status: complaintStatus,
+      can_complain: canComplain,
+    };
+  }
+
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
     if (!Array.isArray(value)) {
       return [];
@@ -342,12 +478,17 @@ export class MyLessonsService {
   }
 
   private subscriptionSlotToLessonStatus(
-    slotStatus: string | undefined
+    slotStatus: string | undefined,
+    startAt: Date,
+    durationMinutes: number
   ): MyLessonApiItem['status'] | null {
     if (normalizeSubscriptionSlotStatus(slotStatus) === ESubscriptionLessonSlotStatus.CANCELLED) {
       return 'completed';
     }
     if (isSubscriptionSlotCompleted(slotStatus)) {
+      return 'completed';
+    }
+    if (isLessonFinishedForComplaint(startAt, durationMinutes)) {
       return 'completed';
     }
     return 'upcoming';
@@ -446,13 +587,13 @@ export class MyLessonsService {
     startAt: Date;
     durationMinutes: number;
   }): boolean {
-    if (lesson.status === ETrialLessonStatus.COMPLETED) {
-      return true;
-    }
     if (lesson.status === ETrialLessonStatus.CANCELLED) {
       return true;
     }
-    if (lesson.status === ETrialLessonStatus.CONFIRMED) {
+    if (
+      lesson.status === ETrialLessonStatus.COMPLETED ||
+      lesson.status === ETrialLessonStatus.CONFIRMED
+    ) {
       return !this.isLessonEndAfterNow(lesson);
     }
     return false;
@@ -494,6 +635,7 @@ export class MyLessonsService {
       gross_amount: Number(lesson.grossAmount),
       currency: lesson.currency,
       trial_booking_status: trialBookingStatus,
+      trial_payment_status: lesson.paymentStatus,
     };
   }
 

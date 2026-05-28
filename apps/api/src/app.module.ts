@@ -25,6 +25,7 @@ import { ListenersModule } from './modules/mezon-bot/listeners/listeners.module'
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settlement.module';
+import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complaint.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settl
     SubscriptionModule,
     WalletModule,
     LessonSettlementModule,
+    LessonComplaintModule,
   ],
   controllers: [HealthController],
   providers: [

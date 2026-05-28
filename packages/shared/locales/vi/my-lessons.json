@@ -92,6 +92,33 @@
         "rated": "Đã đánh giá",
         "statusCancelled": "Đã hủy"
       },
+      "complaint": {
+        "action": "Khiếu nại",
+        "statusPending": "Đang chờ xử lý",
+        "statusApproved": "Đã duyệt hoàn tiền",
+        "statusRejected": "Đã từ chối",
+        "dialog": {
+          "title": "Khiếu nại buổi học",
+          "subtitle": "Mô tả vấn đề với buổi học cùng {tutor} ({date} · {time}).",
+          "windowHint": "Bạn có thể khiếu nại trong vòng {hours} giờ sau khi buổi học kết thúc. Admin sẽ xem xét và có thể hoàn tiền vào ví.",
+          "reasonLabel": "Lý do",
+          "reasonPlaceholder": "Chọn lý do",
+          "messageLabel": "Chi tiết (tùy chọn)",
+          "messagePlaceholder": "Mô tả sự việc...",
+          "dismiss": "Hủy",
+          "confirm": "Gửi khiếu nại",
+          "submitting": "Đang gửi…",
+          "success": "Đã gửi khiếu nại. Chúng tôi sẽ xem xét sớm.",
+          "failed": "Không gửi được khiếu nại. Vui lòng thử lại."
+        },
+        "reasons": {
+          "tutorNoShow": "Gia sư không tham gia",
+          "poorQuality": "Chất lượng buổi học kém",
+          "technicalIssue": "Sự cố kỹ thuật trong buổi học",
+          "wrongContent": "Nội dung không đúng kỳ vọng",
+          "other": "Khác"
+        }
+      },
       "cancellation": {
         "dialog": {
           "title": "Hủy buổi học thử",
@@ -150,6 +177,20 @@
       "discoverDescription": "Khám phá gia sư được đánh giá cao ở Vật lý, Hóa học, Thiết kế và hơn 100 môn khác.",
       "findTutors": "Tìm gia sư",
       "viewSubjects": "Xem tất cả môn"
+    },
+    "complaints": {
+      "loading": "Đang tải danh sách khiếu nại...",
+      "emptyTitle": "Chưa có khiếu nại nào",
+      "emptyDescription": "Khi bạn gửi khiếu nại buổi học, trạng thái xử lý sẽ hiển thị ở đây.",
+      "lessonTime": "Thời gian buổi học",
+      "submittedAt": "Thời điểm gửi",
+      "reason": "Lý do",
+      "adminNote": "Ghi chú từ admin",
+      "status": {
+        "PENDING": "Đang chờ xử lý",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      }
     }
   },
   "screen": {
