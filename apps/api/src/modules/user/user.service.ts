@@ -94,6 +94,13 @@ export class UserService {
         timezone: timezone ?? 'UTC',
       },
     });
+
+    await this.prisma.wallet.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: { userId: user.id },
+    });
+
     return { user, created: true };
   }
 }

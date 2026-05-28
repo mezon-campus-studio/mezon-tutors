@@ -8,6 +8,7 @@ import {
   useWalletStats,
   useWalletTransactions,
 } from '@/services';
+import WalletPayoutBankDialog from '../components/WalletPayoutBankDialog';
 import StudentWalletBentoStats from './StudentWalletBentoStats';
 import StudentWalletHero from './StudentWalletHero';
 import StudentWalletInsightPanel from './StudentWalletInsightPanel';
@@ -16,6 +17,7 @@ import StudentWalletTransactionsSection from './StudentWalletTransactionsSection
 export default function StudentWalletView() {
   const t = useTranslations('Wallet');
   const [txPage, setTxPage] = useState(1);
+  const [bankDialogOpen, setBankDialogOpen] = useState(false);
 
   const { data: details, isPending: detailsPending } = useWalletDetails();
   const { data: stats, isPending: statsPending } = useWalletStats();
@@ -40,7 +42,12 @@ export default function StudentWalletView() {
 
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-5 xl:grid-cols-[minmax(0,1fr)_300px] items-center">
         <StudentWalletHero details={details} stats={stats} isPending={detailsPending} />
-        <StudentWalletInsightPanel details={details} stats={stats} isPending={headerPending} />
+        <StudentWalletInsightPanel
+          details={details}
+          stats={stats}
+          isPending={headerPending}
+          onManageBankClick={() => setBankDialogOpen(true)}
+        />
       </div>
 
       <div className="mb-8">
@@ -55,6 +62,14 @@ export default function StudentWalletView() {
         isFetching={txFetching}
         onPageChange={setTxPage}
       />
+
+      {details ? (
+        <WalletPayoutBankDialog
+          open={bankDialogOpen}
+          onOpenChange={setBankDialogOpen}
+          initialBank={details.payoutBankAccount}
+        />
+      ) : null}
     </div>
   );
 }

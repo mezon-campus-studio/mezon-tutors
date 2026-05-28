@@ -480,8 +480,12 @@ model Wallet {
   userId    String   @unique @map("user_id") @db.Uuid
   balance            BigInt   @default(0)
   pendingBalance     BigInt   @default(0)
+  pendingWithdrawal  BigInt   @default(0)
   totalEarned        BigInt   @default(0)
   totalWithdrawn     BigInt   @default(0)
+  payoutBankName          String?  @map("payout_bank_name") @db.VarChar(100)
+  payoutBankAccountNumber String?  @map("payout_bank_account_number") @db.VarChar(50)
+  payoutBankAccountName   String?  @map("payout_bank_account_name") @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

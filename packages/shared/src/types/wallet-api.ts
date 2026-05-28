@@ -16,16 +16,24 @@ export type WalletWithdrawalStatus =
   | 'COMPLETED'
   | 'REJECTED';
 
+export type WalletPayoutBankAccount = {
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+};
+
 export type WalletDetailsApiResponse = {
   role: 'STUDENT' | 'TUTOR';
   currency: 'VND';
   availableBalance: number;
   pendingBalance: number;
+  pendingWithdrawal?: number;
   totalEarned: number;
   totalWithdrawn: number;
   totalSpent?: number;
   walletBalance?: number;
   hasWallet?: boolean;
+  payoutBankAccount?: WalletPayoutBankAccount | null;
 };
 
 export type StudentWalletStatsApiResponse = {
@@ -88,6 +96,12 @@ export type WalletWithdrawalsApiResponse = PaginatedData<WalletWithdrawalApiItem
 
 export type CreateWalletWithdrawalPayload = {
   amount: number;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+};
+
+export type UpdateWalletPayoutBankPayload = {
   bankName: string;
   bankAccountNumber: string;
   bankAccountName: string;

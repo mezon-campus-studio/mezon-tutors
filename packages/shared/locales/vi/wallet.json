@@ -136,12 +136,10 @@
       "insight": {
         "pendingPayoutsTitle": "Chờ giải ngân",
         "pendingPayoutsHint": "Thu nhập từ buổi học chờ chuyển vào số dư.",
+        "pendingWithdrawalTitle": "Đang chờ rút",
+        "pendingWithdrawalHint": "Đã tách khỏi số dư khả dụng, chờ admin duyệt chuyển khoản.",
         "withdrawalQueueTitle": "Yêu cầu rút",
-        "withdrawalQueueHint": "Các lệnh rút đang chờ xử lý trên trang này.",
-        "securityHint": "Rút tiền được bảo vệ và kiểm duyệt trên Mezonly.",
-        "accountHealthTitle": "Tình trạng tài khoản",
-        "accountHealthGood": "Thu nhập đang chảy bình thường",
-        "accountHealthIdle": "Chưa có hoạt động"
+        "withdrawalQueueHint": "Các lệnh rút đang chờ xử lý trên trang này."
       },
       "bento": {
         "title": "Tổng quan thu nhập",
@@ -161,20 +159,76 @@
         "filterWithdrawals": "Rút tiền"
       }
     },
+    "payoutBank": {
+      "cardTitle": "Tài khoản ngân hàng",
+      "cardEmptyHint": "Thêm thông tin ngân hàng để nhận hoàn tiền và chi trả.",
+      "cardAddCta": "Thêm tài khoản",
+      "cardEdit": "Cập nhật tài khoản"
+    },
+    "payoutBankDialog": {
+      "title": "Tài khoản nhận tiền",
+      "description": "Dùng cho hoàn tiền và rút thu nhập gia sư. Có thể cập nhật bất cứ lúc nào.",
+      "bankName": "Tên ngân hàng",
+      "bankNamePlaceholder": "VD: Vietcombank, Techcombank",
+      "accountNumber": "Số tài khoản",
+      "accountNumberPlaceholder": "Chỉ số, từ 6–50 ký tự",
+      "accountName": "Chủ tài khoản",
+      "accountNamePlaceholder": "Trùng tên trên sổ/tài khoản ngân hàng",
+      "securityNote": "Thông tin ngân hàng được lưu an toàn và chỉ dùng để chi trả hoặc hoàn tiền.",
+      "cancel": "Hủy",
+      "submit": "Lưu",
+      "submitting": "Đang lưu…",
+      "successTitle": "Đã lưu tài khoản",
+      "successDescription": "Thông tin nhận tiền đã sẵn sàng cho lần rút tiếp theo.",
+      "errorTitle": "Không lưu được",
+      "errorFallback": "Vui lòng kiểm tra thông tin và thử lại.",
+      "validation": {
+        "bankNameRequired": "Vui lòng nhập tên ngân hàng",
+        "bankNameMin": "Tên ngân hàng tối thiểu 2 ký tự",
+        "bankNameMax": "Tên ngân hàng tối đa 100 ký tự",
+        "accountNumberRequired": "Vui lòng nhập số tài khoản",
+        "accountNumberDigits": "Số tài khoản chỉ được chứa chữ số",
+        "accountNumberMin": "Số tài khoản tối thiểu 6 chữ số",
+        "accountNumberMax": "Số tài khoản tối đa 50 chữ số",
+        "accountNameRequired": "Vui lòng nhập tên chủ tài khoản",
+        "accountNameMin": "Tên chủ tài khoản tối thiểu 2 ký tự",
+        "accountNameMax": "Tên chủ tài khoản tối đa 255 ký tự",
+        "accountNameInvalid": "Chỉ dùng chữ cái (không số hoặc ký tự đặc biệt)"
+      }
+    },
     "withdrawDialog": {
       "title": "Yêu cầu rút tiền",
-      "description": "Tiền sẽ chuyển vào tài khoản ngân hàng sau khi được duyệt. Tối thiểu 10.000 VND.",
-      "amount": "Số tiền (VND)",
+      "description": "Tiền sẽ chuyển vào tài khoản ngân hàng sau khi được duyệt.",
+      "availableLabel": "Có thể rút",
+      "amount": "Số tiền rút",
+      "amountPlaceholder": "Nhập số tiền (VND)",
+      "withdrawMax": "Rút tối đa",
+      "bankEdit": "Sửa",
+      "bankDoneEdit": "Xong",
+      "bankRequiredHint": "Nhập tài khoản nhận bên dưới hoặc lưu trước ở panel ví.",
+      "bankSectionTitle": "Tài khoản nhận",
       "bankName": "Tên ngân hàng",
+      "bankNamePlaceholder": "VD: Vietcombank, Techcombank",
       "accountNumber": "Số tài khoản",
+      "accountNumberPlaceholder": "Chỉ số, từ 6–50 ký tự",
       "accountName": "Chủ tài khoản",
+      "accountNamePlaceholder": "Trùng tên trên sổ/tài khoản ngân hàng",
+      "securityNote": "Yêu cầu rút sẽ được kiểm duyệt trước khi chuyển tiền.",
+      "insufficientTitle": "Số dư không đủ",
+      "insufficientHint": "Rút tối thiểu 10.000 VND. Hãy tích lũy thêm thu nhập để rút.",
       "cancel": "Hủy",
       "submit": "Gửi yêu cầu",
       "submitting": "Đang gửi…",
       "successTitle": "Đã gửi yêu cầu",
       "successDescription": "Chúng tôi sẽ xử lý yêu cầu rút tiền của bạn sớm nhất có thể.",
       "errorTitle": "Không gửi được",
-      "errorFallback": "Vui lòng kiểm tra số dư và thử lại."
+      "errorFallback": "Vui lòng kiểm tra số dư và thử lại.",
+      "validation": {
+        "amountRequired": "Vui lòng nhập số tiền",
+        "amountDigits": "Số tiền phải là số nguyên",
+        "amountMin": "Rút tối thiểu 10.000 VND",
+        "amountMax": "Số tiền không được vượt số dư khả dụng ({max})"
+      }
     }
   }
 }

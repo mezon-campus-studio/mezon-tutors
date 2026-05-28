@@ -9,6 +9,7 @@ import {
   useWalletTransactions,
   useWalletWithdrawals,
 } from '@/services';
+import WalletPayoutBankDialog from '../components/WalletPayoutBankDialog';
 import WalletWithdrawDialog from '../components/WalletWithdrawDialog';
 import TutorWalletActivitySection from './TutorWalletActivitySection';
 import TutorWalletBentoStats from './TutorWalletBentoStats';
@@ -20,6 +21,7 @@ export default function TutorWalletView() {
   const [txPage, setTxPage] = useState(1);
   const [wdPage, setWdPage] = useState(1);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [bankDialogOpen, setBankDialogOpen] = useState(false);
 
   const { data: details, isPending: detailsPending } = useWalletDetails();
   const { data: stats, isPending: statsPending } = useWalletStats();
@@ -62,8 +64,8 @@ export default function TutorWalletView() {
         <TutorWalletInsightPanel
           details={details}
           stats={stats}
-          withdrawals={wdItems}
           isPending={headerPending}
+          onManageBankClick={() => setBankDialogOpen(true)}
         />
       </div>
 
@@ -89,11 +91,19 @@ export default function TutorWalletView() {
       </div>
 
       {details ? (
-        <WalletWithdrawDialog
-          open={withdrawOpen}
-          onOpenChange={setWithdrawOpen}
-          maxAmount={details.availableBalance}
-        />
+        <>
+          <WalletWithdrawDialog
+            open={withdrawOpen}
+            onOpenChange={setWithdrawOpen}
+            maxAmount={details.availableBalance}
+            initialBank={details.payoutBankAccount}
+          />
+          <WalletPayoutBankDialog
+            open={bankDialogOpen}
+            onOpenChange={setBankDialogOpen}
+            initialBank={details.payoutBankAccount}
+          />
+        </>
       ) : null}
     </div>
   );

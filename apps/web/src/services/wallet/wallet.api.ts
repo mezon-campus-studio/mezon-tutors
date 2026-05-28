@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ApiResponse,
   CreateWalletWithdrawalPayload,
+  UpdateWalletPayoutBankPayload,
   WalletDetailsApiResponse,
+  WalletPayoutBankAccount,
   WalletStatsApiResponse,
   WalletTransactionsApiResponse,
   WalletWithdrawalsApiResponse,
@@ -51,6 +53,13 @@ const walletApi = {
 
   createWithdrawal(payload: CreateWalletWithdrawalPayload): Promise<void> {
     return apiClient.post(`${BASE}/withdrawals`, payload);
+  },
+
+  updatePayoutBank(payload: UpdateWalletPayoutBankPayload): Promise<WalletPayoutBankAccount> {
+    return apiClient.patch<ApiResponse<WalletPayoutBankAccount>, WalletPayoutBankAccount>(
+      `${BASE}/payout-bank`,
+      payload,
+    );
   },
 };
 
@@ -104,6 +113,16 @@ export function useCreateWalletWithdrawal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateWalletWithdrawalPayload) => walletApi.createWithdrawal(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
+    },
+  });
+}
+
+export function useUpdateWalletPayoutBank() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateWalletPayoutBankPayload) => walletApi.updatePayoutBank(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
     },

@@ -15,19 +15,19 @@ import {
   Role,
 } from '@mezon-tutors/db';
 import {
-  ECurrency as SharedCurrency,
   formatToCurrency,
   type CreateWalletWithdrawalPayload,
   type StudentWalletStatsApiResponse,
   type TutorWalletStatsApiResponse,
+  type UpdateWalletPayoutBankPayload,
   type WalletDetailsApiResponse,
+  type WalletPayoutBankAccount,
   type WalletStatsApiResponse,
   type WalletTransactionApiItem,
   type WalletTransactionsApiResponse,
   type WalletWithdrawalApiItem,
   type WalletWithdrawalsApiResponse,
-} from '@mezon-tutors/shared';
-import {
+  ECurrency as SharedCurrency,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
 } from '@mezon-tutors/shared';
@@ -106,28 +106,108 @@ export class WalletService {
     return this.getStudentStats(userId);
   }
 
-  private async getTutorDetails(userId: string): Promise<WalletDetailsApiResponse> {
-    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+  private normalizePayoutBankPayload(payload: UpdateWalletPayoutBankPayload) {
+    return {
+      bankName: payload.bankName.trim(),
+      bankAccountNumber: payload.bankAccountNumber.trim(),
+      bankAccountName: payload.bankAccountName.trim(),
+    };
+  }
 
-    if (!wallet) {
-      return {
-        role: Role.TUTOR,
-        currency: ECurrency.VND,
-        availableBalance: 0,
-        pendingBalance: 0,
-        totalEarned: 0,
-        totalWithdrawn: 0,
-      };
+  private mapWalletPayoutBank(
+    wallet: {
+      payoutBankName: string | null;
+      payoutBankAccountNumber: string | null;
+      payoutBankAccountName: string | null;
+    } | null,
+  ): WalletPayoutBankAccount | null {
+    if (
+      !wallet?.payoutBankName ||
+      !wallet.payoutBankAccountNumber ||
+      !wallet.payoutBankAccountName
+    ) {
+      return null;
     }
+    return {
+      bankName: wallet.payoutBankName,
+      bankAccountNumber: wallet.payoutBankAccountNumber,
+      bankAccountName: wallet.payoutBankAccountName,
+    };
+  }
+
+  private async ensureWallet(userId: string) {
+    return this.prisma.wallet.findUniqueOrThrow({
+      where: { userId },
+    });
+  }
+
+  private activeWithdrawalStatuses(): EWithdrawalStatus[] {
+    return [EWithdrawalStatus.PENDING, EWithdrawalStatus.APPROVED, EWithdrawalStatus.PROCESSING];
+  }
+
+  private mapWithdrawalRow(row: {
+    id: string;
+    amount: bigint;
+    bankName: string;
+    bankAccountNumber: string;
+    bankAccountName: string;
+    status: EWithdrawalStatus;
+    adminNote: string | null;
+    createdAt: Date;
+    processedAt: Date | null;
+  }): WalletWithdrawalApiItem {
+    return {
+      id: row.id,
+      amount: Number(row.amount),
+      bankName: row.bankName,
+      bankAccountNumber: row.bankAccountNumber,
+      bankAccountName: row.bankAccountName,
+      status: row.status,
+      adminNote: row.adminNote,
+      createdAt: row.createdAt.toISOString(),
+      processedAt: row.processedAt?.toISOString() ?? null,
+    };
+  }
+
+  private async getTutorDetails(userId: string): Promise<WalletDetailsApiResponse> {
+    const wallet = await this.ensureWallet(userId);
+    const payoutBankAccount = this.mapWalletPayoutBank(wallet);
 
     return {
       role: Role.TUTOR,
       currency: ECurrency.VND,
       availableBalance: Number(wallet.balance),
       pendingBalance: Number(wallet.pendingBalance),
+      pendingWithdrawal: Number(wallet.pendingWithdrawal),
       totalEarned: Number(wallet.totalEarned),
       totalWithdrawn: Number(wallet.totalWithdrawn),
+      payoutBankAccount,
     };
+  }
+
+  async updatePayoutBank(
+    userId: string,
+    role: string,
+    payload: UpdateWalletPayoutBankPayload,
+  ): Promise<WalletPayoutBankAccount> {
+    this.assertWalletRole(role);
+    const bank = this.normalizePayoutBankPayload(payload);
+
+    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
+    }
+
+    const updated = await this.prisma.wallet.update({
+      where: { userId },
+      data: {
+        payoutBankName: bank.bankName,
+        payoutBankAccountNumber: bank.bankAccountNumber,
+        payoutBankAccountName: bank.bankAccountName,
+      },
+    });
+
+    return this.mapWalletPayoutBank(updated)!;
   }
 
   private async getStudentPaymentTotals(userId: string) {
@@ -161,21 +241,23 @@ export class WalletService {
 
   private async getStudentDetails(userId: string): Promise<WalletDetailsApiResponse> {
     const [wallet, paymentTotals] = await Promise.all([
-      this.prisma.wallet.findUnique({ where: { userId } }),
+      this.ensureWallet(userId),
       this.getStudentPaymentTotals(userId),
     ]);
-    const walletBalance = Number(wallet?.balance ?? 0n);
+    const walletBalance = Number(wallet.balance);
+    const payoutBankAccount = this.mapWalletPayoutBank(wallet);
 
     return {
       role: Role.STUDENT,
       currency: ECurrency.VND,
-      hasWallet: wallet != null,
+      hasWallet: true,
       walletBalance,
       availableBalance: walletBalance,
       pendingBalance: paymentTotals.pendingAmount,
-      totalEarned: Number(wallet?.totalEarned ?? 0n),
-      totalWithdrawn: Number(wallet?.totalWithdrawn ?? 0n),
+      totalEarned: Number(wallet.totalEarned),
+      totalWithdrawn: Number(wallet.totalWithdrawn),
       totalSpent: paymentTotals.totalSpent,
+      payoutBankAccount,
     };
   }
 
@@ -756,17 +838,7 @@ export class WalletService {
       }),
     ]);
 
-    const items: WalletWithdrawalApiItem[] = rows.map((row) => ({
-      id: row.id,
-      amount: Number(row.amount),
-      bankName: row.bankName,
-      bankAccountNumber: row.bankAccountNumber,
-      bankAccountName: row.bankAccountName,
-      status: row.status,
-      adminNote: row.adminNote,
-      createdAt: row.createdAt.toISOString(),
-      processedAt: row.processedAt?.toISOString() ?? null,
-    }));
+    const items: WalletWithdrawalApiItem[] = rows.map((row) => this.mapWithdrawalRow(row));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
@@ -775,7 +847,7 @@ export class WalletService {
     userId: string,
     role: string,
     payload: CreateWalletWithdrawalPayload
-  ): Promise<void> {
+  ): Promise<WalletWithdrawalApiItem> {
     if (role !== Role.TUTOR) {
       throw new ForbiddenException('Withdrawals are only available for tutors');
     }
@@ -785,10 +857,8 @@ export class WalletService {
       throw new BadRequestException('Minimum withdrawal amount is 10,000 VND');
     }
 
-    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
-    if (!wallet) {
-      throw new NotFoundException('Wallet not found');
-    }
+    const wallet = await this.ensureWallet(userId);
+
     if (wallet.balance < amount) {
       throw new BadRequestException('Insufficient available balance');
     }
@@ -796,29 +866,139 @@ export class WalletService {
     const pending = await this.prisma.withdrawal.count({
       where: {
         tutorId: userId,
-        status: {
-          in: [EWithdrawalStatus.PENDING, EWithdrawalStatus.APPROVED, EWithdrawalStatus.PROCESSING],
-        },
+        status: { in: this.activeWithdrawalStatuses() },
       },
     });
     if (pending > 0) {
       throw new BadRequestException('You already have a pending withdrawal request');
     }
 
-    const created = await this.prisma.withdrawal.create({
-      data: {
-        tutorId: userId,
-        walletId: wallet.id,
-        amount,
-        bankName: payload.bankName.trim(),
-        bankAccountNumber: payload.bankAccountNumber.trim(),
-        bankAccountName: payload.bankAccountName.trim(),
-        status: EWithdrawalStatus.PENDING,
-      },
+    const created = await this.prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.create({
+        data: {
+          tutorId: userId,
+          walletId: wallet.id,
+          amount,
+          bankName: payload.bankName.trim(),
+          bankAccountNumber: payload.bankAccountNumber.trim(),
+          bankAccountName: payload.bankAccountName.trim(),
+          status: EWithdrawalStatus.PENDING,
+        },
+      });
+
+      await tx.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { decrement: amount },
+          pendingWithdrawal: { increment: amount },
+          payoutBankName: payload.bankName.trim(),
+          payoutBankAccountNumber: payload.bankAccountNumber.trim(),
+          payoutBankAccountName: payload.bankAccountName.trim(),
+        },
+      });
+
+      return withdrawal;
+    });
+
+    return this.mapWithdrawalRow(created);
+  }
+
+  async approveWithdrawal(
+    withdrawalId: string,
+    adminNote?: string,
+  ): Promise<WalletWithdrawalApiItem> {
+    const created = await this.prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUnique({
+        where: { id: withdrawalId },
+        include: { wallet: true },
+      });
+
+      if (!withdrawal) {
+        throw new NotFoundException('Withdrawal not found');
+      }
+
+      if (!this.activeWithdrawalStatuses().includes(withdrawal.status)) {
+        throw new BadRequestException('Withdrawal is not awaiting completion');
+      }
+
+      if (withdrawal.wallet.pendingWithdrawal < withdrawal.amount) {
+        throw new BadRequestException('Pending withdrawal balance is insufficient');
+      }
+
+      await tx.wallet.update({
+        where: { id: withdrawal.walletId },
+        data: {
+          pendingWithdrawal: { decrement: withdrawal.amount },
+          totalWithdrawn: { increment: withdrawal.amount },
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          walletId: withdrawal.walletId,
+          withdrawalId: withdrawal.id,
+          type: EWalletTransactionType.WITHDRAWAL,
+          direction: EWalletTransactionDirection.DEBIT,
+          amount: withdrawal.amount,
+          description: `Withdrawal completed to ${withdrawal.bankName}`,
+        },
+      });
+
+      return tx.withdrawal.update({
+        where: { id: withdrawalId },
+        data: {
+          status: EWithdrawalStatus.COMPLETED,
+          processedAt: new Date(),
+          ...(adminNote !== undefined ? { adminNote: adminNote.trim() || null } : {}),
+        },
+      });
+    });
+
+    return this.mapWithdrawalRow(created);
+  }
+
+  async rejectWithdrawal(
+    withdrawalId: string,
+    adminNote?: string,
+  ): Promise<WalletWithdrawalApiItem> {
+    const created = await this.prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUnique({
+        where: { id: withdrawalId },
+        include: { wallet: true },
+      });
+
+      if (!withdrawal) {
+        throw new NotFoundException('Withdrawal not found');
+      }
+
+      if (!this.activeWithdrawalStatuses().includes(withdrawal.status)) {
+        throw new BadRequestException('Withdrawal cannot be rejected');
+      }
+
+      if (withdrawal.wallet.pendingWithdrawal < withdrawal.amount) {
+        throw new BadRequestException('Pending withdrawal balance is insufficient');
+      }
+
+      await tx.wallet.update({
+        where: { id: withdrawal.walletId },
+        data: {
+          balance: { increment: withdrawal.amount },
+          pendingWithdrawal: { decrement: withdrawal.amount },
+        },
+      });
+
+      return tx.withdrawal.update({
+        where: { id: withdrawalId },
+        data: {
+          status: EWithdrawalStatus.REJECTED,
+          processedAt: new Date(),
+          ...(adminNote !== undefined ? { adminNote: adminNote.trim() || null } : {}),
+        },
+      });
     });
 
     const tutor = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: created.tutorId },
       select: { username: true, avatar: true },
     });
     const tutorName = tutor?.username ?? 'A tutor';
@@ -837,5 +1017,7 @@ export class WalletService {
       const detail = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
     }
+
+    return this.mapWithdrawalRow(created);    
   }
 }

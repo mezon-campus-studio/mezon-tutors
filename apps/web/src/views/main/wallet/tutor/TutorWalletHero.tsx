@@ -24,6 +24,7 @@ export default function TutorWalletHero({
   onWithdrawClick,
 }: TutorWalletHeroProps) {
   const t = useTranslations('Wallet.tutor.hero');
+  const tInsight = useTranslations('Wallet.tutor.insight');
   const tCard = useTranslations('Wallet.balanceCard');
 
   if (isPending || !details) {
@@ -75,9 +76,9 @@ export default function TutorWalletHero({
                   </span>
                 </span>
                 <span>
-                  {tCard('tutorPendingLabel')}:{' '}
-                  <span className="font-semibold text-amber-200">
-                    {formatToCurrency(ECurrency.VND, metrics.pendingRelease)}
+                  {tInsight('pendingWithdrawalTitle')}:{' '}
+                  <span className="font-semibold text-amber-300">
+                    {formatToCurrency(ECurrency.VND, metrics.pendingWithdrawal)}
                   </span>
                 </span>
               </div>
@@ -88,7 +89,7 @@ export default function TutorWalletHero({
             type="button"
             disabled={!metrics.canWithdraw}
             onClick={onWithdrawClick}
-            className="h-11 w-fit rounded-full border-0 bg-white px-6 font-semibold text-indigo-950 shadow-lg shadow-indigo-950/40 hover:bg-indigo-50 disabled:opacity-60"
+            className="h-11 w-fit rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-amber-900/30 hover:bg-amber-200 disabled:opacity-60"
           >
             <ArrowDownToLine className="size-4" />
             {t('withdrawCta')}
@@ -113,11 +114,11 @@ export default function TutorWalletHero({
               </div>
               <div className="flex flex-1 flex-col items-center gap-2">
                 <div
-                  className="w-full max-w-[48px] rounded-t-lg bg-orange-400/90 transition-all"
+                  className="w-full max-w-[48px] rounded-t-lg bg-amber-400/90 transition-all"
                   style={{ height: `${Math.max(10, (withdrawnPct / 100) * 56)}px` }}
                 />
                 <div className="flex items-center gap-1 text-[10px] text-indigo-100/70">
-                  <TrendingDown className="size-3 text-orange-300" />
+                  <TrendingDown className="size-3 text-amber-300" />
                   {t('chartWithdrawn')}
                 </div>
               </div>
@@ -131,7 +132,7 @@ export default function TutorWalletHero({
               </div>
               <div>
                 <p className="text-indigo-200/70">{t('chartWithdrawn')}</p>
-                <p className="mt-0.5 font-semibold tabular-nums text-orange-200">
+                <p className="mt-0.5 font-semibold tabular-nums text-amber-200">
                   {formatToCurrency(ECurrency.VND, metrics.monthWithdrawn)}
                 </p>
               </div>
