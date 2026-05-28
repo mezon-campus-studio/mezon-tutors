@@ -29,7 +29,6 @@ import {
   ESubscriptionLessonSlotStatus,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
-  subscriptionSlotGrossAmount,
   timeToMinutes,
   tutorLocalSlotFitsUtcAvailability,
   utcWeeklySlotsToCalendarInstances,
@@ -48,7 +47,6 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { VnpayService } from '../vnpay/vnpay.service';
-import { WalletService } from '../wallet/wallet.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
 import type { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
@@ -130,7 +128,6 @@ export class SubscriptionService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
-    private readonly walletService: WalletService,
     private readonly trialLessonBookingService: TrialLessonBookingService
   ) {}
 
@@ -885,15 +882,6 @@ export class SubscriptionService {
       throw new BadRequestException('Lesson time could not be resolved');
     }
 
-    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    const shouldCredit = hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS;
-    const refundAmount = subscriptionSlotGrossAmount(
-      enrollment.grossAmount,
-      slots.length,
-      slotIndex
-    );
-    const currency = (enrollment.currency as ECurrency | null) ?? ECurrency.VND;
-
     const updatedSlots = slots.map((s, i) =>
       i === slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.CANCELLED } : s
     );
@@ -934,25 +922,10 @@ export class SubscriptionService {
       });
     });
 
-    let credited = false;
-    if (shouldCredit && refundAmount > 0n) {
-      const tutorLabel = enrollment.tutor.user?.username ?? 'tutor';
-      credited = await this.walletService.refundSubscriptionLessonSlot({
-        enrollmentId: enrollment.id,
-        slotIndex,
-        studentUserId: enrollment.studentId,
-        tutorUserId: enrollment.tutor.userId,
-        grossAmount: enrollment.grossAmount,
-        tutorAmount: enrollment.tutorAmount,
-        slotCount: slots.length,
-        description: `Refund for cancelled subscription lesson with ${tutorLabel}`,
-      });
-    }
-
     return {
-      credited,
-      refundAmount: Number(refundAmount),
-      currency,
+      credited: false,
+      refundAmount: 0,
+      currency: (enrollment.currency as ECurrency | null) ?? ECurrency.VND,
     };
   }
 
