@@ -1,8 +1,11 @@
 'use client';
 
 import {
+  buildTutorLessonCancelledDmContent,
+  buildTutorLessonRescheduleRequestDmContent,
   ECurrency,
   type ETrialLessonBookingStatus,
+  formatLessonRangeInTimezone,
   ROUTES,
   type TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
@@ -28,14 +31,14 @@ import {
   useTutorCancelSubscriptionSlotMutation,
   useTutorCancelTrialLessonMutation,
   useTutorSubscriptionSlotRescheduleRequestMutation,
-  createMezonLightDM,
-  persistMezonLightSession,
-  refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
-  sendMezonLightDMWithRefreshFallback,
   useGetDmChannel,
   useCreateDmChannelMutation,
 } from '@/services';
+import { sendLessonDmToPeer } from '@/lib/send-lesson-dm';
+import {
+  getStudentFacingCancelReasonLabel,
+  getTutorRescheduleReasonLabel,
+} from '@/lib/tutor-lesson-dm-reasons';
 import { subscriptionQueryKey } from '@/services/subscription/subscription.qkey';
 import { useMezonLight } from '@/providers';
 import {
@@ -198,6 +201,7 @@ export default function MyScheduleView() {
   const tModal = useTranslations('Dashboard.scheduleEventModal');
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule');
   const tCancel = useTranslations('Dashboard.bookingRequests.cancellation');
+  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation');
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -318,49 +322,7 @@ export default function MyScheduleView() {
   const handleConfirmCancel = async (reason: string, message?: string) => {
     if (!cancelItem) return;
 
-    if (message?.trim()) {
-      if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-        toast.error(tCancel('messageMissingUser'));
-      } else {
-        try {
-          let client = lightClient;
-          if (!client) {
-            client = await restoreMezonLightClientFromStorage();
-            if (!client) {
-              throw new Error('Cannot restore Mezon client. Please login again.');
-            }
-            setLightClient(client);
-          }
-
-          const isSessionExpired = await client.isSessionExpired();
-          if (isSessionExpired) {
-            await refreshMezonLightSession(client);
-            await persistMezonLightSession(client);
-          }
-
-          let channelId = (await refetchDmChannel()).data?.channelId;
-          if (!channelId) {
-            const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
-            channelId = dmChannel?.channel_id;
-            if (!channelId) {
-              throw new Error('Could not create DM channel.');
-            }
-
-            await createDmChannelMutation.mutateAsync({
-              senderId,
-              recipientId,
-              channelId,
-            });
-          }
-
-          await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim());
-          toast.success(tCancel('messageSent'));
-        } catch (error) {
-          console.error('DM Error:', error);
-          toast.error(tCancel('messageFailed'));
-        }
-      }
-    }
+    const lessonForDm = cancelItem;
 
     try {
       setIsCancelSubmitting(true);
@@ -392,6 +354,41 @@ export default function MyScheduleView() {
         await queryClient.invalidateQueries({
           queryKey: ['trial-lesson-booking-my-requests'],
         });
+      }
+
+      if (lessonForDm.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel();
+              return { data: r.data ?? null };
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonCancelledDmContent({
+              lessonKind:
+                lessonForDm.scheduleKind === 'subscription' ? 'subscription' : 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                lessonForDm.startAt,
+                lessonForDm.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              message,
+              locale,
+              senderAvatarUrl: user?.avatar,
+            }),
+          });
+        } catch (dmError) {
+          console.error('DM Error:', dmError);
+          toast.error(tCancel('messageFailed'));
+        }
       }
 
       toast.success(tCancel('success'));
@@ -448,47 +445,37 @@ export default function MyScheduleView() {
         },
       });
 
-      if (message?.trim()) {
-        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-          toast.error(tReschedule('messageMissingUser'));
-        } else {
-          try {
-            let client = lightClient;
-            if (!client) {
-              client = await restoreMezonLightClientFromStorage();
-              if (!client) {
-                throw new Error('Cannot restore Mezon client. Please login again.');
-              }
-              setLightClient(client);
-            }
-
-            const isSessionExpired = await client.isSessionExpired();
-            if (isSessionExpired) {
-              await refreshMezonLightSession(client);
-              await persistMezonLightSession(client);
-            }
-
-            let channelId = (await refetchDmChannel()).data?.channelId;
-            if (!channelId) {
-              const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
-              channelId = dmChannel?.channel_id;
-              if (!channelId) {
-                throw new Error('Could not create DM channel.');
-              }
-
-              await createDmChannelMutation.mutateAsync({
-                senderId,
-                recipientId,
-                channelId,
-              });
-            }
-
-            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim());
-            toast.success(tReschedule('messageSent'));
-          } catch (error) {
-            console.error('DM Error:', error);
-            toast.error(tReschedule('messageFailed'));
-          }
+      if (rescheduleItem.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel();
+              return { data: r.data ?? null };
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonRescheduleRequestDmContent({
+              lessonKind: 'subscription',
+              originalLabel: formatLessonRangeInTimezone(
+                rescheduleItem.startAt,
+                rescheduleItem.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
+              message,
+              locale,
+              senderAvatarUrl: user?.avatar,
+            }),
+          });
+        } catch (dmError) {
+          console.error('DM Error:', dmError);
+          toast.error(tReschedule('messageFailed'));
         }
       }
 

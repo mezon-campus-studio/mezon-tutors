@@ -1,5 +1,12 @@
+import type { MezonDirectMessageContent } from "@mezon-tutors/shared";
 import { LightClient, LightSocket } from "mezon-light-sdk";
 import { persistMezonLightSession } from "./mezon-light.client";
+
+export type MezonLightDmContent = string | MezonDirectMessageContent;
+
+function toMezonLightPayload(content: MezonLightDmContent): MezonDirectMessageContent {
+  return typeof content === "string" ? { t: content } : content;
+}
 
 export function createMezonLightSocket(client: LightClient) {
   return new LightSocket(client, client.getSession());
@@ -52,16 +59,20 @@ export function releaseMezonLightSocket() {
   onIncomingMessage = null;
 }
 
-export async function sendMezonLightDM(client: LightClient, channelId: string, content: string) {
+export async function sendMezonLightDM(
+  client: LightClient,
+  channelId: string,
+  content: MezonLightDmContent,
+) {
   await connect(client);
   await joinChannel(channelId);
-  await socket!.sendDM({ channelId, content: { t: content } });
+  await socket!.sendDM({ channelId, content: toMezonLightPayload(content) });
 }
 
 export async function sendMezonLightDMWithRefreshFallback(
   client: LightClient,
   channelId: string,
-  content: string,
+  content: MezonLightDmContent,
 ) {
   try {
     await sendMezonLightDM(client, channelId, content);

@@ -36,21 +36,24 @@ import {
   type TrialLessonBookingRequestItem,
   type TrialLessonBookingRequestStatusFilter,
 } from '@/services'
-import {
-  createMezonLightDM,
-  persistMezonLightSession,
-  refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
-  sendMezonLightDMWithRefreshFallback,
-  useGetDmChannel,
-  useCreateDmChannelMutation,
-} from '@/services'
+import { useGetDmChannel, useCreateDmChannelMutation } from '@/services'
 import { useMezonLight } from '@/providers'
 import { userAtom } from '@/store'
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
 import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation'
 
-import { ECurrency, ROUTES } from '@mezon-tutors/shared'
+import {
+  buildTutorLessonCancelledDmContent,
+  buildTutorLessonRescheduleRequestDmContent,
+  ECurrency,
+  formatLessonRangeInTimezone,
+  ROUTES,
+} from '@mezon-tutors/shared'
+import { sendLessonDmToPeer } from '@/lib/send-lesson-dm'
+import {
+  getStudentFacingCancelReasonLabel,
+  getTutorRescheduleReasonLabel,
+} from '@/lib/tutor-lesson-dm-reasons'
 
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
 
@@ -127,6 +130,7 @@ export default function BookingRequestsView() {
   const t = useTranslations('Dashboard.bookingRequests')
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule')
   const tCancel = useTranslations('Dashboard.bookingRequests.cancellation')
+  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation')
 
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -227,49 +231,7 @@ export default function BookingRequestsView() {
   const handleConfirmCancel = async (reason: string, message?: string) => {
     if (!cancelBooking) return
 
-    if (message?.trim()) {
-      if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-        toast.error(tCancel('messageMissingUser'))
-      } else {
-        try {
-          let client = lightClient
-          if (!client) {
-            client = await restoreMezonLightClientFromStorage()
-            if (!client) {
-              throw new Error('Cannot restore Mezon client. Please login again.')
-            }
-            setLightClient(client)
-          }
-
-          const isSessionExpired = await client.isSessionExpired()
-          if (isSessionExpired) {
-            await refreshMezonLightSession(client)
-            await persistMezonLightSession(client)
-          }
-
-          let channelId = (await refetchDmChannel()).data?.channelId
-          if (!channelId) {
-            const dmChannel = await createMezonLightDM(client, recipientMezonUserId)
-            channelId = dmChannel?.channel_id
-            if (!channelId) {
-              throw new Error('Could not create DM channel.')
-            }
-
-            await createDmChannelMutation.mutateAsync({
-              senderId,
-              recipientId,
-              channelId,
-            })
-          }
-
-          await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim())
-          toast.success(tCancel('messageSent'))
-        } catch (error) {
-          console.error('DM Error:', error)
-          toast.error(tCancel('messageFailed'))
-        }
-      }
-    }
+    const lessonForDm = cancelBooking
 
     try {
       setIsCancelSubmitting(true)
@@ -281,6 +243,40 @@ export default function BookingRequestsView() {
       await queryClient.invalidateQueries({
         queryKey: ['trial-lesson-booking-my-requests'],
       })
+
+      if (lessonForDm.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel()
+              return { data: r.data ?? null }
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonCancelledDmContent({
+              lessonKind: 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                lessonForDm.startAt,
+                lessonForDm.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              message,
+              locale,
+              senderAvatarUrl: currentUser?.avatar,
+            }),
+          })
+        } catch (dmError) {
+          console.error('DM Error:', dmError)
+          toast.error(tCancel('messageFailed'))
+        }
+      }
 
       toast.success(tCancel('success'))
       setIsCancelDialogOpen(false)
@@ -319,47 +315,37 @@ export default function BookingRequestsView() {
         payload: { reason, message: message?.trim() || undefined },
       })
 
-      if (message?.trim()) {
-        if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-          toast.error(tReschedule('messageMissingUser'))
-        } else {
-          try {
-            let client = lightClient
-            if (!client) {
-              client = await restoreMezonLightClientFromStorage()
-              if (!client) {
-                throw new Error('Cannot restore Mezon client. Please login again.')
-              }
-              setLightClient(client)
-            }
-
-            const isSessionExpired = await client.isSessionExpired()
-            if (isSessionExpired) {
-              await refreshMezonLightSession(client)
-              await persistMezonLightSession(client)
-            }
-
-            let channelId = (await refetchDmChannel()).data?.channelId
-            if (!channelId) {
-              const dmChannel = await createMezonLightDM(client, recipientMezonUserId)
-              channelId = dmChannel?.channel_id
-              if (!channelId) {
-                throw new Error('Could not create DM channel.')
-              }
-
-              await createDmChannelMutation.mutateAsync({
-                senderId,
-                recipientId,
-                channelId,
-              })
-            }
-
-            await sendMezonLightDMWithRefreshFallback(client, channelId, message.trim())
-            toast.success(tReschedule('messageSent'))
-          } catch (error) {
-            console.error('DM Error:', error)
-            toast.error(tReschedule('messageFailed'))
-          }
+      if (rescheduleBooking.startAt && recipientMezonUserId) {
+        try {
+          await sendLessonDmToPeer({
+            lightClient,
+            setLightClient,
+            senderId,
+            senderMezonUserId,
+            recipientId,
+            recipientMezonUserId,
+            refetchDmChannel: async () => {
+              const r = await refetchDmChannel()
+              return { data: r.data ?? null }
+            },
+            createDmChannelMutation,
+            content: buildTutorLessonRescheduleRequestDmContent({
+              lessonKind: 'trial',
+              originalLabel: formatLessonRangeInTimezone(
+                rescheduleBooking.startAt,
+                rescheduleBooking.durationMinutes,
+                userTimezone,
+                locale,
+              ),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
+              message,
+              locale,
+              senderAvatarUrl: currentUser?.avatar,
+            }),
+          })
+        } catch (dmError) {
+          console.error('DM Error:', dmError)
+          toast.error(tReschedule('messageFailed'))
         }
       }
 
