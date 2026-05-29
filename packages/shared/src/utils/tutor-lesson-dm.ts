@@ -7,7 +7,6 @@ import type {
 
 const EMBED_COLORS = {
   warning: '#d97706',
-  error: '#dc2626',
 } as const;
 
 const MEZONLY_BRAND = 'Mezonly';
@@ -16,8 +15,9 @@ const MEZONLY_LOGO_URL =
 
 const copy = {
   vi: {
-    cancelTitle: 'Hủy buổi học',
-    cancelDescription: 'Tôi là gia sư và thực hiện hủy lịch buổi học này, vui lòng xem chi tiết.',
+    cancelTitle: 'Yêu cầu hủy buổi học',
+    cancelDescription:
+      'Tôi là gia sư. Tôi nhờ bạn hỗ trợ hủy buổi học này — vui lòng kiểm tra thông tin bên dưới.',
     rescheduleRequestTitle: 'Yêu cầu đổi lịch',
     rescheduleRequestDescription:
       'Tôi là gia sư và gửi yêu cầu đổi lịch, vui lòng xem chi tiết.',
@@ -29,9 +29,9 @@ const copy = {
     messageEmpty: '—',
   },
   en: {
-    cancelTitle: 'Lesson cancelled',
+    cancelTitle: 'Lesson cancellation request',
     cancelDescription:
-      'I am your tutor and cancelled this lesson. Please review the details below.',
+      'I am your tutor. I am asking for your help to cancel this lesson — please review the details below.',
     rescheduleRequestTitle: 'Reschedule request',
     rescheduleRequestDescription:
       'I am your tutor and submitted a reschedule request. Please review the details below.',
@@ -73,6 +73,7 @@ function buildEmbed(
   };
 }
 
+/** Tutor cancel is a request only (lesson stays on calendar until the student acts). */
 export function buildTutorLessonCancelledDmContent(params: {
   lessonKind: StudentLessonDmKind;
   originalLabel: string;
@@ -87,7 +88,7 @@ export function buildTutorLessonCancelledDmContent(params: {
 
   return buildEmbed(
     {
-      color: EMBED_COLORS.error,
+      color: EMBED_COLORS.warning,
       title: t.cancelTitle,
       description: `${t.cancelDescription}\n${lessonKindLabel(params.lessonKind, loc)}`,
       fields: [
