@@ -5,8 +5,12 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, Skeleton } from "@/components/ui";
 import { useAdminTutorLessonChangeHistory } from "@/services";
+import TutorsPagination from "@/views/main/tutors/components/TutorsPagination";
+
+const PAGE_SIZE = 10;
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -68,6 +72,24 @@ export default function LessonChangeHistoryCard({
     "AdminTutorApplicationDetail.sections.lessonChangeHistory.reasons",
   );
   const { data: items = [], isLoading } = useAdminTutorLessonChangeHistory(tutorId);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tutorId]);
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const paginatedItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return items.slice(start, start + PAGE_SIZE);
+  }, [items, page]);
 
   const formatReason = (reason: string) =>
     isKnownReasonKey(reason) ? tReasons(reason) : reason;
@@ -100,6 +122,7 @@ export default function LessonChangeHistoryCard({
             {t("empty")}
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto rounded-lg border border-slate-200">
             <table className="w-full min-w-[840px] text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
@@ -118,7 +141,7 @@ export default function LessonChangeHistoryCard({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {items.map((item) => (
+                {paginatedItems.map((item) => (
                   <tr key={item.id} className="bg-white align-top hover:bg-slate-50">
                     <td className="whitespace-nowrap px-4 py-3 text-slate-700">
                       <p>{formatDateLine(item.createdAt, timezoneName)}</p>
@@ -184,6 +207,14 @@ export default function LessonChangeHistoryCard({
               </tbody>
             </table>
           </div>
+          <div className="pt-4">
+            <TutorsPagination
+              page={page}
+              totalPages={totalPages}
+              onPageChangeAction={setPage}
+            />
+          </div>
+          </>
         )}
       </CardContent>
     </Card>
