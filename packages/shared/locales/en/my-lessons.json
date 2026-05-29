@@ -75,13 +75,14 @@
         "cancellation": {
           "dialog": {
             "title": "Cancel subscription lesson",
-            "successCredited": "Lesson cancelled. {amount} was refunded to your wallet balance.",
-            "successNoCredit": "Lesson cancelled. Because your lesson was less than 12 hours away, no refund was issued.",
+            "successCredited": "Lesson cancelled.",
+            "successNoCredit": "Lesson cancelled. No refund is issued for subscription lesson cancellations.",
             "policy": {
-              "eligibleDescription": "Your lesson is more than 12 hours away. You will receive a {amount} refund to your wallet if you cancel.",
-              "eligibleDescriptionNoAmount": "Your lesson is more than 12 hours away. Your payment for this lesson will be refunded to your wallet if you cancel.",
-              "notEligibleDescription": "Your lesson is less than 12 hours away. You can still cancel, but no refund will be issued.",
-              "fallback": "Cancel more than 12 hours before the lesson for a refund; within 12 hours, no refund."
+              "eligibleDescription": "No refund is issued for subscription lesson cancellations.",
+              "eligibleDescriptionNoAmount": "No refund is issued for subscription lesson cancellations.",
+              "notEligibleDescription": "No refund is issued for subscription lesson cancellations.",
+              "noRefundDescription": "Your cancellation request will be recorded and sent to your tutor. No refund is issued for subscription lesson cancellations.",
+              "fallback": "No refund is issued for subscription lesson cancellations."
             }
           }
         }

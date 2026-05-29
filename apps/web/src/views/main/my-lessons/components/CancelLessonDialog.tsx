@@ -122,6 +122,9 @@ export function CancelLessonDialog({
     if (!target?.startAt) {
       return null;
     }
+    if (isSubscription) {
+      return { eligible: false, amountLabel: null, noRefundAlways: true };
+    }
     const eligible = isTrialLessonRefundEligible(target.startAt);
     const amountLabel =
       target.grossAmount != null && target.currency
@@ -130,8 +133,8 @@ export function CancelLessonDialog({
           ? formatToCurrency(ECurrency.VND, target.grossAmount)
           : null;
 
-    return { eligible, amountLabel };
-  }, [target]);
+    return { eligible, amountLabel, noRefundAlways: false };
+  }, [target, isSubscription]);
 
   const reasons = useMemo(
     () => [
@@ -226,7 +229,9 @@ export function CancelLessonDialog({
                           : "min-w-0 flex-1 text-sm leading-relaxed text-amber-900"
                       }
                     >
-                      {refundPolicy.eligible
+                      {refundPolicy.noRefundAlways
+                        ? tPolicy("dialog.policy.noRefundDescription")
+                        : refundPolicy.eligible
                         ? refundPolicy.amountLabel
                           ? tPolicy("dialog.policy.eligibleDescription", {
                               amount: refundPolicy.amountLabel,
