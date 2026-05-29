@@ -35,12 +35,12 @@ import {
   useTutorRescheduleRequestMutation,
   type TrialLessonBookingRequestItem,
   type TrialLessonBookingRequestStatusFilter,
+  usePublicAppSettings,
 } from '@/services'
 import { useGetDmChannel, useCreateDmChannelMutation } from '@/services'
 import { useMezonLight } from '@/providers'
 import { userAtom } from '@/store'
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
-import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation'
 import {
   isExpectedTutorLessonRequestError,
   resolveTutorCancelToastMessage,
@@ -52,6 +52,7 @@ import {
   buildTutorLessonRescheduleRequestDmContent,
   ECurrency,
   formatLessonRangeInTimezone,
+  isTrialLessonRescheduleEligible,
   ROUTES,
 } from '@mezon-tutors/shared'
 import { sendLessonDmToPeer } from '@/lib/send-lesson-dm'
@@ -166,6 +167,15 @@ export default function BookingRequestsView() {
   const [isCancelSubmitting, setIsCancelSubmitting] = useState(false)
 
   const tutorRescheduleMutation = useTutorRescheduleRequestMutation()
+  const { data: publicAppSettings } = usePublicAppSettings()
+
+  const canModifyLessonStart = (startAt: string) =>
+    publicAppSettings != null &&
+    isTrialLessonRescheduleEligible(
+      startAt,
+      new Date(),
+      publicAppSettings.lessonChangePeriodHours,
+    )
   const tutorCancelMutation = useTutorCancelTrialLessonMutation()
 
   const recipientId =
@@ -223,7 +233,8 @@ export default function BookingRequestsView() {
       toast.error(tCancel('alreadyRequested'))
       return
     }
-    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+    
+    if (!canModifyLessonStart(item.startAt)) {
       toast.error(tCancel('within12Hours'))
       return
     }
@@ -304,7 +315,7 @@ export default function BookingRequestsView() {
       toast.error(tReschedule('alreadyRequested'))
       return
     }
-    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+    if (!canModifyLessonStart(item.startAt)) {
       toast.error(tReschedule('within12Hours'))
       return
     }
@@ -444,6 +455,7 @@ export default function BookingRequestsView() {
         items={filtered}
         isLoading={isLoading}
         isFetching={isFetching}
+        lessonChangePeriodHours={publicAppSettings?.lessonChangePeriodHours}
         onViewDetail={handleViewDetail}
         onReschedule={handleReschedule}
         onCancel={handleCancel}

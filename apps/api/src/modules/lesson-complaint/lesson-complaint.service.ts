@@ -37,6 +37,7 @@ const utc = require('dayjs/plugin/utc');
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { WalletService } from '../wallet/wallet.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 import type { CreateLessonComplaintDto } from './dto/create-lesson-complaint.dto';
 import type { ReviewLessonComplaintDto } from './dto/review-lesson-complaint.dto';
 
@@ -62,7 +63,8 @@ export class LessonComplaintService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly appSettingsService: AppSettingsService,
   ) {}
 
   async createComplaint(
@@ -79,11 +81,19 @@ export class LessonComplaintService {
 
     const context = await this.resolveLessonContext(studentUserId, dto);
     const now = new Date();
+    const settings = await this.appSettingsService.getSettings();
 
     if (!isLessonFinishedForComplaint(context.lessonStartAt, context.lessonDurationMinutes, now)) {
       throw new BadRequestException('Complaints are only allowed after the lesson has ended');
     }
-    if (!isWithinLessonComplaintWindow(context.lessonStartAt, context.lessonDurationMinutes, now)) {
+    if (
+      !isWithinLessonComplaintWindow(
+        context.lessonStartAt,
+        context.lessonDurationMinutes,
+        now,
+        settings.disputePeriodHours,
+      )
+    ) {
       throw new BadRequestException('The complaint window for this lesson has expired');
     }
 

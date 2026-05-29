@@ -22,6 +22,7 @@ import {
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 
 const MAX_SETTLEMENT_ATTEMPTS = 5;
 
@@ -31,11 +32,16 @@ export class LessonSettlementService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly appSettingsService: AppSettingsService,
   ) {}
 
-  private lessonEndWithGrace(startAt: Date, durationMinutes: number): Date {
-    return addMinutes(addMinutes(startAt, durationMinutes), LESSON_SETTLEMENT_GRACE_MINUTES);
+  private async getSettlementReleaseAt(lessonEndAt: Date): Promise<Date> {
+    const settings = await this.appSettingsService.getSettings();
+    return addMinutes(
+      addMinutes(lessonEndAt, settings.settlementPeriodHours * 60),
+      LESSON_SETTLEMENT_GRACE_MINUTES,
+    );
   }
 
   private async scheduleJob(params: {
@@ -91,7 +97,8 @@ export class LessonSettlementService {
       return;
     }
 
-    const runAt = this.lessonEndWithGrace(booking.startAt, booking.durationMinutes);
+    const lessonEndAt = addMinutes(booking.startAt, booking.durationMinutes);
+    const runAt = await this.getSettlementReleaseAt(lessonEndAt);
     await this.scheduleJob({
       kind: ELessonSettlementKind.TRIAL_LESSON,
       bookingId: booking.id,
@@ -132,7 +139,7 @@ export class LessonSettlementService {
       ) {
         continue;
       }
-      const runAt = addMinutes(occ.endAt, LESSON_SETTLEMENT_GRACE_MINUTES);
+      const runAt = await this.getSettlementReleaseAt(occ.endAt);
       await this.scheduleJob({
         kind: ELessonSettlementKind.SUBSCRIPTION_SLOT,
         enrollmentId: enrollment.id,
@@ -276,7 +283,8 @@ export class LessonSettlementService {
         return { outcome: 'fail' as const, reason: `Unexpected booking status ${booking.status}` };
       }
 
-      const releaseAt = this.lessonEndWithGrace(booking.startAt, booking.durationMinutes);
+      const lessonEndAt = addMinutes(booking.startAt, booking.durationMinutes);
+      const releaseAt = await this.getSettlementReleaseAt(lessonEndAt);
       if (now < releaseAt) {
         return { outcome: 'retry' as const, reason: 'Lesson grace period not elapsed' };
       }
@@ -411,7 +419,7 @@ export class LessonSettlementService {
         return { outcome: 'fail' as const, reason: 'Slot occurrence could not be resolved' };
       }
 
-      const releaseAt = addMinutes(occ.endAt, LESSON_SETTLEMENT_GRACE_MINUTES);
+      const releaseAt = await this.getSettlementReleaseAt(occ.endAt);
       if (now < releaseAt) {
         return { outcome: 'retry' as const, reason: 'Lesson grace period not elapsed' };
       }

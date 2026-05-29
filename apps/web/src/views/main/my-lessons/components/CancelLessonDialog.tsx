@@ -23,8 +23,8 @@ import {
 } from "@/components/ui";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
-import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
-import { isTrialLessonRefundEligible } from "@/lib/trial-lesson-cancellation";
+import { ECurrency, formatToCurrency, isTrialLessonRefundEligible } from "@mezon-tutors/shared";
+import { usePublicAppSettings } from "@/services";
 
 export type TrialCancelLessonTarget = {
   id: string;
@@ -111,6 +111,7 @@ export function CancelLessonDialog({
   const tTutor = useTranslations("Dashboard.bookingRequests.cancellation.dialog");
   const tTutorReasons = useTranslations("Dashboard.bookingRequests.reschedule.reasons");
   const tPolicy = isSubscription ? tSubscription : t;
+  const { data: publicAppSettings } = usePublicAppSettings();
   const [reason, setReason] = useState<string>("");
   const [message, setMessage] = useState<string>("");
 
@@ -133,7 +134,13 @@ export function CancelLessonDialog({
     if (isSubscription) {
       return { eligible: false, amountLabel: null, noRefundAlways: true };
     }
-    const eligible = isTrialLessonRefundEligible(target.startAt);
+    const eligible =
+      publicAppSettings != null &&
+      isTrialLessonRefundEligible(
+        target.startAt,
+        new Date(),
+        publicAppSettings.lessonChangePeriodHours,
+      );
     const amountLabel =
       target.grossAmount != null && target.currency
         ? formatToCurrency(resolveCurrency(target.currency), target.grossAmount)

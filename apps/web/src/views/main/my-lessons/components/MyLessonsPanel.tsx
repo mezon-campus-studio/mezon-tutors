@@ -9,6 +9,7 @@ import {
   Star,
   Video,
   CalendarClock,
+  MessageCircle,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +22,7 @@ import { userAtom } from "@/store/auth.atom";
 import { useMezonLight } from "@/providers";
 import { Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
+import { cn } from "@/lib/utils";
 import { ActionMenu } from "@/components/common/ActionMenu";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
 import { useCancelSubscriptionSlotMutation } from "@/services/subscription/subscription.api";
@@ -30,8 +32,7 @@ import {
 } from "@/services/trial-lesson-booking/trial-lesson-booking.api";
 import { useGetVerifiedTutorAbout } from "@/services/tutor-profile/tutor-profile.api";
 import { walletQueryKey } from "@/services/wallet/wallet.qkey";
-import { useUserTimezone } from "@/hooks";
-import { isTrialLessonRescheduleEligible } from "@/lib/trial-lesson-cancellation";
+import { useOpenAdminSupportChat, useUserTimezone } from "@/hooks";
 import {
   TrialBookingSheet,
   type TrialBookingPayload,
@@ -41,13 +42,16 @@ import {
   buildStudentLessonRescheduledDmContent,
   ECurrency,
   formatLessonRangeInTimezone,
-  formatToCurrency,
+  isLessonFinishedForComplaint,
+  isTrialLessonRescheduleEligible,
   isWithinLessonComplaintWindow,
+  PUBLIC_APP_SETTINGS_FALLBACK,
 } from "@mezon-tutors/shared";
 import { sendStudentLessonDmToTutor } from "@/lib/send-student-lesson-dm-to-tutor";
 import {
   useGetDmChannel,
   useCreateDmChannelMutation,
+  usePublicAppSettings,
 } from "@/services";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { ComplainLessonDialog } from "./ComplainLessonDialog";
@@ -73,43 +77,83 @@ function isCancelledTrialLesson(lesson: LessonItem): boolean {
   return isCancelledLesson(lesson);
 }
 
-function canShowLessonComplaint(lesson: LessonItem): boolean {
-  if (lesson.complaintStatus || isCancelledTrialLesson(lesson)) {
-    return false;
+type AppSettingsRules = {
+  disputePeriodHours: number;
+  lessonChangePeriodHours: number;
+};
+
+function hasLessonComplaintStatus(lesson: LessonItem): boolean {
+  return Boolean(lesson.complaintStatus?.trim());
+}
+
+function getLessonDurationMinutes(lesson: LessonItem): number {
+  if (lesson.durationMinutes && lesson.durationMinutes > 0) {
+    return lesson.durationMinutes;
   }
-  if (lesson.canComplain) {
-    return true;
+  if (lesson.startHour != null && lesson.endHour != null && lesson.endHour > lesson.startHour) {
+    return Math.round((lesson.endHour - lesson.startHour) * 60);
   }
-  if (lesson.status !== "completed" || !lesson.startAt || !lesson.durationMinutes) {
-    return false;
-  }
+  return 60;
+}
+
+function isLessonPaymentEligibleForComplaint(lesson: LessonItem): boolean {
   const trialPaid =
     lesson.source !== "trial" ||
-    (lesson.trialPaymentStatus?.toUpperCase() ?? "SUCCEEDED") === "SUCCEEDED";
+    ["SUCCEEDED", "REFUNDED"].includes(
+      (lesson.trialPaymentStatus?.toUpperCase() ?? "SUCCEEDED"),
+    );
   const subscriptionPaid =
     lesson.source !== "subscription" ||
     lesson.enrollmentPaymentStatus?.toUpperCase() === "SUCCEEDED";
-  return (
-    trialPaid &&
-    subscriptionPaid &&
-    isWithinLessonComplaintWindow(lesson.startAt, lesson.durationMinutes)
+
+  return trialPaid && subscriptionPaid;
+}
+
+function canShowLessonComplaint(lesson: LessonItem, rules: AppSettingsRules): boolean {
+  if (hasLessonComplaintStatus(lesson) || isCancelledTrialLesson(lesson)) {
+    return false;
+  }
+
+  if (lesson.canComplain) {
+    return true;
+  }
+
+  if (!lesson.startAt || !isLessonPaymentEligibleForComplaint(lesson)) {
+    return false;
+  }
+
+  const durationMinutes = getLessonDurationMinutes(lesson);
+  const now = new Date();
+
+  if (!isLessonFinishedForComplaint(lesson.startAt, durationMinutes, now)) {
+    return false;
+  }
+
+  return isWithinLessonComplaintWindow(
+    lesson.startAt,
+    durationMinutes,
+    now,
+    rules.disputePeriodHours,
   );
 }
 
-function isReschedulableTrialLesson(lesson: LessonItem): boolean {
+function isReschedulableTrialLesson(lesson: LessonItem, rules: AppSettingsRules): boolean {
   return (
     lesson.source === "trial" &&
     lesson.trialBookingStatus === "confirmed" &&
     Boolean(lesson.startAt) &&
-    isTrialLessonRescheduleEligible(lesson.startAt!)
+    isTrialLessonRescheduleEligible(lesson.startAt!, new Date(), rules.lessonChangePeriodHours)
   );
 }
 
-function isReschedulableSubscriptionLesson(lesson: LessonItem): boolean {
+function isReschedulableSubscriptionLesson(
+  lesson: LessonItem,
+  rules: AppSettingsRules,
+): boolean {
   return (
     isActivePaidSubscriptionLesson(lesson) &&
     Boolean(lesson.startAt) &&
-    isTrialLessonRescheduleEligible(lesson.startAt!)
+    isTrialLessonRescheduleEligible(lesson.startAt!, new Date(), rules.lessonChangePeriodHours)
   );
 }
 
@@ -132,11 +176,29 @@ function canShowRescheduleOrCancelMenu(lesson: LessonItem): boolean {
   return isActivePaidSubscriptionLesson(lesson);
 }
 
-function LessonCancelledBadge({ label }: { label: string }) {
+type LessonStatusBadgeTone = "neutral" | "pending" | "approved" | "rejected";
+
+const LESSON_STATUS_BADGE_STYLES: Record<LessonStatusBadgeTone, string> = {
+  neutral: "bg-slate-100 text-slate-600 ring-slate-200",
+  pending: "bg-amber-50 text-amber-700 ring-amber-200",
+  approved: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  rejected: "bg-rose-50 text-rose-700 ring-rose-200",
+};
+
+function LessonStatusBadge({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: LessonStatusBadgeTone;
+}) {
   return (
     <Badge
       variant="secondary"
-      className="h-9 rounded-full border-0 bg-slate-100 px-4 text-xs font-bold text-slate-600 ring-1 ring-slate-200"
+      className={cn(
+        "h-9 rounded-full border-0 px-4 text-xs font-bold ring-1",
+        LESSON_STATUS_BADGE_STYLES[tone],
+      )}
     >
       {label}
     </Badge>
@@ -166,8 +228,12 @@ type PastLessonListItemProps = {
   complaintPendingLabel: string;
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
+  appSettingsRules: AppSettingsRules;
   onRate: (tutorId: string) => void;
   onComplain: (lesson: LessonItem) => void;
+  contactSupportLabel: string;
+  isOpeningSupportChat: boolean;
+  onContactSupport: () => void;
 };
 
 function PastLessonListItem({
@@ -179,13 +245,18 @@ function PastLessonListItem({
   complaintPendingLabel,
   complaintApprovedLabel,
   complaintRejectedLabel,
+  appSettingsRules,
   onRate,
   onComplain,
+  contactSupportLabel,
+  isOpeningSupportChat,
+  onContactSupport,
 }: PastLessonListItemProps) {
   const locale = useLocale();
   const rated = lesson.rating !== undefined;
   const cancelled = isCancelledTrialLesson(lesson);
   const complaintStatus = lesson.complaintStatus?.toUpperCase();
+  const showComplaintStatus = hasLessonComplaintStatus(lesson);
 
   return (
     <div className="group flex w-full flex-wrap items-center justify-between gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
@@ -208,16 +279,36 @@ function PastLessonListItem({
 
       <div className="ml-auto flex items-center gap-2">
         {cancelled ? (
-          <LessonCancelledBadge label={cancelledLabel} />
-        ) : complaintStatus === "PENDING" ? (
-          <LessonCancelledBadge label={complaintPendingLabel} />
-        ) : complaintStatus === "APPROVED" ? (
-          <LessonCancelledBadge label={complaintApprovedLabel} />
-        ) : complaintStatus === "REJECTED" ? (
-          <LessonCancelledBadge label={complaintRejectedLabel} />
+          <LessonStatusBadge label={cancelledLabel} tone="neutral" />
         ) : (
           <>
-            {canShowLessonComplaint(lesson) ? (
+            {showComplaintStatus ? (
+              <>
+                {complaintStatus === "PENDING" ? (
+                  <LessonStatusBadge label={complaintPendingLabel} tone="pending" />
+                ) : complaintStatus === "APPROVED" ? (
+                  <LessonStatusBadge label={complaintApprovedLabel} tone="approved" />
+                ) : complaintStatus === "REJECTED" ? (
+                  <>
+                    <LessonStatusBadge label={complaintRejectedLabel} tone="rejected" />
+                    <Button
+                      variant="outline"
+                      className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
+                      onClick={onContactSupport}
+                      disabled={isOpeningSupportChat}
+                    >
+                      <MessageCircle className="mr-1.5 size-3.5" />
+                      {contactSupportLabel}
+                    </Button>
+                  </>
+                ) : (
+                  <LessonStatusBadge
+                    label={lesson.complaintStatus ?? complaintPendingLabel}
+                    tone="pending"
+                  />
+                )}
+              </>
+            ) : canShowLessonComplaint(lesson, appSettingsRules) ? (
               <Button
                 variant="outline"
                 className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
@@ -258,6 +349,7 @@ type UpcomingLessonItemProps = {
   rescheduleOrCancelLabel: string;
   joinLessonLabel: string;
   cancelledLabel: string;
+  appSettingsRules: AppSettingsRules;
   onReschedule: (lesson: LessonItem) => void;
   onCancel: (lesson: LessonItem) => void;
 };
@@ -267,6 +359,7 @@ function UpcomingLessonItem({
   rescheduleOrCancelLabel,
   joinLessonLabel,
   cancelledLabel,
+  appSettingsRules,
   onReschedule,
   onCancel,
 }: UpcomingLessonItemProps) {
@@ -275,14 +368,20 @@ function UpcomingLessonItem({
   const tUpcoming = useTranslations("MyLessons.panels.lessons.upcoming");
   const cancelled = isCancelledTrialLesson(lesson);
 
-  const canReschedule = isReschedulableTrialLesson(lesson) || isReschedulableSubscriptionLesson(lesson);
+  const canReschedule =
+    isReschedulableTrialLesson(lesson, appSettingsRules) ||
+    isReschedulableSubscriptionLesson(lesson, appSettingsRules);
 
   const showRescheduleNotice =
     !cancelled &&
     canShowRescheduleOrCancelMenu(lesson) &&
     !canReschedule &&
     Boolean(lesson.startAt) &&
-    !isTrialLessonRescheduleEligible(lesson.startAt!);
+    !isTrialLessonRescheduleEligible(
+      lesson.startAt!,
+      new Date(),
+      appSettingsRules.lessonChangePeriodHours,
+    );
 
   const actionItems = [
     {
@@ -321,7 +420,7 @@ function UpcomingLessonItem({
 
         <div className="flex shrink-0 gap-2">
           {cancelled ? (
-            <LessonCancelledBadge label={cancelledLabel} />
+            <LessonStatusBadge label={cancelledLabel} tone="neutral" />
           ) : canShowRescheduleOrCancelMenu(lesson) ? (
             <>
               <ActionMenu
@@ -451,6 +550,7 @@ type LessonsSectionProps = {
   rescheduleOrCancelLabel: string;
   joinLessonLabel: string;
   cancelledLabel: string;
+  appSettingsRules: AppSettingsRules;
   onReschedule: (lesson: LessonItem) => void;
   onCancel: (lesson: LessonItem) => void;
 };
@@ -462,6 +562,7 @@ function LessonsSection({
   rescheduleOrCancelLabel,
   joinLessonLabel,
   cancelledLabel,
+  appSettingsRules,
   onReschedule,
   onCancel,
 }: LessonsSectionProps) {
@@ -484,6 +585,7 @@ function LessonsSection({
                 rescheduleOrCancelLabel={rescheduleOrCancelLabel}
                 joinLessonLabel={joinLessonLabel}
                 cancelledLabel={cancelledLabel}
+                appSettingsRules={appSettingsRules}
                 onReschedule={onReschedule}
                 onCancel={onCancel}
               />
@@ -504,8 +606,12 @@ type PastLessonsSectionProps = {
   complaintPendingLabel: string;
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
+  appSettingsRules: AppSettingsRules;
   onRate: (tutorId: string) => void;
   onComplain: (lesson: LessonItem) => void;
+  contactSupportLabel: string;
+  isOpeningSupportChat: boolean;
+  onContactSupport: () => void;
 };
 
 function PastLessonsSection({
@@ -518,8 +624,12 @@ function PastLessonsSection({
   complaintPendingLabel,
   complaintApprovedLabel,
   complaintRejectedLabel,
+  appSettingsRules,
   onRate,
   onComplain,
+  contactSupportLabel,
+  isOpeningSupportChat,
+  onContactSupport,
 }: PastLessonsSectionProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -543,8 +653,12 @@ function PastLessonsSection({
             complaintPendingLabel={complaintPendingLabel}
             complaintApprovedLabel={complaintApprovedLabel}
             complaintRejectedLabel={complaintRejectedLabel}
+            appSettingsRules={appSettingsRules}
             onRate={onRate}
             onComplain={onComplain}
+            contactSupportLabel={contactSupportLabel}
+            isOpeningSupportChat={isOpeningSupportChat}
+            onContactSupport={onContactSupport}
           />
         ))}
       </div>
@@ -588,7 +702,18 @@ export default function MyLessonsPanel({
   const cancelSubscriptionMutation = useCancelSubscriptionSlotMutation();
   const rescheduleMutation = useRescheduleTrialLessonBookingMutation();
   const createComplaintMutation = useCreateLessonComplaintMutation();
+  const { openAdminSupportChat, isOpening: isOpeningSupportChat } =
+    useOpenAdminSupportChat();
   const userTimezone = useUserTimezone();
+  const { data: publicAppSettings } = usePublicAppSettings();
+  const appSettingsRules: AppSettingsRules = {
+    disputePeriodHours:
+      publicAppSettings?.disputePeriodHours ??
+      PUBLIC_APP_SETTINGS_FALLBACK.disputePeriodHours,
+    lessonChangePeriodHours:
+      publicAppSettings?.lessonChangePeriodHours ??
+      PUBLIC_APP_SETTINGS_FALLBACK.lessonChangePeriodHours,
+  };
 
   const [isComplainDialogOpen, setIsComplainDialogOpen] = useState(false);
   const [complainLesson, setComplainLesson] = useState<LessonItem | null>(null);
@@ -605,14 +730,14 @@ export default function MyLessonsPanel({
 
   const handleReschedule = (lesson: LessonItem) => {
     if (lesson.source === "subscription") {
-      if (!isReschedulableSubscriptionLesson(lesson)) {
+      if (!isReschedulableSubscriptionLesson(lesson, appSettingsRules)) {
         toast.error(t("panels.lessons.reschedule.within12Hours"));
         return;
       }
       setRescheduleSubscriptionLesson(lesson);
       return;
     }
-    if (!isReschedulableTrialLesson(lesson)) {
+    if (!isReschedulableTrialLesson(lesson, appSettingsRules)) {
       toast.error(t("panels.lessons.reschedule.within12Hours"));
       return;
     }
@@ -849,6 +974,7 @@ export default function MyLessonsPanel({
         )}
         joinLessonLabel={t("panels.lessons.upcoming.joinLesson")}
         cancelledLabel={t("panels.lessons.upcoming.statusCancelled")}
+        appSettingsRules={appSettingsRules}
         onReschedule={handleReschedule}
         onCancel={handleCancelClick}
         emptyState={
@@ -872,8 +998,16 @@ export default function MyLessonsPanel({
           complaintPendingLabel={t("panels.lessons.complaint.statusPending")}
           complaintApprovedLabel={t("panels.lessons.complaint.statusApproved")}
           complaintRejectedLabel={t("panels.lessons.complaint.statusRejected")}
+          appSettingsRules={appSettingsRules}
           onRate={handleRate}
           onComplain={handleComplainClick}
+          contactSupportLabel={
+            isOpeningSupportChat
+              ? t("panels.lessons.complaint.supportChat.opening")
+              : t("panels.lessons.complaint.supportChat.contactSupport")
+          }
+          isOpeningSupportChat={isOpeningSupportChat}
+          onContactSupport={() => void openAdminSupportChat()}
         />
       )}
 

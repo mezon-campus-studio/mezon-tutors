@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  Settings,
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -43,6 +44,7 @@ const ICON_MAP: Record<
 > = {
   tutorApplications: FileCheck,
   lessonComplaints: Flag,
+  appSettings: Settings,
   students: GraduationCap,
   payments: CreditCard,
   reports: LineChart,

@@ -1,5 +1,3 @@
-export const LESSON_COMPLAINT_WINDOW_HOURS = 72;
-
 export const LESSON_COMPLAINT_STATUS_FILTERS = [
   'all',
   'PENDING',

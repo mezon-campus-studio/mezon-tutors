@@ -6,8 +6,10 @@ import {
   type AdminLessonComplaintListItem,
   ECurrency,
   formatToCurrency,
+  ROUTES,
 } from "@mezon-tutors/shared";
-import { Search } from "lucide-react";
+import { Search, SquareArrowOutUpRight } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
@@ -291,9 +293,16 @@ export default function AdminLessonComplaintsView() {
                         </td>
                         <td className="px-4 py-4">
                           <div className="space-y-1">
-                            <p className="font-medium text-slate-900">
+                            <Link
+                              href={ROUTES.ADMIN.TUTOR_APPLICATION_DETAIL(item.tutor.id)}
+                              className="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-2 hover:text-primary/90"
+                            >
                               {item.tutor.first_name} {item.tutor.last_name}
-                            </p>
+                              <SquareArrowOutUpRight
+                                className="size-3.5 shrink-0"
+                                aria-hidden
+                              />
+                            </Link>
                             <p className="text-xs text-muted-foreground">{item.tutor.subject}</p>
                           </div>
                         </td>

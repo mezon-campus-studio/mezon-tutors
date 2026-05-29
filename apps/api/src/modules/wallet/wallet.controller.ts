@@ -22,14 +22,14 @@ export class WalletController {
   @ApiOperation({ summary: 'Wallet detail (balances, pending, lifetime totals)' })
   getDetail(@Req() req: Request) {
     const user = req.user as AuthUserPayload;
-    return this.walletService.getDetails(user.sub, user.role);
+    return this.walletService.getDetails(user.sub);
   }
 
   @Get('stat')
   @ApiOperation({ summary: 'Wallet stats (month activity, transaction count)' })
   getStat(@Req() req: Request) {
     const user = req.user as AuthUserPayload;
-    return this.walletService.getStats(user.sub, user.role);
+    return this.walletService.getStats(user.sub);
   }
 
   @Get('transactions')
@@ -38,7 +38,6 @@ export class WalletController {
     const user = req.user as AuthUserPayload;
     return this.walletService.getTransactions(
       user.sub,
-      user.role,
       query.page,
       query.limit,
     );
@@ -49,7 +48,6 @@ export class WalletController {
     const user = req.user as AuthUserPayload;
     return this.walletService.getWithdrawals(
       user.sub,
-      user.role,
       query.page,
       query.limit,
     );
@@ -61,14 +59,14 @@ export class WalletController {
   @ApiOperation({ summary: 'Request a withdrawal (pending admin approval)' })
   async createWithdrawal(@Req() req: Request, @Body() body: CreateWalletWithdrawalDto) {
     const user = req.user as AuthUserPayload;
-    await this.walletService.createWithdrawal(user.sub, user.role, body);
+    await this.walletService.createWithdrawal(user.sub, body);
   }
 
   @Patch('payout-bank')
   @ApiOperation({ summary: 'Update payout bank account (student or tutor)' })
   updatePayoutBank(@Req() req: Request, @Body() body: UpdateWalletPayoutBankDto) {
     const user = req.user as AuthUserPayload;
-    return this.walletService.updatePayoutBank(user.sub, user.role, body);
+    return this.walletService.updatePayoutBank(user.sub, body);
   }
 
   @Patch('withdrawals/:id/approve')

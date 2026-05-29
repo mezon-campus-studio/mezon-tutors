@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { LESSON_COMPLAINT_WINDOW_HOURS } from '../constants/lesson-complaint';
 import { addMinutes } from './date-time';
 
 export function getLessonEndAt(startAt: string | Date, durationMinutes: number): Date {
@@ -18,23 +17,25 @@ export function isLessonFinishedForComplaint(
 export function isWithinLessonComplaintWindow(
   startAt: string | Date,
   durationMinutes: number,
-  now: string | Date = new Date()
+  now: string | Date,
+  disputePeriodHours: number,
 ): boolean {
   if (!isLessonFinishedForComplaint(startAt, durationMinutes, now)) {
     return false;
   }
   const lessonEnd = dayjs(getLessonEndAt(startAt, durationMinutes)).utc();
-  const deadline = lessonEnd.add(LESSON_COMPLAINT_WINDOW_HOURS, 'hour');
+  const deadline = lessonEnd.add(disputePeriodHours, 'hour');
   const nowUtc = dayjs(now).utc();
   return nowUtc.isBefore(deadline) || nowUtc.isSame(deadline);
 }
 
 export function getLessonComplaintDeadline(
   startAt: string | Date,
-  durationMinutes: number
+  durationMinutes: number,
+  disputePeriodHours: number,
 ): Date {
   return dayjs(getLessonEndAt(startAt, durationMinutes))
     .utc()
-    .add(LESSON_COMPLAINT_WINDOW_HOURS, 'hour')
+    .add(disputePeriodHours, 'hour')
     .toDate();
 }

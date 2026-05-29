@@ -166,6 +166,7 @@ model User {
   cancelRescheduleReasonsInitiated CancelRescheduleReason[] @relation("CancelRescheduleInitiator")
   lessonComplaintsAsStudent        LessonComplaint[]        @relation("LessonComplaintStudent")
   lessonComplaintsReviewed         LessonComplaint[]        @relation("LessonComplaintReviewer")
+  appSettingsUpdates               AppSettings[]            @relation("AppSettingsUpdatedBy")
 
   @@map("users")
 }
@@ -618,4 +619,22 @@ model WebhookLog {
 
   @@index([orderCode, isProcessed])
   @@map("webhook_logs")
+}
+
+model AppSettings {
+  id                                  String   @id @default("default")
+  platformFeePercentage               Decimal  @default(0.2) @map("platform_fee_percentage") @db.Decimal(6, 4)
+  settlementPeriodHours               Int      @default(72) @map("settlement_period_hours")
+  disputePeriodHours                  Int      @default(72) @map("dispute_period_hours")
+  lessonChangePeriodHours             Int      @default(12) @map("lesson_change_period_hours")
+  minWithdrawalAmountVnd              BigInt   @default(10000) @map("min_withdrawal_amount_vnd")
+  minWithdrawalAmountUsd              Decimal  @default(1) @map("min_withdrawal_amount_usd") @db.Decimal(18, 6)
+  minWithdrawalAmountPhp              Decimal  @default(100) @map("min_withdrawal_amount_php") @db.Decimal(18, 6)
+  updatedByUserId                     String?  @map("updated_by_user_id") @db.Uuid
+  createdAt                           DateTime @default(now()) @map("created_at")
+  updatedAt                           DateTime @updatedAt @map("updated_at")
+
+  updatedBy User? @relation("AppSettingsUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@map("app_settings")
 }

@@ -1,6 +1,11 @@
 'use client';
 
-import { ECurrency, ROUTES, formatToCurrency } from '@mezon-tutors/shared';
+import {
+  ECurrency,
+  ROUTES,
+  formatToCurrency,
+  isTrialLessonRescheduleEligible,
+} from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -9,7 +14,6 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
-import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import { cn } from '@/lib/utils';
 import type { TrialLessonBookingRequestItem } from '@/services';
 import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
@@ -17,6 +21,7 @@ import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 type MyScheduleUpcomingListProps = {
   items: TrialLessonBookingRequestItem[];
   timezoneName: string;
+  lessonChangePeriodHours?: number;
   onRescheduleSubscription?: (item: TrialLessonBookingRequestItem) => void;
   onCancelLesson?: (item: TrialLessonBookingRequestItem) => void;
 };
@@ -39,6 +44,7 @@ const getInitials = (name?: string) => {
 export default function MyScheduleUpcomingList({
   items,
   timezoneName,
+  lessonChangePeriodHours,
   onRescheduleSubscription,
   onCancelLesson,
 }: MyScheduleUpcomingListProps) {
@@ -53,7 +59,9 @@ export default function MyScheduleUpcomingList({
     isCompleted: boolean,
   ): ActionMenuItem[] => {
     const canModify =
-      !isCompleted && isTrialLessonRescheduleEligible(item.startAt);
+      !isCompleted &&
+      lessonChangePeriodHours != null &&
+      isTrialLessonRescheduleEligible(item.startAt, nowInTimezone.toDate(), lessonChangePeriodHours);
     const canReschedule =
       isSubscription &&
       canModify &&

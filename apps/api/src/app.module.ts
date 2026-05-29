@@ -26,6 +26,9 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settlement.module';
 import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complaint.module';
+import { AppSettingsModule } from './modules/app-settings/app-settings.module';
+import { SupportModule } from './modules/support/support.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -44,6 +47,7 @@ import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complai
     ScheduleModule.forRoot(),
     SharedModule,
     PrismaModule,
+    CommonModule,
     AuthModule,
     TutorProfileModule,
     TutorAvailabilityModule,
@@ -63,6 +67,8 @@ import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complai
     WalletModule,
     LessonSettlementModule,
     LessonComplaintModule,
+    AppSettingsModule,
+    SupportModule,
   ],
   controllers: [HealthController],
   providers: [

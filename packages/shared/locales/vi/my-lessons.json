@@ -112,6 +112,12 @@
           "success": "Đã gửi khiếu nại. Chúng tôi sẽ xem xét sớm.",
           "failed": "Không gửi được khiếu nại. Vui lòng thử lại."
         },
+        "supportChat": {
+          "contactSupport": "Chat với hỗ trợ",
+          "opening": "Đang mở chat…",
+          "missingSession": "Vui lòng đăng nhập Mezon để liên hệ hỗ trợ.",
+          "failed": "Không mở được chat hỗ trợ. Vui lòng thử lại."
+        },
         "reasons": {
           "tutorNoShow": "Gia sư không tham gia",
           "poorQuality": "Chất lượng buổi học kém",

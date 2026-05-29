@@ -6,6 +6,7 @@
       "dashboard": "Bảng điều khiển",
       "tutorApplications": "Hồ sơ gia sư",
       "lessonComplaints": "Khiếu nại buổi học",
+      "appSettings": "Cấu hình ứng dụng",
       "students": "Học viên",
       "payments": "Thanh toán",
       "reports": "Báo cáo",
@@ -113,6 +114,57 @@
         "approveSuccessNoRefund": "Đã duyệt khiếu nại.",
         "rejectSuccess": "Đã từ chối khiếu nại.",
         "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
+      }
+    },
+    "AppSettings": {
+      "title": "Cấu hình ứng dụng",
+      "description": "Thiết lập phí nền tảng, các khoảng thời gian và hạn mức rút tiền.",
+      "formTitle": "Thông số cấu hình",
+      "lastUpdated": "Cập nhật lần cuối: {date} bởi {user}",
+      "lastUpdatedNoUser": "Cập nhật lần cuối: {date}",
+      "save": "Lưu thay đổi",
+      "saveSuccess": "Đã lưu cấu hình.",
+      "saveFailed": "Lưu thất bại. Vui lòng thử lại.",
+      "loadFailed": "Không tải được cấu hình.",
+      "sections": {
+        "fees": {
+          "title": "Phí nền tảng",
+          "description": "Phần trăm thu trên mỗi khoản thanh toán buổi học."
+        },
+        "periods": {
+          "title": "Khoảng thời gian",
+          "description": "Settlement, khiếu nại và quy tắc đổi lịch (tính bằng giờ)."
+        },
+        "withdrawal": {
+          "title": "Rút tiền tối thiểu",
+          "description": "Số tiền tối thiểu gia sư có thể yêu cầu rút theo từng loại tiền."
+        }
+      },
+      "fields": {
+        "platformFeePercentage": "Phí nền tảng (%)",
+        "platformFeePercentageHint": "Ví dụ: 20 nghĩa là phí 20%.",
+        "settlementPeriodHours": "Settlement period (giờ)",
+        "settlementPeriodHoursHint": "Số giờ sau khi buổi học kết thúc trước khi giải ngân cho gia sư.",
+        "disputePeriodHours": "Dispute period (giờ)",
+        "disputePeriodHoursHint": "Số giờ sau buổi học học viên được gửi khiếu nại.",
+        "lessonChangePeriodHours": "Đổi lịch (giờ)",
+        "lessonChangePeriodHoursHint": "Số giờ trước giờ học được phép đổi lịch buổi học.",
+        "minWithdrawalAmountVnd": "Tối thiểu (VND)",
+        "minWithdrawalAmountUsd": "Tối thiểu (USD)",
+        "minWithdrawalAmountPhp": "Tối thiểu (PHP)"
+      },
+      "validation": {
+        "required": "Trường này là bắt buộc.",
+        "invalidNumber": "Nhập số hợp lệ.",
+        "integerOnly": "Chỉ nhập số nguyên.",
+        "platformFeePercentRange": "Phải từ {min} đến {max}%.",
+        "settlementPeriodHoursRange": "Phải từ {min} đến {max} giờ.",
+        "disputePeriodHoursRange": "Phải từ {min} đến {max} giờ.",
+        "lessonChangePeriodHoursRange": "Phải từ {min} đến {max} giờ.",
+        "minWithdrawalAmountVndRange": "Phải từ {min} đến {max} VND.",
+        "minWithdrawalAmountUsdRange": "Phải từ {min} đến {max} USD.",
+        "minWithdrawalAmountPhpRange": "Phải từ {min} đến {max} PHP.",
+        "summary": "Vui lòng sửa các trường được đánh dấu trước khi lưu."
       }
     }
   }

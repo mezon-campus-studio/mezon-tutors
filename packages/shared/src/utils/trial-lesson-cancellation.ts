@@ -3,9 +3,6 @@ import utc from 'dayjs/plugin/utc'
 
 dayjs.extend(utc)
 
-/** Hours before `startAt` (UTC) required for a trial lesson cancellation refund. */
-export const TRIAL_LESSON_CANCEL_REFUND_HOURS = 12
-
 export function getTrialLessonHoursUntilStartUtc(
   startAt: string | Date,
   now: string | Date = new Date()
@@ -13,16 +10,21 @@ export function getTrialLessonHoursUntilStartUtc(
   return dayjs.utc(startAt).diff(dayjs.utc(now), 'hour', true)
 }
 
-/** Matches API: refund when `startAt - now` is strictly more than 12 hours (UTC). */
 export function isTrialLessonRefundEligible(
   startAt: string | Date,
-  now: string | Date = new Date()
+  now: string | Date,
+  lessonChangePeriodHours: number,
 ): boolean {
-  return getTrialLessonHoursUntilStartUtc(startAt, now) > TRIAL_LESSON_CANCEL_REFUND_HOURS
+  return getTrialLessonHoursUntilStartUtc(startAt, now) > lessonChangePeriodHours
 }
 
-/** Same 12h window as refund eligibility — used for student/tutor reschedule. */
-export const isTrialLessonRescheduleEligible = isTrialLessonRefundEligible
+export function isTrialLessonRescheduleEligible(
+  startAt: string | Date,
+  now: string | Date,
+  lessonChangePeriodHours: number,
+): boolean {
+  return isTrialLessonRefundEligible(startAt, now, lessonChangePeriodHours)
+}
 
 export function formatTrialLessonHoursUntilStart(hours: number): string {
   if (!Number.isFinite(hours) || hours <= 0) {

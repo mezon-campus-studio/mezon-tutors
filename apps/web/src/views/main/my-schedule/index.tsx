@@ -6,6 +6,7 @@ import {
   ECurrency,
   type ETrialLessonBookingStatus,
   formatLessonRangeInTimezone,
+  isTrialLessonRescheduleEligible,
   ROUTES,
   type TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
@@ -23,7 +24,6 @@ import { SendMessageModal } from '@/components/common/SendMessageModal';
 import { useUserTimezone } from '@/hooks';
 import { DashboardScheduleCalendar } from '@/components/schedule';
 import { Button } from '@/components/ui';
-import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import {
   isExpectedTutorLessonRequestError,
   resolveTutorCancelToastMessage,
@@ -38,6 +38,7 @@ import {
   useTutorSubscriptionSlotRescheduleRequestMutation,
   useGetDmChannel,
   useCreateDmChannelMutation,
+  usePublicAppSettings,
 } from '@/services';
 import { sendLessonDmToPeer } from '@/lib/send-lesson-dm';
 import {
@@ -211,7 +212,16 @@ export default function MyScheduleView() {
   const queryClient = useQueryClient();
   const user = useAtomValue(userAtom);
   const userTimezone = useUserTimezone();
+  const { data: publicAppSettings } = usePublicAppSettings();
   const senderId = user?.id ?? '';
+
+  const canModifyLessonStart = (startAt: string) =>
+    publicAppSettings != null &&
+    isTrialLessonRescheduleEligible(
+      startAt,
+      new Date(),
+      publicAppSettings.lessonChangePeriodHours,
+    );
   const senderMezonUserId = user?.mezonUserId ?? '';
 
   const [selectedDate, setSelectedDate] = useState(dayjs().tz(userTimezone));
@@ -316,7 +326,8 @@ export default function MyScheduleView() {
       toast.error(tCancel('alreadyRequested'));
       return;
     }
-    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+    
+    if (!canModifyLessonStart(item.startAt)) {
       toast.error(tCancel('within12Hours'));
       return;
     }
@@ -421,7 +432,7 @@ export default function MyScheduleView() {
       toast.error(tReschedule('alreadyRequested'));
       return;
     }
-    if (!isTrialLessonRescheduleEligible(item.startAt)) {
+    if (!canModifyLessonStart(item.startAt)) {
       toast.error(tReschedule('within12Hours'));
       return;
     }
@@ -595,6 +606,7 @@ export default function MyScheduleView() {
                 <MyScheduleUpcomingList
                   items={weekListItems}
                   timezoneName={userTimezone}
+                  lessonChangePeriodHours={publicAppSettings?.lessonChangePeriodHours}
                   onRescheduleSubscription={handleRescheduleSubscription}
                   onCancelLesson={handleCancelLesson}
                 />

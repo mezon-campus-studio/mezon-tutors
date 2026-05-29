@@ -6,6 +6,7 @@
       "dashboard": "Dashboard",
       "tutorApplications": "Tutor Applications",
       "lessonComplaints": "Lesson Complaints",
+      "appSettings": "App Settings",
       "students": "Students",
       "payments": "Payments",
       "reports": "Reports",
@@ -113,6 +114,57 @@
         "approveSuccessNoRefund": "Complaint approved.",
         "rejectSuccess": "Complaint rejected.",
         "actionFailed": "Action failed. Please try again."
+      }
+    },
+    "AppSettings": {
+      "title": "App Settings",
+      "description": "Configure platform fees, time periods, and withdrawal limits.",
+      "formTitle": "Configuration",
+      "lastUpdated": "Last updated: {date} by {user}",
+      "lastUpdatedNoUser": "Last updated: {date}",
+      "save": "Save changes",
+      "saveSuccess": "Settings saved successfully.",
+      "saveFailed": "Failed to save settings. Please try again.",
+      "loadFailed": "Failed to load settings.",
+      "sections": {
+        "fees": {
+          "title": "Platform fee",
+          "description": "Percentage charged on each lesson payment."
+        },
+        "periods": {
+          "title": "Time periods",
+          "description": "Settlement, dispute window, and lesson change rules (in hours)."
+        },
+        "withdrawal": {
+          "title": "Minimum withdrawal",
+          "description": "Minimum amount tutors can request per currency."
+        }
+      },
+      "fields": {
+        "platformFeePercentage": "Platform fee (%)",
+        "platformFeePercentageHint": "Example: 20 means 20% platform fee.",
+        "settlementPeriodHours": "Settlement period (hours)",
+        "settlementPeriodHoursHint": "Hours after lesson end before funds are released to the tutor.",
+        "disputePeriodHours": "Dispute period (hours)",
+        "disputePeriodHoursHint": "Hours after lesson end when students can file a complaint.",
+        "lessonChangePeriodHours": "Reschedule period (hours)",
+        "lessonChangePeriodHoursHint": "Hours before lesson start required to reschedule a lesson.",
+        "minWithdrawalAmountVnd": "Minimum (VND)",
+        "minWithdrawalAmountUsd": "Minimum (USD)",
+        "minWithdrawalAmountPhp": "Minimum (PHP)"
+      },
+      "validation": {
+        "required": "This field is required.",
+        "invalidNumber": "Enter a valid number.",
+        "integerOnly": "Enter a whole number.",
+        "platformFeePercentRange": "Must be between {min} and {max}%.",
+        "settlementPeriodHoursRange": "Must be between {min} and {max} hours.",
+        "disputePeriodHoursRange": "Must be between {min} and {max} hours.",
+        "lessonChangePeriodHoursRange": "Must be between {min} and {max} hours.",
+        "minWithdrawalAmountVndRange": "Must be between {min} and {max} VND.",
+        "minWithdrawalAmountUsdRange": "Must be between {min} and {max} USD.",
+        "minWithdrawalAmountPhpRange": "Must be between {min} and {max} PHP.",
+        "summary": "Fix the highlighted fields before saving."
       }
     }
   }

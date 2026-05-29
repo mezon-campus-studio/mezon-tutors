@@ -24,6 +24,7 @@ export const ROUTES = {
     TUTOR_APPLICATION_DETAIL: (id: string | number) =>
       `/admin/tutor-applications/${id}`,
     LESSON_COMPLAINTS: '/admin/lesson-complaints',
+    APP_SETTINGS: '/admin/app-settings',
   },
   AUTH: {
     MEZON_CALLBACK: '/auth/mezon/callback',
