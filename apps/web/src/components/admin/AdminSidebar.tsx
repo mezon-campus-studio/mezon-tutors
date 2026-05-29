@@ -9,6 +9,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import {
   CreditCard,
   FileCheck,
+  Flag,
   GraduationCap,
   LayoutDashboard,
   LineChart,
@@ -41,6 +42,7 @@ const ICON_MAP: Record<
   React.ComponentType<{ className?: string }>
 > = {
   tutorApplications: FileCheck,
+  lessonComplaints: Flag,
   students: GraduationCap,
   payments: CreditCard,
   reports: LineChart,

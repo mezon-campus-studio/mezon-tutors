@@ -18,5 +18,8 @@ export * from "./subscription/subscription.api";
 export * from "./subscription/subscription.qkey";
 export * from "./admin-tutor-application/admin-tutor-application.api";
 export * from "./admin-tutor-application/admin-tutor-application.qkey";
+export * from "./lesson-complaint/lesson-complaint.api";
+export * from "./admin-lesson-complaint/admin-lesson-complaint.api";
+export * from "./admin-lesson-complaint/admin-lesson-complaint.qkey";
 export * from "./user/user.api";
 export * from "./wallet/wallet.api";

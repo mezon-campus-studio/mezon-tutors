@@ -5,6 +5,7 @@
     "sidebar": {
       "dashboard": "Bảng điều khiển",
       "tutorApplications": "Hồ sơ gia sư",
+      "lessonComplaints": "Khiếu nại buổi học",
       "students": "Học viên",
       "payments": "Thanh toán",
       "reports": "Báo cáo",
@@ -70,6 +71,48 @@
       "actions": {
         "reject": "Từ chối",
         "approveTutor": "Duyệt gia sư"
+      }
+    },
+    "LessonComplaints": {
+      "title": "Khiếu nại buổi học",
+      "description": "Xem xét khiếu nại của học sinh về buổi học đã hoàn thành. Duyệt sẽ hoàn tiền buổi học vào ví học sinh.",
+      "searchPlaceholder": "Tìm theo học sinh, gia sư hoặc lý do...",
+      "metrics": {
+        "totalRequests": "Tổng request",
+        "totalThisWeek": "Tổng tuần này",
+        "totalApproved": "Tổng đã duyệt"
+      },
+      "filters": {
+        "all": "Tất cả",
+        "PENDING": "Chờ xử lý",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      },
+      "list": {
+        "title": "Hàng đợi khiếu nại",
+        "subtitle": "{count} yêu cầu",
+        "columns": {
+          "student": "Học sinh",
+          "tutor": "Gia sư",
+          "lesson": "Buổi học",
+          "reason": "Lý do",
+          "amount": "Số tiền",
+          "status": "Trạng thái",
+          "submitted": "Gửi lúc",
+          "actions": "Thao tác"
+        },
+        "approve": "Duyệt & hoàn tiền",
+        "reject": "Từ chối",
+        "trial": "Thử",
+        "subscription": "Gói",
+        "lessonStart": "Giờ học",
+        "lessonDuration": "{minutes} phút",
+        "submittedAt": "Gửi khiếu nại",
+        "adminNotePlaceholder": "Ghi chú admin (tùy chọn)",
+        "approveSuccess": "Đã duyệt và hoàn tiền.",
+        "approveSuccessNoRefund": "Đã duyệt khiếu nại.",
+        "rejectSuccess": "Đã từ chối khiếu nại.",
+        "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
       }
     }
   }

@@ -9,7 +9,7 @@ import {
   isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, User, Wallet, X } from "lucide-react";
+import { Calendar, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, MessageSquareWarning, User, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -20,6 +20,7 @@ import { userAtom } from "@/store/auth.atom";
 
 const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
+  complaints: MessageSquareWarning,
   calendar: Calendar,
   trialBookings: ClipboardList,
   logout: LogOut,
@@ -34,6 +35,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
+  complaints: "from-violet-500 to-fuchsia-500",
   calendar: "from-purple-500 to-fuchsia-500",
   trialBookings: "from-fuchsia-500 to-rose-500",
   logout: "from-rose-500 to-orange-500",

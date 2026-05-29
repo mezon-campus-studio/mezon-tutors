@@ -12,6 +12,7 @@
       "students": "Học viên",
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
+      "complaints": "Khiếu nại",
       "wallet": "Ví",
       "tutorApplications": "Hồ sơ gia sư",
       "dashboard": "Bảng điều khiển",
@@ -26,6 +27,38 @@
         "errorTitle": "Đồng bộ thất bại",
         "errorDescription": "Đã có lỗi xảy ra. Thử lại hoặc đăng nhập Mezon lại.",
         "popupBlocked": "Hãy cho phép cửa sổ pop-up trên trang này để tiếp tục với Mezon."
+      }
+    },
+    "complaintsPage": {
+      "title": "Khiếu nại buổi học",
+      "description": "Theo dõi các khiếu nại bạn đã gửi và trạng thái xử lý hoàn tiền.",
+      "searchPlaceholder": "Tìm theo gia sư, môn học hoặc lý do...",
+      "loading": "Đang tải danh sách khiếu nại...",
+      "emptyTitle": "Chưa có khiếu nại nào",
+      "emptyDescription": "Khi bạn gửi khiếu nại buổi học, trạng thái xử lý sẽ hiển thị ở đây.",
+      "metrics": {
+        "pending": "Chờ xử lý",
+        "approved": "Đã duyệt",
+        "rejected": "Đã từ chối"
+      },
+      "filters": {
+        "all": "Tất cả",
+        "PENDING": "Chờ xử lý",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      },
+      "status": {
+        "PENDING": "Đang chờ xử lý",
+        "APPROVED": "Đã duyệt hoàn tiền",
+        "REJECTED": "Đã từ chối"
+      },
+      "list": {
+        "title": "Danh sách khiếu nại",
+        "subtitle": "{count} yêu cầu",
+        "lessonTime": "Thời gian buổi học",
+        "submittedAt": "Thời điểm gửi",
+        "reason": "Lý do",
+        "adminNote": "Ghi chú từ admin"
       }
     },
     "bookingRequests": {

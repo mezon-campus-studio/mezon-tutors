@@ -5,6 +5,7 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "tutorApplications": "Tutor Applications",
+      "lessonComplaints": "Lesson Complaints",
       "students": "Students",
       "payments": "Payments",
       "reports": "Reports",
@@ -70,6 +71,48 @@
       "actions": {
         "reject": "Reject",
         "approveTutor": "Approve Tutor"
+      }
+    },
+    "LessonComplaints": {
+      "title": "Lesson Complaints",
+      "description": "Review student complaints about completed lessons. Approving refunds the lesson payment to the student wallet.",
+      "searchPlaceholder": "Search by student, tutor, or reason...",
+      "metrics": {
+        "totalRequests": "Total requests",
+        "totalThisWeek": "Total this week",
+        "totalApproved": "Total approved"
+      },
+      "filters": {
+        "all": "All",
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "list": {
+        "title": "Complaint queue",
+        "subtitle": "{count} requests",
+        "columns": {
+          "student": "Student",
+          "tutor": "Tutor",
+          "lesson": "Lesson",
+          "reason": "Reason",
+          "amount": "Amount",
+          "status": "Status",
+          "submitted": "Submitted",
+          "actions": "Actions"
+        },
+        "approve": "Approve & refund",
+        "reject": "Reject",
+        "trial": "Trial",
+        "subscription": "Plan",
+        "lessonStart": "Lesson time",
+        "lessonDuration": "{minutes} min",
+        "submittedAt": "Submitted",
+        "adminNotePlaceholder": "Admin note (optional)",
+        "approveSuccess": "Complaint approved and refund processed.",
+        "approveSuccessNoRefund": "Complaint approved.",
+        "rejectSuccess": "Complaint rejected.",
+        "actionFailed": "Action failed. Please try again."
       }
     }
   }

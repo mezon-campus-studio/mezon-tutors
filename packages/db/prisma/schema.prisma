@@ -136,6 +136,12 @@ enum ELessonChangeInitiatorRole {
   SYSTEM
 }
 
+enum ELessonComplaintStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 /// Application users table mapped to `users`
 model User {
   id                     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -158,6 +164,8 @@ model User {
   notificationRecipients NotificationRecipient[]
   cancelRescheduleReasonsAsStudent CancelRescheduleReason[] @relation("CancelRescheduleStudent")
   cancelRescheduleReasonsInitiated CancelRescheduleReason[] @relation("CancelRescheduleInitiator")
+  lessonComplaintsAsStudent        LessonComplaint[]        @relation("LessonComplaintStudent")
+  lessonComplaintsReviewed         LessonComplaint[]        @relation("LessonComplaintReviewer")
 
   @@map("users")
 }
@@ -227,6 +235,7 @@ model TutorProfile {
   trialLessonPrice    TrialLessonPrice?
   subscriptionEnrollments SubscriptionEnrollment[]
   cancelRescheduleReasons CancelRescheduleReason[]
+  lessonComplaints        LessonComplaint[]
 
   adminNotes            TutorAdminNote[]
   professionalDocuments ProfessionalDocument[]
@@ -273,6 +282,7 @@ model SubscriptionEnrollment {
   tutor               TutorProfile      @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   walletTransactions  Transaction[]
   cancelRescheduleReasons CancelRescheduleReason[]
+  lessonComplaints    LessonComplaint[]
 
   @@index([studentId, tutorId])
   @@index([paymentRef])
@@ -404,6 +414,7 @@ model TrialLessonBooking {
   student User                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
   walletTransactions Transaction[]
   cancelRescheduleReasons CancelRescheduleReason[]
+  lessonComplaint       LessonComplaint?
 
   @@index([paymentRef])
   @@index([studentId])
@@ -441,6 +452,39 @@ model CancelRescheduleReason {
   @@index([trialLessonBookingId])
   @@index([subscriptionEnrollmentId, subscriptionSlotIndex, originalStartAt])
   @@map("cancel_reschedule_reason")
+}
+
+/// Student complaint about a completed lesson; admin may approve for wallet refund.
+model LessonComplaint {
+  id                       String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId                String                   @map("student_id") @db.Uuid
+  tutorId                  String                   @map("tutor_id") @db.Uuid
+  lessonType               ELessonChangeLessonType  @map("lesson_type")
+  reason                   String
+  message                  String?                  @db.Text
+  status                   ELessonComplaintStatus   @default(PENDING)
+  trialLessonBookingId     String?                  @unique @map("trial_lesson_booking_id") @db.Uuid
+  subscriptionEnrollmentId String?                  @map("subscription_enrollment_id") @db.Uuid
+  subscriptionSlotIndex    Int?                     @map("subscription_slot_index")
+  lessonStartAt            DateTime                 @map("lesson_start_at")
+  lessonDurationMinutes    Int                      @map("lesson_duration_minutes")
+  reviewedByUserId         String?                  @map("reviewed_by_user_id") @db.Uuid
+  adminNote                String?                  @map("admin_note") @db.Text
+  reviewedAt               DateTime?                @map("reviewed_at")
+  createdAt                DateTime                 @default(now()) @map("created_at")
+  updatedAt                DateTime                 @updatedAt @map("updated_at")
+
+  student                User                    @relation("LessonComplaintStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  tutor                  TutorProfile            @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  trialLessonBooking     TrialLessonBooking?     @relation(fields: [trialLessonBookingId], references: [id], onDelete: SetNull)
+  subscriptionEnrollment SubscriptionEnrollment? @relation(fields: [subscriptionEnrollmentId], references: [id], onDelete: SetNull)
+  reviewedBy             User?                   @relation("LessonComplaintReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([subscriptionEnrollmentId, subscriptionSlotIndex, lessonStartAt])
+  @@index([status, createdAt])
+  @@index([studentId, createdAt])
+  @@index([tutorId, createdAt])
+  @@map("lesson_complaints")
 }
 
 model UserDmChannel {

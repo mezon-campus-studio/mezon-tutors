@@ -1,6 +1,11 @@
 import { ROUTES } from './routes';
 
-export type AdminMenuKey = 'tutorApplications' | 'students' | 'payments' | 'reports';
+export type AdminMenuKey =
+  | 'tutorApplications'
+  | 'lessonComplaints'
+  | 'students'
+  | 'payments'
+  | 'reports';
 
 export type AdminMenuItem = {
   key: AdminMenuKey;
@@ -15,6 +20,12 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     labelKey: 'tutorApplications',
     iconKey: 'tutorApplications',
     href: ROUTES.ADMIN.TUTOR_APPLICATIONS,
+  },
+  {
+    key: 'lessonComplaints',
+    labelKey: 'lessonComplaints',
+    iconKey: 'lessonComplaints',
+    href: ROUTES.ADMIN.LESSON_COMPLAINTS,
   },
   {
     key: 'students',
