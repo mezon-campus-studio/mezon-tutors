@@ -22,11 +22,12 @@ import {
   getWeekStartMondayInTimezone,
   parseYmdInTimezone,
 } from "@/lib/timezone";
-import { TRIAL_LESSON_CANCEL_REFUND_HOURS } from "@mezon-tutors/shared";
+import { PUBLIC_APP_SETTINGS_FALLBACK } from "@mezon-tutors/shared";
 import {
   useGetSubscriptionSlotRescheduleOptions,
   useRescheduleSubscriptionSlotMutation,
 } from "@/services/subscription/subscription.api";
+import { usePublicAppSettings } from "@/services";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "jotai";
@@ -66,6 +67,10 @@ export function RescheduleSubscriptionLessonDialog({
   const tDm = useTranslations("MyLessons.panels.lessons.cancellation");
   const locale = useLocale();
   const userTimezone = useUserTimezone();
+  const { data: publicAppSettings } = usePublicAppSettings();
+  const lessonChangePeriodHours =
+    publicAppSettings?.lessonChangePeriodHours ??
+    PUBLIC_APP_SETTINGS_FALLBACK.lessonChangePeriodHours;
   const currentUser = useAtomValue(userAtom);
   const senderId = currentUser?.id ?? "";
   const senderMezonUserId = currentUser?.mezonUserId ?? "";
@@ -126,7 +131,7 @@ export function RescheduleSubscriptionLessonDialog({
       scheduleAvailableSlots,
       lessonDuration,
       userTimezone,
-      { minHoursFromNow: TRIAL_LESSON_CANCEL_REFUND_HOURS },
+      { minHoursFromNow: lessonChangePeriodHours },
     );
     const keys = new Set<string>();
     const merged = [...fromApi, ...leadTimeBlocked];
@@ -143,6 +148,7 @@ export function RescheduleSubscriptionLessonDialog({
     scheduleAvailableSlots,
     lessonDuration,
     userTimezone,
+    lessonChangePeriodHours,
   ]);
 
   const handleWeekChange = useCallback(
