@@ -50,9 +50,15 @@
           "requestedAt": "Requested at",
           "student": "Student",
           "lesson": "Lesson",
+          "initiatedBy": "Initiated by",
           "action": "Action",
           "reason": "Reason",
           "message": "Message"
+        },
+        "initiatedBy": {
+          "STUDENT": "Student",
+          "TUTOR": "Tutor",
+          "SYSTEM": "System"
         },
         "lessonRef": {
           "trial": "Trial",

@@ -50,9 +50,15 @@
           "requestedAt": "Thời điểm yêu cầu",
           "student": "Học sinh",
           "lesson": "Buổi học",
+          "initiatedBy": "Người thực hiện",
           "action": "Hành động",
           "reason": "Lý do",
           "message": "Tin nhắn"
+        },
+        "initiatedBy": {
+          "STUDENT": "Học sinh",
+          "TUTOR": "Gia sư",
+          "SYSTEM": "Hệ thống"
         },
         "lessonRef": {
           "trial": "Trial",

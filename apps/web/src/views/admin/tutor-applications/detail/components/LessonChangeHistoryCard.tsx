@@ -72,6 +72,15 @@ export default function LessonChangeHistoryCard({
   const formatReason = (reason: string) =>
     isKnownReasonKey(reason) ? tReasons(reason) : reason;
 
+  const formatInitiatedByRole = (
+    role: AdminLessonChangeHistoryItem["initiatedByRole"],
+  ) => {
+    if (role === "STUDENT" || role === "TUTOR" || role === "SYSTEM") {
+      return t(`initiatedBy.${role}`);
+    }
+    return role;
+  };
+
   return (
     <Card className="border-slate-200">
       <CardContent className="p-5">
@@ -92,17 +101,18 @@ export default function LessonChangeHistoryCard({
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200">
-            <table className="w-full min-w-[720px] text-sm">
+            <table className="w-full min-w-[840px] text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">{t("columns.requestedAt")}</th>
                   <th className="px-4 py-3">{t("columns.student")}</th>
                   <th className="px-4 py-3 min-w-[200px]">{t("columns.lesson")}</th>
+                  <th className="px-4 py-3 min-w-[110px]">{t("columns.initiatedBy")}</th>
                   <th className="px-4 py-3 min-w-[120px]">{t("columns.action")}</th>
                   <th className="w-[18%] min-w-[140px] px-4 py-3">
                     {t("columns.reason")}
                   </th>
-                  <th className="w-[32%] min-w-[220px] px-4 py-3">
+                  <th className="w-[24%] min-w-[180px] px-4 py-3">
                     {t("columns.message")}
                   </th>
                 </tr>
@@ -139,6 +149,12 @@ export default function LessonChangeHistoryCard({
                           timezoneName,
                         )}
                       </p>
+                    </td>
+                    <td className="px-4 py-3 text-slate-700">
+                      <p className="font-medium text-slate-800">
+                        {formatInitiatedByRole(item.initiatedByRole)}
+                      </p>
+                      
                     </td>
                     <td className="px-4 py-3">
                       <span
