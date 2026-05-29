@@ -20,8 +20,7 @@ import {
 import {
   ECurrency,
   LESSON_SETTLEMENT_GRACE_MINUTES,
-  PLATFORM_FEE_PERCENTAGE,
-  TRIAL_LESSON_CANCEL_REFUND_HOURS,
+  calculatePlatformFeeAmounts,
   buildMonthlySubscriptionSlotJson,
   expandCalendarSlotToSteps,
   getWeekMondayInTimezone,
@@ -48,6 +47,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
 import type { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
 import type { RescheduleSubscriptionSlotBodyDto } from './dto/reschedule-subscription-slot.dto';
@@ -128,7 +128,8 @@ export class SubscriptionService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
-    private readonly trialLessonBookingService: TrialLessonBookingService
+    private readonly trialLessonBookingService: TrialLessonBookingService,
+    private readonly appSettingsService: AppSettingsService,
   ) {}
 
   private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
@@ -572,9 +573,11 @@ export class SubscriptionService {
 
     const selectedCurrency = dto.currency;
     const grossAmount = this.subscriptionMonthlyGross(planPrice, selectedCurrency);
-    const platformFeeBps = BigInt(Math.round(PLATFORM_FEE_PERCENTAGE * 10_000));
-    const platformFee = (grossAmount * platformFeeBps) / 10_000n;
-    const tutorAmount = grossAmount - platformFee;
+    const settings = await this.appSettingsService.getSettings();
+    const { platformFee, tutorAmount } = calculatePlatformFeeAmounts(
+      grossAmount,
+      settings.platformFeePercentage,
+    );
     const amountForProvider = Number(grossAmount);
     if (!Number.isFinite(amountForProvider) || amountForProvider < 1) {
       throw new BadRequestException('Invalid payment amount');
@@ -762,10 +765,11 @@ export class SubscriptionService {
       payload.occurrenceStartAt
     );
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings();
     const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot request reschedule within 12 hours of the lesson start time'
+        `Cannot request reschedule within ${lessonChangePeriodHours} hours of the lesson start time`
       );
     }
 
@@ -815,10 +819,11 @@ export class SubscriptionService {
       payload.occurrenceStartAt
     );
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings();
     const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot request cancellation within 12 hours of the lesson start time'
+        `Cannot request cancellation within ${lessonChangePeriodHours} hours of the lesson start time`
       );
     }
 
@@ -963,10 +968,11 @@ export class SubscriptionService {
     const { enrollment, slot, occurrence, tutorTimezone } =
       await this.loadStudentSubscriptionSlotContext(studentUserId, enrollmentId, slotIndex);
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings();
     const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot reschedule within 12 hours of the lesson start time'
+        `Cannot reschedule within ${lessonChangePeriodHours} hours of the lesson start time`
       );
     }
 
@@ -1029,7 +1035,7 @@ export class SubscriptionService {
       }
 
       const hoursUntilSlot = startLocal.utc().diff(dayjs().utc(), 'hour', true);
-      if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      if (hoursUntilSlot <= lessonChangePeriodHours) {
         return true;
       }
 
@@ -1075,10 +1081,12 @@ export class SubscriptionService {
     const { enrollment, slots, slot, occurrence, tutorTimezone } =
       await this.loadStudentSubscriptionSlotContext(studentUserId, enrollmentId, slotIndex);
 
+    const { lessonChangePeriodHours, settlementPeriodHours } =
+      await this.appSettingsService.getSettings();
     const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot reschedule within 12 hours of the lesson start time'
+        `Cannot reschedule within ${lessonChangePeriodHours} hours of the lesson start time`
       );
     }
 
@@ -1122,9 +1130,9 @@ export class SubscriptionService {
       throw new BadRequestException('Cannot reschedule to a time in the past');
     }
     const hoursUntilNewStart = newStartLocal.utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilNewStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilNewStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot reschedule to a time within 12 hours from now'
+        `Cannot reschedule to a time within ${lessonChangePeriodHours} hours from now`
       );
     }
 
@@ -1153,7 +1161,10 @@ export class SubscriptionService {
     );
 
     const newEndAt = newStartLocal.add(durationMinutes, 'minute').toDate();
-    const newRunAt = dayjs(newEndAt).add(LESSON_SETTLEMENT_GRACE_MINUTES, 'minute').toDate();
+    const newRunAt = dayjs(newEndAt)
+      .add(settlementPeriodHours, 'hour')
+      .add(LESSON_SETTLEMENT_GRACE_MINUTES, 'minute')
+      .toDate();
 
     await this.prisma.$transaction(async (tx) => {
       await tx.subscriptionEnrollment.update({

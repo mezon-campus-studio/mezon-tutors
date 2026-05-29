@@ -2,7 +2,7 @@ import { IsInt, IsString, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateWalletWithdrawalDto {
   @IsInt()
-  @Min(10000)
+  @Min(1)
   amount!: number;
 
   @IsString()

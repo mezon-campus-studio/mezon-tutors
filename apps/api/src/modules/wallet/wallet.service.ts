@@ -34,6 +34,7 @@ import {
 import dayjs = require('dayjs');
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 
 @Injectable()
 export class WalletService {
@@ -41,7 +42,8 @@ export class WalletService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly appSettingsService: AppSettingsService,
   ) {}
 
   private monthStart(): Date {
@@ -84,22 +86,36 @@ export class WalletService {
     };
   }
 
-  private assertWalletRole(role: string) {
+  private assertWalletRole(role: Role) {
     if (role !== Role.TUTOR && role !== Role.STUDENT) {
       throw new ForbiddenException('Wallet is only available for students and tutors');
     }
   }
 
-  async getDetails(userId: string, role: string): Promise<WalletDetailsApiResponse> {
-    this.assertWalletRole(role);
+  private async requireWalletRole(userId: string): Promise<Role> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!user) {
+      throw new ForbiddenException('Unauthorized');
+    }
+
+    this.assertWalletRole(user.role);
+    return user.role;
+  }
+
+  async getDetails(userId: string): Promise<WalletDetailsApiResponse> {
+    const role = await this.requireWalletRole(userId);
     if (role === Role.TUTOR) {
       return this.getTutorDetails(userId);
     }
     return this.getStudentDetails(userId);
   }
 
-  async getStats(userId: string, role: string): Promise<WalletStatsApiResponse> {
-    this.assertWalletRole(role);
+  async getStats(userId: string): Promise<WalletStatsApiResponse> {
+    const role = await this.requireWalletRole(userId);
     if (role === Role.TUTOR) {
       return this.getTutorStats(userId);
     }
@@ -187,10 +203,9 @@ export class WalletService {
 
   async updatePayoutBank(
     userId: string,
-    role: string,
     payload: UpdateWalletPayoutBankPayload,
   ): Promise<WalletPayoutBankAccount> {
-    this.assertWalletRole(role);
+    await this.requireWalletRole(userId);
     const bank = this.normalizePayoutBankPayload(payload);
 
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
@@ -360,11 +375,10 @@ export class WalletService {
 
   async getTransactions(
     userId: string,
-    role: string,
     page = 1,
     limit = 10
   ): Promise<WalletTransactionsApiResponse> {
-    this.assertWalletRole(role);
+    const role = await this.requireWalletRole(userId);
     if (role === Role.TUTOR) {
       return this.getTutorTransactions(userId, page, limit);
     }
@@ -817,10 +831,10 @@ export class WalletService {
 
   async getWithdrawals(
     userId: string,
-    role: string,
     page = 1,
     limit = 10
   ): Promise<WalletWithdrawalsApiResponse> {
+    const role = await this.requireWalletRole(userId);
     if (role !== Role.TUTOR) {
       throw new ForbiddenException('Withdrawals are only available for tutors');
     }
@@ -845,16 +859,20 @@ export class WalletService {
 
   async createWithdrawal(
     userId: string,
-    role: string,
     payload: CreateWalletWithdrawalPayload
   ): Promise<WalletWithdrawalApiItem> {
+    const role = await this.requireWalletRole(userId);
     if (role !== Role.TUTOR) {
       throw new ForbiddenException('Withdrawals are only available for tutors');
     }
 
     const amount = BigInt(Math.round(payload.amount));
-    if (amount < 10_000n) {
-      throw new BadRequestException('Minimum withdrawal amount is 10,000 VND');
+    const settings = await this.appSettingsService.getSettings();
+    const minWithdrawal = BigInt(settings.minWithdrawalAmountVnd);
+    if (amount < minWithdrawal) {
+      throw new BadRequestException(
+        `Minimum withdrawal amount is ${settings.minWithdrawalAmountVnd.toLocaleString('en-US')} VND`,
+      );
     }
 
     const wallet = await this.ensureWallet(userId);

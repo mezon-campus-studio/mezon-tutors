@@ -94,12 +94,12 @@
         "statusCancelled": "Cancelled"
       },
       "complaint": {
-        "action": "Report issue",
+        "action": "Complain",
         "statusPending": "Complaint pending",
         "statusApproved": "Refund approved",
         "statusRejected": "Complaint rejected",
         "dialog": {
-          "title": "Report a lesson issue",
+          "title": "Complain about a lesson",
           "subtitle": "Tell us what went wrong with your lesson with {tutor} ({date} · {time}).",
           "windowHint": "You can submit a complaint within {hours} hours after the lesson ends. Admin will review and may refund to your wallet.",
           "reasonLabel": "Reason",
@@ -111,6 +111,12 @@
           "submitting": "Submitting…",
           "success": "Your complaint was submitted. We will review it shortly.",
           "failed": "Could not submit complaint. Please try again."
+        },
+        "supportChat": {
+          "contactSupport": "Chat with support",
+          "opening": "Opening chat…",
+          "missingSession": "Please sign in with Mezon to contact support.",
+          "failed": "Could not open support chat. Please try again."
         },
         "reasons": {
           "tutorNoShow": "Tutor did not show up",

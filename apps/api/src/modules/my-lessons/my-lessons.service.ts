@@ -28,6 +28,7 @@ import {
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
@@ -49,7 +50,10 @@ type TrialLessonBookingWithTutor = Prisma.TrialLessonBookingGetPayload<{
 
 @Injectable()
 export class MyLessonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly appSettingsService: AppSettingsService,
+  ) {}
 
   private toUtc(input: string | Date) {
     return dayjs(input).utc();
@@ -264,10 +268,12 @@ export class MyLessonsService {
 
     const rescheduleKeys = await this.loadRescheduleRequestKeys(studentId);
     const complaintKeys = await this.loadComplaintKeys(studentId);
+    const settings = await this.appSettingsService.getSettings();
     const annotate = (item: MyLessonApiItem) =>
       this.annotateComplaintFields(
         this.annotateRescheduleRequestSubmitted(item, rescheduleKeys),
-        complaintKeys
+        complaintKeys,
+        settings.disputePeriodHours,
       );
 
     return {
@@ -409,7 +415,8 @@ export class MyLessonsService {
     keys: {
       trialByBookingId: Map<string, string>;
       subscriptionByKey: Map<string, string>;
-    }
+    },
+    disputePeriodHours: number,
   ): MyLessonApiItem {
     const now = new Date();
     const duration = item.duration_minutes ?? 0;
@@ -431,6 +438,15 @@ export class MyLessonsService {
           startAt
         )
       );
+      if (!complaintStatus) {
+        const slotPrefix = `${item.subscription_enrollment_id}:${item.subscription_slot_index}:`;
+        for (const [key, status] of keys.subscriptionByKey) {
+          if (key.startsWith(slotPrefix)) {
+            complaintStatus = status;
+            break;
+          }
+        }
+      }
     }
 
     const cancelledTrial =
@@ -451,13 +467,12 @@ export class MyLessonsService {
 
     const withinWindow =
       startAt && duration > 0
-        ? isWithinLessonComplaintWindow(startAt, duration, now)
+        ? isWithinLessonComplaintWindow(startAt, duration, now, disputePeriodHours)
         : false;
 
     const canComplain =
       !complaintStatus &&
       !cancelledTrial &&
-      item.status === 'completed' &&
       lessonFinished &&
       withinWindow &&
       trialPaymentOk &&

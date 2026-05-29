@@ -10,6 +10,10 @@
   "send": "Send",
   "sending": "Sending...",
   "restoreError": "Cannot restore chat session. Please log in again.",
+  "supportChat": {
+    "missingSession": "Please sign in with Mezon to contact support.",
+    "failed": "Could not open support chat. Please try again."
+  },
   "noticeTitle": "CHAT GUIDANCE",
   "noticePrefix": "To access your permanent chat logs and transaction history, please refer to ",
   "noticeLink": "Mezon.",

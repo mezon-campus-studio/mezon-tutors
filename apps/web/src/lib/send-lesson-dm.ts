@@ -1,12 +1,10 @@
 import type { MezonDirectMessageContent } from "@mezon-tutors/shared";
 import type { LightClient } from "mezon-light-sdk";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
+import { sendMezonLightDMWithRefreshFallback } from "@/services/mezon-light/mezon-light.service";
 import { restoreMezonLightClientFromStorage } from "@/services/mezon-light/mezon-light.client";
-import {
-  createMezonLightDM,
-  refreshMezonLightSession,
-  sendMezonLightDMWithRefreshFallback,
-} from "@/services/mezon-light/mezon-light.service";
+import { refreshMezonLightSession } from "@/services/mezon-light/mezon-light.service";
 
 type CreateDmChannelMutation = Pick<
   UseMutationResult<unknown, Error, { senderId: string; recipientId: string; channelId: string }, unknown>,
@@ -37,9 +35,17 @@ export async function sendLessonDmToPeer(params: SendLessonDmParams): Promise<vo
     content,
   } = params;
 
-  if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-    throw new Error("Missing user information to send message.");
-  }
+  const existingChannelId = (await refetchDmChannel()).data?.channelId;
+  const channelId = await ensureMezonDmChannel({
+    lightClient: params.lightClient,
+    setLightClient,
+    senderId,
+    senderMezonUserId,
+    recipientId,
+    recipientMezonUserId,
+    existingChannelId,
+    createDmChannelMutation,
+  });
 
   let client = params.lightClient;
   if (!client) {
@@ -54,23 +60,7 @@ export async function sendLessonDmToPeer(params: SendLessonDmParams): Promise<vo
     await refreshMezonLightSession(client);
   }
 
-  let channelId = (await refetchDmChannel()).data?.channelId;
-  if (!channelId) {
-    const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
-    channelId = dmChannel?.channel_id;
-    if (!channelId) {
-      throw new Error("Could not create DM channel.");
-    }
-
-    await createDmChannelMutation.mutateAsync({
-      senderId,
-      recipientId,
-      channelId,
-    });
-  }
-
   await sendMezonLightDMWithRefreshFallback(client, channelId, content);
 }
 
-/** @deprecated Use sendLessonDmToPeer */
 export const sendStudentLessonDmToTutor = sendLessonDmToPeer;

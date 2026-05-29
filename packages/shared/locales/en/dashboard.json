@@ -270,7 +270,13 @@
         "lessonTime": "Lesson time",
         "submittedAt": "Submitted",
         "reason": "Reason",
-        "adminNote": "Admin note"
+        "adminNote": "Admin note",
+        "contactSupport": "Chat with support",
+        "openingSupportChat": "Opening chat…"
+      },
+      "supportChat": {
+        "missingSession": "Please sign in with Mezon to contact support.",
+        "failed": "Could not open support chat. Please try again."
       },
       "searchPlaceholder": "Search by tutor name...",
       "loading": "Loading complaints...",

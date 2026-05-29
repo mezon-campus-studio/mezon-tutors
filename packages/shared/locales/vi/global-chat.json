@@ -10,6 +10,10 @@
   "send": "Gửi",
   "sending": "Đang gửi...",
   "restoreError": "Không thể khôi phục phiên chat. Vui lòng đăng nhập lại.",
+  "supportChat": {
+    "missingSession": "Vui lòng đăng nhập Mezon để liên hệ hỗ trợ.",
+    "failed": "Không mở được chat hỗ trợ. Vui lòng thử lại."
+  },
   "noticeTitle": "HƯỚNG DẪN CHAT",
   "noticePrefix": "Để xem lịch sử chat và lịch sử giao dịch lâu dài, vui lòng truy cập ",
   "noticeLink": "Mezon.",

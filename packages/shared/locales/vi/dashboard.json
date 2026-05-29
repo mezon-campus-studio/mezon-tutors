@@ -270,7 +270,13 @@
         "lessonTime": "Giờ buổi học",
         "submittedAt": "Gửi lúc",
         "reason": "Lý do",
-        "adminNote": "Ghi chú từ quản trị"
+        "adminNote": "Ghi chú từ quản trị",
+        "contactSupport": "Chat với hỗ trợ",
+        "openingSupportChat": "Đang mở chat…"
+      },
+      "supportChat": {
+        "missingSession": "Vui lòng đăng nhập Mezon để liên hệ hỗ trợ.",
+        "failed": "Không mở được chat hỗ trợ. Vui lòng thử lại."
       },
       "searchPlaceholder": "Tìm theo tên gia sư...",
       "loading": "Đang tải khiếu nại...",

@@ -140,7 +140,29 @@ const roundToHalfHour = (hour: number): number => {
   return wholeHour + 1;
 };
 
+const readComplaintFields = (item: MyLessonApiItem) => {
+  const raw = item as MyLessonApiItem & {
+    canComplain?: boolean;
+    complaintStatus?: string;
+  };
+  const complaintStatus = item.complaint_status ?? raw.complaintStatus;
+  const canComplain = item.can_complain ?? raw.canComplain;
+
+  return {
+    canComplain: canComplain === true,
+    complaintStatus: complaintStatus?.trim() || undefined,
+  };
+};
+
 const mapLesson = (item: MyLessonApiItem): LessonItem => {
+  const { canComplain, complaintStatus } = readComplaintFields(item);
+  const durationMinutes =
+    item.duration_minutes && item.duration_minutes > 0
+      ? item.duration_minutes
+      : item.start_at
+        ? 60
+        : undefined;
+
   return {
     id: item.id,
     subject: item.subject,
@@ -158,7 +180,7 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     endHour: roundToHalfHour(item.end_hour),
     source: item.source ?? "trial",
     startAt: item.start_at,
-    durationMinutes: item.duration_minutes,
+    durationMinutes,
     grossAmount: item.gross_amount,
     currency: item.currency,
     trialBookingStatus: item.trial_booking_status,
@@ -169,8 +191,8 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     enrollmentStatus: item.enrollment_status,
     enrollmentPaymentStatus: item.enrollment_payment_status,
     rescheduleRequestSubmitted: item.reschedule_request_submitted ?? false,
-    canComplain: item.can_complain ?? false,
-    complaintStatus: item.complaint_status,
+    canComplain,
+    complaintStatus,
   };
 };
 

@@ -5,12 +5,13 @@ import {
   type LessonComplaintStatusFilter,
   type StudentLessonComplaintItem,
 } from "@mezon-tutors/shared";
-import { CheckCircle2, Clock3, Search, XCircle } from "lucide-react";
+import { CheckCircle2, Clock3, MessageCircle, Search, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import dayjs from "dayjs";
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
+import { useOpenAdminSupportChat } from "@/hooks";
 import { useGetMyLessonComplaints } from "@/services/lesson-complaint/lesson-complaint.api";
 
 const STATUS_STYLES: Record<
@@ -91,6 +93,8 @@ export default function MyComplaintsView() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<LessonComplaintStatusFilter>("all");
   const { data: complaints = [], isLoading, isFetching } = useGetMyLessonComplaints();
+  const { openAdminSupportChat, isOpening: isOpeningSupportChat } =
+    useOpenAdminSupportChat();
 
   const filtered = useMemo(
     () => filterComplaints(complaints, search, status),
@@ -226,6 +230,20 @@ export default function MyComplaintsView() {
                           </p>
                           <p className="mt-1.5 text-sm text-violet-800">{item.admin_note}</p>
                         </div>
+                      ) : null}
+
+                      {item.status === "REJECTED" ? (
+                        <Button
+                          variant="outline"
+                          className="h-10 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50 sm:w-auto"
+                          onClick={() => void openAdminSupportChat()}
+                          disabled={isOpeningSupportChat}
+                        >
+                          <MessageCircle className="mr-2 size-4" />
+                          {isOpeningSupportChat
+                            ? t("list.openingSupportChat")
+                            : t("list.contactSupport")}
+                        </Button>
                       ) : null}
                     </CardContent>
                   </Card>

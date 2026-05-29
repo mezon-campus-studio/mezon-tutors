@@ -23,7 +23,11 @@ import {
 } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
-import { LESSON_COMPLAINT_REASON_KEYS, LESSON_COMPLAINT_WINDOW_HOURS, type LessonComplaintReasonKey } from "@mezon-tutors/shared";
+import {
+  LESSON_COMPLAINT_REASON_KEYS,
+  type LessonComplaintReasonKey,
+} from "@mezon-tutors/shared";
+import { usePublicAppSettings } from "@/services";
 
 type ComplainLessonDialogProps = {
   isOpen: boolean;
@@ -55,6 +59,8 @@ export function ComplainLessonDialog({
   const locale = useLocale();
   const t = useTranslations("MyLessons.panels.lessons.complaint");
   const tReasons = useTranslations("MyLessons.panels.lessons.complaint.reasons");
+  const { data: publicAppSettings } = usePublicAppSettings();
+  const disputePeriodHours = publicAppSettings?.disputePeriodHours;
 
   const [reasonKey, setReasonKey] = useState<LessonComplaintReasonKey | "">("");
   const [message, setMessage] = useState("");
@@ -203,7 +209,9 @@ export function ComplainLessonDialog({
                   aria-hidden
                 />
                 <p className="text-xs leading-relaxed text-violet-900/90">
-                  {t("dialog.windowHint", { hours: LESSON_COMPLAINT_WINDOW_HOURS })}
+                  {disputePeriodHours != null
+                    ? t("dialog.windowHint", { hours: disputePeriodHours })
+                    : null}
                 </p>
               </div>
             </div>

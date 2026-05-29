@@ -1,6 +1,5 @@
 import {
-  PLATFORM_FEE_PERCENTAGE,
-  TRIAL_LESSON_CANCEL_REFUND_HOURS,
+  calculatePlatformFeeAmounts,
   instantFitsUtcWeeklyAvailability,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotsOccurrencesForWeek,
@@ -52,6 +51,7 @@ import type { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.d
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
 import { WalletService } from '../wallet/wallet.service'
+import { AppSettingsService } from '../app-settings/app-settings.service'
 
 @Injectable()
 export class TrialLessonBookingService {
@@ -59,7 +59,8 @@ export class TrialLessonBookingService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
-    private readonly walletService: WalletService
+    private readonly walletService: WalletService,
+    private readonly appSettingsService: AppSettingsService,
   ) {}
 
   async getTutorBookingRequests(
@@ -799,9 +800,11 @@ export class TrialLessonBookingService {
       selectedCurrency,
       dto.durationMinutes
     )
-    const platformFeeBps = BigInt(Math.round(PLATFORM_FEE_PERCENTAGE * 10_000))
-    const platformFee = (grossAmount * platformFeeBps) / 10_000n
-    const tutorAmount = grossAmount - platformFee
+    const settings = await this.appSettingsService.getSettings()
+    const { platformFee, tutorAmount } = calculatePlatformFeeAmounts(
+      grossAmount,
+      settings.platformFeePercentage,
+    )
 
     const amountForProvider = Number(grossAmount)
     if (!Number.isFinite(amountForProvider) || amountForProvider < 1) {
@@ -955,10 +958,11 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Only confirmed lessons can be rescheduled')
     }
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings()
     const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot reschedule within 12 hours of the lesson. Please contact your tutor.'
+        `Cannot reschedule within ${lessonChangePeriodHours} hours of the lesson. Please contact your tutor.`
       )
     }
 
@@ -971,9 +975,9 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Cannot reschedule to a time in the past')
     }
     const hoursUntilNewStart = startAt.utc().diff(dayjs().utc(), 'hour', true)
-    if (hoursUntilNewStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilNewStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot reschedule to a time within 12 hours from now. Please choose a later slot.'
+        `Cannot reschedule to a time within ${lessonChangePeriodHours} hours from now. Please choose a later slot.`
       )
     }
 
@@ -1087,10 +1091,11 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Only confirmed lessons can be rescheduled')
     }
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings()
     const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot request reschedule within 12 hours of the lesson start time'
+        `Cannot request reschedule within ${lessonChangePeriodHours} hours of the lesson start time`
       )
     }
 
@@ -1162,10 +1167,11 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Only confirmed lessons can be cancelled')
     }
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings()
     const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
-    if (hoursUntilStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+    if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
-        'Cannot request cancellation within 12 hours of the lesson start time'
+        `Cannot request cancellation within ${lessonChangePeriodHours} hours of the lesson start time`
       )
     }
 
@@ -1238,11 +1244,12 @@ export class TrialLessonBookingService {
       throw new BadRequestException('Booking is already cancelled')
     }
 
+    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings()
     const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
     const paymentRefundable = this.isTrialLessonPaymentRefundable(booking)
     const shouldRefund =
       options.refundIfEligible &&
-      hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS &&
+      hoursUntilStart > lessonChangePeriodHours &&
       paymentRefundable
 
     let refunded = false
@@ -1254,7 +1261,7 @@ export class TrialLessonBookingService {
 
     if (
       options.requireRefundIfPaid &&
-      hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS &&
+      hoursUntilStart > lessonChangePeriodHours &&
       paymentRefundable &&
       !refunded
     ) {

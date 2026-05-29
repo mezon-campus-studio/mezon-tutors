@@ -3,7 +3,6 @@
 import {
   ECurrency,
   EPeriod,
-  TRIAL_LESSON_CANCEL_REFUND_HOURS,
   ETrialLessonBookingStatus,
   formatToCurrency,
   jsDayToDbDayOfWeek,
@@ -47,6 +46,7 @@ import {
   useGetAlreadyBookedTrialLesson,
   useGetOccupiedTrialLessonSlotsForWeek,
   useGetTutorAvailability,
+  usePublicAppSettings,
 } from "@/services";
 import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
@@ -130,6 +130,8 @@ export function TrialBookingSheet({
   const { data: schedule, isPending: isAvailabilityPending } =
     useGetTutorAvailability(tutor.id, open && Boolean(tutor.id));
   const userTimezone = useUserTimezone();
+  const { data: publicAppSettings } = usePublicAppSettings();
+  const lessonChangePeriodHours = publicAppSettings?.lessonChangePeriodHours;
 
   const baseWeekStart = useMemo(
     () => getWeekStartMondayInTimezone(userTimezone),
@@ -244,7 +246,7 @@ export function TrialBookingSheet({
       userTimezone,
       {
         occupied: occupiedForBlocking,
-        minHoursFromNow: isReschedule ? TRIAL_LESSON_CANCEL_REFUND_HOURS : undefined,
+        minHoursFromNow: isReschedule ? lessonChangePeriodHours : undefined,
       },
     );
   }, [
@@ -255,6 +257,7 @@ export function TrialBookingSheet({
     isReschedule,
     isOccupiedWeekReady,
     isOccupiedWeekError,
+    lessonChangePeriodHours,
   ]);
 
   const scheduleSelectableSlots = useMemo(() => {

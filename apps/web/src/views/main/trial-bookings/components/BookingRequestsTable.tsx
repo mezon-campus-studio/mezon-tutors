@@ -1,6 +1,11 @@
 'use client';
 
-import { ECurrency, ETrialLessonBookingStatus, formatToCurrency } from '@mezon-tutors/shared';
+import {
+  ECurrency,
+  ETrialLessonBookingStatus,
+  formatToCurrency,
+  isTrialLessonRescheduleEligible,
+} from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -8,7 +13,6 @@ import { useAtomValue } from 'jotai';
 import { CalendarClock, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
-import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import {
   Avatar,
@@ -25,6 +29,7 @@ type BookingRequestsTableProps = {
   items: TrialLessonBookingRequestItem[];
   isLoading?: boolean;
   isFetching?: boolean;
+  lessonChangePeriodHours?: number;
   onViewDetail: (bookingId: string) => void;
   onReschedule: (item: TrialLessonBookingRequestItem) => void;
   onCancel: (item: TrialLessonBookingRequestItem) => void;
@@ -73,6 +78,7 @@ const isCancelledTrial = (status: string) =>
 function buildActionMenuItems(
   item: TrialLessonBookingRequestItem,
   t: (key: string) => string,
+  lessonChangePeriodHours: number | undefined,
   onViewDetail: (bookingId: string) => void,
   onReschedule: (item: TrialLessonBookingRequestItem) => void,
   onCancel: (item: TrialLessonBookingRequestItem) => void,
@@ -99,7 +105,9 @@ function buildActionMenuItems(
   }
 
   if (confirmed) {
-    const canModify = isTrialLessonRescheduleEligible(item.startAt);
+    const canModify =
+      lessonChangePeriodHours != null &&
+      isTrialLessonRescheduleEligible(item.startAt, new Date(), lessonChangePeriodHours);
     const canReschedule = canModify && !item.rescheduleRequestSubmitted;
     const canCancel = canModify && !item.cancellationRequestSubmitted;
     items.push({
@@ -122,6 +130,7 @@ function buildActionMenuItems(
 export default function BookingRequestsTable({
   items,
   isLoading,
+  lessonChangePeriodHours,
   onViewDetail,
   onReschedule,
   onCancel,
@@ -188,6 +197,7 @@ export default function BookingRequestsTable({
               const menuItems = buildActionMenuItems(
                 item,
                 t,
+                lessonChangePeriodHours,
                 onViewDetail,
                 onReschedule,
                 onCancel,

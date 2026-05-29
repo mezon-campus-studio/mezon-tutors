@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Role, type User } from '@mezon-tutors/db';
 import type { TrustShowcaseAvatarDto } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -26,6 +26,29 @@ export class UserService {
     return this.prisma.user.findUnique({
       where: { mezonUserId },
     });
+  }
+
+  async findRoleById(userId: string): Promise<Role | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    return user?.role ?? null;
+  }
+
+  async assertUserHasRole(
+    userId: string,
+    expectedRole: Role,
+    forbiddenMessage: string,
+  ): Promise<void> {
+    const role = await this.findRoleById(userId);
+    if (!role) {
+      throw new ForbiddenException('Unauthorized');
+    }
+    if (role !== expectedRole) {
+      throw new ForbiddenException(forbiddenMessage);
+    }
   }
 
   async findRandomTrustShowcaseAvatars(limit: number): Promise<TrustShowcaseAvatarDto[]> {

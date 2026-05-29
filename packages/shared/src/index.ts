@@ -12,6 +12,8 @@ export * from './types/trial-lesson-booking';
 export * from './types/subscription-plan';
 export * from './types/wallet-api';
 export * from './types/lesson-complaint-api';
+export * from './types/app-settings-api';
+export * from './types/support-api';
 
 // Enums
 export * from './enums/verification-status';
@@ -43,7 +45,6 @@ export * from './constants/footer';
 export * from './constants/header';
 export * from './constants/dashboard';
 export * from './constants/dashboard-booking-request';
-export * from './constants/payment';
 export * from './constants/trial-lesson-checkout-outcome';
 export * from './constants/my-schedule';
 export * from './constants/my-lesson';
@@ -55,6 +56,7 @@ export * from './constants/currency';
 export * from './constants/notification';
 export * from './constants/lesson-settlement';
 export * from './constants/lesson-complaint';
+export * from './constants/app-settings';
 export * from './constants/mezon-oauth';
 
 // Utils
@@ -75,3 +77,5 @@ export * from './utils/trial-lesson-cancellation';
 export * from './utils/student-lesson-dm';
 export * from './utils/tutor-lesson-dm';
 export * from './utils/lesson-complaint';
+export * from './utils/platform-fee';
+export * from './schemas/app-settings';
