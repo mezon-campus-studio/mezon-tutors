@@ -16,12 +16,13 @@ import {
   toast,
 } from "@/components/ui";
 import { useUserTimezone } from "@/hooks";
+import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import {
   convertWallClockSlotBetweenTimezones,
   getWeekStartMondayInTimezone,
-  nowInTimezone,
   parseYmdInTimezone,
 } from "@/lib/timezone";
+import { TRIAL_LESSON_CANCEL_REFUND_HOURS } from "@mezon-tutors/shared";
 import {
   useGetSubscriptionSlotRescheduleOptions,
   useRescheduleSubscriptionSlotMutation,
@@ -107,28 +108,42 @@ export function RescheduleSubscriptionLessonDialog({
     }
   }, [error, open, t]);
 
-  const scheduleAvailableSlots = useMemo(
-    () =>
-      (options?.slots ?? []).filter((slot) => {
-        const [hourText, minuteText] = slot.startTime.split(":");
-        const slotStart = parseYmdInTimezone(slot.date, userTimezone)
-          .hour(Number(hourText) || 0)
-          .minute(Number(minuteText) || 0)
-          .second(0)
-          .millisecond(0);
-        const hoursUntilSlot = slotStart.diff(
-          nowInTimezone(userTimezone),
-          "hour",
-          true,
-        );
-        return hoursUntilSlot > 12;
-      }),
-    [options?.slots, userTimezone],
-  );
-
   const tutorTimezone = options?.tutorTimezone ?? "UTC";
   const gridInterval = options?.gridIntervalMinutes ?? 60;
   const lessonDuration = options?.lessonDurationMinutes ?? 60;
+
+  const scheduleAvailableSlots = useMemo(
+    () => options?.slots ?? [],
+    [options?.slots],
+  );
+
+  const scheduleBlockedSlots = useMemo(() => {
+    const fromApi = options?.blockedSlots ?? [];
+    if (!scheduleAvailableSlots.length) {
+      return fromApi;
+    }
+    const leadTimeBlocked = computeBlockedWallClockSlots(
+      scheduleAvailableSlots,
+      lessonDuration,
+      userTimezone,
+      { minHoursFromNow: TRIAL_LESSON_CANCEL_REFUND_HOURS },
+    );
+    const keys = new Set<string>();
+    const merged = [...fromApi, ...leadTimeBlocked];
+    return merged.filter((slot) => {
+      const key = `${slot.date}|${slot.startTime}`;
+      if (keys.has(key)) {
+        return false;
+      }
+      keys.add(key);
+      return true;
+    });
+  }, [
+    options?.blockedSlots,
+    scheduleAvailableSlots,
+    lessonDuration,
+    userTimezone,
+  ]);
 
   const handleWeekChange = useCallback(
     (payload: { startDate: string; endDate: string }) => {
@@ -238,6 +253,7 @@ export function RescheduleSubscriptionLessonDialog({
           ) : (
             <ScheduleSelection
               availableSlots={scheduleAvailableSlots}
+              blockedSlots={scheduleBlockedSlots}
               timezone={userTimezone}
               selectionMode="single"
               maxSelections={1}

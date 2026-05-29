@@ -93,6 +93,33 @@
         "rated": "Rated",
         "statusCancelled": "Cancelled"
       },
+      "complaint": {
+        "action": "Report issue",
+        "statusPending": "Complaint pending",
+        "statusApproved": "Refund approved",
+        "statusRejected": "Complaint rejected",
+        "dialog": {
+          "title": "Report a lesson issue",
+          "subtitle": "Tell us what went wrong with your lesson with {tutor} ({date} · {time}).",
+          "windowHint": "You can submit a complaint within {hours} hours after the lesson ends. Admin will review and may refund to your wallet.",
+          "reasonLabel": "Reason",
+          "reasonPlaceholder": "Select a reason",
+          "messageLabel": "Details (optional)",
+          "messagePlaceholder": "Describe what happened...",
+          "dismiss": "Cancel",
+          "confirm": "Submit complaint",
+          "submitting": "Submitting…",
+          "success": "Your complaint was submitted. We will review it shortly.",
+          "failed": "Could not submit complaint. Please try again."
+        },
+        "reasons": {
+          "tutorNoShow": "Tutor did not show up",
+          "poorQuality": "Poor lesson quality",
+          "technicalIssue": "Technical issues during the lesson",
+          "wrongContent": "Lesson content did not match expectations",
+          "other": "Other"
+        }
+      },
       "cancellation": {
         "dialog": {
           "title": "Cancel trial lesson",
@@ -151,6 +178,20 @@
       "discoverDescription": "Discover top-rated tutors in Physics, Chemistry, Design, and over 100 other subjects.",
       "findTutors": "Find Tutors",
       "viewSubjects": "View All Subjects"
+    },
+    "complaints": {
+      "loading": "Loading complaints...",
+      "emptyTitle": "No complaints yet",
+      "emptyDescription": "When you submit a lesson complaint, its review status will appear here.",
+      "lessonTime": "Lesson time",
+      "submittedAt": "Submitted at",
+      "reason": "Reason",
+      "adminNote": "Admin note",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
     }
   },
   "screen": {

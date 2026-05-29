@@ -1017,21 +1017,29 @@ export class SubscriptionService {
       }
     );
 
-    const available = candidates.filter((candidate) => {
+    // Return full availability grid (including earlier times today) so the client
+    // can render past cells and 12h-blocked cells like trial reschedule.
+    const blocked = candidates.filter((candidate) => {
       const startLocal = dayjs.tz(
         `${candidate.date} ${candidate.startTime}`,
         viewerTimezone || 'UTC'
       );
-      if (!startLocal.isValid() || startLocal.isBefore(dayjs())) {
+      if (!startLocal.isValid()) {
         return false;
       }
+
       const hoursUntilSlot = startLocal.utc().diff(dayjs().utc(), 'hour', true);
       if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+        return true;
+      }
+
+      if (startLocal.isBefore(dayjs())) {
         return false;
       }
+
       const candStart = startLocal.utc().toDate();
       const candEnd = startLocal.add(durationMinutes, 'minute').utc().toDate();
-      return !occupied.some((busy) => {
+      return occupied.some((busy) => {
         const busyStart = new Date(busy.startAt);
         const busyEnd = new Date(
           busyStart.getTime() + busy.durationMinutes * 60 * 1000
@@ -1041,7 +1049,12 @@ export class SubscriptionService {
     });
 
     return {
-      slots: available.map((s) => ({
+      slots: candidates.map((s) => ({
+        date: s.date,
+        startTime: s.startTime,
+        endTime: s.endTime,
+      })),
+      blockedSlots: blocked.map((s) => ({
         date: s.date,
         startTime: s.startTime,
         endTime: s.endTime,

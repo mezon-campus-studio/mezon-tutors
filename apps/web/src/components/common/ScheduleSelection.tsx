@@ -35,6 +35,8 @@ export type SelectedScheduleSlot = {
 
 export interface ScheduleSelectionProps {
   availableSlots: ScheduleSlotInput[];
+  /** Shown on the grid with strikethrough styling; not selectable (e.g. occupied trial/subscription). */
+  blockedSlots?: ScheduleSlotInput[];
   selectionMode?: SelectionMode;
   maxSelections?: number;
   value?: SelectedScheduleSlot[];
@@ -137,6 +139,7 @@ type ScheduleCellType =
   | "futureAvailable"
   | "futureAvailableMuted"
   | "pastAvailable"
+  | "occupiedBlocked"
   | "selected"
   | "pastSelected";
 
@@ -145,8 +148,10 @@ function getScheduleCellType(input: {
   isSelected: boolean;
   isPast: boolean;
   isSelectable: boolean;
+  isOccupiedBlocked: boolean;
 }): ScheduleCellType {
-  const { isAvailable, isSelected, isPast, isSelectable } = input;
+  const { isAvailable, isSelected, isPast, isSelectable, isOccupiedBlocked } =
+    input;
   if (!isAvailable) {
     return isPast ? "emptyPast" : "empty";
   }
@@ -155,6 +160,9 @@ function getScheduleCellType(input: {
   }
   if (isSelected) {
     return "selected";
+  }
+  if (isOccupiedBlocked) {
+    return "occupiedBlocked";
   }
   if (!isSelectable) {
     return "futureAvailableMuted";
@@ -173,13 +181,34 @@ function getScheduleCellClassName(type: ScheduleCellType): string {
     type === "selected" && "cursor-pointer bg-[#e7d65c] shadow-inner",
     type === "pastAvailable" &&
       "cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30",
+    type === "occupiedBlocked" &&
+      "cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30",
     type === "pastSelected" &&
       "cursor-not-allowed bg-[#e7d65c]/45 opacity-90 ring-2 ring-inset ring-primary/40",
   );
 }
 
+function expandSlotsToCellKeys(
+  slots: ScheduleSlotInput[],
+  gridIntervalMinutes: number,
+  lessonDurationMinutes: number,
+): Set<string> {
+  const set = new Set<string>();
+  for (const slot of slots) {
+    const start = parseTimeToMinutes(slot.startTime);
+    const end = parseTimeToMinutes(
+      normalizeEndTime(slot.startTime, slot.endTime, lessonDurationMinutes),
+    );
+    for (let minute = start; minute < end; minute += gridIntervalMinutes) {
+      set.add(`${slot.date}|${minutesToTime(minute)}`);
+    }
+  }
+  return set;
+}
+
 export function ScheduleSelection({
   availableSlots,
+  blockedSlots = [],
   selectionMode = "single",
   maxSelections,
   value,
@@ -252,6 +281,16 @@ export function ScheduleSelection({
     );
   }, [gridIntervalMinutes]);
 
+  const blockedCellSet = useMemo(
+    () =>
+      expandSlotsToCellKeys(
+        blockedSlots,
+        gridIntervalMinutes,
+        lessonDurationMinutes,
+      ),
+    [blockedSlots, gridIntervalMinutes, lessonDurationMinutes],
+  );
+
   const { visibleAvailableCellSet, selectableCellSet } = useMemo(() => {
     const visibleAvailableCellSet = new Set<string>();
     for (const slot of availableSlots) {
@@ -264,34 +303,51 @@ export function ScheduleSelection({
       }
     }
 
-    if (lessonDurationMinutes <= gridIntervalMinutes) {
-      return {
-        visibleAvailableCellSet,
-        selectableCellSet: visibleAvailableCellSet,
-      };
-    }
-
-    const selectableCellSet = new Set<string>();
-    for (const key of visibleAvailableCellSet) {
+    const isStartSelectable = (key: string) => {
+      if (blockedCellSet.has(key)) {
+        return false;
+      }
       const [date, startTime] = key.split("|");
       const start = parseTimeToMinutes(startTime);
-      let hasConsecutiveSlots = true;
       for (
         let minute = start;
         minute < start + lessonDurationMinutes;
         minute += gridIntervalMinutes
       ) {
-        if (!visibleAvailableCellSet.has(`${date}|${minutesToTime(minute)}`)) {
-          hasConsecutiveSlots = false;
-          break;
+        const cellKey = `${date}|${minutesToTime(minute)}`;
+        if (
+          !visibleAvailableCellSet.has(cellKey) ||
+          blockedCellSet.has(cellKey)
+        ) {
+          return false;
         }
       }
-      if (hasConsecutiveSlots) {
+      return true;
+    };
+
+    if (lessonDurationMinutes <= gridIntervalMinutes) {
+      const selectableCellSet = new Set<string>();
+      for (const key of visibleAvailableCellSet) {
+        if (isStartSelectable(key)) {
+          selectableCellSet.add(key);
+        }
+      }
+      return { visibleAvailableCellSet, selectableCellSet };
+    }
+
+    const selectableCellSet = new Set<string>();
+    for (const key of visibleAvailableCellSet) {
+      if (isStartSelectable(key)) {
         selectableCellSet.add(key);
       }
     }
     return { visibleAvailableCellSet, selectableCellSet };
-  }, [availableSlots, gridIntervalMinutes, lessonDurationMinutes]);
+  }, [
+    availableSlots,
+    blockedCellSet,
+    gridIntervalMinutes,
+    lessonDurationMinutes,
+  ]);
 
   const selectedSet = useMemo(() => {
     const set = new Set<string>();
@@ -428,11 +484,30 @@ export function ScheduleSelection({
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                "size-3 rounded-full",
+                "relative size-3 overflow-hidden rounded-full",
                 getScheduleCellClassName("pastAvailable"),
               )}
-            />
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_2px,rgb(0_0_0/0.12)_2px,rgb(0_0_0/0.12)_4px)]"
+              />
+            </span>
             <span className="font-medium">{t("status.pastAvailable")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "relative size-3 overflow-hidden rounded-full",
+                getScheduleCellClassName("occupiedBlocked"),
+              )}
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_2px,rgb(0_0_0/0.12)_2px,rgb(0_0_0/0.12)_4px)]"
+              />
+            </span>
+            <span className="font-medium">{t("status.occupiedBlocked")}</span>
           </div>
           <div className="flex items-center gap-2">
             <span
@@ -532,12 +607,15 @@ export function ScheduleSelection({
                 const nowMs = nowInTimezone(timezone).valueOf();
                 const isPast =
                   toCellTimestamp(day.id, startTime, timezone) <= nowMs;
-                const disabled = isPast || !isSelectable;
+                const isOccupiedBlocked =
+                  isAvailable && !isPast && blockedCellSet.has(key);
+                const disabled = isPast || isOccupiedBlocked || !isSelectable;
                 const cellType = getScheduleCellType({
                   isAvailable,
                   isSelected,
                   isPast,
                   isSelectable,
+                  isOccupiedBlocked,
                 });
 
                 return (
@@ -559,7 +637,8 @@ export function ScheduleSelection({
                       timezone,
                     )}
                   >
-                    {cellType === "pastAvailable" ? (
+                    {cellType === "pastAvailable" ||
+                    cellType === "occupiedBlocked" ? (
                       <span
                         aria-hidden
                         className="pointer-events-none absolute inset-0 z-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_3px,rgb(0_0_0/0.08)_3px,rgb(0_0_0/0.08)_6px)] dark:bg-[repeating-linear-gradient(-45deg,transparent,transparent_3px,rgb(255_255_255/0.12)_3px,rgb(255_255_255/0.12)_6px)]"

@@ -5,7 +5,10 @@ export type SubscriptionSlotScheduleOption = {
 };
 
 export type SubscriptionSlotRescheduleOptionsResponse = {
+  /** Full tutor availability candidates for the week (includes blocked). */
   slots: SubscriptionSlotScheduleOption[];
+  /** Slots that overlap existing lessons or are within lead-time rules. */
+  blockedSlots: SubscriptionSlotScheduleOption[];
   tutorTimezone: string;
   lessonDurationMinutes: number;
   gridIntervalMinutes: number;

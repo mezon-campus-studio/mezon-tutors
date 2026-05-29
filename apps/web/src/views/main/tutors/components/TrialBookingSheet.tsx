@@ -48,47 +48,11 @@ import {
   useGetOccupiedTrialLessonSlotsForWeek,
   useGetTutorAvailability,
 } from "@/services";
+import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-type OccupiedSlotItem = { startAt: string; durationMinutes: number };
-
-function slotOverlapsOccupied(
-  date: string,
-  startTime: string,
-  durationMinutes: number,
-  occupied: OccupiedSlotItem[],
-  timezoneName: string,
-): boolean {
-  if (!occupied.length) {
-    return false;
-  }
-
-  const [hourText, minuteText] = startTime.split(":");
-  const slotStartLocal = parseYmdInTimezone(date, timezoneName)
-    .hour(Number(hourText) || 0)
-    .minute(Number(minuteText) || 0)
-    .second(0)
-    .millisecond(0);
-  if (!slotStartLocal.isValid()) {
-    return false;
-  }
-  const slotEndLocal = slotStartLocal.add(durationMinutes, "minute");
-
-  return occupied.some((booked) => {
-    const bookedStart = dayjs.utc(booked.startAt);
-    if (!bookedStart.isValid()) {
-      return false;
-    }
-    const bookedEnd = bookedStart.add(booked.durationMinutes, "minute");
-    return (
-      slotStartLocal.utc().isBefore(bookedEnd) &&
-      slotEndLocal.utc().isAfter(bookedStart)
-    );
-  });
-}
 
 function parseTimeParts(hhmm: string): { hour: number; minute: number } {
   const [h, m] = hhmm.split(":").map(Number);
@@ -225,22 +189,6 @@ export function TrialBookingSheet({
     );
   }, [schedule?.availability, userTimezone, weekOffset, duration]);
 
-  const timeSlots = useMemo(() => {
-    const matching = shiftedSlots.filter(
-      (slot) => slot.date === selectedDateString,
-    );
-
-    return matching.map((slot) => {
-      const { hour } = parseTimeParts(slot.startTime);
-      return {
-        id: slot.startTime,
-        label: formatWallClockTime12h(slot.startTime),
-        period: periodFromHourMinute(hour),
-        startTime: slot.startTime,
-      };
-    });
-  }, [shiftedSlots, selectedDateString]);
-
   const weekStartYmd = useMemo(
     () => baseWeekStart.add(weekOffset * DAYS_IN_WEEK, "day").format("YYYY-MM-DD"),
     [baseWeekStart, weekOffset],
@@ -269,7 +217,7 @@ export function TrialBookingSheet({
 
   const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
 
-  const ownLessonOccupied = useMemo((): OccupiedSlotItem[] => {
+  const ownLessonOccupied = useMemo(() => {
     if (!isReschedule || !rescheduleOriginalStartAt) {
       return [];
     }
@@ -281,51 +229,59 @@ export function TrialBookingSheet({
     ];
   }, [isReschedule, rescheduleOriginalStartAt, initialDurationMinutes, duration]);
 
-  const scheduleSelectableSlots = useMemo(() => {
-    return scheduleAvailableSlots.filter((slot) => {
-      // For reschedule flows, require at least 12-hour lead time from now.
-      if (isReschedule) {
-        const slotStart = dayjs.tz(`${slot.date} ${slot.startTime}`, userTimezone);
-        if (!slotStart.isValid()) {
-          return false;
-        }
-        const hoursUntilSlot = slotStart.diff(dayjs().tz(userTimezone), "hour", true);
-        if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
-          return false;
-        }
-      }
-      if (
-        slotOverlapsOccupied(
-          slot.date,
-          slot.startTime,
-          duration,
-          ownLessonOccupied,
-          userTimezone,
-        )
-      ) {
-        return false;
-      }
-      if (!isOccupiedWeekReady && !isOccupiedWeekError) {
-        return false;
-      }
-      return !slotOverlapsOccupied(
-        slot.date,
-        slot.startTime,
-        duration,
-        occupiedWeekItems,
-        userTimezone,
-      );
-    });
+  const occupiedForBlocking = useMemo(
+    () => [...occupiedWeekItems, ...ownLessonOccupied],
+    [occupiedWeekItems, ownLessonOccupied],
+  );
+
+  const scheduleBlockedSlots = useMemo(() => {
+    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+      return [];
+    }
+    return computeBlockedWallClockSlots(
+      scheduleAvailableSlots,
+      duration,
+      userTimezone,
+      {
+        occupied: occupiedForBlocking,
+        minHoursFromNow: isReschedule ? TRIAL_LESSON_CANCEL_REFUND_HOURS : undefined,
+      },
+    );
   }, [
     scheduleAvailableSlots,
-    ownLessonOccupied,
-    occupiedWeekItems,
     duration,
     userTimezone,
+    occupiedForBlocking,
     isReschedule,
     isOccupiedWeekReady,
     isOccupiedWeekError,
   ]);
+
+  const scheduleSelectableSlots = useMemo(() => {
+    const blockedKeys = new Set(
+      scheduleBlockedSlots.map((s) => `${s.date}|${s.startTime}`),
+    );
+    return scheduleAvailableSlots.filter(
+      (s) => !blockedKeys.has(`${s.date}|${s.startTime}`),
+    );
+  }, [scheduleAvailableSlots, scheduleBlockedSlots]);
+
+  const timeSlots = useMemo(() => {
+    const matching = scheduleSelectableSlots.filter(
+      (slot) => slot.date === selectedDateString,
+    );
+
+    return matching.map((slot) => {
+      const { hour } = parseTimeParts(slot.startTime);
+      return {
+        id: slot.startTime,
+        label: formatWallClockTime12h(slot.startTime),
+        period: periodFromHourMinute(hour),
+        startTime: slot.startTime,
+      };
+    });
+  }, [scheduleSelectableSlots, selectedDateString]);
+
   const { data: alreadyBookedResponse } = useGetAlreadyBookedTrialLesson(
     tutor.id,
     open && Boolean(tutor.id) && isAuthenticated && !isReschedule,
@@ -538,7 +494,8 @@ export function TrialBookingSheet({
             <ScheduleSelection
               fillAvailableHeight
               className="min-h-0 flex-1"
-              availableSlots={scheduleSelectableSlots}
+              availableSlots={scheduleAvailableSlots}
+              blockedSlots={scheduleBlockedSlots}
               timezone={userTimezone}
               selectionMode="single"
               lessonDurationMinutes={duration}
