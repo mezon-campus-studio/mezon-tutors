@@ -36,8 +36,6 @@ export type MyLessonApiItem = {
   gross_amount?: number
   currency?: string
   trial_booking_status?: MyLessonTrialBookingStatus
-  /** Trial booking payment; trial lessons only. */
-  trial_payment_status?: string
   /** Parent enrollment id; subscription slots only. */
   subscription_enrollment_id?: string
   /** Enrollment lifecycle; subscription slots only. */
@@ -50,10 +48,6 @@ export type MyLessonApiItem = {
   subscription_slot_status?: string
   /** True when a RESCHEDULE row exists in `cancel_reschedule_reason` for this lesson occurrence. */
   reschedule_request_submitted?: boolean
-  /** Student may submit a complaint (lesson finished, within complaint window, no existing complaint). */
-  can_complain?: boolean
-  /** PENDING | APPROVED | REJECTED when a complaint exists. */
-  complaint_status?: string
 }
 
 export type MyLessonTutorApiItem = {

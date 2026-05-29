@@ -455,6 +455,7 @@ export default function BookingRequestsView() {
         }}
         onConfirm={handleConfirmReschedule}
         lesson={rescheduleTarget}
+        lessonKind="trial"
         isLoading={isSubmitting}
       />
 

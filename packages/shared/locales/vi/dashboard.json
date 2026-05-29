@@ -29,38 +29,6 @@
         "popupBlocked": "Hãy cho phép cửa sổ pop-up trên trang này để tiếp tục với Mezon."
       }
     },
-    "complaintsPage": {
-      "title": "Khiếu nại buổi học",
-      "description": "Theo dõi các khiếu nại bạn đã gửi và trạng thái xử lý hoàn tiền.",
-      "searchPlaceholder": "Tìm theo gia sư, môn học hoặc lý do...",
-      "loading": "Đang tải danh sách khiếu nại...",
-      "emptyTitle": "Chưa có khiếu nại nào",
-      "emptyDescription": "Khi bạn gửi khiếu nại buổi học, trạng thái xử lý sẽ hiển thị ở đây.",
-      "metrics": {
-        "pending": "Chờ xử lý",
-        "approved": "Đã duyệt",
-        "rejected": "Đã từ chối"
-      },
-      "filters": {
-        "all": "Tất cả",
-        "PENDING": "Chờ xử lý",
-        "APPROVED": "Đã duyệt",
-        "REJECTED": "Đã từ chối"
-      },
-      "status": {
-        "PENDING": "Đang chờ xử lý",
-        "APPROVED": "Đã duyệt hoàn tiền",
-        "REJECTED": "Đã từ chối"
-      },
-      "list": {
-        "title": "Danh sách khiếu nại",
-        "subtitle": "{count} yêu cầu",
-        "lessonTime": "Thời gian buổi học",
-        "submittedAt": "Thời điểm gửi",
-        "reason": "Lý do",
-        "adminNote": "Ghi chú từ admin"
-      }
-    },
     "bookingRequests": {
       "eyebrow": "Khu vực gia sư",
       "title": "Buổi học thử",
@@ -123,9 +91,9 @@
         "status": "Trạng thái",
         "actions": "Hành động",
         "view": "Xem",
-        "reschedule": "Dời lịch",
+        "reschedule": "Yêu cầu đổi lịch",
         "cancel": "Hủy buổi học",
-        "rescheduleComingSoon": "Tính năng dời lịch sẽ sớm có mặt.",
+        "rescheduleComingSoon": "Tính năng yêu cầu đổi lịch sẽ sớm có mặt.",
         "noResults": "Không có yêu cầu đặt lịch nào với bộ lọc này."
       },
       "cancellation": {
@@ -138,22 +106,23 @@
         "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn."
       },
       "reschedule": {
-        "within12Hours": "Bạn chỉ có thể yêu cầu dời lịch khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
+        "within12Hours": "Bạn chỉ có thể yêu cầu đổi lịch khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
         "alreadyRequested": "Buổi học này đã có yêu cầu đổi lịch.",
-        "success": "Đã ghi nhận yêu cầu dời lịch. Học sinh đã được thông báo.",
-        "failed": "Không thể gửi yêu cầu dời lịch.",
+        "success": "Đã ghi nhận yêu cầu đổi lịch. Học sinh đã được thông báo.",
+        "failed": "Không thể gửi yêu cầu đổi lịch.",
         "messageSent": "Đã gửi tin nhắn cho học sinh.",
         "messageFailed": "Đã lưu yêu cầu nhưng không gửi được tin nhắn.",
         "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn.",
         "dialog": {
-          "title": "Yêu cầu dời lịch buổi học thử",
+          "title": "Yêu cầu đổi lịch buổi học thử",
+          "titleSubscription": "Yêu cầu đổi lịch buổi gói đăng ký",
           "confirm": "Gửi yêu cầu",
           "dismiss": "Giữ giờ hiện tại",
-          "reasonLabel": "Lý do dời lịch",
+          "reasonLabel": "Lý do yêu cầu đổi lịch",
           "reasonPlaceholder": "Chọn lý do",
           "messageLabel": "Tin nhắn cho {student} (tùy chọn)",
-          "messagePlaceholder": "Giải thích lý do dời lịch và gợi ý khung giờ mới...",
-          "policyHint": "Hệ thống lưu yêu cầu dời lịch và thông báo cho học sinh. Giờ trên lịch chưa thay đổi và không hoàn tiền."
+          "messagePlaceholder": "Giải thích lý do yêu cầu đổi lịch và gợi ý khung giờ mới...",
+          "policyHint": "Hệ thống lưu yêu cầu đổi lịch và thông báo cho học sinh. Giờ trên lịch chưa thay đổi và không hoàn tiền."
         },
         "reasons": {
           "scheduleConflict": "Trùng lịch",
@@ -256,7 +225,7 @@
         "emptyDescription": "Chọn tuần khác, hoặc mở Buổi học thử khi có yêu cầu mới.",
         "durationLabel": "{minutes} phút",
         "viewDetail": "Chi tiết",
-        "reschedule": "Dời lịch",
+        "reschedule": "Yêu cầu đổi lịch",
         "cancel": "Hủy buổi học",
         "joinLesson": "Vào lớp",
         "subscriptionBadge": "Gói theo tháng"
@@ -275,6 +244,38 @@
       "detailCategory": "Danh mục",
       "durationMinutes": "{minutes} phút",
       "statusUpcoming": "Sắp diễn ra"
+    },
+    "complaintsPage": {
+      "title": "Khiếu nại của tôi",
+      "description": "Theo dõi các khiếu nại buổi học bạn đã gửi và trạng thái xử lý.",
+      "metrics": {
+        "pending": "Đang chờ duyệt",
+        "approved": "Đã duyệt",
+        "rejected": "Đã từ chối"
+      },
+      "list": {
+        "title": "Lịch sử khiếu nại",
+        "subtitle": "{count} khiếu nại",
+        "lessonTime": "Giờ buổi học",
+        "submittedAt": "Gửi lúc",
+        "reason": "Lý do",
+        "adminNote": "Ghi chú từ quản trị"
+      },
+      "searchPlaceholder": "Tìm theo tên gia sư...",
+      "loading": "Đang tải khiếu nại...",
+      "emptyTitle": "Chưa có khiếu nại",
+      "emptyDescription": "Khi bạn báo cáo vấn đề với buổi học đã hoàn thành, khiếu nại sẽ hiển thị tại đây.",
+      "filters": {
+        "all": "Tất cả trạng thái",
+        "PENDING": "Đang chờ",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      },
+      "status": {
+        "PENDING": "Đang chờ",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      }
     },
     "placeholder": {
       "title": "Tính năng sắp ra mắt",

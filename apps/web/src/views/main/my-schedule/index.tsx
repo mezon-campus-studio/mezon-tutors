@@ -614,6 +614,9 @@ export default function MyScheduleView() {
         }}
         onConfirm={handleConfirmReschedule}
         lesson={rescheduleTarget}
+        lessonKind={
+          rescheduleItem?.scheduleKind === "subscription" ? "subscription" : "trial"
+        }
         isLoading={isRescheduleSubmitting}
       />
 
