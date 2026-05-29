@@ -38,6 +38,8 @@ type RescheduleLessonDialogProps = {
   onConfirm: (reason: string, message?: string) => void;
   isLoading?: boolean;
   lesson: TutorRescheduleLessonTarget | null;
+  /** Trial vs subscription — dialog title only; tutor action is always a request. */
+  lessonKind?: "trial" | "subscription";
 };
 
 const getInitials = (name?: string) => {
@@ -58,8 +60,13 @@ export function RescheduleLessonDialog({
   onConfirm,
   isLoading,
   lesson,
+  lessonKind = "trial",
 }: RescheduleLessonDialogProps) {
   const t = useTranslations("Dashboard.bookingRequests.reschedule");
+  const dialogTitle =
+    lessonKind === "subscription"
+      ? t("dialog.titleSubscription")
+      : t("dialog.title");
   const locale = useLocale();
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
@@ -92,7 +99,7 @@ export function RescheduleLessonDialog({
       <DialogContent className="max-w-[460px] gap-0 overflow-hidden border-violet-100 p-0 shadow-xl shadow-violet-200/40">
         <DialogHeader className="border-b border-violet-50 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4">
           <DialogTitle className="font-heading text-lg font-extrabold text-slate-900">
-            {t("dialog.title")}
+            {dialogTitle}
           </DialogTitle>
         </DialogHeader>
 

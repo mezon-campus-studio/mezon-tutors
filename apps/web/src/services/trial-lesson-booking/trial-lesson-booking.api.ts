@@ -81,6 +81,7 @@ export type TrialLessonBookingRequestItem = {
   status: ETrialLessonBookingStatus;
   createdAt: string;
   rescheduleRequestSubmitted?: boolean;
+  cancellationRequestSubmitted?: boolean;
   scheduleKind?: "subscription";
   subscriptionEnrollmentId?: string;
   subscriptionSlotIndex?: number;

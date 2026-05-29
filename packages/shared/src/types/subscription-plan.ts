@@ -83,6 +83,7 @@ export interface TutorSubscriptionWeekOccurrenceDto {
   startAt: string
   durationMinutes: number
   rescheduleRequestSubmitted?: boolean
+  cancellationRequestSubmitted?: boolean
 }
 
 export type TutorSubscriptionSlotRescheduleRequestResult = {

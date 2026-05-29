@@ -101,6 +101,7 @@ function buildActionMenuItems(
   if (confirmed) {
     const canModify = isTrialLessonRescheduleEligible(item.startAt);
     const canReschedule = canModify && !item.rescheduleRequestSubmitted;
+    const canCancel = canModify && !item.cancellationRequestSubmitted;
     items.push({
       label: t('reschedule'),
       icon: <CalendarClock className="size-4" />,
@@ -111,7 +112,7 @@ function buildActionMenuItems(
       label: t('cancel'),
       icon: <Trash2 className="size-4" />,
       onClick: () => onCancel(item),
-      disabled: !canModify,
+      disabled: !canCancel,
     });
   }
 
