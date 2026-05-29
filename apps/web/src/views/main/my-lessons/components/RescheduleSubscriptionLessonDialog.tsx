@@ -122,19 +122,34 @@ export function RescheduleSubscriptionLessonDialog({
     [options?.slots],
   );
 
+  const ownLessonOccupied = useMemo(() => {
+    if (!lesson?.startAt) {
+      return [];
+    }
+    return [
+      {
+        startAt: lesson.startAt,
+        durationMinutes: lesson.durationMinutes ?? lessonDuration,
+      },
+    ];
+  }, [lesson?.startAt, lesson?.durationMinutes, lessonDuration]);
+
   const scheduleBlockedSlots = useMemo(() => {
     const fromApi = options?.blockedSlots ?? [];
     if (!scheduleAvailableSlots.length) {
       return fromApi;
     }
-    const leadTimeBlocked = computeBlockedWallClockSlots(
+    const clientBlocked = computeBlockedWallClockSlots(
       scheduleAvailableSlots,
       lessonDuration,
       userTimezone,
-      { minHoursFromNow: lessonChangePeriodHours },
+      {
+        minHoursFromNow: lessonChangePeriodHours,
+        occupied: ownLessonOccupied,
+      },
     );
     const keys = new Set<string>();
-    const merged = [...fromApi, ...leadTimeBlocked];
+    const merged = [...fromApi, ...clientBlocked];
     return merged.filter((slot) => {
       const key = `${slot.date}|${slot.startTime}`;
       if (keys.has(key)) {
@@ -149,6 +164,7 @@ export function RescheduleSubscriptionLessonDialog({
     lessonDuration,
     userTimezone,
     lessonChangePeriodHours,
+    ownLessonOccupied,
   ]);
 
   const handleWeekChange = useCallback(
