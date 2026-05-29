@@ -29,7 +29,6 @@ import {
   ESubscriptionLessonSlotStatus,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
-  subscriptionSlotGrossAmount,
   timeToMinutes,
   tutorLocalSlotFitsUtcAvailability,
   utcWeeklySlotsToCalendarInstances,
@@ -48,7 +47,6 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { VnpayService } from '../vnpay/vnpay.service';
-import { WalletService } from '../wallet/wallet.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
 import type { CancelSubscriptionSlotBodyDto } from './dto/cancel-subscription-slot.dto';
@@ -130,7 +128,6 @@ export class SubscriptionService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
-    private readonly walletService: WalletService,
     private readonly trialLessonBookingService: TrialLessonBookingService
   ) {}
 
@@ -550,6 +547,16 @@ export class SubscriptionService {
       ) {
         throw new BadRequestException('Slot outside tutor availability');
       }
+      const slotStart = dayjs.tz(`${s.date} ${s.startTime}`, tutorTimezone);
+      if (!slotStart.isValid()) {
+        throw new BadRequestException('Invalid slot start time');
+      }
+      await this.trialLessonBookingService.assertTutorSlotAvailable(
+        dto.tutorId,
+        slotStart.utc().toISOString(),
+        durationMinutes,
+        tutorTimezone
+      );
       const dbDay = jsDayToDbDayOfWeek(d.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
@@ -875,15 +882,6 @@ export class SubscriptionService {
       throw new BadRequestException('Lesson time could not be resolved');
     }
 
-    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    const shouldCredit = hoursUntilStart > TRIAL_LESSON_CANCEL_REFUND_HOURS;
-    const refundAmount = subscriptionSlotGrossAmount(
-      enrollment.grossAmount,
-      slots.length,
-      slotIndex
-    );
-    const currency = (enrollment.currency as ECurrency | null) ?? ECurrency.VND;
-
     const updatedSlots = slots.map((s, i) =>
       i === slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.CANCELLED } : s
     );
@@ -924,25 +922,10 @@ export class SubscriptionService {
       });
     });
 
-    let credited = false;
-    if (shouldCredit && refundAmount > 0n) {
-      const tutorLabel = enrollment.tutor.user?.username ?? 'tutor';
-      credited = await this.walletService.refundSubscriptionLessonSlot({
-        enrollmentId: enrollment.id,
-        slotIndex,
-        studentUserId: enrollment.studentId,
-        tutorUserId: enrollment.tutor.userId,
-        grossAmount: enrollment.grossAmount,
-        tutorAmount: enrollment.tutorAmount,
-        slotCount: slots.length,
-        description: `Refund for cancelled subscription lesson with ${tutorLabel}`,
-      });
-    }
-
     return {
-      credited,
-      refundAmount: Number(refundAmount),
-      currency,
+      credited: false,
+      refundAmount: 0,
+      currency: (enrollment.currency as ECurrency | null) ?? ECurrency.VND,
     };
   }
 
@@ -1016,6 +999,10 @@ export class SubscriptionService {
         viewerTimezone || 'UTC'
       );
       if (!startLocal.isValid() || startLocal.isBefore(dayjs())) {
+        return false;
+      }
+      const hoursUntilSlot = startLocal.utc().diff(dayjs().utc(), 'hour', true);
+      if (hoursUntilSlot <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
         return false;
       }
       const candStart = startLocal.utc().toDate();
@@ -1096,6 +1083,12 @@ export class SubscriptionService {
     );
     if (!newStartLocal.isValid() || newStartLocal.isBefore(dayjs())) {
       throw new BadRequestException('Cannot reschedule to a time in the past');
+    }
+    const hoursUntilNewStart = newStartLocal.utc().diff(dayjs().utc(), 'hour', true);
+    if (hoursUntilNewStart <= TRIAL_LESSON_CANCEL_REFUND_HOURS) {
+      throw new BadRequestException(
+        'Cannot reschedule to a time within 12 hours from now'
+      );
     }
 
     await this.trialLessonBookingService.assertTutorSlotAvailable(

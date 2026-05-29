@@ -769,31 +769,13 @@ export default function MyLessonsPanel({
         if (enrollmentId == null || slotIndex == null) {
           throw new Error("Missing subscription lesson reference");
         }
-        const result = await cancelSubscriptionMutation.mutateAsync({
+        await cancelSubscriptionMutation.mutateAsync({
           enrollmentId,
           slotIndex,
           payload: { reason, message: message?.trim() },
         });
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["my-lessons"] }),
-          result.credited
-            ? queryClient.invalidateQueries({ queryKey: walletQueryKey.all })
-            : Promise.resolve(),
-        ]);
-        const amountLabel =
-          result.refundAmount > 0 && result.currency
-            ? formatToCurrency(
-                result.currency as ECurrency,
-                result.refundAmount,
-              )
-            : null;
-        toast.success(
-          result.credited && amountLabel
-            ? t("panels.lessons.subscription.cancellation.dialog.successCredited", {
-                amount: amountLabel,
-              })
-            : t("panels.lessons.subscription.cancellation.dialog.successNoCredit"),
-        );
+        await queryClient.invalidateQueries({ queryKey: ["my-lessons"] });
+        toast.success(t("panels.lessons.subscription.cancellation.dialog.successNoCredit"));
       } else {
         const result = await cancelMutation.mutateAsync({
           bookingId: selectedLesson.id,

@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import {
   useCreateSubscriptionEnrollmentMutation,
   useGetSubscriptionEligibility,
+  useGetOccupiedTrialLessonSlotsForWeek,
   useGetSubscriptionPlansByTutor,
   useGetTutorAvailability,
 } from "@/services";
@@ -68,6 +69,32 @@ function getInitialWeekBounds(timezoneName: string): {
 
 function slotKey(s: { date: string; startTime: string }): string {
   return `${s.date}|${s.startTime}`;
+}
+
+type OccupiedSlotItem = { startAt: string; durationMinutes: number };
+
+function slotOverlapsOccupied(
+  date: string,
+  startTime: string,
+  durationMinutes: number,
+  occupied: OccupiedSlotItem[],
+  timezoneName: string,
+): boolean {
+  if (!occupied.length) return false;
+
+  const slotStartLocal = dayjs.tz(`${date} ${startTime}`, timezoneName);
+  if (!slotStartLocal.isValid()) return false;
+  const slotEndLocal = slotStartLocal.add(durationMinutes, "minute");
+
+  return occupied.some((busy) => {
+    const busyStart = dayjs.utc(busy.startAt);
+    if (!busyStart.isValid()) return false;
+    const busyEnd = busyStart.add(busy.durationMinutes, "minute");
+    return (
+      slotStartLocal.utc().isBefore(busyEnd) &&
+      slotEndLocal.utc().isAfter(busyStart)
+    );
+  });
 }
 
 export default function SubscriptionPlanSchedulePage() {
@@ -115,6 +142,18 @@ export default function SubscriptionPlanSchedulePage() {
     tutorId,
     Boolean(tutorId) && isAuth,
   );
+  const {
+    data: occupiedWeekResponse,
+    isFetching: isOccupiedWeekFetching,
+    isSuccess: isOccupiedWeekReady,
+    isError: isOccupiedWeekError,
+  } = useGetOccupiedTrialLessonSlotsForWeek(
+    tutorId,
+    weekBounds.start,
+    userTimezone,
+    Boolean(tutorId),
+  );
+  const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
   const tutorTimezone = schedule?.timezone ?? "UTC";
 
   useEffect(() => {
@@ -154,7 +193,7 @@ export default function SubscriptionPlanSchedulePage() {
       weekOffset,
     );
 
-    return instances
+    const candidates = instances
       .filter((instance) => !parseYmdInTimezone(instance.date, userTimezone).isBefore(today, "day"))
       .flatMap((instance) =>
         expandCalendarSlotToSteps(
@@ -163,7 +202,27 @@ export default function SubscriptionPlanSchedulePage() {
           SUBSCRIPTION_LESSON_MINUTES,
         ),
       );
-  }, [schedule?.availability, userTimezone, weekBounds.start]);
+
+    return candidates.filter((slot) => {
+      if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+        return false;
+      }
+      return !slotOverlapsOccupied(
+        slot.date,
+        slot.startTime,
+        SUBSCRIPTION_LESSON_MINUTES,
+        occupiedWeekItems,
+        userTimezone,
+      );
+    });
+  }, [
+    schedule?.availability,
+    userTimezone,
+    weekBounds.start,
+    occupiedWeekItems,
+    isOccupiedWeekReady,
+    isOccupiedWeekError,
+  ]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
@@ -177,6 +236,17 @@ export default function SubscriptionPlanSchedulePage() {
       setSelectedSlots([]);
     }
   }, [lessonsPerWeek, tutorId, weekBounds.start]);
+
+  useEffect(() => {
+    setSelectedSlots((prev) =>
+      prev.filter((selected) =>
+        scheduleAvailableSlots.some(
+          (slot) =>
+            slot.date === selected.date && slot.startTime === selected.startTime,
+        ),
+      ),
+    );
+  }, [scheduleAvailableSlots]);
 
   const canSubmit = Boolean(
     isAuth &&
