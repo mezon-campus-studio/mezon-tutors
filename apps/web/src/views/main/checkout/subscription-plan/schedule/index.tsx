@@ -40,6 +40,7 @@ import {
   resolveStableTimezone,
   startOfTodayInTimezone,
 } from "@/lib/timezone";
+import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import { cn } from "@/lib/utils";
 import {
   useCreateSubscriptionEnrollmentMutation,
@@ -69,32 +70,6 @@ function getInitialWeekBounds(timezoneName: string): {
 
 function slotKey(s: { date: string; startTime: string }): string {
   return `${s.date}|${s.startTime}`;
-}
-
-type OccupiedSlotItem = { startAt: string; durationMinutes: number };
-
-function slotOverlapsOccupied(
-  date: string,
-  startTime: string,
-  durationMinutes: number,
-  occupied: OccupiedSlotItem[],
-  timezoneName: string,
-): boolean {
-  if (!occupied.length) return false;
-
-  const slotStartLocal = dayjs.tz(`${date} ${startTime}`, timezoneName);
-  if (!slotStartLocal.isValid()) return false;
-  const slotEndLocal = slotStartLocal.add(durationMinutes, "minute");
-
-  return occupied.some((busy) => {
-    const busyStart = dayjs.utc(busy.startAt);
-    if (!busyStart.isValid()) return false;
-    const busyEnd = busyStart.add(busy.durationMinutes, "minute");
-    return (
-      slotStartLocal.utc().isBefore(busyEnd) &&
-      slotEndLocal.utc().isAfter(busyStart)
-    );
-  });
 }
 
 export default function SubscriptionPlanSchedulePage() {
@@ -203,26 +178,31 @@ export default function SubscriptionPlanSchedulePage() {
         ),
       );
 
-    return candidates.filter((slot) => {
-      if (!isOccupiedWeekReady && !isOccupiedWeekError) {
-        return false;
-      }
-      return !slotOverlapsOccupied(
-        slot.date,
-        slot.startTime,
-        SUBSCRIPTION_LESSON_MINUTES,
-        occupiedWeekItems,
-        userTimezone,
-      );
-    });
+    return candidates;
+  }, [schedule?.availability, userTimezone, weekBounds.start]);
+
+  const scheduleBlockedSlots = useMemo(() => {
+    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+      return [];
+    }
+    return computeBlockedWallClockSlots(
+      scheduleAvailableSlots,
+      SUBSCRIPTION_LESSON_MINUTES,
+      userTimezone,
+      { occupied: occupiedWeekItems },
+    );
   }, [
-    schedule?.availability,
+    scheduleAvailableSlots,
     userTimezone,
-    weekBounds.start,
     occupiedWeekItems,
     isOccupiedWeekReady,
     isOccupiedWeekError,
   ]);
+
+  const scheduleSelectableSlots = useMemo(() => {
+    const blockedKeys = new Set(scheduleBlockedSlots.map((s) => slotKey(s)));
+    return scheduleAvailableSlots.filter((s) => !blockedKeys.has(slotKey(s)));
+  }, [scheduleAvailableSlots, scheduleBlockedSlots]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
@@ -240,13 +220,13 @@ export default function SubscriptionPlanSchedulePage() {
   useEffect(() => {
     setSelectedSlots((prev) =>
       prev.filter((selected) =>
-        scheduleAvailableSlots.some(
+        scheduleSelectableSlots.some(
           (slot) =>
             slot.date === selected.date && slot.startTime === selected.startTime,
         ),
       ),
     );
-  }, [scheduleAvailableSlots]);
+  }, [scheduleSelectableSlots]);
 
   const canSubmit = Boolean(
     isAuth &&
@@ -395,6 +375,7 @@ export default function SubscriptionPlanSchedulePage() {
           <div className="flex min-h-[min(70vh,720px)] min-w-0 flex-1 flex-col">
             <ScheduleSelection
               availableSlots={scheduleAvailableSlots}
+              blockedSlots={scheduleBlockedSlots}
               timezone={userTimezone}
               selectionMode="multiple"
               maxSelections={lessonsPerWeek}

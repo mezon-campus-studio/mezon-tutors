@@ -72,6 +72,7 @@
     "status": {
       "available": "Lịch trống",
       "pastAvailable": "Đã qua (chỉ xem)",
+      "occupiedBlocked": "Đã có buổi học",
       "notAvailable": "Không có lịch",
       "bookedByYou": "Bạn đã đặt"
     }
