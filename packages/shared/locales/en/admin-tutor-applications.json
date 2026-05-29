@@ -73,6 +73,8 @@
           "tutorRescheduledUnavail": "The tutor rescheduled to a time when I'm not available",
           "tutorAskedCancel": "The tutor asked me to cancel",
           "noLongerLearnTutor": "I don't want to learn with this tutor anymore",
+          "studentReschedule": "Student rescheduled the lesson",
+          "studentTrialReschedule": "Student rescheduled the trial lesson",
           "other": "Other"
         }
       },

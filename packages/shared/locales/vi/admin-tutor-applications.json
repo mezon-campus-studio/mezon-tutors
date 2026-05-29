@@ -73,6 +73,8 @@
           "tutorRescheduledUnavail": "Gia sư đổi sang giờ tôi không tham gia được",
           "tutorAskedCancel": "Gia sư yêu cầu tôi hủy",
           "noLongerLearnTutor": "Tôi không muốn học với gia sư này nữa",
+          "studentReschedule": "Học sinh tự đổi lịch buổi học",
+          "studentTrialReschedule": "Học sinh tự đổi lịch buổi học thử",
           "other": "Khác"
         }
       },

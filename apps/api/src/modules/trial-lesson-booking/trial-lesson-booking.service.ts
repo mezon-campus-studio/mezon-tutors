@@ -986,12 +986,32 @@ export class TrialLessonBookingService {
       { excludeTrialBookingId: booking.id }
     )
 
-    await this.prisma.trialLessonBooking.update({
-      where: { id: booking.id },
-      data: {
-        startAt: startAt.toDate(),
-        durationMinutes: dto.durationMinutes,
-      },
+    const originalStartAt = booking.startAt
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.trialLessonBooking.update({
+        where: { id: booking.id },
+        data: {
+          startAt: startAt.toDate(),
+          durationMinutes: dto.durationMinutes,
+        },
+      })
+
+      await tx.cancelRescheduleReason.create({
+        data: {
+          studentId: booking.studentId,
+          tutorId: booking.tutorId,
+          initiatedByUserId: studentUserId,
+          initiatedByRole: ELessonChangeInitiatorRole.STUDENT,
+          action: ELessonChangeAction.RESCHEDULE,
+          lessonType: ELessonChangeLessonType.TRIAL,
+          reason: 'studentTrialReschedule',
+          message: null,
+          trialLessonBookingId: booking.id,
+          originalStartAt,
+          originalDurationMinutes: booking.durationMinutes,
+        },
+      })
     })
 
     return { success: true }
@@ -1014,10 +1034,15 @@ export class TrialLessonBookingService {
       throw new ForbiddenException('Not allowed to cancel this booking')
     }
 
+    const reason = payload?.reason?.trim()
+    if (!reason) {
+      throw new BadRequestException('Cancellation reason is required')
+    }
+
     return this.applyTrialLessonCancellation(booking.id, {
       refundIfEligible: true,
-      cancelReason: payload?.reason ?? null,
-      cancelMessage: payload?.message ?? null,
+      cancelReason: reason,
+      cancelMessage: payload?.message?.trim() || null,
     })
   }
 
@@ -1238,13 +1263,36 @@ export class TrialLessonBookingService {
       )
     }
 
-    await this.prisma.trialLessonBooking.update({
-      where: { id: booking.id },
-      data: {
-        status: ETrialLessonStatus.CANCELLED,
-        cancelReason: options.cancelReason,
-        cancelMessage: options.cancelMessage,
-      },
+    const reasonTrimmed = options.cancelReason?.trim() ?? ''
+    const messageTrimmed = options.cancelMessage?.trim() || null
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.trialLessonBooking.update({
+        where: { id: booking.id },
+        data: {
+          status: ETrialLessonStatus.CANCELLED,
+          cancelReason: reasonTrimmed || null,
+          cancelMessage: messageTrimmed,
+        },
+      })
+
+      if (reasonTrimmed) {
+        await tx.cancelRescheduleReason.create({
+          data: {
+            studentId: booking.studentId,
+            tutorId: booking.tutorId,
+            initiatedByUserId: booking.studentId,
+            initiatedByRole: ELessonChangeInitiatorRole.STUDENT,
+            action: ELessonChangeAction.CANCEL,
+            lessonType: ELessonChangeLessonType.TRIAL,
+            reason: reasonTrimmed,
+            message: messageTrimmed,
+            trialLessonBookingId: booking.id,
+            originalStartAt: booking.startAt,
+            originalDurationMinutes: booking.durationMinutes,
+          },
+        })
+      }
     })
 
     return { refunded }

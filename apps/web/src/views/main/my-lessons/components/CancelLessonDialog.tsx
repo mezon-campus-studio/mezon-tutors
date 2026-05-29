@@ -45,6 +45,10 @@ type CancelLessonDialogProps = {
   onConfirm: (reason: string, message?: string) => void;
   isLoading?: boolean;
   lesson: LessonItem | TrialCancelLessonTarget | null;
+  /** Student self-cancel (refund policy) vs tutor cancellation request to student. */
+  variant?: "student" | "tutor";
+  /** Trial vs subscription — affects tutor dialog title only. */
+  lessonKind?: "trial" | "subscription";
 };
 
 function resolveCurrency(code?: string): ECurrency {
@@ -92,16 +96,20 @@ export function CancelLessonDialog({
   onConfirm,
   isLoading,
   lesson,
+  variant = "student",
+  lessonKind,
 }: CancelLessonDialogProps) {
   const locale = useLocale();
+  const isTutor = variant === "tutor";
   const isSubscription =
-    lesson != null &&
-    "source" in lesson &&
-    lesson.source === "subscription";
+    lessonKind === "subscription" ||
+    (lesson != null && "source" in lesson && lesson.source === "subscription");
   const t = useTranslations("MyLessons.panels.lessons.cancellation");
   const tSubscription = useTranslations(
     "MyLessons.panels.lessons.subscription.cancellation",
   );
+  const tTutor = useTranslations("Dashboard.bookingRequests.cancellation.dialog");
+  const tTutorReasons = useTranslations("Dashboard.bookingRequests.reschedule.reasons");
   const tPolicy = isSubscription ? tSubscription : t;
   const [reason, setReason] = useState<string>("");
   const [message, setMessage] = useState<string>("");
@@ -119,7 +127,7 @@ export function CancelLessonDialog({
   }, [isOpen]);
 
   const refundPolicy = useMemo(() => {
-    if (!target?.startAt) {
+    if (isTutor || !target?.startAt) {
       return null;
     }
     if (isSubscription) {
@@ -134,10 +142,18 @@ export function CancelLessonDialog({
           : null;
 
     return { eligible, amountLabel, noRefundAlways: false };
-  }, [target, isSubscription]);
+  }, [target, isSubscription, isTutor]);
 
-  const reasons = useMemo(
-    () => [
+  const reasons = useMemo(() => {
+    if (isTutor) {
+      return [
+        { value: "scheduleConflict", label: tTutorReasons("scheduleConflict") },
+        { value: "personalEmergency", label: tTutorReasons("personalEmergency") },
+        { value: "studentUnavailable", label: tTutorReasons("studentUnavailable") },
+        { value: "other", label: tTutorReasons("other") },
+      ];
+    }
+    return [
       { value: "timeNotWork", label: t("reasons.timeNotWork") },
       { value: "technicalIssue", label: t("reasons.technicalIssue") },
       { value: "avoidBalanceLoss", label: t("reasons.avoidBalanceLoss") },
@@ -146,9 +162,16 @@ export function CancelLessonDialog({
       { value: "tutorAskedCancel", label: t("reasons.tutorAskedCancel") },
       { value: "noLongerLearnTutor", label: t("reasons.noLongerLearnTutor") },
       { value: "other", label: t("reasons.other") },
-    ],
-    [t],
-  );
+    ];
+  }, [isTutor, t, tTutorReasons]);
+
+  const dialogTitle = isTutor
+    ? isSubscription
+      ? tTutor("titleSubscription")
+      : tTutor("title")
+    : isSubscription
+      ? tSubscription("dialog.title")
+      : t("dialog.title");
 
   const handleConfirm = () => {
     if (reason) {
@@ -161,7 +184,7 @@ export function CancelLessonDialog({
       <DialogContent className="max-w-[460px] gap-0 overflow-hidden border-violet-100 p-0 shadow-xl shadow-violet-200/40">
         <DialogHeader className="border-b border-violet-50 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4">
           <DialogTitle className="font-heading text-lg font-extrabold text-slate-900">
-            {isSubscription ? tSubscription("dialog.title") : t("dialog.title")}
+            {dialogTitle}
           </DialogTitle>
         </DialogHeader>
 
@@ -200,7 +223,16 @@ export function CancelLessonDialog({
                 </div>
               </div>
 
-              {refundPolicy ? (
+              {isTutor ? (
+                <div className="flex gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                    <Info className="size-4" />
+                  </div>
+                  <p className="min-w-0 flex-1 text-xs leading-relaxed text-slate-600">
+                    {tTutor("policyHint")}
+                  </p>
+                </div>
+              ) : refundPolicy ? (
                 <div
                   className={
                     refundPolicy.eligible
@@ -254,11 +286,15 @@ export function CancelLessonDialog({
 
               <div className="space-y-2">
                 <Label className="mb-2 text-xs font-semibold text-slate-900">
-                  {t("dialog.reasonLabel")}
+                  {isTutor ? tTutor("reasonLabel") : t("dialog.reasonLabel")}
                 </Label>
                 <Select value={reason} onValueChange={(val) => setReason(val ?? "")}>
                   <SelectTrigger className="h-11 w-full rounded-xl border-violet-100 bg-white px-3.5 text-sm text-slate-700 focus:ring-2 focus:ring-violet-200">
-                    <SelectValue placeholder={t("dialog.reasonPlaceholder")}>
+                    <SelectValue
+                      placeholder={
+                        isTutor ? tTutor("reasonPlaceholder") : t("dialog.reasonPlaceholder")
+                      }
+                    >
                       {reasons.find((r) => r.value === reason)?.label}
                     </SelectValue>
                   </SelectTrigger>
@@ -274,12 +310,16 @@ export function CancelLessonDialog({
 
               <div className="space-y-2">
                 <Label className="mb-2 text-xs font-semibold text-slate-900">
-                  {t("dialog.messageLabel", { tutor: target.peerName })}
+                  {isTutor
+                    ? tTutor("messageLabel", { student: target.peerName })
+                    : t("dialog.messageLabel", { tutor: target.peerName })}
                 </Label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder={t("dialog.messagePlaceholder")}
+                  placeholder={
+                    isTutor ? tTutor("messagePlaceholder") : t("dialog.messagePlaceholder")
+                  }
                   className="min-h-[88px] resize-none rounded-xl border-violet-100 bg-white p-3 text-sm text-slate-700 focus-visible:ring-2 focus-visible:ring-violet-200"
                 />
               </div>
@@ -292,14 +332,14 @@ export function CancelLessonDialog({
                 onClick={onClose}
                 disabled={isLoading}
               >
-                {t("dialog.dismiss")}
+                {isTutor ? tTutor("dismiss") : t("dialog.dismiss")}
               </Button>
               <Button
                 className="h-11 flex-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
                 disabled={!reason || isLoading}
                 onClick={handleConfirm}
               >
-                {t("dialog.confirm")}
+                {isTutor ? tTutor("confirm") : t("dialog.confirm")}
               </Button>
             </DialogFooter>
           </>

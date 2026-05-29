@@ -47,6 +47,8 @@ const KNOWN_REASON_KEYS = [
   "tutorRescheduledUnavail",
   "tutorAskedCancel",
   "noLongerLearnTutor",
+  "studentReschedule",
+  "studentTrialReschedule",
   "other",
 ] as const;
 
