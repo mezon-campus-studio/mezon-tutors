@@ -41,7 +41,6 @@ import {
 } from '@/services';
 import { sendLessonDmToPeer } from '@/lib/send-lesson-dm';
 import {
-  getStudentFacingCancelReasonLabel,
   getTutorRescheduleReasonLabel,
 } from '@/lib/tutor-lesson-dm-reasons';
 import { subscriptionQueryKey } from '@/services/subscription/subscription.qkey';
@@ -207,7 +206,6 @@ export default function MyScheduleView() {
   const tModal = useTranslations('Dashboard.scheduleEventModal');
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule');
   const tCancel = useTranslations('Dashboard.bookingRequests.cancellation');
-  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation');
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -389,7 +387,7 @@ export default function MyScheduleView() {
                 userTimezone,
                 locale,
               ),
-              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
               message,
               locale,
               senderAvatarUrl: user?.avatar,
@@ -650,6 +648,10 @@ export default function MyScheduleView() {
         onConfirm={handleConfirmCancel}
         lesson={cancelTarget}
         isLoading={isCancelSubmitting}
+        variant="tutor"
+        lessonKind={
+          cancelItem?.scheduleKind === 'subscription' ? 'subscription' : 'trial'
+        }
       />
 
       <SendMessageModal

@@ -103,7 +103,18 @@
         "failed": "Không thể gửi yêu cầu hủy.",
         "messageSent": "Đã gửi tin nhắn cho học sinh.",
         "messageFailed": "Đã lưu yêu cầu nhưng không gửi được tin nhắn.",
-        "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn."
+        "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn.",
+        "dialog": {
+          "title": "Yêu cầu hủy buổi học thử",
+          "titleSubscription": "Yêu cầu hủy buổi học gói đăng ký",
+          "confirm": "Gửi yêu cầu hủy",
+          "dismiss": "Giữ buổi học",
+          "reasonLabel": "Lý do yêu cầu hủy",
+          "reasonPlaceholder": "Chọn lý do",
+          "messageLabel": "Tin nhắn cho {student} (tùy chọn)",
+          "messagePlaceholder": "Giải thích lý do bạn muốn hủy buổi học...",
+          "policyHint": "Vui lòng chọn lý do và nhập tin nhắn nếu cần để gửi yêu cầu hủy lịch đến học sinh."
+        }
       },
       "reschedule": {
         "within12Hours": "Bạn chỉ có thể yêu cầu đổi lịch khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",

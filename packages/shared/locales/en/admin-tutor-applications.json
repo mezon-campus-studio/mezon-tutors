@@ -50,9 +50,15 @@
           "requestedAt": "Requested at",
           "student": "Student",
           "lesson": "Lesson",
+          "initiatedBy": "Initiated by",
           "action": "Action",
           "reason": "Reason",
           "message": "Message"
+        },
+        "initiatedBy": {
+          "STUDENT": "Student",
+          "TUTOR": "Tutor",
+          "SYSTEM": "System"
         },
         "lessonRef": {
           "trial": "Trial",
@@ -73,6 +79,8 @@
           "tutorRescheduledUnavail": "The tutor rescheduled to a time when I'm not available",
           "tutorAskedCancel": "The tutor asked me to cancel",
           "noLongerLearnTutor": "I don't want to learn with this tutor anymore",
+          "studentReschedule": "Student rescheduled the lesson",
+          "studentTrialReschedule": "Student rescheduled the trial lesson",
           "other": "Other"
         }
       },

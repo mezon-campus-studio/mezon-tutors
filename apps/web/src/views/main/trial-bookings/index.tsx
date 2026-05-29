@@ -55,10 +55,7 @@ import {
   ROUTES,
 } from '@mezon-tutors/shared'
 import { sendLessonDmToPeer } from '@/lib/send-lesson-dm'
-import {
-  getStudentFacingCancelReasonLabel,
-  getTutorRescheduleReasonLabel,
-} from '@/lib/tutor-lesson-dm-reasons'
+import { getTutorRescheduleReasonLabel } from '@/lib/tutor-lesson-dm-reasons'
 
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
 
@@ -135,8 +132,6 @@ export default function BookingRequestsView() {
   const t = useTranslations('Dashboard.bookingRequests')
   const tReschedule = useTranslations('Dashboard.bookingRequests.reschedule')
   const tCancel = useTranslations('Dashboard.bookingRequests.cancellation')
-  const tCancelReasons = useTranslations('MyLessons.panels.lessons.cancellation')
-
   const router = useRouter()
   const queryClient = useQueryClient()
   const locale = useLocale()
@@ -275,7 +270,7 @@ export default function BookingRequestsView() {
                 userTimezone,
                 locale,
               ),
-              reasonLabel: getStudentFacingCancelReasonLabel(tCancelReasons, reason),
+              reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
               message,
               locale,
               senderAvatarUrl: currentUser?.avatar,
@@ -486,6 +481,8 @@ export default function BookingRequestsView() {
         onConfirm={handleConfirmCancel}
         lesson={cancelTarget}
         isLoading={isCancelSubmitting}
+        variant="tutor"
+        lessonKind="trial"
       />
     </div>
   )

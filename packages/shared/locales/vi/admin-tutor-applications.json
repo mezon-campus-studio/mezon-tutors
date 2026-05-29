@@ -50,9 +50,15 @@
           "requestedAt": "Thời điểm yêu cầu",
           "student": "Học sinh",
           "lesson": "Buổi học",
+          "initiatedBy": "Người thực hiện",
           "action": "Hành động",
           "reason": "Lý do",
           "message": "Tin nhắn"
+        },
+        "initiatedBy": {
+          "STUDENT": "Học sinh",
+          "TUTOR": "Gia sư",
+          "SYSTEM": "Hệ thống"
         },
         "lessonRef": {
           "trial": "Trial",
@@ -73,6 +79,8 @@
           "tutorRescheduledUnavail": "Gia sư đổi sang giờ tôi không tham gia được",
           "tutorAskedCancel": "Gia sư yêu cầu tôi hủy",
           "noLongerLearnTutor": "Tôi không muốn học với gia sư này nữa",
+          "studentReschedule": "Học sinh tự đổi lịch buổi học",
+          "studentTrialReschedule": "Học sinh tự đổi lịch buổi học thử",
           "other": "Khác"
         }
       },
