@@ -41,6 +41,8 @@ import {
   buildStudentLessonRescheduledDmContent,
   ECurrency,
   formatLessonRangeInTimezone,
+  formatToCurrency,
+  isWithinLessonComplaintWindow,
 } from "@mezon-tutors/shared";
 import { sendStudentLessonDmToTutor } from "@/lib/send-student-lesson-dm-to-tutor";
 import {
@@ -48,7 +50,9 @@ import {
   useCreateDmChannelMutation,
 } from "@/services";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { ComplainLessonDialog } from "./ComplainLessonDialog";
 import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLessonDialog";
+import { useCreateLessonComplaintMutation } from "@/services/lesson-complaint/lesson-complaint.api";
 
 type LessonPersonBadgeProps = {
   name: string;
@@ -67,6 +71,29 @@ function isCancelledLesson(lesson: LessonItem): boolean {
 
 function isCancelledTrialLesson(lesson: LessonItem): boolean {
   return isCancelledLesson(lesson);
+}
+
+function canShowLessonComplaint(lesson: LessonItem): boolean {
+  if (lesson.complaintStatus || isCancelledTrialLesson(lesson)) {
+    return false;
+  }
+  if (lesson.canComplain) {
+    return true;
+  }
+  if (lesson.status !== "completed" || !lesson.startAt || !lesson.durationMinutes) {
+    return false;
+  }
+  const trialPaid =
+    lesson.source !== "trial" ||
+    (lesson.trialPaymentStatus?.toUpperCase() ?? "SUCCEEDED") === "SUCCEEDED";
+  const subscriptionPaid =
+    lesson.source !== "subscription" ||
+    lesson.enrollmentPaymentStatus?.toUpperCase() === "SUCCEEDED";
+  return (
+    trialPaid &&
+    subscriptionPaid &&
+    isWithinLessonComplaintWindow(lesson.startAt, lesson.durationMinutes)
+  );
 }
 
 function isReschedulableTrialLesson(lesson: LessonItem): boolean {
@@ -135,7 +162,12 @@ type PastLessonListItemProps = {
   rateLabel: string;
   ratedLabel: string;
   cancelledLabel: string;
+  complainLabel: string;
+  complaintPendingLabel: string;
+  complaintApprovedLabel: string;
+  complaintRejectedLabel: string;
   onRate: (tutorId: string) => void;
+  onComplain: (lesson: LessonItem) => void;
 };
 
 function PastLessonListItem({
@@ -143,11 +175,17 @@ function PastLessonListItem({
   rateLabel,
   ratedLabel,
   cancelledLabel,
+  complainLabel,
+  complaintPendingLabel,
+  complaintApprovedLabel,
+  complaintRejectedLabel,
   onRate,
+  onComplain,
 }: PastLessonListItemProps) {
   const locale = useLocale();
   const rated = lesson.rating !== undefined;
   const cancelled = isCancelledTrialLesson(lesson);
+  const complaintStatus = lesson.complaintStatus?.toUpperCase();
 
   return (
     <div className="group flex w-full flex-wrap items-center justify-between gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
@@ -171,25 +209,44 @@ function PastLessonListItem({
       <div className="ml-auto flex items-center gap-2">
         {cancelled ? (
           <LessonCancelledBadge label={cancelledLabel} />
-        ) : rated ? (
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-100">
-            <Star className="size-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-bold text-amber-700">
-              {lesson.rating?.toFixed(1) ?? "5.0"}
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
-              {ratedLabel}
-            </span>
-          </div>
+        ) : complaintStatus === "PENDING" ? (
+          <LessonCancelledBadge label={complaintPendingLabel} />
+        ) : complaintStatus === "APPROVED" ? (
+          <LessonCancelledBadge label={complaintApprovedLabel} />
+        ) : complaintStatus === "REJECTED" ? (
+          <LessonCancelledBadge label={complaintRejectedLabel} />
         ) : (
-          <Button
-            variant="outline"
-            className="h-9 rounded-full border-amber-200 px-4 text-xs font-semibold text-amber-700 hover:border-amber-300 hover:bg-amber-50"
-            onClick={() => onRate(lesson.tutorId)}
-          >
-            <Star className="mr-1.5 size-3.5 fill-amber-400 text-amber-400" />
-            {rateLabel}
-          </Button>
+          <>
+            {canShowLessonComplaint(lesson) ? (
+              <Button
+                variant="outline"
+                className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
+                onClick={() => onComplain(lesson)}
+              >
+                {complainLabel}
+              </Button>
+            ) : null}
+            {rated ? (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-100">
+                <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-sm font-bold text-amber-700">
+                  {lesson.rating?.toFixed(1) ?? "5.0"}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                  {ratedLabel}
+                </span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="h-9 rounded-full border-amber-200 px-4 text-xs font-semibold text-amber-700 hover:border-amber-300 hover:bg-amber-50"
+                onClick={() => onRate(lesson.tutorId)}
+              >
+                <Star className="mr-1.5 size-3.5 fill-amber-400 text-amber-400" />
+                {rateLabel}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -443,7 +500,12 @@ type PastLessonsSectionProps = {
   rateLabel: string;
   ratedLabel: string;
   cancelledLabel: string;
+  complainLabel: string;
+  complaintPendingLabel: string;
+  complaintApprovedLabel: string;
+  complaintRejectedLabel: string;
   onRate: (tutorId: string) => void;
+  onComplain: (lesson: LessonItem) => void;
 };
 
 function PastLessonsSection({
@@ -452,7 +514,12 @@ function PastLessonsSection({
   rateLabel,
   ratedLabel,
   cancelledLabel,
+  complainLabel,
+  complaintPendingLabel,
+  complaintApprovedLabel,
+  complaintRejectedLabel,
   onRate,
+  onComplain,
 }: PastLessonsSectionProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -467,12 +534,17 @@ function PastLessonsSection({
       <div className="flex flex-col gap-2.5">
         {lessons.map((lesson) => (
           <PastLessonListItem
-            key={lesson.id}
+            key={`${lesson.id}-${lesson.subscriptionSlotIndex ?? ""}-${lesson.startAt ?? ""}`}
             lesson={lesson}
             rateLabel={rateLabel}
             ratedLabel={ratedLabel}
             cancelledLabel={cancelledLabel}
+            complainLabel={complainLabel}
+            complaintPendingLabel={complaintPendingLabel}
+            complaintApprovedLabel={complaintApprovedLabel}
+            complaintRejectedLabel={complaintRejectedLabel}
             onRate={onRate}
+            onComplain={onComplain}
           />
         ))}
       </div>
@@ -515,7 +587,12 @@ export default function MyLessonsPanel({
   const cancelMutation = useCancelTrialLessonBookingMutation();
   const cancelSubscriptionMutation = useCancelSubscriptionSlotMutation();
   const rescheduleMutation = useRescheduleTrialLessonBookingMutation();
+  const createComplaintMutation = useCreateLessonComplaintMutation();
   const userTimezone = useUserTimezone();
+
+  const [isComplainDialogOpen, setIsComplainDialogOpen] = useState(false);
+  const [complainLesson, setComplainLesson] = useState<LessonItem | null>(null);
+  const [isSubmittingComplaint, setIsSubmittingComplaint] = useState(false);
 
   const [rescheduleLesson, setRescheduleLesson] = useState<LessonItem | null>(null);
   const [rescheduleSubscriptionLesson, setRescheduleSubscriptionLesson] =
@@ -632,6 +709,51 @@ export default function MyLessonsPanel({
     setIsCancelDialogOpen(true);
   };
 
+  const handleComplainClick = (lesson: LessonItem) => {
+    setComplainLesson(lesson);
+    setIsComplainDialogOpen(true);
+  };
+
+  const handleConfirmComplaint = async (reason: string, message?: string) => {
+    if (!complainLesson) return;
+
+    try {
+      setIsSubmittingComplaint(true);
+      if (complainLesson.source === "subscription") {
+        const enrollmentId = complainLesson.subscriptionEnrollmentId;
+        const slotIndex = complainLesson.subscriptionSlotIndex;
+        if (enrollmentId == null || slotIndex == null || !complainLesson.startAt) {
+          throw new Error("Missing subscription lesson reference");
+        }
+        await createComplaintMutation.mutateAsync({
+          lessonType: "SUBSCRIPTION",
+          subscriptionEnrollmentId: enrollmentId,
+          subscriptionSlotIndex: slotIndex,
+          lessonStartAt: complainLesson.startAt,
+          reason,
+          message,
+        });
+      } else {
+        await createComplaintMutation.mutateAsync({
+          lessonType: "TRIAL",
+          trialLessonBookingId: complainLesson.id,
+          reason,
+          message,
+        });
+      }
+      toast.success(t("panels.lessons.complaint.dialog.success"));
+      setIsComplainDialogOpen(false);
+      setComplainLesson(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : t("panels.lessons.complaint.dialog.failed"),
+      );
+    } finally {
+      setIsSubmittingComplaint(false);
+    }
+  };
+
   const handleConfirmCancel = async (reason: string, message?: string) => {
     if (!selectedLesson) return;
 
@@ -746,7 +868,12 @@ export default function MyLessonsPanel({
           rateLabel={t("panels.lessons.past.rate")}
           ratedLabel={t("panels.lessons.past.rated")}
           cancelledLabel={t("panels.lessons.past.statusCancelled")}
+          complainLabel={t("panels.lessons.complaint.action")}
+          complaintPendingLabel={t("panels.lessons.complaint.statusPending")}
+          complaintApprovedLabel={t("panels.lessons.complaint.statusApproved")}
+          complaintRejectedLabel={t("panels.lessons.complaint.statusRejected")}
           onRate={handleRate}
+          onComplain={handleComplainClick}
         />
       )}
 
@@ -756,6 +883,17 @@ export default function MyLessonsPanel({
         onConfirm={handleConfirmCancel}
         lesson={selectedLesson}
         isLoading={isCanceling}
+      />
+
+      <ComplainLessonDialog
+        isOpen={isComplainDialogOpen}
+        onClose={() => {
+          setIsComplainDialogOpen(false);
+          setComplainLesson(null);
+        }}
+        onConfirm={handleConfirmComplaint}
+        lesson={complainLesson}
+        isLoading={isSubmittingComplaint}
       />
 
       {rescheduleLesson && rescheduleTutorAbout ? (
