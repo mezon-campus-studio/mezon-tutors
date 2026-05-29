@@ -698,31 +698,55 @@ export class SubscriptionService {
     }
 
     const enrollmentIds = [...new Set(out.map((row) => row.enrollmentId))];
-    const rescheduleRows = await this.prisma.findCancelRescheduleReasons({
-      tutorId: tutor.id,
-      action: ELessonChangeAction.RESCHEDULE,
-      subscriptionEnrollmentId: { in: enrollmentIds },
-    });
-    const submittedKeys = new Set(
-      rescheduleRows
-        .filter(
-          (row) =>
-            row.subscriptionEnrollmentId != null &&
-            row.subscriptionSlotIndex != null &&
-            row.originalStartAt
-        )
-        .map(
-          (row) =>
-            `${row.subscriptionEnrollmentId}:${row.subscriptionSlotIndex}:${dayjs(row.originalStartAt).utc().toISOString()}`
-        )
-    );
+    const occurrenceKey = (
+      enrollmentId: string,
+      slotIndex: number,
+      startAt: Date | string
+    ) =>
+      `${enrollmentId}:${slotIndex}:${dayjs(startAt).utc().toISOString()}`;
 
-    return out.map((row) => ({
-      ...row,
-      rescheduleRequestSubmitted: submittedKeys.has(
-        `${row.enrollmentId}:${row.slotIndex}:${dayjs(row.startAt).utc().toISOString()}`
-      ),
-    }));
+    const [rescheduleRows, cancelRows] = await Promise.all([
+      this.prisma.findCancelRescheduleReasons({
+        tutorId: tutor.id,
+        action: ELessonChangeAction.RESCHEDULE,
+        subscriptionEnrollmentId: { in: enrollmentIds },
+      }),
+      this.prisma.findCancelRescheduleReasons({
+        tutorId: tutor.id,
+        action: ELessonChangeAction.CANCEL,
+        subscriptionEnrollmentId: { in: enrollmentIds },
+      }),
+    ]);
+
+    const toOccurrenceKeys = (rows: typeof rescheduleRows) =>
+      new Set(
+        rows
+          .filter(
+            (row) =>
+              row.subscriptionEnrollmentId != null &&
+              row.subscriptionSlotIndex != null &&
+              row.originalStartAt
+          )
+          .map((row) =>
+            occurrenceKey(
+              row.subscriptionEnrollmentId!,
+              row.subscriptionSlotIndex!,
+              row.originalStartAt!
+            )
+          )
+      );
+
+    const rescheduleSubmittedKeys = toOccurrenceKeys(rescheduleRows);
+    const cancellationSubmittedKeys = toOccurrenceKeys(cancelRows);
+
+    return out.map((row) => {
+      const key = occurrenceKey(row.enrollmentId, row.slotIndex, row.startAt);
+      return {
+        ...row,
+        rescheduleRequestSubmitted: rescheduleSubmittedKeys.has(key),
+        cancellationRequestSubmitted: cancellationSubmittedKeys.has(key),
+      };
+    });
   }
 
   async requestTutorSubscriptionSlotReschedule(

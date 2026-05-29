@@ -160,15 +160,26 @@ export class TrialLessonBookingService {
     ])
     const totalPages = Math.ceil(total / limit)
     const bookingIds = items.map((item) => item.id)
-    const rescheduleRows =
+    const [rescheduleRows, cancelRows] =
       bookingIds.length > 0
-        ? await this.prisma.findCancelRescheduleReasons({
-            trialLessonBookingId: { in: bookingIds },
-            action: ELessonChangeAction.RESCHEDULE,
-          })
-        : []
+        ? await Promise.all([
+            this.prisma.findCancelRescheduleReasons({
+              trialLessonBookingId: { in: bookingIds },
+              action: ELessonChangeAction.RESCHEDULE,
+            }),
+            this.prisma.findCancelRescheduleReasons({
+              trialLessonBookingId: { in: bookingIds },
+              action: ELessonChangeAction.CANCEL,
+            }),
+          ])
+        : [[], []]
     const rescheduleSubmittedIds = new Set(
       rescheduleRows
+        .map((row) => row.trialLessonBookingId)
+        .filter((id): id is string => Boolean(id))
+    )
+    const cancellationSubmittedIds = new Set(
+      cancelRows
         .map((row) => row.trialLessonBookingId)
         .filter((id): id is string => Boolean(id))
     )
@@ -191,6 +202,7 @@ export class TrialLessonBookingService {
           status: item.status,
           createdAt: item.createdAt.toISOString(),
           rescheduleRequestSubmitted: rescheduleSubmittedIds.has(item.id),
+          cancellationRequestSubmitted: cancellationSubmittedIds.has(item.id),
         })),
         meta: {
           page,

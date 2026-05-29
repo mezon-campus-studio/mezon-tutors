@@ -58,6 +58,7 @@ export default function MyScheduleUpcomingList({
       isSubscription &&
       canModify &&
       !item.rescheduleRequestSubmitted;
+    const canCancel = canModify && !item.cancellationRequestSubmitted;
 
     const items: ActionMenuItem[] = [];
 
@@ -74,7 +75,7 @@ export default function MyScheduleUpcomingList({
       label: t('cancel'),
       icon: <Trash2 className="size-4" />,
       onClick: () => onCancelLesson?.(item),
-      disabled: !canModify || !onCancelLesson,
+      disabled: !canCancel || !onCancelLesson,
     });
 
     return items;

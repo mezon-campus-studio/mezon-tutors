@@ -16,4 +16,5 @@ export interface TutorTrialLessonBookingRequestDto {
   status: ETrialLessonStatus
   createdAt: string
   rescheduleRequestSubmitted: boolean
+  cancellationRequestSubmitted: boolean
 }

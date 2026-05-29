@@ -25,6 +25,11 @@ import { DashboardScheduleCalendar } from '@/components/schedule';
 import { Button } from '@/components/ui';
 import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation';
 import {
+  isExpectedTutorLessonRequestError,
+  resolveTutorCancelToastMessage,
+  resolveTutorRescheduleToastMessage,
+} from '@/lib/tutor-lesson-request-errors';
+import {
   type TrialLessonBookingRequestItem,
   useGetMyTrialLessonBookingRequests,
   useGetTutorSubscriptionWeekOccurrences,
@@ -149,6 +154,7 @@ function subscriptionOccurrenceToRequestItem(
     subscriptionEnrollmentId: o.enrollmentId,
     subscriptionSlotIndex: o.slotIndex,
     rescheduleRequestSubmitted: o.rescheduleRequestSubmitted ?? false,
+    cancellationRequestSubmitted: o.cancellationRequestSubmitted ?? false,
   };
 }
 
@@ -308,6 +314,10 @@ export default function MyScheduleView() {
   const isCurrentWeek = weekStart.isSame(buildWeekStartMonday(dayjs().tz(userTimezone)), 'day');
 
   const handleCancelLesson = (item: TrialLessonBookingRequestItem) => {
+    if (item.cancellationRequestSubmitted) {
+      toast.error(tCancel('alreadyRequested'));
+      return;
+    }
     if (!isTrialLessonRescheduleEligible(item.startAt)) {
       toast.error(tCancel('within12Hours'));
       return;
@@ -396,8 +406,13 @@ export default function MyScheduleView() {
       setCancelTarget(null);
       setCancelItem(null);
     } catch (error) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : tCancel('failed'));
+      if (!isExpectedTutorLessonRequestError(error)) {
+        console.error(error);
+      }
+      toast.error(resolveTutorCancelToastMessage(error, tCancel));
+      setIsCancelDialogOpen(false);
+      setCancelTarget(null);
+      setCancelItem(null);
     } finally {
       setIsCancelSubmitting(false);
     }
@@ -488,8 +503,13 @@ export default function MyScheduleView() {
       setRescheduleTarget(null);
       setRescheduleItem(null);
     } catch (error) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : tReschedule('failed'));
+      if (!isExpectedTutorLessonRequestError(error)) {
+        console.error(error);
+      }
+      toast.error(resolveTutorRescheduleToastMessage(error, tReschedule));
+      setIsRescheduleDialogOpen(false);
+      setRescheduleTarget(null);
+      setRescheduleItem(null);
     } finally {
       setIsRescheduleSubmitting(false);
     }

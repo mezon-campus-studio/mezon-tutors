@@ -41,6 +41,11 @@ import { useMezonLight } from '@/providers'
 import { userAtom } from '@/store'
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone'
 import { isTrialLessonRescheduleEligible } from '@/lib/trial-lesson-cancellation'
+import {
+  isExpectedTutorLessonRequestError,
+  resolveTutorCancelToastMessage,
+  resolveTutorRescheduleToastMessage,
+} from '@/lib/tutor-lesson-request-errors'
 
 import {
   buildTutorLessonCancelledDmContent,
@@ -219,6 +224,10 @@ export default function BookingRequestsView() {
   }
 
   const handleCancel = (item: TrialLessonBookingRequestItem) => {
+    if (item.cancellationRequestSubmitted) {
+      toast.error(tCancel('alreadyRequested'))
+      return
+    }
     if (!isTrialLessonRescheduleEligible(item.startAt)) {
       toast.error(tCancel('within12Hours'))
       return
@@ -283,8 +292,13 @@ export default function BookingRequestsView() {
       setCancelTarget(null)
       setCancelBooking(null)
     } catch (error) {
-      console.error(error)
-      toast.error(error instanceof Error ? error.message : tCancel('failed'))
+      if (!isExpectedTutorLessonRequestError(error)) {
+        console.error(error)
+      }
+      toast.error(resolveTutorCancelToastMessage(error, tCancel))
+      setIsCancelDialogOpen(false)
+      setCancelTarget(null)
+      setCancelBooking(null)
     } finally {
       setIsCancelSubmitting(false)
     }
@@ -358,10 +372,13 @@ export default function BookingRequestsView() {
       setRescheduleTarget(null)
       setRescheduleBooking(null)
     } catch (error) {
-      console.error(error)
-      toast.error(
-        error instanceof Error ? error.message : tReschedule('failed'),
-      )
+      if (!isExpectedTutorLessonRequestError(error)) {
+        console.error(error)
+      }
+      toast.error(resolveTutorRescheduleToastMessage(error, tReschedule))
+      setIsRescheduleDialogOpen(false)
+      setRescheduleTarget(null)
+      setRescheduleBooking(null)
     } finally {
       setIsSubmitting(false)
     }
