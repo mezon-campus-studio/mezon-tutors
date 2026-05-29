@@ -185,10 +185,6 @@ export default function AdminTutorApplicationDetailView({
           <IdentityVerificationCard verification={identityVerification} />
           <ProfessionalDocumentsCard documents={professionalDocuments} />
           <AvailabilityCard profile={profile} availability={availability} />
-          <LessonChangeHistoryCard
-            tutorId={profile.id}
-            timezoneName={profile.timezone ?? "UTC"}
-          />
         </div>
         <div className="space-y-5">
           <ApplicationMetaCard profile={profile} />
