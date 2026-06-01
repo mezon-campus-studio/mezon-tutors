@@ -53,6 +53,13 @@ export class WalletController {
     );
   }
 
+  @Get('admin/withdrawals')
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Admin: list all withdrawals (paginated)' })
+  getAllWithdrawals(@Query() query: GetWalletWithdrawalsDto) {
+    return this.walletService.getAllWithdrawals(query.page, query.limit);
+  }
+
   @Post('withdrawals')
   @HttpCode(HttpStatus.NO_CONTENT)
   @SkipApiResponseWrap()

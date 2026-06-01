@@ -128,6 +128,62 @@
         }
       }
     },
+    "Payments": {
+      "title": "Thanh toán",
+      "description": "Lịch sử rút tiền của gia sư",
+      "withdrawals": {
+        "empty": "Không có dữ liệu rút tiền.",
+        "unknownTutor": "Không rõ",
+        "columns": {
+          "tutor": "Gia sư",
+          "amount": "Số tiền rút",
+          "bank": "Ngân hàng",
+          "accountNumber": "Số tài khoản",
+          "accountHolder": "Chủ tài khoản",
+          "status": "Trạng thái",
+          "requestedAt": "Ngày yêu cầu",
+          "processedAt": "Ngày xử lý",
+          "note": "Ghi chú",
+          "actions": "Thao tác"
+        },
+        "status": {
+          "PENDING": "Chờ xử lý",
+          "APPROVED": "Đã duyệt",
+          "PROCESSING": "Đang xử lý",
+          "COMPLETED": "Hoàn tất",
+          "REJECTED": "Từ chối"
+        },
+        "actions": {
+          "accept": "Chấp nhận",
+          "reject": "Từ chối"
+        },
+        "approveDialog": {
+          "title": "Chấp nhận yêu cầu rút tiền",
+          "description": "Kiểm tra thông tin chuyển khoản trước khi xử lý yêu cầu rút tiền của gia sư.",
+          "tutor": "Gia sư",
+          "transferAmount": "Số tiền cần chuyển",
+          "bankSectionTitle": "Tài khoản ngân hàng gia sư",
+          "confirm": "Chấp nhận",
+          "cancel": "Hủy",
+          "submitting": "Đang xử lý...",
+          "success": "Đã chấp nhận yêu cầu rút tiền.",
+          "error": "Không thể chấp nhận yêu cầu rút tiền. Vui lòng thử lại."
+        },
+        "rejectDialog": {
+          "title": "Từ chối yêu cầu rút tiền",
+          "description": "Nhập nội dung từ chối để lưu vào ghi chú admin.",
+          "tutor": "Gia sư",
+          "transferAmount": "Số tiền rút",
+          "noteLabel": "Nội dung từ chối",
+          "notePlaceholder": "Nhập lý do từ chối yêu cầu rút tiền...",
+          "confirm": "Từ chối",
+          "cancel": "Hủy",
+          "submitting": "Đang từ chối...",
+          "success": "Đã từ chối yêu cầu rút tiền.",
+          "error": "Không thể từ chối yêu cầu rút tiền. Vui lòng thử lại."
+        }
+      }
+    },
     "AppSettings": {
       "title": "Cấu hình ứng dụng",
       "description": "Thiết lập phí nền tảng, các khoảng thời gian và hạn mức rút tiền.",

@@ -44,7 +44,7 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     key: 'payments',
     labelKey: 'payments',
     iconKey: 'payments',
-    href: '#',
+    href: ROUTES.ADMIN.PAYMENTS,
   },
   {
     key: 'reports',
