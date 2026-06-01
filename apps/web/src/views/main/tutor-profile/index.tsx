@@ -931,14 +931,16 @@ export default function TutorProfileView() {
                           <SelectValue placeholder={tAv('rate.currencyLabel')} />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.values(ECurrency).map((currency) => (
-                            <SelectItem
-                              key={currency}
-                              value={currency}
-                            >
-                              {currency}
-                            </SelectItem>
-                          ))}
+                          {Object.values(ECurrency)
+                            .filter((c) => c === ECurrency.VND)
+                            .map((currency) => (
+                              <SelectItem
+                                key={currency}
+                                value={currency}
+                              >
+                                {currency}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     )}

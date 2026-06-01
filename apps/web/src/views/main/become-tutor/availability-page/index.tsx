@@ -436,16 +436,15 @@ export default function AvailabilityPage() {
                   <SelectTrigger className="h-12! min-w-[120px] rounded-xl border-slate-200 bg-slate-50/60 text-sm">
                     <SelectValue placeholder={t('rate.currencyLabel')} />
                   </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(ECurrency).map((currency) => (
-                      <SelectItem
-                        key={currency}
-                        value={currency}
-                      >
+                 <SelectContent>
+                  {Object.values(ECurrency)
+                    .filter((c) => c === ECurrency.VND)
+                    .map((currency) => (
+                      <SelectItem key={currency} value={currency}>
                         {currency}
                       </SelectItem>
                     ))}
-                  </SelectContent>
+                </SelectContent>
                 </Select>
               )}
             />
