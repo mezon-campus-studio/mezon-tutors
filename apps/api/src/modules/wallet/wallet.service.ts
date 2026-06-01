@@ -29,6 +29,8 @@ import {
   type WalletTransactionsApiResponse,
   type WalletWithdrawalApiItem,
   type WalletWithdrawalsApiResponse,
+  type AdminWalletWithdrawalApiItem,
+  type AdminWalletWithdrawalsApiResponse,
   ECurrency as SharedCurrency,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
@@ -172,6 +174,8 @@ export class WalletService {
 
   private mapWithdrawalRow(row: {
     id: string;
+    tutorId: string;
+    walletId: string;
     amount: bigint;
     bankName: string;
     bankAccountNumber: string;
@@ -183,6 +187,8 @@ export class WalletService {
   }): WalletWithdrawalApiItem {
     return {
       id: row.id,
+      tutorId: row.tutorId,
+      walletId: row.walletId,
       amount: Number(row.amount),
       bankName: row.bankName,
       bankAccountNumber: row.bankAccountNumber,
@@ -886,6 +892,41 @@ export class WalletService {
     ]);
 
     const items: WalletWithdrawalApiItem[] = rows.map((row) => this.mapWithdrawalRow(row));
+
+    return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
+  async getAllWithdrawals(page = 1, limit = 10): Promise<AdminWalletWithdrawalsApiResponse> {
+    const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
+
+    const [total, rows] = await Promise.all([
+      this.prisma.withdrawal.count(),
+      this.prisma.withdrawal.findMany({
+        include: {
+          tutor: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: safeLimit,
+      }),
+    ]);
+
+    const items: AdminWalletWithdrawalApiItem[] = rows.map((row) => ({
+      ...this.mapWithdrawalRow(row),
+      tutor: row.tutor
+        ? {
+            id: row.tutor.id,
+            username: row.tutor.username,
+            email: row.tutor.email,
+          }
+        : undefined,
+    }));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }

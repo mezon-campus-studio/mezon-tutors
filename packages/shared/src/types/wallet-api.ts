@@ -80,6 +80,8 @@ export type WalletTransactionApiItem = {
 
 export type WalletWithdrawalApiItem = {
   id: string;
+  tutorId: string;
+  walletId: string;
   amount: number;
   bankName: string;
   bankAccountNumber: string;
@@ -89,6 +91,16 @@ export type WalletWithdrawalApiItem = {
   createdAt: string;
   processedAt: string | null;
 };
+
+export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {
+  tutor?: {
+    id: string;
+    username: string;
+    email: string;
+  };
+};
+
+export type AdminWalletWithdrawalsApiResponse = PaginatedData<AdminWalletWithdrawalApiItem>;
 
 export type WalletTransactionsApiResponse = PaginatedData<WalletTransactionApiItem>;
 
