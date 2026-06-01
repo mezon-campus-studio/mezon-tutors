@@ -113,7 +113,19 @@
         "approveSuccess": "Complaint approved and refund processed.",
         "approveSuccessNoRefund": "Complaint approved.",
         "rejectSuccess": "Complaint rejected.",
-        "actionFailed": "Action failed. Please try again."
+        "actionFailed": "Action failed. Please try again.",
+        "confirmApprove": {
+          "title": "Approve this complaint?",
+          "description": "The lesson payment will be refunded to the student's wallet. This action cannot be undone.",
+          "confirm": "Approve & refund",
+          "cancel": "Cancel"
+        },
+        "confirmReject": {
+          "title": "Reject this complaint?",
+          "description": "The student will be notified. Add an admin note above if you want to explain the decision.",
+          "confirm": "Reject",
+          "cancel": "Cancel"
+        }
       }
     },
     "AppSettings": {

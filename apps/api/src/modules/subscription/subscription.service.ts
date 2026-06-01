@@ -177,6 +177,9 @@ export class SubscriptionService {
     if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
       throw new BadRequestException('This lesson is already cancelled');
     }
+    if (slotStatus === ESubscriptionLessonSlotStatus.REFUNDED) {
+      throw new BadRequestException('This lesson has already been refunded');
+    }
     if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
       throw new BadRequestException('Completed lessons cannot be modified');
     }
@@ -240,6 +243,9 @@ export class SubscriptionService {
     const slotStatus = normalizeSubscriptionSlotStatus(slot?.status);
     if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
       throw new BadRequestException('This lesson is already cancelled');
+    }
+    if (slotStatus === ESubscriptionLessonSlotStatus.REFUNDED) {
+      throw new BadRequestException('This lesson has already been refunded');
     }
     if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
       throw new BadRequestException('Completed lessons cannot be modified');
@@ -898,6 +904,9 @@ export class SubscriptionService {
     const slotStatus = normalizeSubscriptionSlotStatus(slot?.status);
     if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
       throw new BadRequestException('This lesson is already cancelled');
+    }
+    if (slotStatus === ESubscriptionLessonSlotStatus.REFUNDED) {
+      throw new BadRequestException('This lesson has already been refunded');
     }
     if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
       throw new BadRequestException('Completed lessons cannot be cancelled');

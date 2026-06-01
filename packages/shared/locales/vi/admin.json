@@ -113,7 +113,19 @@
         "approveSuccess": "Đã duyệt và hoàn tiền.",
         "approveSuccessNoRefund": "Đã duyệt khiếu nại.",
         "rejectSuccess": "Đã từ chối khiếu nại.",
-        "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
+        "actionFailed": "Thao tác thất bại. Vui lòng thử lại.",
+        "confirmApprove": {
+          "title": "Duyệt khiếu nại này?",
+          "description": "Tiền buổi học sẽ được hoàn về ví học sinh. Thao tác này không thể hoàn tác.",
+          "confirm": "Duyệt & hoàn tiền",
+          "cancel": "Hủy"
+        },
+        "confirmReject": {
+          "title": "Từ chối khiếu nại này?",
+          "description": "Học sinh sẽ được thông báo. Nên ghi ghi chú admin ở trên để giải thích lý do.",
+          "confirm": "Từ chối",
+          "cancel": "Hủy"
+        }
       }
     },
     "AppSettings": {

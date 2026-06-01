@@ -329,3 +329,108 @@ export const tutorApplicationSubmittedEmbed = (
   url: params.reviewUrl,
   ...embedSenderThumbnail(params.senderAvatarUrl),
 });
+
+export const lessonComplaintSubmittedEmbed = (
+  params: {
+    complaintId: string;
+    studentName: string;
+    tutorName: string;
+    lessonStartAtLabel: string;
+    reason: string;
+    message?: string | null;
+    reviewUrl?: string;
+  } & SenderAvatarParams
+): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.warning,
+  title: 'New lesson complaint',
+  description: `${params.studentName} submitted a complaint for a lesson with ${params.tutorName}.`,
+  fields: [
+    { name: 'Student', value: params.studentName, inline: true },
+    { name: 'Tutor', value: params.tutorName, inline: true },
+    { name: 'Lesson start', value: params.lessonStartAtLabel, inline: false },
+    { name: 'Reason', value: params.reason, inline: false },
+    ...(params.message?.trim()
+      ? [{ name: 'Message', value: params.message.trim().slice(0, 500), inline: false }]
+      : []),
+    { name: 'Complaint ID', value: params.complaintId, inline: false },
+  ],
+  url: params.reviewUrl,
+  ...embedSenderThumbnail(params.senderAvatarUrl),
+});
+
+export const tutorLessonComplaintApprovedEmbed = (
+  params: {
+    studentName: string;
+    lessonStartAtLabel: string;
+    submittedAtLabel: string;
+    reason: string;
+    studentMessage?: string | null;
+    amountFormatted: string;
+    walletUrl?: string;
+  } & SenderAvatarParams
+): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.warning,
+  title: 'Lesson complaint approved',
+  description: `A student complaint about your lesson with ${params.studentName} was approved. ${params.amountFormatted} has been deducted from your earnings.`,
+  fields: [
+    { name: 'Student', value: params.studentName, inline: true },
+    { name: 'Lesson time', value: params.lessonStartAtLabel, inline: true },
+    { name: 'Submitted at', value: params.submittedAtLabel, inline: true },
+    { name: 'Reason', value: params.reason, inline: false },
+    ...(params.studentMessage?.trim()
+      ? [{ name: 'Student note', value: params.studentMessage.trim().slice(0, 500), inline: false }]
+      : []),
+    { name: 'Amount adjusted', value: params.amountFormatted, inline: true },
+  ],
+  url: params.walletUrl,
+  ...embedSenderThumbnail(params.senderAvatarUrl),
+});
+
+export const studentLessonComplaintRefundedEmbed = (params: {
+  tutorName: string;
+  lessonStartAtLabel: string;
+  submittedAtLabel: string;
+  reason: string;
+  amountFormatted: string;
+  walletUrl?: string;
+}): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.success,
+  title: 'Complaint approved and refunded',
+  description: `Your complaint about ${params.tutorName} was approved. ${params.amountFormatted} has been refunded to your wallet.`,
+  fields: [
+    { name: 'Tutor', value: params.tutorName, inline: true },
+    { name: 'Lesson time', value: params.lessonStartAtLabel, inline: true },
+    { name: 'Submitted at', value: params.submittedAtLabel, inline: true },
+    { name: 'Reason', value: params.reason, inline: false },
+    { name: 'Refund amount', value: params.amountFormatted, inline: true },
+  ],
+  url: params.walletUrl,
+  ...embedAdminThumbnail(),
+});
+
+export const studentLessonComplaintRejectedEmbed = (params: {
+  tutorName: string;
+  lessonStartAtLabel: string;
+  submittedAtLabel: string;
+  reason: string;
+  amountFormatted: string;
+  adminNote?: string | null;
+  complaintsUrl?: string;
+}): IInteractiveMessageProps => {
+  const adminNoteText = params.adminNote?.trim() || 'No additional note from admin.';
+  return {
+    color: MEZON_EMBED_COLORS.error,
+    title: 'Complaint rejected',
+    description: `Your complaint about ${params.tutorName} was rejected. See the admin note below for details.`,
+    fields: [
+      { name: 'Tutor', value: params.tutorName, inline: true },
+      { name: 'Lesson time', value: params.lessonStartAtLabel, inline: true },
+      { name: 'Submitted at', value: params.submittedAtLabel, inline: true },
+      { name: 'Reason', value: params.reason, inline: false },
+      { name: 'Amount', value: params.amountFormatted, inline: true },
+      { name: 'Admin note', value: adminNoteText.slice(0, 500), inline: false },
+    ],
+    url: params.complaintsUrl,
+    ...embedAdminThumbnail(),
+  };
+};

@@ -23,7 +23,8 @@
     "lessonStartingSoon": "Lesson starting soon",
     "tutorEarningsReleased": "Earnings available",
     "lessonComplaintApproved": "Complaint approved",
-    "lessonComplaintRejected": "Complaint rejected"
+    "lessonComplaintRejected": "Complaint rejected",
+    "tutorLessonComplaintApproved": "Complaint against your lesson approved"
   },
   "templates": {
     "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
@@ -37,8 +38,9 @@
     "systemAnnouncement": "{message}",
     "lessonStartingSoon": "Your lesson will start in about 10 minutes at {lessonStartAt}.",
     "tutorEarningsReleased": "{amount} from your {lessonKind, select, trial {trial lesson} subscription {subscription lesson} other {lesson}} is now available in your wallet.",
-    "lessonComplaintApproved": "Your lesson complaint has been approved.",
-    "lessonComplaintApprovedRefunded": "Your lesson complaint has been approved. Refund has been processed to your wallet.",
-    "lessonComplaintRejected": "Your lesson complaint has been rejected. Please check the admin note for details."
+    "lessonComplaintApproved": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was approved.",
+    "lessonComplaintApprovedRefunded": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was approved. {amount} has been credited to your wallet.",
+    "lessonComplaintRejected": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was rejected. Reason: {reason}. Admin note: {adminNote}",
+    "tutorLessonComplaintApproved": "A student complaint about your lesson with {studentName} has been approved. A refund has been processed from your earnings."
   }
 }

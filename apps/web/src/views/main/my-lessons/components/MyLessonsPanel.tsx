@@ -68,7 +68,8 @@ function isCancelledLesson(lesson: LessonItem): boolean {
     return lesson.trialBookingStatus === "cancelled";
   }
   if (lesson.source === "subscription") {
-    return lesson.subscriptionSlotStatus?.toUpperCase() === "CANCELLED";
+    const status = lesson.subscriptionSlotStatus?.toUpperCase();
+    return status === "CANCELLED" || status === "REFUNDED";
   }
   return false;
 }

@@ -31,20 +31,62 @@ function metadataStartAtIso(metadata: Record<string, unknown> | null): string | 
   return metadata.startAt;
 }
 
-function withViewerTimezoneParams(
+function buildNotificationTemplateParams(
   item: NotificationItem,
-  params: Record<string, string | number | Date>,
   userTimezone: string,
   locale: string,
 ): Record<string, string | number | Date> {
-  const startAtIso = metadataStartAtIso(item.metadata);
-  if (!startAtIso) {
-    return params;
-  }
-  return {
-    ...params,
-    lessonStartAt: formatInstantForLocale(startAtIso, userTimezone, locale),
+  const meta = item.metadata ?? {};
+  const params: Record<string, string | number | Date> = {
+    ...(item.i18nParams ?? {}),
   };
+
+  const metaString = (key: string): string | undefined => {
+    const fromParams = params[key];
+    if (fromParams != null && String(fromParams).trim() !== '') {
+      return String(fromParams);
+    }
+    const fromMeta = meta[key];
+    if (typeof fromMeta === 'string' && fromMeta.trim() !== '') {
+      return fromMeta;
+    }
+    return undefined;
+  };
+
+  for (const key of ['tutorName', 'reason', 'adminNote', 'amount', 'studentName', 'planLabel']) {
+    const value = metaString(key);
+    if (value != null) {
+      params[key] = value;
+    }
+  }
+
+  const startAtIso = metadataStartAtIso(meta);
+  if (startAtIso) {
+    params.lessonStartAt = formatInstantForLocale(startAtIso, userTimezone, locale);
+  } else {
+    const lessonStartAt = metaString('lessonStartAt');
+    if (lessonStartAt != null) {
+      params.lessonStartAt = lessonStartAt;
+    }
+  }
+
+  if (item.i18nKey?.includes('lessonComplaintRejected') && params.adminNote == null) {
+    params.adminNote = '—';
+  }
+
+  return params;
+}
+
+function canTranslateNotification(
+  i18nKey: string | null | undefined,
+  params: Record<string, string | number | Date>,
+): boolean {
+  if (!i18nKey) return false;
+  if (!i18nKey.includes('lessonComplaint')) return true;
+  if (!params.tutorName || !params.lessonStartAt) return false;
+  if (i18nKey.includes('Rejected') && !params.reason) return false;
+  if (i18nKey.includes('ApprovedRefunded') && !params.amount) return false;
+  return true;
 }
 
 export function HeaderNotification({ enabled }: HeaderNotificationProps) {
@@ -110,23 +152,15 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     const rawParams = hasTitleParams
       ? (meta.titleI18nParams as Record<string, string | number | Date>)
       : {};
-    return translateWithFallback(
-      titleKey,
-      withViewerTimezoneParams(item, rawParams, userTimezone, locale),
-      item.title,
-    );
+    return translateWithFallback(titleKey, rawParams, item.title);
   };
 
   const getNotificationContent = (item: (typeof notificationItems)[number]) => {
-    const startAtIso = metadataStartAtIso(item.metadata);
-    if (!startAtIso || !item.i18nKey) {
-      return translateWithFallback(item.i18nKey, item.i18nParams, item.content);
+    const params = buildNotificationTemplateParams(item, userTimezone, locale);
+    if (!item.i18nKey || !canTranslateNotification(item.i18nKey, params)) {
+      return item.content;
     }
-    return translateWithFallback(
-      item.i18nKey,
-      withViewerTimezoneParams(item, item.i18nParams ?? {}, userTimezone, locale),
-      item.content,
-    );
+    return translateWithFallback(item.i18nKey, params, item.content);
   };
 
   const rowVirtualizer = useVirtualizer({

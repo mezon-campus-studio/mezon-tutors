@@ -529,6 +529,254 @@ export class NotificationService {
     }
   }
 
+  async notifyTutorLessonComplaintApproved(params: {
+    tutorUserId: string
+    tutorMezonUserId?: string | null
+    studentName: string
+    lessonStartAtLabel: string
+    submittedAtLabel: string
+    reason: string
+    studentMessage?: string | null
+    amount: bigint
+    currency?: ECurrency
+    dedupeKey: string
+  }): Promise<void> {
+    const currency = (params.currency ?? ECurrency.VND) as SharedCurrency
+    const amountFormatted = formatToCurrency(currency, Number(params.amount))
+    const title = 'Complaint approved for your lesson'
+    const studentNoteSuffix = params.studentMessage?.trim()
+      ? ` Student note: ${params.studentMessage.trim()}`
+      : ''
+    const content = `A student complaint about your lesson with ${params.studentName} has been approved. A refund of ${amountFormatted} has been processed from your earnings.${studentNoteSuffix}`
+
+    try {
+      await this.createForUser(params.tutorUserId, {
+        title,
+        content,
+        type: ENotificationType.PAYMENT,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.tutorLessonComplaintApproved,
+        i18nParams: {
+          studentName: params.studentName,
+          amount: amountFormatted,
+        },
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.tutorLessonComplaintApproved,
+          titleI18nParams: {
+            studentName: params.studentName,
+          },
+          studentMessage: params.studentMessage?.trim() || null,
+        },
+        dedupeKey: params.dedupeKey,
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Failed to create tutor complaint-approved notification (${params.dedupeKey}): ${detail}`)
+    }
+
+    const mezonUserId = params.tutorMezonUserId?.trim()
+    if (!mezonUserId) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping tutor complaint-approved DM')
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.tutorLessonComplaintApproved({
+          studentName: params.studentName,
+          lessonStartAtLabel: params.lessonStartAtLabel,
+          submittedAtLabel: params.submittedAtLabel,
+          reason: params.reason,
+          studentMessage: params.studentMessage,
+          amountFormatted,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Failed to send Mezon DM for tutor complaint-approved (${params.dedupeKey}): ${detail}`)
+    }
+  }
+
+  async notifyStudentLessonComplaintApproved(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    tutorName: string
+    lessonStartAtLabel: string
+    lessonStartAtIso: string
+    submittedAtLabel: string
+    reason: string
+    refunded: boolean
+    amount?: bigint
+    currency?: ECurrency
+    complaintId: string
+  }): Promise<void> {
+    const currency = (params.currency ?? ECurrency.VND) as SharedCurrency
+    const amountFormatted =
+      params.amount && params.amount > 0n
+        ? formatToCurrency(currency, Number(params.amount))
+        : ''
+    const i18nKey = params.refunded
+      ? NOTIFICATION_I18N_KEYS.templates.lessonComplaintApprovedRefunded
+      : NOTIFICATION_I18N_KEYS.templates.lessonComplaintApproved
+    const i18nParams: Record<string, string> = {
+      tutorName: params.tutorName,
+      lessonStartAt: params.lessonStartAtLabel,
+      reason: params.reason,
+    }
+    if (params.refunded && amountFormatted) {
+      i18nParams.amount = amountFormatted
+    }
+
+    const content = params.refunded
+      ? `Your complaint about the lesson with ${params.tutorName} at ${params.lessonStartAtLabel} was approved. ${amountFormatted} has been credited to your wallet.`
+      : `Your complaint about the lesson with ${params.tutorName} at ${params.lessonStartAtLabel} was approved.`
+
+    const dedupeKey = `lesson-complaint-approved:${params.complaintId}`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Complaint approved',
+        content,
+        type: params.refunded ? ENotificationType.PAYMENT : ENotificationType.SYSTEM,
+        i18nKey,
+        i18nParams,
+        dedupeKey,
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.lessonComplaintApproved,
+          titleI18nParams: {},
+          complaintId: params.complaintId,
+          status: 'APPROVED',
+          refunded: params.refunded,
+          startAt: params.lessonStartAtIso,
+          tutorName: params.tutorName,
+          reason: params.reason,
+          ...(amountFormatted ? { amount: amountFormatted } : {}),
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student complaint-approved web notification (${params.complaintId}): ${detail}`
+      )
+    }
+
+    if (!params.refunded || !params.amount || params.amount <= 0n) {
+      return
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping student complaint-approved DM')
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.studentLessonComplaintRefunded({
+          tutorName: params.tutorName,
+          lessonStartAtLabel: params.lessonStartAtLabel,
+          submittedAtLabel: params.submittedAtLabel,
+          reason: params.reason,
+          amountFormatted,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to send Mezon DM for student complaint-approved (${dedupeKey}): ${detail}`
+      )
+    }
+  }
+
+  async notifyStudentLessonComplaintRejected(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    tutorName: string
+    lessonStartAtLabel: string
+    lessonStartAtIso: string
+    submittedAtLabel: string
+    reason: string
+    amount: bigint
+    currency?: ECurrency
+    adminNote?: string | null
+    complaintId: string
+  }): Promise<void> {
+    const adminNoteLabel = params.adminNote?.trim() || '—'
+    const content = `Your complaint about the lesson with ${params.tutorName} at ${params.lessonStartAtLabel} was rejected. Reason: ${params.reason}. Admin note: ${adminNoteLabel}`
+    const dedupeKey = `lesson-complaint-rejected:${params.complaintId}`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Complaint rejected',
+        content,
+        type: ENotificationType.SYSTEM,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.lessonComplaintRejected,
+        i18nParams: {
+          tutorName: params.tutorName,
+          lessonStartAt: params.lessonStartAtLabel,
+          reason: params.reason,
+          adminNote: adminNoteLabel,
+        },
+        dedupeKey,
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.lessonComplaintRejected,
+          titleI18nParams: {},
+          complaintId: params.complaintId,
+          status: 'REJECTED',
+          adminNote: params.adminNote?.trim() || null,
+          startAt: params.lessonStartAtIso,
+          tutorName: params.tutorName,
+          reason: params.reason,
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student complaint-rejected web notification (${params.complaintId}): ${detail}`
+      )
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping student complaint-rejected DM')
+      return
+    }
+    if (params.amount <= 0n) {
+      this.logger.warn(`No lesson amount for student complaint-rejected Mezon (${params.complaintId})`)
+      return
+    }
+
+    const currency = (params.currency ?? ECurrency.VND) as SharedCurrency
+    const amountFormatted = formatToCurrency(currency, Number(params.amount))
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.studentLessonComplaintRejected({
+          tutorName: params.tutorName,
+          lessonStartAtLabel: params.lessonStartAtLabel,
+          submittedAtLabel: params.submittedAtLabel,
+          reason: params.reason,
+          amountFormatted,
+          adminNote: params.adminNote,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(`Failed to send Mezon DM for student complaint-rejected (${dedupeKey}): ${detail}`)
+    }
+  }
+
   async notifyAdminTutorApplicationSubmitted(params: {
     tutorName: string
     applicationId: string
@@ -561,6 +809,29 @@ export class NotificationService {
         senderAvatarUrl: params.senderAvatarUrl,
       }),
       `withdrawal-requested:${params.withdrawalId}`
+    )
+  }
+
+  async notifyAdminLessonComplaintSubmitted(params: {
+    complaintId: string
+    studentName: string
+    tutorName: string
+    lessonStartAtLabel: string
+    reason: string
+    message?: string | null
+    senderAvatarUrl?: string | null
+  }): Promise<void> {
+    await this.sendAdminMezonDm(
+      this.mezonMessageService.lessonComplaintSubmitted({
+        complaintId: params.complaintId,
+        studentName: params.studentName,
+        tutorName: params.tutorName,
+        lessonStartAtLabel: params.lessonStartAtLabel,
+        reason: params.reason,
+        message: params.message,
+        senderAvatarUrl: params.senderAvatarUrl,
+      }),
+      `lesson-complaint-submitted:${params.complaintId}`
     )
   }
 }

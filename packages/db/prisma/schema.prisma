@@ -106,6 +106,7 @@ enum ESubscriptionLessonSlotStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+  REFUNDED
 }
 
 enum ELessonSettlementKind {
