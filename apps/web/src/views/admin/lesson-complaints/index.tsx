@@ -36,6 +36,7 @@ import {
   useApproveLessonComplaint,
   useRejectLessonComplaint,
 } from "@/services";
+import ConfirmDialog from "@/views/admin/tutor-applications/detail/components/ConfirmDialog";
 
 function formatLessonWindow(
   startAtIso: string,
@@ -139,6 +140,10 @@ export default function AdminLessonComplaintsView() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<LessonComplaintStatusFilter>("PENDING");
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [confirmState, setConfirmState] = useState<{
+    action: "approve" | "reject";
+    id: string;
+  } | null>(null);
 
   const { data: items = [], isLoading, isFetching } = useAdminLessonComplaints(status);
   const { data: metrics } = useAdminLessonComplaintMetrics();
@@ -147,7 +152,7 @@ export default function AdminLessonComplaintsView() {
 
   const filtered = useMemo(() => filterComplaints(items, search), [items, search]);
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string): Promise<boolean> => {
     try {
       const result = await approveMutation.mutateAsync({
         id,
@@ -158,22 +163,41 @@ export default function AdminLessonComplaintsView() {
           ? t("list.approveSuccess")
           : t("list.approveSuccessNoRefund"),
       );
+      return true;
     } catch (error) {
       console.error(error);
       toast.error(t("list.actionFailed"));
+      return false;
     }
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (id: string): Promise<boolean> => {
     try {
       await rejectMutation.mutateAsync({
         id,
         body: { adminNote: notes[id]?.trim() || undefined },
       });
       toast.success(t("list.rejectSuccess"));
+      return true;
     } catch (error) {
       console.error(error);
       toast.error(t("list.actionFailed"));
+      return false;
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmState) {
+      return;
+    }
+
+    const success =
+      confirmState.action === "approve"
+        ? await handleApprove(confirmState.id)
+        : await handleReject(confirmState.id);
+
+    if (success) {
+      setConfirmState(null);
     }
   };
 
@@ -353,7 +377,9 @@ export default function AdminLessonComplaintsView() {
                                 <Button
                                   size="sm"
                                   disabled={busy}
-                                  onClick={() => handleApprove(item.id)}
+                                  onClick={() =>
+                                    setConfirmState({ action: "approve", id: item.id })
+                                  }
                                 >
                                   {t("list.approve")}
                                 </Button>
@@ -361,7 +387,9 @@ export default function AdminLessonComplaintsView() {
                                   size="sm"
                                   variant="outline"
                                   disabled={busy}
-                                  onClick={() => handleReject(item.id)}
+                                  onClick={() =>
+                                    setConfirmState({ action: "reject", id: item.id })
+                                  }
                                 >
                                   {t("list.reject")}
                                 </Button>
@@ -382,6 +410,40 @@ export default function AdminLessonComplaintsView() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmState?.action === "approve"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmState((current) =>
+              current?.action === "approve" ? null : current,
+            );
+          }
+        }}
+        title={t("list.confirmApprove.title")}
+        description={t("list.confirmApprove.description")}
+        confirmLabel={t("list.confirmApprove.confirm")}
+        cancelLabel={t("list.confirmApprove.cancel")}
+        loading={approveMutation.isPending}
+        onConfirm={handleConfirmAction}
+      />
+      <ConfirmDialog
+        open={confirmState?.action === "reject"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmState((current) =>
+              current?.action === "reject" ? null : current,
+            );
+          }
+        }}
+        title={t("list.confirmReject.title")}
+        description={t("list.confirmReject.description")}
+        confirmLabel={t("list.confirmReject.confirm")}
+        cancelLabel={t("list.confirmReject.cancel")}
+        variant="destructive"
+        loading={rejectMutation.isPending}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 }

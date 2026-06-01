@@ -9,11 +9,18 @@ export function normalizeSubscriptionSlotStatus(
   if (status === ESubscriptionLessonSlotStatus.CANCELLED) {
     return ESubscriptionLessonSlotStatus.CANCELLED;
   }
+  if (status === ESubscriptionLessonSlotStatus.REFUNDED) {
+    return ESubscriptionLessonSlotStatus.REFUNDED;
+  }
   return ESubscriptionLessonSlotStatus.SCHEDULED;
 }
 
 export function isSubscriptionSlotCompleted(status: string | undefined | null): boolean {
   return normalizeSubscriptionSlotStatus(status) === ESubscriptionLessonSlotStatus.COMPLETED;
+}
+
+export function isSubscriptionSlotRefunded(status: string | undefined | null): boolean {
+  return normalizeSubscriptionSlotStatus(status) === ESubscriptionLessonSlotStatus.REFUNDED;
 }
 
 export function subscriptionSlotTutorAmount(

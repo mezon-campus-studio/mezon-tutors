@@ -8,9 +8,8 @@ import {
 import {
   ELessonChangeLessonType,
   ELessonComplaintStatus,
-  ENotificationType,
+  ECurrency,
   EPaymentStatus,
-  ESubscriptionLessonSlotStatus,
   ETrialLessonStatus,
   Prisma,
   Role,
@@ -21,19 +20,21 @@ import {
   type AdminLessonComplaintMetrics,
   type LessonComplaintCreatedResult,
   type ReviewLessonComplaintResult,
-  NOTIFICATION_I18N_KEYS,
   ELessonComplaintStatus as LessonComplaintStatusApi,
+  ESubscriptionLessonSlotStatus,
   isLessonFinishedForComplaint,
   isSubscriptionSlotCompleted,
   isWithinLessonComplaintWindow,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
+  subscriptionSlotTutorAmount,
   type LessonComplaintStatusFilter,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { WalletService } from '../wallet/wallet.service';
@@ -42,6 +43,17 @@ import type { CreateLessonComplaintDto } from './dto/create-lesson-complaint.dto
 import type { ReviewLessonComplaintDto } from './dto/review-lesson-complaint.dto';
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
+
+type StudentComplaintNotificationDetails = {
+  tutorName: string;
+  lessonStartAtLabel: string;
+  lessonStartAtIso: string;
+  submittedAtLabel: string;
+  amount: bigint;
+  tutorAmount: bigint;
+  currency?: ECurrency;
+};
 
 type ComplaintLessonContext = {
   tutorId: string;
@@ -56,6 +68,29 @@ type ComplaintLessonContext = {
   slotCount?: number;
 };
 
+type ComplaintWithNotificationContext = {
+  studentId: string;
+  reason: string;
+  message: string | null;
+  createdAt: Date;
+  lessonStartAt: Date;
+  subscriptionSlotIndex: number | null;
+  lessonType: ELessonChangeLessonType;
+  trialLessonBooking: {
+    grossAmount: bigint;
+    tutorAmount: bigint;
+    currency: string | null;
+    tutor: { user: { username: string; timezone: string | null } };
+  } | null;
+  subscriptionEnrollment: {
+    grossAmount: bigint;
+    tutorAmount: bigint;
+    currency: string | null;
+    weeklySlots: Prisma.JsonValue;
+    tutor: { user: { username: string; timezone: string | null } };
+  } | null;
+};
+
 @Injectable()
 export class LessonComplaintService {
   private readonly logger = new Logger(LessonComplaintService.name);
@@ -64,7 +99,7 @@ export class LessonComplaintService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly notificationService: NotificationService,
-    private readonly appSettingsService: AppSettingsService,
+    private readonly appSettingsService: AppSettingsService
   ) {}
 
   async createComplaint(
@@ -73,7 +108,7 @@ export class LessonComplaintService {
   ): Promise<LessonComplaintCreatedResult> {
     const student = await this.prisma.user.findUnique({
       where: { id: studentUserId },
-      select: { id: true, role: true },
+      select: { id: true, role: true, username: true, avatar: true },
     });
     if (!student || student.role !== Role.STUDENT) {
       throw new ForbiddenException('Only students can submit lesson complaints');
@@ -91,7 +126,7 @@ export class LessonComplaintService {
         context.lessonStartAt,
         context.lessonDurationMinutes,
         now,
-        settings.disputePeriodHours,
+        settings.disputePeriodHours
       )
     ) {
       throw new BadRequestException('The complaint window for this lesson has expired');
@@ -110,8 +145,43 @@ export class LessonComplaintService {
         lessonStartAt: context.lessonStartAt,
         lessonDurationMinutes: context.lessonDurationMinutes,
       },
-      select: { id: true, status: true },
+      select: {
+        id: true,
+        status: true,
+        lessonStartAt: true,
+        reason: true,
+        message: true,
+        tutor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { username: true } },
+          },
+        },
+      },
     });
+
+    try {
+      const tutorName =
+        `${complaint.tutor.firstName ?? ''} ${complaint.tutor.lastName ?? ''}`.trim() ||
+        complaint.tutor.user.username ||
+        'Tutor';
+      await this.notificationService.notifyAdminLessonComplaintSubmitted({
+        complaintId: complaint.id,
+        studentName: student.username || 'Student',
+        tutorName,
+        lessonStartAtLabel: dayjs(complaint.lessonStartAt)
+          .utc()
+          .format('ddd, D MMM YYYY · HH:mm [UTC]'),
+        reason: complaint.reason,
+        message: complaint.message,
+        senderAvatarUrl: student.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify admin for complaint ${complaint.id}: ${detail}`);
+    }
 
     return {
       id: complaint.id,
@@ -191,10 +261,7 @@ export class LessonComplaintService {
       if (row.trialLessonBooking) {
         grossAmount = Number(row.trialLessonBooking.grossAmount);
         currency = row.trialLessonBooking.currency;
-      } else if (
-        row.subscriptionEnrollment &&
-        row.subscriptionSlotIndex != null
-      ) {
+      } else if (row.subscriptionEnrollment && row.subscriptionSlotIndex != null) {
         const slots = this.parseWeeklySlots(row.subscriptionEnrollment.weeklySlots);
         const slotGross = subscriptionSlotGrossAmount(
           row.subscriptionEnrollment.grossAmount,
@@ -284,7 +351,14 @@ export class LessonComplaintService {
       where: { id: complaintId },
       include: {
         trialLessonBooking: {
-          select: { id: true, paymentStatus: true },
+          select: {
+            id: true,
+            paymentStatus: true,
+            grossAmount: true,
+            tutorAmount: true,
+            currency: true,
+            tutor: { select: { user: { select: { username: true, timezone: true } } } },
+          },
         },
         subscriptionEnrollment: {
           select: {
@@ -292,9 +366,10 @@ export class LessonComplaintService {
             studentId: true,
             grossAmount: true,
             tutorAmount: true,
+            currency: true,
             weeklySlots: true,
             paymentStatus: true,
-            tutor: { select: { userId: true, user: { select: { username: true } } } },
+            tutor: { select: { userId: true, user: { select: { username: true, timezone: true } } } },
           },
         },
       },
@@ -310,14 +385,20 @@ export class LessonComplaintService {
     let refunded = false;
 
     if (targetStatus === 'APPROVED') {
-      if (complaint.lessonType === ELessonChangeLessonType.TRIAL && complaint.trialLessonBookingId) {
+      if (
+        complaint.lessonType === ELessonChangeLessonType.TRIAL &&
+        complaint.trialLessonBookingId
+      ) {
         const booking = complaint.trialLessonBooking;
         if (!booking || booking.paymentStatus === EPaymentStatus.REFUNDED) {
           throw new BadRequestException('This lesson has already been refunded');
         }
-        refunded = await this.walletService.refundTrialLessonBooking(complaint.trialLessonBookingId, {
-          refundDescription: 'Refund approved for lesson complaint',
-        });
+        refunded = await this.walletService.refundTrialLessonBooking(
+          complaint.trialLessonBookingId,
+          {
+            refundDescription: 'Refund approved for lesson complaint',
+          }
+        );
       } else if (
         complaint.lessonType === ELessonChangeLessonType.SUBSCRIPTION &&
         complaint.subscriptionEnrollmentId != null &&
@@ -348,39 +429,58 @@ export class LessonComplaintService {
         reviewedAt: new Date(),
         adminNote: dto.adminNote?.trim() || null,
       },
-      select: { id: true, status: true },
+      select: {
+        id: true,
+        status: true,
+        lessonType: true,
+        studentId: true,
+        tutorId: true,
+        subscriptionEnrollmentId: true,
+        subscriptionSlotIndex: true,
+      },
     });
 
     try {
-      const isApproved = targetStatus === 'APPROVED';
-      const i18nKey = isApproved
-        ? refunded
-          ? NOTIFICATION_I18N_KEYS.templates.lessonComplaintApprovedRefunded
-          : NOTIFICATION_I18N_KEYS.templates.lessonComplaintApproved
-        : NOTIFICATION_I18N_KEYS.templates.lessonComplaintRejected;
-
-      await this.notificationService.createForUser(complaint.studentId, {
-        title: isApproved ? 'Complaint approved' : 'Complaint rejected',
-        content: isApproved
-          ? refunded
-            ? 'Your lesson complaint has been approved. Refund has been processed to your wallet.'
-            : 'Your lesson complaint has been approved.'
-          : 'Your lesson complaint has been rejected. Please check the admin note for details.',
-        type: ENotificationType.SYSTEM,
-        i18nKey,
-        i18nParams: {},
-        dedupeKey: `lesson-complaint-reviewed:${updated.id}`,
-        metadata: {
-          titleI18nKey: isApproved
-            ? NOTIFICATION_I18N_KEYS.titles.lessonComplaintApproved
-            : NOTIFICATION_I18N_KEYS.titles.lessonComplaintRejected,
-          titleI18nParams: {},
-          complaintId: updated.id,
-          status: updated.status,
-          refunded,
-          adminNote: dto.adminNote?.trim() || null,
-        },
+      const adminNote = dto.adminNote?.trim() || null;
+      const notificationDetails = this.resolveStudentComplaintNotificationDetails(complaint);
+      const student = await this.prisma.user.findUnique({
+        where: { id: complaint.studentId },
+        select: { mezonUserId: true },
       });
+
+      if (targetStatus === 'APPROVED') {
+        await this.notificationService.notifyStudentLessonComplaintApproved({
+          studentUserId: complaint.studentId,
+          studentMezonUserId: student?.mezonUserId,
+          tutorName: notificationDetails.tutorName,
+          lessonStartAtLabel: notificationDetails.lessonStartAtLabel,
+          lessonStartAtIso: notificationDetails.lessonStartAtIso,
+          submittedAtLabel: notificationDetails.submittedAtLabel,
+          reason: complaint.reason,
+          refunded,
+          amount: notificationDetails.amount,
+          currency: notificationDetails.currency,
+          complaintId: updated.id,
+        });
+
+        if (refunded) {
+          await this.notifyTutorOnApprovedRefund(complaint, updated, notificationDetails);
+        }
+      } else {
+        await this.notificationService.notifyStudentLessonComplaintRejected({
+          studentUserId: complaint.studentId,
+          studentMezonUserId: student?.mezonUserId,
+          tutorName: notificationDetails.tutorName,
+          lessonStartAtLabel: notificationDetails.lessonStartAtLabel,
+          lessonStartAtIso: notificationDetails.lessonStartAtIso,
+          submittedAtLabel: notificationDetails.submittedAtLabel,
+          reason: complaint.reason,
+          amount: notificationDetails.amount,
+          currency: notificationDetails.currency,
+          adminNote,
+          complaintId: updated.id,
+        });
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Failed to notify student for lesson complaint ${updated.id}: ${detail}`);
@@ -391,6 +491,125 @@ export class LessonComplaintService {
       status: updated.status as LessonComplaintStatusApi,
       refunded,
     };
+  }
+
+  private async notifyTutorOnApprovedRefund(
+    complaint: ComplaintWithNotificationContext,
+    updated: {
+      id: string;
+      status: ELessonComplaintStatus;
+      lessonType: ELessonChangeLessonType;
+      studentId: string;
+      tutorId: string;
+      subscriptionEnrollmentId: string | null;
+      subscriptionSlotIndex: number | null;
+    },
+    details: StudentComplaintNotificationDetails
+  ): Promise<void> {
+    try {
+      const [tutorProfile, student] = await Promise.all([
+        this.prisma.tutorProfile.findUnique({
+          where: { id: updated.tutorId },
+          select: { userId: true, user: { select: { mezonUserId: true } } },
+        }),
+        this.prisma.user.findUnique({
+          where: { id: updated.studentId },
+          select: { username: true },
+        }),
+      ]);
+      if (!tutorProfile) {
+        this.logger.warn(`Tutor profile not found for complaint ${updated.id}`);
+        return;
+      }
+
+      const studentName = student?.username ?? 'student';
+
+      if (details.tutorAmount <= BigInt(0)) {
+        this.logger.warn(`No tutor amount found for complaint ${updated.id}`);
+        return;
+      }
+
+      await this.notificationService.notifyTutorLessonComplaintApproved({
+        tutorUserId: tutorProfile.userId,
+        tutorMezonUserId: tutorProfile.user.mezonUserId,
+        studentName,
+        lessonStartAtLabel: details.lessonStartAtLabel,
+        submittedAtLabel: details.submittedAtLabel,
+        reason: complaint.reason,
+        studentMessage: complaint.message,
+        amount: details.tutorAmount,
+        currency: details.currency,
+        dedupeKey: `tutor-lesson-complaint-approved:${updated.id}`,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to notify tutor for lesson complaint ${updated.id}: ${detail}`
+      );
+    }
+  }
+
+  private resolveStudentComplaintNotificationDetails(
+    complaint: ComplaintWithNotificationContext
+  ): StudentComplaintNotificationDetails {
+    let tutorName = 'tutor';
+    let amount = BigInt(0);
+    let tutorAmount = BigInt(0);
+    let currency: ECurrency | undefined;
+    let displayTimezone = 'UTC';
+
+    if (complaint.lessonType === ELessonChangeLessonType.TRIAL && complaint.trialLessonBooking) {
+      tutorName = complaint.trialLessonBooking.tutor.user.username ?? 'tutor';
+      displayTimezone = complaint.trialLessonBooking.tutor.user.timezone ?? 'UTC';
+      amount = complaint.trialLessonBooking.grossAmount;
+      tutorAmount = complaint.trialLessonBooking.tutorAmount;
+      currency = complaint.trialLessonBooking.currency as ECurrency;
+    } else if (
+      complaint.lessonType === ELessonChangeLessonType.SUBSCRIPTION &&
+      complaint.subscriptionEnrollment
+    ) {
+      const slots = this.parseWeeklySlots(complaint.subscriptionEnrollment.weeklySlots);
+      const slotCount = slots.length || 1;
+      const slotIndex = complaint.subscriptionSlotIndex ?? 0;
+      tutorName = complaint.subscriptionEnrollment.tutor.user.username ?? 'tutor';
+      displayTimezone = complaint.subscriptionEnrollment.tutor.user.timezone ?? 'UTC';
+      amount = subscriptionSlotGrossAmount(
+        complaint.subscriptionEnrollment.grossAmount,
+        slotCount,
+        slotIndex
+      );
+      tutorAmount = subscriptionSlotTutorAmount(
+        complaint.subscriptionEnrollment.tutorAmount,
+        slotCount,
+        slotIndex
+      );
+      currency = complaint.subscriptionEnrollment.currency as ECurrency;
+    }
+
+    const lessonStartAtIso = complaint.lessonStartAt.toISOString();
+    const lessonStartAtLabel = this.formatComplaintInstantLabel(
+      complaint.lessonStartAt,
+      displayTimezone
+    );
+    const submittedAtLabel = this.formatComplaintInstantLabel(
+      complaint.createdAt,
+      displayTimezone
+    );
+
+    return {
+      tutorName,
+      lessonStartAtLabel,
+      lessonStartAtIso,
+      submittedAtLabel,
+      amount,
+      tutorAmount,
+      currency,
+    };
+  }
+
+  private formatComplaintInstantLabel(at: Date, timezoneName: string): string {
+    const tz = timezoneName?.trim() || 'UTC';
+    return dayjs(at).tz(tz).format('ddd, D MMM YYYY · HH:mm z');
   }
 
   private async resolveLessonContext(
@@ -489,12 +708,14 @@ export class LessonComplaintService {
     if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
       throw new BadRequestException('Cancelled lessons cannot be complained about');
     }
+    if (slotStatus === ESubscriptionLessonSlotStatus.REFUNDED) {
+      throw new BadRequestException('This lesson has already been refunded');
+    }
 
     const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
     const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone);
     const occurrence = occurrences.find(
-      (o) =>
-        o.slotIndex === slotIndex && dayjs(o.startAt).utc().isSame(lessonStart, 'minute')
+      (o) => o.slotIndex === slotIndex && dayjs(o.startAt).utc().isSame(lessonStart, 'minute')
     );
     if (!occurrence) {
       throw new BadRequestException('Lesson occurrence not found');

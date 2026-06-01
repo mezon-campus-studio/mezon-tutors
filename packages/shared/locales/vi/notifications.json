@@ -23,7 +23,8 @@
     "lessonStartingSoon": "Buổi học sắp bắt đầu",
     "tutorEarningsReleased": "Tiền đã về ví",
     "lessonComplaintApproved": "Khiếu nại đã được duyệt",
-    "lessonComplaintRejected": "Khiếu nại bị từ chối"
+    "lessonComplaintRejected": "Khiếu nại bị từ chối",
+    "tutorLessonComplaintApproved": "Khiếu nại về buổi học của bạn đã được duyệt"
   },
   "templates": {
     "bookingCreated": "{studentName} đã thanh toán buổi học thử với bạn. Xem lịch và chuẩn bị dạy nhé.",
@@ -37,8 +38,9 @@
     "systemAnnouncement": "{message}",
     "lessonStartingSoon": "Buổi học của bạn sẽ bắt đầu trong khoảng 10 phút nữa, lúc {lessonStartAt}.",
     "tutorEarningsReleased": "{amount} từ {lessonKind, select, trial {buổi học thử} subscription {buổi học gói đăng ký} other {buổi học}} đã được chuyển vào số dư khả dụng trong ví của bạn.",
-    "lessonComplaintApproved": "Khiếu nại buổi học của bạn đã được duyệt.",
-    "lessonComplaintApprovedRefunded": "Khiếu nại buổi học của bạn đã được duyệt. Tiền đã được hoàn về ví.",
-    "lessonComplaintRejected": "Khiếu nại buổi học của bạn đã bị từ chối. Vui lòng xem ghi chú từ admin để biết thêm chi tiết."
+    "lessonComplaintApproved": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã được duyệt.",
+    "lessonComplaintApprovedRefunded": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã được duyệt. {amount} đã được hoàn về ví.",
+    "lessonComplaintRejected": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã bị từ chối. Lý do: {reason}. Ghi chú admin: {adminNote}",
+    "tutorLessonComplaintApproved": "Khiếu nại của học viên về buổi học với bạn (học viên {studentName}) đã được duyệt. Hệ thống đã hoàn tiền từ phần thu nhập tương ứng."
   }
 }

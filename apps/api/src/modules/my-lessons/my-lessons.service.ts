@@ -451,6 +451,10 @@ export class MyLessonsService {
 
     const cancelledTrial =
       item.source === 'trial' && item.trial_booking_status === 'cancelled';
+    const refundedSubscriptionSlot =
+      item.source === 'subscription' &&
+      normalizeSubscriptionSlotStatus(item.subscription_slot_status) ===
+        ESubscriptionLessonSlotStatus.REFUNDED;
 
     const trialPaymentOk =
       item.source !== 'trial' ||
@@ -473,6 +477,7 @@ export class MyLessonsService {
     const canComplain =
       !complaintStatus &&
       !cancelledTrial &&
+      !refundedSubscriptionSlot &&
       lessonFinished &&
       withinWindow &&
       trialPaymentOk &&
@@ -497,7 +502,11 @@ export class MyLessonsService {
     startAt: Date,
     durationMinutes: number
   ): MyLessonApiItem['status'] | null {
-    if (normalizeSubscriptionSlotStatus(slotStatus) === ESubscriptionLessonSlotStatus.CANCELLED) {
+    const normalized = normalizeSubscriptionSlotStatus(slotStatus);
+    if (
+      normalized === ESubscriptionLessonSlotStatus.CANCELLED ||
+      normalized === ESubscriptionLessonSlotStatus.REFUNDED
+    ) {
       return 'completed';
     }
     if (isSubscriptionSlotCompleted(slotStatus)) {

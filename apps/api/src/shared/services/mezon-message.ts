@@ -25,6 +25,10 @@ import {
   withdrawalRejectedEmbed,
   withdrawalRequestedEmbed,
   subscriptionEnrollmentBookedEmbed,
+  lessonComplaintSubmittedEmbed,
+  tutorLessonComplaintApprovedEmbed,
+  studentLessonComplaintRefundedEmbed,
+  studentLessonComplaintRejectedEmbed,
 } from '../utils/mezon-message-templates';
 
 @Injectable()
@@ -219,6 +223,73 @@ export class MezonMessageService {
         tutorName: params.tutorName,
         senderAvatarUrl: params.senderAvatarUrl,
         reviewUrl,
+      })
+    );
+  }
+
+  lessonComplaintSubmitted(
+    params: {
+      complaintId: string;
+      studentName: string;
+      tutorName: string;
+      lessonStartAtLabel: string;
+      reason: string;
+      message?: string | null;
+    } & SenderAvatarParams
+  ): ChannelMessageContent {
+    return this.toChannelMessage(
+      lessonComplaintSubmittedEmbed({
+        ...params,
+        reviewUrl: this.url(ROUTES.ADMIN.LESSON_COMPLAINTS),
+      })
+    );
+  }
+
+  tutorLessonComplaintApproved(
+    params: {
+      studentName: string;
+      lessonStartAtLabel: string;
+      submittedAtLabel: string;
+      reason: string;
+      studentMessage?: string | null;
+      amountFormatted: string;
+    } & SenderAvatarParams
+  ): ChannelMessageContent {
+    return this.toChannelMessage(
+      tutorLessonComplaintApprovedEmbed({
+        ...params,
+        walletUrl: this.url(ROUTES.DASHBOARD.WALLET),
+      })
+    );
+  }
+
+  studentLessonComplaintRefunded(params: {
+    tutorName: string;
+    lessonStartAtLabel: string;
+    submittedAtLabel: string;
+    reason: string;
+    amountFormatted: string;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      studentLessonComplaintRefundedEmbed({
+        ...params,
+        walletUrl: this.url(ROUTES.DASHBOARD.WALLET),
+      })
+    );
+  }
+
+  studentLessonComplaintRejected(params: {
+    tutorName: string;
+    lessonStartAtLabel: string;
+    submittedAtLabel: string;
+    reason: string;
+    amountFormatted: string;
+    adminNote?: string | null;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      studentLessonComplaintRejectedEmbed({
+        ...params,
+        complaintsUrl: this.url(ROUTES.DASHBOARD.COMPLAINTS),
       })
     );
   }

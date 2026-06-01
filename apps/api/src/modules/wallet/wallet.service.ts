@@ -15,8 +15,10 @@ import {
   Role,
 } from '@mezon-tutors/db';
 import {
+  ESubscriptionLessonSlotStatus,
   formatToCurrency,
   type CreateWalletWithdrawalPayload,
+  type SubscriptionWeeklySlotDto,
   type StudentWalletStatsApiResponse,
   type TutorWalletStatsApiResponse,
   type UpdateWalletPayoutBankPayload,
@@ -84,6 +86,13 @@ export class WalletService {
       hasNext: page < totalPages,
       hasPrev: page > 1,
     };
+  }
+
+  private parseWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return value as unknown as SubscriptionWeeklySlotDto[];
   }
 
   private assertWalletRole(role: Role) {
@@ -714,6 +723,22 @@ export class WalletService {
     slotCount: number;
     description?: string;
   }): Promise<boolean> {
+    const enrollment = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: params.enrollmentId },
+      select: { weeklySlots: true },
+    });
+    if (!enrollment) {
+      return false;
+    }
+    const slots = this.parseWeeklySlots(enrollment.weeklySlots);
+    const slot = slots[params.slotIndex];
+    if (!slot) {
+      return false;
+    }
+    if (slot.status === ESubscriptionLessonSlotStatus.REFUNDED) {
+      return true;
+    }
+
     const existingRefund = await this.prisma.transaction.findFirst({
       where: {
         subscriptionEnrollmentId: params.enrollmentId,
@@ -788,6 +813,14 @@ export class WalletService {
           }
         }
       }
+
+      const updatedSlots = slots.map((s, i) =>
+        i === params.slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.REFUNDED } : s
+      );
+      await tx.subscriptionEnrollment.update({
+        where: { id: params.enrollmentId },
+        data: { weeklySlots: updatedSlots as unknown as Prisma.InputJsonValue },
+      });
     });
 
     return true;
