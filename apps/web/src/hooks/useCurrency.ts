@@ -8,6 +8,7 @@ export function useCurrency() {
   return {
     currency,
     setCurrency,
-    currencyOptions: Object.values(ECurrency),
+    //currencyOptions: Object.values(ECurrency),
+    currencyOptions: [ECurrency.VND],
   };
 }

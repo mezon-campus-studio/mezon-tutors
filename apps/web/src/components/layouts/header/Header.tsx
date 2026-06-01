@@ -280,8 +280,8 @@ const CURRENCY_INFO: Record<
   { symbol: string; name: string; flag: string }
 > = {
   VND: { symbol: "₫", name: "Vietnamese Dong", flag: "🇻🇳" },
-  USD: { symbol: "$", name: "US Dollar", flag: "🇺🇸" },
-  PHP: { symbol: "₱", name: "Philippine Peso", flag: "🇵🇭" },
+  //USD: { symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+  //PHP: { symbol: "₱", name: "Philippine Peso", flag: "🇵🇭" },
 };
 
 const LOCALE_INFO: Record<
@@ -314,7 +314,8 @@ function CurrencyPopover({
             className="group h-9 gap-1.5 rounded-full border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 backdrop-blur transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 aria-expanded:border-violet-300 aria-expanded:bg-violet-50 aria-expanded:text-violet-700"
           >
             <span className="flex size-5 items-center justify-center rounded-md bg-violet-100 text-[11px] font-bold text-violet-700 group-hover:bg-violet-200/80 group-aria-expanded:bg-violet-200/80">
-              {info?.symbol ?? "$"}
+              {/*{info?.symbol ?? "$"}*/}
+              {info?.symbol ?? "₫"}
             </span>
             {currency}
             <ChevronDown className="size-3.5 text-slate-400 transition-transform group-aria-expanded:rotate-180" />
