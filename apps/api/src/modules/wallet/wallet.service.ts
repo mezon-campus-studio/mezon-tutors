@@ -26,10 +26,15 @@ import {
   type WalletPayoutBankAccount,
   type WalletStatsApiResponse,
   type WalletTransactionApiItem,
+  type WalletTransactionLessonDetail,
   type WalletTransactionsApiResponse,
   type WalletWithdrawalApiItem,
   type WalletWithdrawalsApiResponse,
+  type AdminWalletWithdrawalApiItem,
+  type AdminWalletWithdrawalsApiResponse,
   ECurrency as SharedCurrency,
+  DEFAULT_TIMEZONE,
+  subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
 } from '@mezon-tutors/shared';
@@ -172,23 +177,31 @@ export class WalletService {
 
   private mapWithdrawalRow(row: {
     id: string;
+    tutorId: string;
+    walletId: string;
     amount: bigint;
     bankName: string;
     bankAccountNumber: string;
     bankAccountName: string;
     status: EWithdrawalStatus;
     adminNote: string | null;
+    paymentProofUrl: string | null;
+    paymentProofPublicId: string | null;
     createdAt: Date;
     processedAt: Date | null;
   }): WalletWithdrawalApiItem {
     return {
       id: row.id,
+      tutorId: row.tutorId,
+      walletId: row.walletId,
       amount: Number(row.amount),
       bankName: row.bankName,
       bankAccountNumber: row.bankAccountNumber,
       bankAccountName: row.bankAccountName,
       status: row.status,
       adminNote: row.adminNote,
+      paymentProofUrl: row.paymentProofUrl,
+      paymentProofPublicId: row.paymentProofPublicId,
       createdAt: row.createdAt.toISOString(),
       processedAt: row.processedAt?.toISOString() ?? null,
     };
@@ -413,25 +426,76 @@ export class WalletService {
         skip,
         take: safeLimit,
         include: {
-          booking: { select: { id: true } },
-          subscriptionEnrollment: { select: { id: true } },
+          booking: {
+            select: {
+              id: true,
+              startAt: true,
+              durationMinutes: true,
+              student: { select: { username: true, avatar: true } },
+            },
+          },
+          subscriptionEnrollment: {
+            select: {
+              id: true,
+              weeklySlots: true,
+              student: { select: { username: true, avatar: true } },
+            },
+          },
         },
       }),
     ]);
 
-    const items: WalletTransactionApiItem[] = rows.map((row) => ({
-      id: row.id,
-      type: row.type,
-      direction: row.direction,
-      amount: Number(row.amount),
-      description: row.description,
-      createdAt: row.createdAt.toISOString(),
-      referenceLabel: row.bookingId
-        ? `Booking ${row.bookingId.slice(0, 8)}`
-        : row.subscriptionEnrollmentId
-          ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
-          : null,
-    }));
+    const items: WalletTransactionApiItem[] = rows.map((row) => {
+      const isIncome =
+        row.direction === EWalletTransactionDirection.CREDIT &&
+        (row.type === EWalletTransactionType.RELEASE ||
+          row.type === EWalletTransactionType.BOOKING_PAYMENT);
+
+      let lessonDetail: WalletTransactionLessonDetail | null = null;
+      if (isIncome) {
+        if (row.booking) {
+          lessonDetail = {
+            lessonKind: 'trial',
+            studentName: row.booking.student?.username ?? 'Student',
+            studentAvatarUrl: row.booking.student?.avatar ?? null,
+            startAt: row.booking.startAt.toISOString(),
+            durationMinutes: row.booking.durationMinutes,
+          };
+        } else if (row.subscriptionEnrollment) {
+          const slots = this.parseWeeklySlots(row.subscriptionEnrollment.weeklySlots);
+          const slotIndex = row.subscriptionSlotIndex ?? 0;
+          const slot = slots[slotIndex] ?? slots[0];
+          const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
+          const occ =
+            occurrences.find((o) => o.slotIndex === slotIndex) ?? occurrences[0];
+          if (slot) {
+            lessonDetail = {
+              lessonKind: 'subscription',
+              studentName: row.subscriptionEnrollment.student?.username ?? 'Student',
+              studentAvatarUrl: row.subscriptionEnrollment.student?.avatar ?? null,
+              startAt: (occ?.startAt ?? row.createdAt).toISOString(),
+              durationMinutes: slot.durationMinutes,
+              slotIndex: row.subscriptionSlotIndex,
+            };
+          }
+        }
+      }
+
+      return {
+        id: row.id,
+        type: row.type,
+        direction: row.direction,
+        amount: Number(row.amount),
+        description: row.description,
+        createdAt: row.createdAt.toISOString(),
+        referenceLabel: row.bookingId
+          ? `Booking ${row.bookingId.slice(0, 8)}`
+          : row.subscriptionEnrollmentId
+            ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
+            : null,
+        lessonDetail,
+      };
+    });
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
@@ -890,6 +954,41 @@ export class WalletService {
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
 
+  async getAllWithdrawals(page = 1, limit = 10): Promise<AdminWalletWithdrawalsApiResponse> {
+    const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
+
+    const [total, rows] = await Promise.all([
+      this.prisma.withdrawal.count(),
+      this.prisma.withdrawal.findMany({
+        include: {
+          tutor: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: safeLimit,
+      }),
+    ]);
+
+    const items: AdminWalletWithdrawalApiItem[] = rows.map((row) => ({
+      ...this.mapWithdrawalRow(row),
+      tutor: row.tutor
+        ? {
+            id: row.tutor.id,
+            username: row.tutor.username,
+            email: row.tutor.email,
+          }
+        : undefined,
+    }));
+
+    return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
   async createWithdrawal(
     userId: string,
     payload: CreateWalletWithdrawalPayload
@@ -951,13 +1050,42 @@ export class WalletService {
       return withdrawal;
     });
 
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, avatar: true },
+    });
+    const tutorName = tutor?.username ?? 'A tutor';
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyAdminWithdrawalRequested({
+        withdrawalId: created.id,
+        tutorName,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+        senderAvatarUrl: tutor?.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
+    }
+
     return this.mapWithdrawalRow(created);
   }
 
   async approveWithdrawal(
     withdrawalId: string,
-    adminNote?: string,
+    options?: {
+      adminNote?: string;
+      paymentProofUrl?: string;
+      paymentProofPublicId?: string;
+    },
   ): Promise<WalletWithdrawalApiItem> {
+    const adminNote = options?.adminNote;
+    const paymentProofUrl = options?.paymentProofUrl?.trim();
+    const paymentProofPublicId = options?.paymentProofPublicId?.trim();
+
     const created = await this.prisma.$transaction(async (tx) => {
       const withdrawal = await tx.withdrawal.findUnique({
         where: { id: withdrawalId },
@@ -1001,9 +1129,31 @@ export class WalletService {
           status: EWithdrawalStatus.COMPLETED,
           processedAt: new Date(),
           ...(adminNote !== undefined ? { adminNote: adminNote.trim() || null } : {}),
+          ...(paymentProofUrl ? { paymentProofUrl } : {}),
+          ...(paymentProofPublicId ? { paymentProofPublicId } : {}),
         },
       });
     });
+
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: created.tutorId },
+      select: { mezonUserId: true },
+    });
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyTutorWithdrawalCompleted({
+        tutorUserId: created.tutorId,
+        tutorMezonUserId: tutor?.mezonUserId,
+        withdrawalId: created.id,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify tutor for completed withdrawal ${created.id}: ${detail}`);
+    }
 
     return this.mapWithdrawalRow(created);
   }
@@ -1050,25 +1200,25 @@ export class WalletService {
 
     const tutor = await this.prisma.user.findUnique({
       where: { id: created.tutorId },
-      select: { username: true, avatar: true },
+      select: { mezonUserId: true },
     });
-    const tutorName = tutor?.username ?? 'A tutor';
     const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
 
     try {
-      await this.notificationService.notifyAdminWithdrawalRequested({
+      await this.notificationService.notifyTutorWithdrawalRejected({
+        tutorUserId: created.tutorId,
+        tutorMezonUserId: tutor?.mezonUserId,
         withdrawalId: created.id,
-        tutorName,
         amountFormatted,
         bankName: created.bankName,
         bankAccountNumber: created.bankAccountNumber,
-        senderAvatarUrl: tutor?.avatar,
+        adminNote: created.adminNote,
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
+      this.logger.warn(`Failed to notify tutor for rejected withdrawal ${created.id}: ${detail}`);
     }
 
-    return this.mapWithdrawalRow(created);    
+    return this.mapWithdrawalRow(created);
   }
 }

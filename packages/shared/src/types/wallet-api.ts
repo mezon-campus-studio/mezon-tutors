@@ -68,6 +68,15 @@ export function isTutorWalletStats(
   return stats?.role === 'TUTOR';
 }
 
+export type WalletTransactionLessonDetail = {
+  lessonKind: 'trial' | 'subscription';
+  studentName: string;
+  studentAvatarUrl?: string | null;
+  startAt: string;
+  durationMinutes: number;
+  slotIndex?: number | null;
+};
+
 export type WalletTransactionApiItem = {
   id: string;
   type: WalletTransactionType | 'LESSON_PAYMENT' | 'SUBSCRIPTION_PAYMENT';
@@ -76,19 +85,40 @@ export type WalletTransactionApiItem = {
   description: string | null;
   createdAt: string;
   referenceLabel?: string | null;
+  lessonDetail?: WalletTransactionLessonDetail | null;
 };
 
 export type WalletWithdrawalApiItem = {
   id: string;
+  tutorId: string;
+  walletId: string;
   amount: number;
   bankName: string;
   bankAccountNumber: string;
   bankAccountName: string;
   status: WalletWithdrawalStatus;
   adminNote: string | null;
+  paymentProofUrl: string | null;
+  paymentProofPublicId: string | null;
   createdAt: string;
   processedAt: string | null;
 };
+
+export type ApproveWalletWithdrawalAdminPayload = {
+  adminNote?: string;
+  paymentProofUrl?: string;
+  paymentProofPublicId?: string;
+};
+
+export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {
+  tutor?: {
+    id: string;
+    username: string;
+    email: string;
+  };
+};
+
+export type AdminWalletWithdrawalsApiResponse = PaginatedData<AdminWalletWithdrawalApiItem>;
 
 export type WalletTransactionsApiResponse = PaginatedData<WalletTransactionApiItem>;
 

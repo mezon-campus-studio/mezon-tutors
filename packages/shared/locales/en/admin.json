@@ -128,6 +128,90 @@
         }
       }
     },
+    "Payments": {
+      "title": "Payments",
+      "description": "Tutor withdrawal history",
+      "withdrawals": {
+        "empty": "No withdrawal data.",
+        "unknownTutor": "Unknown",
+        "columns": {
+          "tutor": "Tutor",
+          "amount": "Withdrawal amount",
+          "bank": "Bank",
+          "accountNumber": "Account number",
+          "accountHolder": "Account holder",
+          "status": "Status",
+          "requestedAt": "Requested at",
+          "processedAt": "Processed at",
+          "note": "Note",
+          "actions": "Actions"
+        },
+        "status": {
+          "PENDING": "Pending",
+          "APPROVED": "Approved",
+          "PROCESSING": "Processing",
+          "COMPLETED": "Completed",
+          "REJECTED": "Rejected"
+        },
+        "actions": {
+          "accept": "Accept",
+          "reject": "Reject",
+          "detail": "Detail"
+        },
+        "approveDialog": {
+          "title": "Accept withdrawal",
+          "description": "Confirm the bank transfer details before settling this tutor withdrawal.",
+          "tutor": "Tutor",
+          "transferAmount": "Amount to transfer",
+          "bankSectionTitle": "Tutor bank account",
+          "confirm": "Accept",
+          "cancel": "Cancel",
+          "submitting": "Processing...",
+          "success": "Withdrawal accepted.",
+          "error": "Failed to accept withdrawal. Please try again.",
+          "proofTitle": "Payment proof",
+          "proofHint": "Upload a screenshot or receipt of the bank transfer (PDF, JPG, PNG, max 15MB).",
+          "proofUploadPrompt": "Click or drag the receipt here",
+          "proofUploading": "Uploading…",
+          "proofDropHere": "Drop the file here",
+          "proofRequiredError": "Please upload the payment proof before confirming.",
+          "proofUploadError": "Failed to upload the payment proof. Please try again.",
+          "proofTooLargeError": "File is too large. Maximum size is 15MB.",
+          "proofInvalidTypeError": "Unsupported file type. Allowed: PDF, JPG, PNG.",
+          "proofRemove": "Remove file"
+        },
+        "rejectDialog": {
+          "title": "Reject withdrawal",
+          "description": "Enter the rejection message that will be saved as the admin note.",
+          "tutor": "Tutor",
+          "transferAmount": "Withdrawal amount",
+          "noteLabel": "Rejection message",
+          "notePlaceholder": "Explain why this withdrawal request is rejected...",
+          "noteRequiredError": "Please enter a reason for the rejection.",
+          "confirm": "Reject",
+          "cancel": "Cancel",
+          "submitting": "Rejecting...",
+          "success": "Withdrawal rejected.",
+          "error": "Failed to reject withdrawal. Please try again."
+        },
+        "detailDialog": {
+          "title": "Withdrawal detail",
+          "description": "Withdrawal request information and the bank transfer proof.",
+          "tutor": "Tutor",
+          "transferAmount": "Transferred amount",
+          "bankSectionTitle": "Tutor bank account",
+          "noteLabel": "Admin note",
+          "proofTitle": "Payment proof",
+          "viewProof": "View payment proof",
+          "noProof": "No payment proof available.",
+          "copyProof": "Copy image",
+          "downloadProof": "Download image",
+          "copyProofSuccess": "Payment proof copied.",
+          "copyProofError": "Failed to copy image. Please try again.",
+          "close": "Close"
+        }
+      }
+    },
     "AppSettings": {
       "title": "App Settings",
       "description": "Configure platform fees, time periods, and withdrawal limits.",

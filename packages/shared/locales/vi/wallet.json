@@ -75,18 +75,55 @@
       "emptyTitle": "Chưa có giao dịch",
       "emptyDescription": "Khi bạn thanh toán hoặc nhận thu nhập, giao dịch sẽ hiển thị tại đây.",
       "credit": "Nhận",
-      "debit": "Chi"
+      "debit": "Chi",
+      "viewDetail": "Xem chi tiết buổi học",
+      "detailDialog": {
+        "title": "Chi tiết thu nhập",
+        "description": "Thu nhập nhận được từ buổi học này.",
+        "lessonTagTrial": "Học thử",
+        "lessonTagPlan": "Gói",
+        "student": "Học viên",
+        "lessonType": "Loại buổi học",
+        "lessonTypeTrial": "Buổi học thử",
+        "lessonTypePlan": "Buổi học gói đăng ký",
+        "lessonTime": "Thời gian học",
+        "duration": "Thời lượng",
+        "durationValue": "{minutes} phút",
+        "amountEarned": "Số tiền nhận",
+        "receivedAt": "Nhận lúc",
+        "close": "Đóng"
+      }
     },
     "withdrawals": {
       "emptyTitle": "Chưa có yêu cầu rút",
       "emptyDescription": "Gửi yêu cầu rút khi số dư khả dụng đã sẵn sàng.",
       "bank": "Tài khoản ngân hàng",
+      "viewDetail": "Xem chi tiết",
       "status": {
         "PENDING": "Chờ duyệt",
         "APPROVED": "Đã duyệt",
         "PROCESSING": "Đang xử lý",
         "COMPLETED": "Hoàn tất",
         "REJECTED": "Từ chối"
+      },
+      "detailDialog": {
+        "title": "Chi tiết rút tiền",
+        "description": "Xem thông tin chuyển khoản và minh chứng thanh toán từ admin.",
+        "tutor": "Chủ tài khoản",
+        "transferAmount": "Số tiền rút",
+        "bankSectionTitle": "Tài khoản ngân hàng",
+        "bankName": "Ngân hàng",
+        "accountNumber": "Số tài khoản",
+        "accountName": "Chủ tài khoản",
+        "noteLabel": "Ghi chú từ admin",
+        "proofTitle": "Minh chứng chuyển khoản",
+        "viewProof": "Xem minh chứng chuyển khoản",
+        "noProof": "Chưa có minh chứng chuyển khoản.",
+        "copyProof": "Sao chép ảnh",
+        "downloadProof": "Tải ảnh xuống",
+        "copyProofSuccess": "Đã sao chép ảnh minh chứng.",
+        "copyProofError": "Không thể sao chép ảnh. Vui lòng thử lại.",
+        "close": "Đóng"
       }
     },
     "types": {

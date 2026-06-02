@@ -5,6 +5,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
+  Eye,
   Receipt,
   Search,
 } from 'lucide-react';
@@ -19,9 +20,10 @@ import {
 import { Badge, Skeleton } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination';
+import WalletWithdrawDialog from '@/views/main/wallet/components/WalletWithdrawDialog';
+import WalletEarningDetailDialog from '@/views/main/wallet/components/WalletEarningDetailDialog';
 
 type TabKey = 'transactions' | 'payouts';
-type TxFilter = 'all' | 'credit' | 'debit' | 'withdrawal';
 
 type TutorWalletActivitySectionProps = {
   transactions: WalletTransactionApiItem[];
@@ -79,7 +81,10 @@ export default function TutorWalletActivitySection({
   const locale = useLocale();
   const [tab, setTab] = useState<TabKey>('transactions');
   const [search, setSearch] = useState('');
-  const [txFilter, setTxFilter] = useState<TxFilter>('all');
+  const [detailWithdrawal, setDetailWithdrawal] =
+    useState<WalletWithdrawalApiItem | null>(null);
+  const [detailEarning, setDetailEarning] =
+    useState<WalletTransactionApiItem | null>(null);
 
   const typeLabels: Record<string, string> = {
     BOOKING_PAYMENT: tWallet('types.BOOKING_PAYMENT'),
@@ -92,9 +97,6 @@ export default function TutorWalletActivitySection({
   const filteredTx = useMemo(() => {
     const q = search.trim().toLowerCase();
     return transactions.filter((item) => {
-      if (txFilter === 'credit' && item.direction !== 'CREDIT') return false;
-      if (txFilter === 'debit' && item.direction !== 'DEBIT') return false;
-      if (txFilter === 'withdrawal' && item.type !== 'WITHDRAWAL') return false;
       if (!q) return true;
       const label = typeLabels[item.type] ?? item.type;
       return (
@@ -103,7 +105,7 @@ export default function TutorWalletActivitySection({
         (item.description ?? '').toLowerCase().includes(q)
       );
     });
-  }, [transactions, search, txFilter, typeLabels]);
+  }, [transactions, search, typeLabels]);
 
   const filteredWd = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -191,33 +193,6 @@ export default function TutorWalletActivitySection({
         ))}
       </div>
 
-      {tab === 'transactions' ? (
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {(
-            [
-              { key: 'all' as const, label: t('filterAll') },
-              { key: 'credit' as const, label: t('filterEarnings') },
-              { key: 'debit' as const, label: t('filterOutgoing') },
-              { key: 'withdrawal' as const, label: t('filterWithdrawals') },
-            ] as const
-          ).map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTxFilter(key)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
-                txFilter === key
-                  ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
-                  : 'border-slate-200 text-slate-600 hover:border-slate-300',
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
       <div className="mt-5 min-h-[200px]">
         {isLoading ? (
           <div className="space-y-4">
@@ -289,10 +264,23 @@ export default function TutorWalletActivitySection({
                             </p>
                             <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
                           </div>
-                          <p className={cn('shrink-0 text-base font-extrabold tabular-nums', amountClass)}>
-                            {isCredit ? '+' : '−'}
-                            {formatToCurrency(ECurrency.VND, item.amount)}
-                          </p>
+                          <div className="flex shrink-0 items-center gap-2.5">
+                            <p className={cn('text-base font-extrabold tabular-nums', amountClass)}>
+                              {isCredit ? '+' : '−'}
+                              {formatToCurrency(ECurrency.VND, item.amount)}
+                            </p>
+                            {item.lessonDetail ? (
+                              <button
+                                type="button"
+                                onClick={() => setDetailEarning(item)}
+                                aria-label={tWallet('transactions.viewDetail')}
+                                title={tWallet('transactions.viewDetail')}
+                                className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                              >
+                                <Eye className="size-4" />
+                              </button>
+                            ) : null}
+                          </div>
                         </div>
                       );
                     })}
@@ -334,9 +322,20 @@ export default function TutorWalletActivitySection({
                             {item.bankName} · •••• {item.bankAccountNumber.slice(-4)}
                           </p>
                         </div>
-                        <Badge variant="outline" className={statusStyle}>
-                          {tWallet(`withdrawals.status.${item.status}`)}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={statusStyle}>
+                            {tWallet(`withdrawals.status.${item.status}`)}
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => setDetailWithdrawal(item)}
+                            aria-label={tWallet('withdrawals.viewDetail')}
+                            title={tWallet('withdrawals.viewDetail')}
+                            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                          >
+                            <Eye className="size-4" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -355,6 +354,58 @@ export default function TutorWalletActivitySection({
           onPageChangeAction={tab === 'transactions' ? onTxPageChange : onWdPageChange}
         />
       </div>
+
+      {detailWithdrawal ? (
+        <WalletWithdrawDialog
+          mode="review"
+          reviewAction="detail"
+          open={Boolean(detailWithdrawal)}
+          onOpenChange={(openState) => {
+            if (!openState) setDetailWithdrawal(null);
+          }}
+          maxAmount={detailWithdrawal.amount}
+          reviewDetails={{
+            amount: detailWithdrawal.amount,
+            bankName: detailWithdrawal.bankName,
+            bankAccountNumber: detailWithdrawal.bankAccountNumber,
+            bankAccountName: detailWithdrawal.bankAccountName,
+            tutorName: detailWithdrawal.bankAccountName,
+            paymentProofUrl: detailWithdrawal.paymentProofUrl,
+            adminNote: detailWithdrawal.adminNote,
+            processedAt: detailWithdrawal.processedAt,
+          }}
+          reviewLabels={{
+            title: tWallet('withdrawals.detailDialog.title'),
+            description: tWallet('withdrawals.detailDialog.description'),
+            tutor: tWallet('withdrawals.detailDialog.tutor'),
+            transferAmount: tWallet('withdrawals.detailDialog.transferAmount'),
+            bankSectionTitle: tWallet('withdrawals.detailDialog.bankSectionTitle'),
+            bankName: tWallet('withdrawals.detailDialog.bankName'),
+            accountNumber: tWallet('withdrawals.detailDialog.accountNumber'),
+            accountName: tWallet('withdrawals.detailDialog.accountName'),
+            confirm: tWallet('withdrawals.detailDialog.close'),
+            cancel: tWallet('withdrawals.detailDialog.close'),
+            submitting: tWallet('withdrawals.detailDialog.close'),
+            close: tWallet('withdrawals.detailDialog.close'),
+            noteLabel: tWallet('withdrawals.detailDialog.noteLabel'),
+            proofTitle: tWallet('withdrawals.detailDialog.proofTitle'),
+            viewProof: tWallet('withdrawals.detailDialog.viewProof'),
+            noProof: tWallet('withdrawals.detailDialog.noProof'),
+            copyProof: tWallet('withdrawals.detailDialog.copyProof'),
+            downloadProof: tWallet('withdrawals.detailDialog.downloadProof'),
+            copyProofSuccess: tWallet('withdrawals.detailDialog.copyProofSuccess'),
+            copyProofError: tWallet('withdrawals.detailDialog.copyProofError'),
+          }}
+        />
+      ) : null}
+
+      <WalletEarningDetailDialog
+        open={Boolean(detailEarning)}
+        onOpenChange={(openState) => {
+          if (!openState) setDetailEarning(null);
+        }}
+        transaction={detailEarning}
+      />
     </section>
   );
 }

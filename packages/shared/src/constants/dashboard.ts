@@ -103,6 +103,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     roles: ['ADMIN'],
   },
   {
+    key: 'payments',
+    type: 'link',
+    labelKey: 'payments',
+    iconKey: 'payments',
+    href: ROUTES.ADMIN.PAYMENTS,
+    roles: ['ADMIN'],
+  },
+  {
     key: 'logout',
     type: 'action',
     labelKey: 'logout',
@@ -154,7 +162,10 @@ export function isDashboardSidebarLinkActive(
     return pathname.startsWith(ROUTES.DASHBOARD.TUTOR_PROFILE);
   }
   if (item.key === 'tutor-applications') {
-    return pathname.startsWith('/admin');
+    return pathname.startsWith(ROUTES.ADMIN.TUTOR_APPLICATIONS);
+  }
+  if (item.key === 'payments') {
+    return pathname.startsWith(ROUTES.ADMIN.PAYMENTS);
   }
   if (item.key === 'trial-bookings') {
     return pathname.startsWith(ROUTES.DASHBOARD.TRIAL_BOOKING);

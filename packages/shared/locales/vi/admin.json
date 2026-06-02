@@ -128,6 +128,90 @@
         }
       }
     },
+    "Payments": {
+      "title": "Thanh toán",
+      "description": "Lịch sử rút tiền của gia sư",
+      "withdrawals": {
+        "empty": "Không có dữ liệu rút tiền.",
+        "unknownTutor": "Không rõ",
+        "columns": {
+          "tutor": "Gia sư",
+          "amount": "Số tiền rút",
+          "bank": "Ngân hàng",
+          "accountNumber": "Số tài khoản",
+          "accountHolder": "Chủ tài khoản",
+          "status": "Trạng thái",
+          "requestedAt": "Ngày yêu cầu",
+          "processedAt": "Ngày xử lý",
+          "note": "Ghi chú",
+          "actions": "Thao tác"
+        },
+        "status": {
+          "PENDING": "Chờ xử lý",
+          "APPROVED": "Đã duyệt",
+          "PROCESSING": "Đang xử lý",
+          "COMPLETED": "Hoàn tất",
+          "REJECTED": "Từ chối"
+        },
+        "actions": {
+          "accept": "Chấp nhận",
+          "reject": "Từ chối",
+          "detail": "Chi tiết"
+        },
+        "approveDialog": {
+          "title": "Chấp nhận yêu cầu rút tiền",
+          "description": "Kiểm tra thông tin chuyển khoản trước khi xử lý yêu cầu rút tiền của gia sư.",
+          "tutor": "Gia sư",
+          "transferAmount": "Số tiền cần chuyển",
+          "bankSectionTitle": "Tài khoản ngân hàng gia sư",
+          "confirm": "Chấp nhận",
+          "cancel": "Hủy",
+          "submitting": "Đang xử lý...",
+          "success": "Đã chấp nhận yêu cầu rút tiền.",
+          "error": "Không thể chấp nhận yêu cầu rút tiền. Vui lòng thử lại.",
+          "proofTitle": "Minh chứng chuyển khoản",
+          "proofHint": "Tải lên ảnh chụp hoặc biên lai chuyển khoản (PDF, JPG, PNG, tối đa 15MB).",
+          "proofUploadPrompt": "Bấm hoặc kéo thả biên lai vào đây",
+          "proofUploading": "Đang tải lên…",
+          "proofDropHere": "Thả tệp vào đây",
+          "proofRequiredError": "Vui lòng tải minh chứng chuyển khoản trước khi xác nhận.",
+          "proofUploadError": "Không tải được minh chứng. Vui lòng thử lại.",
+          "proofTooLargeError": "Tệp vượt quá dung lượng tối đa 15MB.",
+          "proofInvalidTypeError": "Định dạng không hỗ trợ. Cho phép: PDF, JPG, PNG.",
+          "proofRemove": "Xóa tệp"
+        },
+        "rejectDialog": {
+          "title": "Từ chối yêu cầu rút tiền",
+          "description": "Nhập nội dung từ chối để lưu vào ghi chú admin.",
+          "tutor": "Gia sư",
+          "transferAmount": "Số tiền rút",
+          "noteLabel": "Nội dung từ chối",
+          "notePlaceholder": "Nhập lý do từ chối yêu cầu rút tiền...",
+          "noteRequiredError": "Vui lòng nhập lý do từ chối.",
+          "confirm": "Từ chối",
+          "cancel": "Hủy",
+          "submitting": "Đang từ chối...",
+          "success": "Đã từ chối yêu cầu rút tiền.",
+          "error": "Không thể từ chối yêu cầu rút tiền. Vui lòng thử lại."
+        },
+        "detailDialog": {
+          "title": "Chi tiết rút tiền",
+          "description": "Thông tin yêu cầu rút tiền và minh chứng đã chuyển khoản.",
+          "tutor": "Gia sư",
+          "transferAmount": "Số tiền đã chuyển",
+          "bankSectionTitle": "Tài khoản ngân hàng gia sư",
+          "noteLabel": "Ghi chú admin",
+          "proofTitle": "Minh chứng chuyển khoản",
+          "viewProof": "Xem minh chứng chuyển khoản",
+          "noProof": "Chưa có minh chứng chuyển khoản.",
+          "copyProof": "Sao chép ảnh",
+          "downloadProof": "Tải ảnh xuống",
+          "copyProofSuccess": "Đã sao chép ảnh minh chứng.",
+          "copyProofError": "Không thể sao chép ảnh. Vui lòng thử lại.",
+          "close": "Đóng"
+        }
+      }
+    },
     "AppSettings": {
       "title": "Cấu hình ứng dụng",
       "description": "Thiết lập phí nền tảng, các khoảng thời gian và hạn mức rút tiền.",

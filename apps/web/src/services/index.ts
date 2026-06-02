@@ -23,6 +23,8 @@ export * from "./admin-lesson-complaint/admin-lesson-complaint.api";
 export * from "./admin-lesson-complaint/admin-lesson-complaint.qkey";
 export * from "./admin-app-settings/admin-app-settings.api";
 export * from "./admin-app-settings/admin-app-settings.qkey";
+export * from "./admin-wallet/admin-wallet.api";
+export * from "./admin-wallet/admin-wallet.qkey";
 export * from "./app-settings/app-settings.api";
 export * from "./app-settings/app-settings.qkey";
 export * from "./support/support.api";

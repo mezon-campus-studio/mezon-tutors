@@ -3,6 +3,44 @@ import { ROUTES } from './routes'
 
 export const NOTIFICATION_I18N_NAMESPACE = 'Notifications' as const
 
+export const NOTIFICATION_I18N_KEYS = {
+  templates: {
+    bookingCreated: 'templates.bookingCreated',
+    bookingConfirmed: 'templates.bookingConfirmed',
+    bookingCancelled: 'templates.bookingCancelled',
+    subscriptionEnrollmentConfirmed: 'templates.subscriptionEnrollmentConfirmed',
+    subscriptionEnrollmentCreated: 'templates.subscriptionEnrollmentCreated',
+    welcomeLinked: 'templates.welcomeLinked',
+    paymentSucceeded: 'templates.paymentSucceeded',
+    paymentFailed: 'templates.paymentFailed',
+    systemAnnouncement: 'templates.systemAnnouncement',
+    lessonStartingSoon: 'templates.lessonStartingSoon',
+    tutorEarningsReleased: 'templates.tutorEarningsReleased',
+    lessonComplaintApproved: 'templates.lessonComplaintApproved',
+    lessonComplaintApprovedRefunded: 'templates.lessonComplaintApprovedRefunded',
+    lessonComplaintRejected: 'templates.lessonComplaintRejected',
+    tutorLessonComplaintApproved: 'templates.tutorLessonComplaintApproved',
+    adminWithdrawalRequested: 'templates.adminWithdrawalRequested',
+    tutorWithdrawalCompleted: 'templates.tutorWithdrawalCompleted',
+    tutorWithdrawalRejected: 'templates.tutorWithdrawalRejected',
+  },
+  titles: {
+    bookingCreated: 'titles.bookingCreated',
+    subscriptionEnrollmentConfirmed: 'titles.subscriptionEnrollmentConfirmed',
+    subscriptionEnrollmentCreated: 'titles.subscriptionEnrollmentCreated',
+    welcomeLinked: 'titles.welcomeLinked',
+    paymentSucceeded: 'titles.paymentSucceeded',
+    systemAnnouncement: 'titles.systemAnnouncement',
+    lessonStartingSoon: 'titles.lessonStartingSoon',
+    tutorEarningsReleased: 'titles.tutorEarningsReleased',
+    lessonComplaintApproved: 'titles.lessonComplaintApproved',
+    lessonComplaintRejected: 'titles.lessonComplaintRejected',
+    tutorLessonComplaintApproved: 'titles.tutorLessonComplaintApproved',
+    adminWithdrawalRequested: 'titles.adminWithdrawalRequested',
+    tutorWithdrawalCompleted: 'titles.tutorWithdrawalCompleted',
+    tutorWithdrawalRejected: 'titles.tutorWithdrawalRejected',
+  },
+} as const
 export type NotificationMetaTone = 'positive' | 'negative'
 
 export type NotificationLinkContext = {
