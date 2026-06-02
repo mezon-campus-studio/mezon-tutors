@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  DEFAULT_TIMEZONE,
   ROUTES,
   utcWeeklySlotsToCalendarInstances,
   expandCalendarSlotToSteps,
@@ -129,7 +130,6 @@ export default function SubscriptionPlanSchedulePage() {
     Boolean(tutorId),
   );
   const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
-  const tutorTimezone = schedule?.timezone ?? "UTC";
 
   useEffect(() => {
     setWeekBounds(getInitialWeekBounds(userTimezone));
@@ -250,7 +250,7 @@ export default function SubscriptionPlanSchedulePage() {
             s.startTime,
             s.endTime,
             userTimezone,
-            tutorTimezone,
+            DEFAULT_TIMEZONE,
           ),
         ),
       });

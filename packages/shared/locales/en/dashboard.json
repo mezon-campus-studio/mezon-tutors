@@ -212,7 +212,12 @@
     "mySchedule": {
       "eyebrow": "Tutor workspace",
       "title": "My Schedule",
-      "subtitle": "Confirmed lessons for the week shown on the calendar, plus navigation by week.",
+      "subtitle": "Track your teaching schedule and manage upcoming lessons.",
+      "tabs": {
+        "lessons": "Lessons",
+        "calendar": "Calendar",
+        "students": "Students"
+      },
       "completedBadge": "Completed",
       "lessonTypeTrial": "Trial lesson",
       "lessonTypePlan": "Plan lesson",
@@ -240,6 +245,49 @@
         "cancel": "Cancel lesson",
         "joinLesson": "Join",
         "subscriptionBadge": "Monthly subscription"
+      },
+      "panels": {
+        "lessons": {
+          "upcoming": {
+            "eyebrow": "Upcoming",
+            "title": "Upcoming lessons",
+            "emptyTitle": "No upcoming lessons",
+            "emptyDescription": "When students confirm bookings, they will appear here.",
+            "viewRequests": "Trial bookings",
+            "manageLesson": "Manage lesson",
+            "viewDetail": "Details",
+            "reschedule": "Request reschedule",
+            "cancel": "Cancel lesson",
+            "rescheduleNotice": "This lesson starts in less than {hours} hours and can no longer be rescheduled. You can still cancel if needed.",
+            "reschedulePendingNotice": "Your reschedule request has been submitted and is awaiting review.",
+            "cancellationPendingNotice": "Your cancellation request has been submitted and is awaiting review."
+          },
+          "past": {
+            "eyebrow": "Past lessons",
+            "title": "Past lessons"
+          },
+          "status": {
+            "cancelled": "Cancelled",
+            "reschedulePending": "Reschedule requested",
+            "cancellationPending": "Cancellation requested"
+          }
+        },
+        "students": {
+          "eyebrow": "My students",
+          "title": "My students",
+          "subtitle": "You are teaching {count} students.",
+          "viewBookings": "Trial bookings",
+          "completed": "Completed",
+          "nextLesson": "Next lesson",
+          "lessonsCount": "{count} lessons",
+          "upcomingCount": "{count} upcoming",
+          "message": "Message",
+          "unscheduled": "Unscheduled",
+          "lessonTypeTrial": "Trial",
+          "lessonTypePlan": "Plan",
+          "emptyTitle": "No students yet",
+          "emptyDescription": "When students book trial or subscription lessons with you, they will appear here."
+        }
       }
     },
     "scheduleEventModal": {

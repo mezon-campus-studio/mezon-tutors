@@ -16,6 +16,7 @@ import type {
   MyLessonsApiResponse,
 } from '@mezon-tutors/shared';
 import {
+  DEFAULT_TIMEZONE,
   ESubscriptionLessonSlotStatus,
   isLessonFinishedForComplaint,
   isSubscriptionSlotCompleted,
@@ -34,8 +35,6 @@ const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-const DEFAULT_CALENDAR_TZ = 'UTC';
 
 type TrialLessonBookingWithTutor = Prisma.TrialLessonBookingGetPayload<{
   include: {
@@ -71,7 +70,7 @@ export class MyLessonsService {
   async getOverview(
     studentMezonUserId: string,
     weekStartDate?: string,
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): Promise<MyLessonsApiResponse> {
     const studentId = await this.resolveStudentId(studentMezonUserId);
 
@@ -178,12 +177,11 @@ export class MyLessonsService {
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
-      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
       const inWeek = subscriptionSlotsOccurrencesForWeek(
         weekYmd,
         slots,
         timezoneName,
-        tutorTimezone
+        DEFAULT_TIMEZONE,
       );
       for (const occ of inWeek) {
         const range = { startAt: occ.startAt, endAt: occ.endAt };
@@ -217,7 +215,7 @@ export class MyLessonsService {
       }
 
       const allOccs = subscriptionSlotsUseConcreteDates(slots)
-        ? subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
+        ? subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE)
         : inWeek;
 
       for (const occ of allOccs) {
@@ -535,7 +533,7 @@ export class MyLessonsService {
     calendarStatus: MyLessonApiItem['status'],
     timezoneName: string
   ): MyLessonApiItem {
-    const ymd = dayjs(startAt).tz(timezoneName).format('YYYY-MM-DD');
+    const ymd = dayjs.utc(startAt).format('YYYY-MM-DD');
     const subj = enrollment.tutor.subject?.trim();
     const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots);
     const slotRefundAmount = subscriptionSlotGrossAmount(
@@ -856,7 +854,7 @@ export class MyLessonsService {
   private resolveCalendarBaseDate(
     upcomingLessonRows: TrialLessonBookingWithTutor[],
     weekStartDate?: string,
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): Date {
     if (weekStartDate) {
       return this.parseWeekStartMondayYmd(weekStartDate, timezoneName).toDate();
@@ -869,7 +867,7 @@ export class MyLessonsService {
     lessons: TrialLessonBookingWithTutor[],
     baseDate: Date,
     weekStartDate?: string,
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): TrialLessonBookingWithTutor[] {
     let weekStart: Date;
     let weekEnd: Date;
@@ -891,7 +889,7 @@ export class MyLessonsService {
     baseDate: Date,
     weekStartDate?: string,
     subscriptionBounds?: { startAt: Date; endAt: Date }[],
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): Pick<
     MyLessonsApiResponse,
     'calendar_title' | 'week_days' | 'week_hours' | 'current_day_index' | 'current_hour'
@@ -981,7 +979,7 @@ export class MyLessonsService {
     upcomingLessonRows: TrialLessonBookingWithTutor[],
     fallbackHour: number,
     extraBounds?: { startAt: Date; endAt: Date }[],
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): [number, number] {
     const hasTrials = upcomingLessonRows.length > 0;
     const hasExtras = Boolean(extraBounds?.length);
@@ -1031,7 +1029,7 @@ export class MyLessonsService {
 
   private emptyResponse(
     weekStartDate?: string,
-    timezoneName = DEFAULT_CALENDAR_TZ
+    timezoneName = DEFAULT_TIMEZONE
   ): MyLessonsApiResponse {
     const baseDate = weekStartDate
       ? dayjs(weekStartDate).tz(timezoneName).startOf('day').toDate()
