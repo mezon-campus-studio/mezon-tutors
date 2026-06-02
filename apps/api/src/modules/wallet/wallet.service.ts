@@ -996,6 +996,27 @@ export class WalletService {
       return withdrawal;
     });
 
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, avatar: true },
+    });
+    const tutorName = tutor?.username ?? 'A tutor';
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyAdminWithdrawalRequested({
+        withdrawalId: created.id,
+        tutorName,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+        senderAvatarUrl: tutor?.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
+    }
+
     return this.mapWithdrawalRow(created);
   }
 
@@ -1103,27 +1124,6 @@ export class WalletService {
       });
     });
 
-    const tutor = await this.prisma.user.findUnique({
-      where: { id: created.tutorId },
-      select: { username: true, avatar: true },
-    });
-    const tutorName = tutor?.username ?? 'A tutor';
-    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
-
-    try {
-      await this.notificationService.notifyAdminWithdrawalRequested({
-        withdrawalId: created.id,
-        tutorName,
-        amountFormatted,
-        bankName: created.bankName,
-        bankAccountNumber: created.bankAccountNumber,
-        senderAvatarUrl: tutor?.avatar,
-      });
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
-    }
-
-    return this.mapWithdrawalRow(created);    
+    return this.mapWithdrawalRow(created);
   }
 }

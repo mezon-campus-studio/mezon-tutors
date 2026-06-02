@@ -275,9 +275,10 @@ export const withdrawalRequestedEmbed = (
   fields: [
     { name: 'Tutor', value: params.tutorName, inline: true },
     { name: 'Amount', value: params.amountFormatted, inline: true },
+    { name: '\u200B', value: '\u200B', inline: true },
     { name: 'Bank', value: params.bankName, inline: true },
     ...(params.bankAccountNumber
-      ? [{ name: 'Account', value: params.bankAccountNumber, inline: false }]
+      ? [{ name: 'Account', value: params.bankAccountNumber, inline: true }]
       : []),
   ],
   url: params.reviewUrl,

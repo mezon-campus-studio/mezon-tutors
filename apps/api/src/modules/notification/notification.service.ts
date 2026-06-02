@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { ECurrency, ENotificationType, Prisma } from '@mezon-tutors/db'
+import { ECurrency, ENotificationType, Prisma, Role } from '@mezon-tutors/db'
 import { ChannelMessageContent } from 'mezon-sdk'
 import { ECurrency as SharedCurrency, formatToCurrency, NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
 import dayjs = require('dayjs')
@@ -69,6 +69,14 @@ export class NotificationService {
 
   private subscriptionPlanLabel(lessonsPerWeek: number): string {
     return `${lessonsPerWeek} lesson${lessonsPerWeek === 1 ? '' : 's'}/week`
+  }
+
+  private maskBankAccount(accountNumber: string): string {
+    const trimmed = accountNumber?.trim() ?? ''
+    if (trimmed.length <= 4) {
+      return trimmed
+    }
+    return `•••• ${trimmed.slice(-4)}`
   }
 
   private async notifyInAppAndMezon(params: {
@@ -800,6 +808,45 @@ export class NotificationService {
     bankAccountNumber: string
     senderAvatarUrl?: string | null
   }): Promise<void> {
+    const maskedAccount = this.maskBankAccount(params.bankAccountNumber)
+
+    try {
+      const admins = await this.prisma.user.findMany({
+        where: { role: Role.ADMIN },
+        select: { id: true },
+      })
+      const adminIds = admins.map((admin) => admin.id)
+      if (adminIds.length) {
+        await this.createForMany(adminIds, {
+          title: 'New withdrawal request',
+          content: `${params.tutorName} requested a withdrawal of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount}. Please review and process it.`,
+          type: ENotificationType.PAYMENT,
+          i18nKey: NOTIFICATION_I18N_KEYS.templates.adminWithdrawalRequested,
+          i18nParams: {
+            tutorName: params.tutorName,
+            amount: params.amountFormatted,
+            bankName: params.bankName,
+            bankAccountNumber: maskedAccount,
+          },
+          dedupeKey: `withdrawal-requested:${params.withdrawalId}`,
+          metadata: {
+            titleI18nKey: NOTIFICATION_I18N_KEYS.titles.adminWithdrawalRequested,
+            titleI18nParams: {},
+            withdrawalId: params.withdrawalId,
+            tutorName: params.tutorName,
+            amount: params.amountFormatted,
+            bankName: params.bankName,
+            bankAccountNumber: maskedAccount,
+          },
+        })
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create admin withdrawal-requested notification (${params.withdrawalId}): ${detail}`
+      )
+    }
+
     await this.sendAdminMezonDm(
       this.mezonMessageService.withdrawalRequested({
         tutorName: params.tutorName,
