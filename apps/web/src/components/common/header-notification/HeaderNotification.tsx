@@ -1,8 +1,10 @@
 'use client';
 
-import { ENotificationType, NOTIFICATION_I18N_NAMESPACE } from '@mezon-tutors/shared';
+import { NOTIFICATION_I18N_NAMESPACE, NOTIFICATION_META, ROUTES } from '@mezon-tutors/shared';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useAtomValue } from 'jotai';
 import { Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { HeaderNotificationItem } from '@/components/common/header-notification/HeaderNotificationItem';
@@ -16,6 +18,7 @@ import {
   useMarkNotificationAsReadMutation,
   useUnreadNotificationCount,
 } from '@/services/notification/notification.api';
+import { userAtom } from '@/store';
 
 const PAGE_SIZE = 20;
 const ESTIMATED_ITEM_HEIGHT = 128;
@@ -90,6 +93,8 @@ function canTranslateNotification(
 }
 
 export function HeaderNotification({ enabled }: HeaderNotificationProps) {
+  const router = useRouter();
+  const user = useAtomValue(userAtom);
   const locale = useLocale();
   const userTimezone = useUserTimezone();
   const t = useTranslations(NOTIFICATION_I18N_NAMESPACE);
@@ -107,13 +112,6 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
   );
 
   const unreadCount = unreadCountQuery.data?.unreadCount ?? 0;
-
-  const fallbackByType: Record<ENotificationType, string> = {
-    [ENotificationType.BOOKING]: 'Booking',
-    [ENotificationType.PAYMENT]: 'Payment',
-    [ENotificationType.SYSTEM]: 'System',
-    [ENotificationType.LESSON_STARTING_SOON]: 'Lesson reminder',
-  };
 
   const translateWithFallback = (
     key: string | undefined | null,
@@ -134,6 +132,19 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     params?: Record<string, string | number | Date>
   ) => translateWithFallback(key, params, fallback);
 
+  const getNotificationMeta = (item: NotificationItem) => {
+    if (item.i18nKey) {
+      const matchedByTemplateKey = Object.values(NOTIFICATION_META).find(
+        (meta) => meta.templateKey === item.i18nKey
+      );
+      if (matchedByTemplateKey) return matchedByTemplateKey;
+    }
+    const metadata = item.metadata ?? {};
+    const titleI18nKey = typeof metadata.titleI18nKey === 'string' ? metadata.titleI18nKey : null;
+    if (!titleI18nKey) return null;
+    return Object.values(NOTIFICATION_META).find((meta) => meta.titleKey === titleI18nKey) ?? null;
+  };
+
   const getNotificationTitle = (item: (typeof notificationItems)[number]) => {
     const meta = item.metadata;
     const titleKey =
@@ -152,7 +163,8 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     const rawParams = hasTitleParams
       ? (meta.titleI18nParams as Record<string, string | number | Date>)
       : {};
-    return translateWithFallback(titleKey, rawParams, item.title);
+    const templateMeta = getNotificationMeta(item);
+    return translateWithFallback(titleKey ?? templateMeta?.titleKey, rawParams, item.title);
   };
 
   const getNotificationContent = (item: (typeof notificationItems)[number]) => {
@@ -202,9 +214,38 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
     }
   };
 
-  const handleItemClick = (id: string, isRead: boolean) => {
-    if (!isRead && !markAsReadMutation.isPending) {
-      markAsReadMutation.mutate(id);
+  const routeFromNotification = (item: NotificationItem): string | null => {
+    const metadata = item.metadata ?? {};
+    const bookingId = typeof metadata.bookingId === 'string' ? metadata.bookingId : null;
+    const enrollmentId = typeof metadata.enrollmentId === 'string' ? metadata.enrollmentId : null;
+    const complaintId = typeof metadata.complaintId === 'string' ? metadata.complaintId : null;
+    const hasTutorContext = typeof metadata.tutorId === 'string' || typeof metadata.studentId === 'string';
+    const templateMeta = getNotificationMeta(item);
+
+    if (templateMeta) {
+      return templateMeta.resolveLink({
+        bookingId,
+        enrollmentId,
+        complaintId,
+        role: user?.role ?? null,
+      });
+    }
+
+    if (complaintId) return ROUTES.DASHBOARD.COMPLAINTS;
+    if (bookingId && hasTutorContext) return ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(bookingId);
+    if (bookingId || enrollmentId) return ROUTES.DASHBOARD.MY_LESSONS;
+    return null;
+  };
+
+  const handleItemClick = (item: NotificationItem) => {
+    if (!item.isRead && !markAsReadMutation.isPending) {
+      markAsReadMutation.mutate(item.id);
+    }
+
+    const targetRoute = routeFromNotification(item);
+    if (targetRoute) {
+      setOpen(false);
+      router.push(targetRoute);
     }
   };
 
@@ -304,7 +345,8 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
                         userTimezone={userTimezone}
                         title={getNotificationTitle(item)}
                         content={getNotificationContent(item)}
-                        typeLabel={getLabel(`types.${item.type}`, fallbackByType[item.type])}
+                        typeLabel={getLabel(`types.${item.type}`, item.type)}
+                        borderColor={getNotificationMeta(item)?.borderColor ?? '#94a3b8'}
                         onClickAction={handleItemClick}
                       />
                     </div>

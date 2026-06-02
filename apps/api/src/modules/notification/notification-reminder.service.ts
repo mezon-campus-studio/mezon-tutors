@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ENotificationType, ETrialLessonStatus } from '@mezon-tutors/db'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { addMinutes, DEFAULT_TIMEZONE, NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
+import { addMinutes, DEFAULT_TIMEZONE, NOTIFICATION_META } from '@mezon-tutors/shared'
 import dayjs = require('dayjs')
 import utc = require('dayjs/plugin/utc')
 import timezone = require('dayjs/plugin/timezone')
@@ -84,10 +84,10 @@ export class NotificationReminderService {
               title: 'Lesson starting soon',
               content: 'Your lesson will start in about 10 minutes.',
               type: ENotificationType.LESSON_STARTING_SOON,
-              i18nKey: NOTIFICATION_I18N_KEYS.templates.lessonStartingSoon,
+              i18nKey: NOTIFICATION_META.LESSON_STARTING_SOON.templateKey ?? undefined,
               i18nParams: {},
               metadata: {
-                titleI18nKey: NOTIFICATION_I18N_KEYS.titles.lessonStartingSoon,
+                titleI18nKey: NOTIFICATION_META.LESSON_STARTING_SOON.titleKey ?? undefined,
                 titleI18nParams: {},
                 bookingId: booking.id,
                 startAt: booking.startAt.toISOString(),
