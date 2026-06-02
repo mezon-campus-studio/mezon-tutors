@@ -18,6 +18,11 @@ export type CreateAdminNotePayload = {
   content: string;
 };
 
+export type TutorApplicationDecisionPayload = {
+  id: string;
+  note?: string;
+};
+
 export const adminTutorApplicationApi = {
   list(): Promise<TutorProfile[]> {
     return apiClient.get<TutorProfile[]>(`${BASE}/tutor-applications`);
@@ -39,15 +44,17 @@ export const adminTutorApplicationApi = {
     );
   },
 
-  approve(id: string): Promise<{ success: boolean }> {
+  approve(id: string, note?: string): Promise<{ success: boolean }> {
     return apiClient.post<{ success: boolean }>(
       `${BASE}/tutor-applications/${id}/approve`,
+      note?.trim() ? { note: note.trim() } : {},
     );
   },
 
-  reject(id: string): Promise<{ success: boolean }> {
+  reject(id: string, note?: string): Promise<{ success: boolean }> {
     return apiClient.post<{ success: boolean }>(
       `${BASE}/tutor-applications/${id}/reject`,
+      note?.trim() ? { note: note.trim() } : {},
     );
   },
 
@@ -97,8 +104,9 @@ export const useAdminTutorLessonChangeHistory = (
 export const useApproveTutorApplication = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => adminTutorApplicationApi.approve(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, note }: TutorApplicationDecisionPayload) =>
+      adminTutorApplicationApi.approve(id, note),
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({
         queryKey: adminTutorApplicationQueryKey.list(),
       });
@@ -115,8 +123,9 @@ export const useApproveTutorApplication = () => {
 export const useRejectTutorApplication = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => adminTutorApplicationApi.reject(id),
-    onSuccess: (_data, id) => {
+    mutationFn: ({ id, note }: TutorApplicationDecisionPayload) =>
+      adminTutorApplicationApi.reject(id, note),
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({
         queryKey: adminTutorApplicationQueryKey.list(),
       });
