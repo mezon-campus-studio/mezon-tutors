@@ -54,10 +54,12 @@ export default function AdminTutorApplicationDetailView({
     "AdminTutorApplicationDetail.modals.approve",
   );
   const tReject = useTranslations("AdminTutorApplicationDetail.modals.reject");
+  const tModals = useTranslations("AdminTutorApplicationDetail.modals");
 
   const [confirmAction, setConfirmAction] = useState<
     "approve" | "reject" | null
   >(null);
+  const [emailNote, setEmailNote] = useState("");
 
   const { data, isLoading, error } = useAdminTutorApplicationDetail(id);
   const approveMutation = useApproveTutorApplication();
@@ -89,20 +91,25 @@ export default function AdminTutorApplicationDetailView({
   const showApprove = status === "PENDING" || status === "REJECTED";
   const showReject = status === "PENDING" || status === "APPROVED";
 
+  const closeConfirmDialog = () => {
+    setConfirmAction(null);
+    setEmailNote("");
+  };
+
   const handleApprove = () => {
-    approveMutation.mutate(profile.id, {
-      onSuccess: () => {
-        setConfirmAction(null);
-      },
-    });
+    const note = emailNote.trim() || undefined;
+    approveMutation.mutate(
+      { id: profile.id, note },
+      { onSuccess: closeConfirmDialog },
+    );
   };
 
   const handleReject = () => {
-    rejectMutation.mutate(profile.id, {
-      onSuccess: () => {
-        setConfirmAction(null);
-      },
-    });
+    const note = emailNote.trim() || undefined;
+    rejectMutation.mutate(
+      { id: profile.id, note },
+      { onSuccess: closeConfirmDialog },
+    );
   };
 
   return (
@@ -194,22 +201,36 @@ export default function AdminTutorApplicationDetailView({
 
       <ConfirmDialog
         open={confirmAction === "approve"}
-        onOpenChange={(open) => (open ? null : setConfirmAction(null))}
+        onOpenChange={(open) => {
+          if (!open) closeConfirmDialog();
+        }}
         title={tApprove("title")}
         description={tApprove("description", { name: fullName })}
         confirmLabel={tApprove("confirm")}
+        cancelLabel={tModals("cancel")}
         loading={approveMutation.isPending}
         onConfirm={handleApprove}
+        emailNote={emailNote}
+        onEmailNoteChange={setEmailNote}
+        emailNoteLabel={tModals("emailNote.label")}
+        emailNotePlaceholder={tModals("emailNote.placeholder")}
       />
       <ConfirmDialog
         open={confirmAction === "reject"}
-        onOpenChange={(open) => (open ? null : setConfirmAction(null))}
+        onOpenChange={(open) => {
+          if (!open) closeConfirmDialog();
+        }}
         title={tReject("title")}
         description={tReject("description", { name: fullName })}
         confirmLabel={tReject("confirm")}
+        cancelLabel={tModals("cancel")}
         variant="destructive"
         loading={rejectMutation.isPending}
         onConfirm={handleReject}
+        emailNote={emailNote}
+        onEmailNoteChange={setEmailNote}
+        emailNoteLabel={tModals("emailNote.label")}
+        emailNotePlaceholder={tModals("emailNote.placeholder")}
       />
     </div>
   );

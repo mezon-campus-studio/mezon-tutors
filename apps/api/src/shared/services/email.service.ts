@@ -5,70 +5,137 @@ import { ContentReviewer, IdentityChecklist } from '../types';
 
 type ApprovalTemplateContext = {
   tutorName: string;
+  noteHtml: string;
   frontendUrl: string;
   year: number;
 };
 
 type RejectionTemplateContext = {
   tutorName: string;
-  notesHtml: string;
-  checklistHtml: string;
+  noteHtml: string;
   frontendUrl: string;
   year: number;
 };
 
 const TEMPLATE_EMAIL = {
-  approval: ({ tutorName, frontendUrl, year }: ApprovalTemplateContext): string => `<!DOCTYPE html>
+  approval: ({ tutorName, noteHtml, frontendUrl, year }: ApprovalTemplateContext): string => `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Application Approved</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<body style="margin:0;padding:0;background:#f3f0ff;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f0ff;padding:48px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <!-- Header -->
+        <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(108,92,231,0.12),0 2px 8px rgba(0,0,0,0.06);">
+          <!-- Hero Section -->
           <tr>
-            <td style="background:linear-gradient(135deg,#6d28d9,#4f46e5);padding:40px 40px 32px;text-align:center;">
-              <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">
-                Application Approved!
-              </h1>
+            <td style="padding:36px 40px 0;text-align:center;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7 0%,#a78bfa 100%);display:inline-block;text-align:center;margin-bottom:24px;box-shadow:0 8px 24px rgba(108,92,231,0.3);">
+                      <span style="font-size:42px;line-height:88px;color:#ffffff;">&#x2713;</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <h1 style="margin:0 0 8px;color:#1f1147;font-size:28px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;">
+                      You're Approved! &#127881;
+                    </h1>
+                    <p style="margin:0;font-size:15px;color:#6c5ce7;font-weight:600;letter-spacing:0.3px;">
+                      Welcome to the Mezonly Tutor Community
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
-          <!-- Body -->
+          <!-- Divider -->
           <tr>
-            <td style="padding:40px;">
-              <p style="margin:0 0 16px;font-size:16px;color:#374151;line-height:1.6;">
-                Hi <strong>${tutorName}</strong>,
+            <td style="padding:28px 40px 0;">
+              <div style="height:1px;background:linear-gradient(90deg,transparent,#ede9fe,#a78bfa,#ede9fe,transparent);"></div>
+            </td>
+          </tr>
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <p style="margin:0 0 16px;font-size:16px;color:#374151;line-height:1.7;">
+                Hi <strong style="color:#6c5ce7;">${tutorName}</strong>,
               </p>
-              <p style="margin:0 0 16px;font-size:16px;color:#374151;line-height:1.6;">
-                We are thrilled to let you know that your tutor application has been
-                <strong style="color:#4f46e5;">approved</strong>! 🎊
+              <p style="margin:0 0 20px;font-size:16px;color:#374151;line-height:1.7;">
+                Great news! Your tutor profile has been reviewed and
+                <strong style="color:#6c5ce7;">approved</strong>. You're now officially part of
+                our growing community of educators.
               </p>
-              <p style="margin:0 0 24px;font-size:16px;color:#374151;line-height:1.6;">
-                You now have full tutor access on our platform. You can start setting up
-                your profile, availability, and accepting students right away.
-              </p>
-              <div style="text-align:center;margin:32px 0;">
-                <a href="${frontendUrl}/dashboard"
-                   style="display:inline-block;background:linear-gradient(135deg,#6d28d9,#4f46e5);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;letter-spacing:0.3px;">
-                  Go to Dashboard
-                </a>
+              <!-- Feature Cards -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;">
+                <tr>
+                  <td width="33%" style="padding:8px 6px 8px 0;vertical-align:top;">
+                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
+                      <div style="font-size:28px;margin-bottom:8px;">&#128218;</div>
+                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Set Up<br />Your Profile</p>
+                    </div>
+                  </td>
+                  <td width="33%" style="padding:8px 3px;vertical-align:top;">
+                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
+                      <div style="font-size:28px;margin-bottom:8px;">&#128197;</div>
+                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Set Your<br />Availability</p>
+                    </div>
+                  </td>
+                  <td width="33%" style="padding:8px 0 8px 6px;vertical-align:top;">
+                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
+                      <div style="font-size:28px;margin-bottom:8px;">&#127891;</div>
+                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Start<br />Teaching</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              ${noteHtml}
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:8px 0 32px;">
+                    <a href="${frontendUrl}/become-tutor/final" style="display:inline-block;background:linear-gradient(135deg,#6c5ce7 0%,#8b5cf6 50%,#a78bfa 100%);color:#ffffff;text-decoration:none;padding:16px 44px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(108,92,231,0.35);">
+                      Go to Your Dashboard &#x2192;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Help Section -->
+          <tr>
+            <td style="padding:0 40px 32px;">
+              <div style="background:#fafafa;border-radius:10px;padding:20px 24px;border:1px solid #f0f0f0;">
+                <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;text-align:center;">
+                  &#x1F4AC; Need help getting started? Our support team is here for you.<br />
+                  <a href="${frontendUrl}/support" style="color:#6c5ce7;text-decoration:none;font-weight:600;">Contact Support</a>
+                </p>
               </div>
-              <p style="margin:24px 0 0;font-size:14px;color:#6b7280;line-height:1.6;">
-                If you have any questions, feel free to reach out to our support team.
-              </p>
             </td>
           </tr>
           <!-- Footer -->
           <tr>
-            <td style="background:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
-              <p style="margin:0;font-size:13px;color:#9ca3af;">
-                © ${year} Mezon Tutors. All rights reserved.
+            <td style="background:linear-gradient(180deg,#f9fafb 0%,#f3f0ff 100%);padding:28px 40px;text-align:center;border-top:1px solid #ede9fe;">
+              <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;line-height:1.5;">
+                &#x00A9; ${year} Mezonly. All rights reserved.
+              </p>
+              <p style="margin:0;font-size:12px;color:#b4b4b4;">
+                You received this email because you applied to become a tutor on Mezonly.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <!-- Sub-footer -->
+        <table width="620" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:20px 40px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#a0a0a0;">
+                Mezonly &#x2022; Connecting students with great tutors
               </p>
             </td>
           </tr>
@@ -80,101 +147,122 @@ const TEMPLATE_EMAIL = {
 </html>`,
   rejection: ({
     tutorName,
-    notesHtml,
-    checklistHtml,
+    noteHtml,
     frontendUrl,
     year,
   }: RejectionTemplateContext): string => `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<title>Tutor Application Update</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Update</title>
 </head>
-
-<body style="margin:0;background:#f4f4f5;font-family:Segoe UI,Arial,sans-serif;">
-
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
-<tr>
-<td align="center">
-
-<table width="600" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
-
-<!-- HEADER -->
-
-<tr>
-<td style="background:linear-gradient(135deg,#6d28d9,#4f46e5);padding:40px;text-align:center;color:#ffffff;">
-<h1 style="margin:0;font-size:26px;font-weight:700;">
-Application Update
-</h1>
-</td>
-</tr>
-
-<!-- BODY -->
-
-<tr>
-<td style="padding:40px">
-
-<p style="font-size:16px;color:#374151;margin:0 0 16px;">
-Hi <strong>${tutorName}</strong>,
-</p>
-
-<p style="font-size:16px;color:#374151;margin:0 0 16px;">
-Thank you for applying to become a tutor on our platform.
-After reviewing your application, we found a few areas that need improvement.
-</p>
-
-<p style="font-size:16px;color:#374151;margin:0 0 24px;">
-Please review the feedback below and update your application.
-</p>
-
-<!-- FEEDBACK CARD -->
-
-<table width="100%" style="background:#f9fafb;border-radius:10px;padding:24px;">
-
-<tr>
-<td style="font-size:18px;font-weight:600;color:#111827;padding-bottom:8px;">
-Reviewer Feedback
-</td>
-</tr>
-
-${notesHtml}
-
-${checklistHtml}
-
-</table>
-
-<!-- BUTTON -->
-
-<div style="text-align:center;margin:32px 0;">
-<a href="${frontendUrl}/tutor/application"
-style="display:inline-block;background:linear-gradient(135deg,#2563eb,#1d4ed8);
-color:#ffffff;text-decoration:none;padding:14px 30px;border-radius:8px;
-font-size:16px;font-weight:600;">
-Update My Application
-</a>
-</div>
-
-<p style="text-align:center;font-size:13px;color:#6b7280;">
-Updating your profile takes approximately 5–10 minutes.
-</p>
-
-</td>
-</tr>
-
-<!-- FOOTER -->
-
-<tr>
-<td style="background:#f9fafb;padding:20px;text-align:center;font-size:12px;color:#9ca3af;">
-© ${year} Mezon Tutors. All rights reserved.
-</td>
-</tr>
-
-</table>
-
-</td>
-</tr>
-</table>
-
+<body style="margin:0;padding:0;background:#f3f0ff;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f0ff;padding:48px 16px;">
+    <tr>
+      <td align="center">
+        <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(108,92,231,0.12),0 2px 8px rgba(0,0,0,0.06);">
+          <!-- Hero Section -->
+          <tr>
+            <td style="padding:36px 40px 0;text-align:center;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+                      <tr>
+                        <td align="center" valign="middle" style="width:88px;height:88px;border-radius:44px;background:linear-gradient(135deg,#f59e0b 0%,#f97316 100%);box-shadow:0 8px 24px rgba(245,158,11,0.3);text-align:center;font-size:40px;color:#ffffff;">
+                          &#x21BB;
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <h1 style="margin:0 0 8px;color:#1f1147;font-size:28px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;">
+                      Almost There!
+                    </h1>
+                    <p style="margin:0;font-size:15px;color:#f59e0b;font-weight:600;letter-spacing:0.3px;">
+                      Your application needs a few updates
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Divider -->
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <div style="height:1px;background:linear-gradient(90deg,transparent,#fef3c7,#f59e0b,#fef3c7,transparent);"></div>
+            </td>
+          </tr>
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <p style="margin:0 0 16px;font-size:16px;color:#374151;line-height:1.7;">
+                Hi <strong style="color:#6c5ce7;">${tutorName}</strong>,
+              </p>
+              <p style="margin:0 0 20px;font-size:16px;color:#374151;line-height:1.7;">
+                Thank you for applying to become a tutor on Mezonly. After reviewing your
+                application, we found a few areas that need improvement before we can
+                approve it.
+              </p>
+              ${noteHtml}
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:8px 0 12px;">
+                    <a href="${frontendUrl}/become-tutor/final" style="display:inline-block;background:linear-gradient(135deg,#6c5ce7 0%,#8b5cf6 50%,#a78bfa 100%);color:#ffffff;text-decoration:none;padding:16px 44px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(108,92,231,0.35);">
+                      Update Your Application &#x2192;
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding:8px 0 32px;">
+                    <p style="margin:0;font-size:13px;color:#9ca3af;">
+                      Updating your profile takes approximately 5&#x2013;10 minutes.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Help Section -->
+          <tr>
+            <td style="padding:0 40px 32px;">
+              <div style="background:#fafafa;border-radius:10px;padding:20px 24px;border:1px solid #f0f0f0;">
+                <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;text-align:center;">
+                  &#x1F4AC; Have questions about the feedback? We're happy to help.<br />
+                  <a href="${frontendUrl}/support" style="color:#6c5ce7;text-decoration:none;font-weight:600;">Contact Support</a>
+                </p>
+              </div>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background:linear-gradient(180deg,#f9fafb 0%,#f3f0ff 100%);padding:28px 40px;text-align:center;border-top:1px solid #ede9fe;">
+              <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;line-height:1.5;">
+                &#x00A9; ${year} Mezonly. All rights reserved.
+              </p>
+              <p style="margin:0;font-size:12px;color:#b4b4b4;">
+                You received this email because you applied to become a tutor on Mezonly.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <!-- Sub-footer -->
+        <table width="620" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:20px 40px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#a0a0a0;">
+                Mezonly &#x2022; Connecting students with great tutors
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`,
 } as const;
@@ -188,12 +276,16 @@ export class EmailService {
     this.resend = new Resend(this.config.resendApiKey);
   }
 
-  async sendApprovalEmail(to: string, tutorName: string): Promise<void> {
+  async sendApprovalEmail(
+    to: string,
+    tutorName: string,
+    emailNote?: string,
+  ): Promise<void> {
     const { error } = await this.resend.emails.send({
       from: this.config.resendFromEmail,
       to,
       subject: 'Your Tutor Application Has Been Approved!',
-      html: this.buildApprovalHtml(tutorName),
+      html: this.buildApprovalHtml(tutorName, emailNote),
     });
 
     if (error) {
@@ -207,13 +299,14 @@ export class EmailService {
     to: string,
     tutorName: string,
     reviewerNotes: ContentReviewer[],
-    checklist: IdentityChecklist | null
+    checklist: IdentityChecklist | null,
+    emailNote?: string,
   ): Promise<void> {
     const { error } = await this.resend.emails.send({
       from: this.config.resendFromEmail,
       to,
-      subject: 'Update on Your Tutor Application',
-      html: this.buildRejectionHtml(tutorName, reviewerNotes, checklist),
+      subject: 'Update on Your Tutor Profile',
+      html: this.buildRejectionHtml(tutorName, reviewerNotes, checklist, emailNote),
     });
 
     if (error) {
@@ -223,12 +316,37 @@ export class EmailService {
     }
   }
 
-  private buildApprovalHtml(tutorName: string): string {
+  private buildApprovalHtml(tutorName: string, emailNote?: string): string {
     return TEMPLATE_EMAIL.approval({
       tutorName,
+      noteHtml: this.buildApprovalNoteHtml(emailNote),
       frontendUrl: this.config.frontendUrl,
       year: new Date().getFullYear(),
     });
+  }
+
+  private buildApprovalNoteHtml(emailNote?: string): string {
+    const trimmed = emailNote?.trim();
+    if (!trimmed) return '';
+
+    return `
+              <div style="background:linear-gradient(180deg,#faf7ff 0%,#f5f0ff 100%);border-radius:14px;padding:16px 18px;border:1px solid #e8ddff;margin:0 0 24px;">
+                <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#6c5ce7;line-height:1.4;text-transform:uppercase;letter-spacing:0.4px;">
+                  &#x1F4AC; Message from our team
+                </p>
+                <div style="padding:12px 14px;">
+                  <p style="margin:0;font-size:18px;color:#312e4d;line-height:1.7;">${this.formatEmailNote(trimmed)}</p>
+                </div>
+              </div>`;
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private buildChecklistHtml(checklist: IdentityChecklist | null): string {
@@ -269,35 +387,36 @@ export class EmailService {
       .join('');
   }
 
+  private buildRejectionNoteHtml(emailNote?: string): string {
+    const trimmed = emailNote?.trim();
+    if (!trimmed) return '';
+
+    return `
+              <div style="background:linear-gradient(180deg,#fffaf3 0%,#fff3e6 100%);border-radius:14px;padding:16px 18px;border:1px solid #fed7aa;margin:0 0 24px;">
+                <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#c2410c;line-height:1.4;text-transform:uppercase;letter-spacing:0.4px;">
+                  &#x1F4AC; Message from our team
+                </p>
+                <div style="padding:12px 14px;">
+                  <p style="margin:0;font-size:18px;color:#4b3a2c;line-height:1.7;">${this.formatEmailNote(trimmed)}</p>
+                </div>
+              </div>`;
+  }
+
+  private formatEmailNote(value: string): string {
+    return this.escapeHtml(value).replace(/\r?\n/g, '<br />');
+  }
+
   private buildRejectionHtml(
     tutorName: string,
-    reviewerNotes: { content: string }[],
-    checklist: IdentityChecklist | null
+    _reviewerNotes: { content: string }[],
+    _checklist: IdentityChecklist | null,
+    emailNote?: string,
   ): string {
-    const notesHtml = reviewerNotes
-      .map(
-        (note) => `
-<tr>
-  <td style="padding:12px 0;">
-    <table width="100%">
-      <tr>
-        <td width="28" valign="top" style="font-size:20px;">⚠️</td>
-        <td style="font-size:15px;color:#374151;line-height:1.5;">
-          ${note.content}
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>`
-      )
-      .join('');
-
-    const checklistHtml = this.buildChecklistHtml(checklist);
+    const noteHtml = this.buildRejectionNoteHtml(emailNote);
 
     return TEMPLATE_EMAIL.rejection({
       tutorName,
-      notesHtml,
-      checklistHtml,
+      noteHtml,
       frontendUrl: this.config.frontendUrl,
       year: new Date().getFullYear(),
     });

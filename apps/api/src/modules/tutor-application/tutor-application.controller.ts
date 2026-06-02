@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { TutorApplicationService } from './tutor-application.service';
 import { CreateAdminNoteDto } from './dto/create-admin-note.dto';
+import { TutorApplicationDecisionDto } from './dto/tutor-application-decision.dto';
 import type {
   AdminLessonChangeHistoryItem,
   FullTutorApplication,
@@ -30,13 +31,13 @@ export class TutorApplicationController {
   }
 
   @Post('tutor-applications/:id/approve')
-  async approve(@Param('id') id: string) {
-    return this.tutorApplicationService.approve(id);
+  async approve(@Param('id') id: string, @Body() dto: TutorApplicationDecisionDto) {
+    return this.tutorApplicationService.approve(id, dto.note);
   }
 
   @Post('tutor-applications/:id/reject')
-  async reject(@Param('id') id: string) {
-    return this.tutorApplicationService.reject(id);
+  async reject(@Param('id') id: string, @Body() dto: TutorApplicationDecisionDto) {
+    return this.tutorApplicationService.reject(id, dto.note);
   }
 
   @Get('tutor-profiles/:id')

@@ -8,6 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Label,
+  Textarea,
 } from "@/components/ui";
 
 type ConfirmDialogProps = {
@@ -20,6 +22,10 @@ type ConfirmDialogProps = {
   variant?: "default" | "destructive";
   loading?: boolean;
   onConfirm: () => void;
+  emailNote?: string;
+  onEmailNoteChange?: (value: string) => void;
+  emailNoteLabel?: string;
+  emailNotePlaceholder?: string;
 };
 
 export default function ConfirmDialog({
@@ -32,7 +38,13 @@ export default function ConfirmDialog({
   variant = "default",
   loading,
   onConfirm,
+  emailNote,
+  onEmailNoteChange,
+  emailNoteLabel,
+  emailNotePlaceholder,
 }: ConfirmDialogProps) {
+  const showEmailNote = onEmailNoteChange !== undefined;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -40,6 +52,19 @@ export default function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {showEmailNote ? (
+          <div className="space-y-2">
+            <Label htmlFor="tutor-application-email-note">{emailNoteLabel}</Label>
+            <Textarea
+              id="tutor-application-email-note"
+              rows={3}
+              value={emailNote ?? ""}
+              placeholder={emailNotePlaceholder}
+              onChange={(e) => onEmailNoteChange(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        ) : null}
         <DialogFooter>
           <Button
             variant="outline"

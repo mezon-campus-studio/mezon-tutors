@@ -138,6 +138,11 @@
       }
     },
     "modals": {
+      "cancel": "Hủy",
+      "emailNote": {
+        "label": "Tin nhắn email (tùy chọn)",
+        "placeholder": "Thêm lời nhắn gửi kèm email thông báo cho gia sư..."
+      },
       "approve": {
         "title": "Duyệt đơn đăng ký",
         "description": "Bạn có chắc chắn muốn duyệt đơn đăng ký của {name}? Hành động này sẽ cấp quyền gia sư cho họ.",

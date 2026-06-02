@@ -138,6 +138,11 @@
       }
     },
     "modals": {
+      "cancel": "Cancel",
+      "emailNote": {
+        "label": "Email message (optional)",
+        "placeholder": "Add a personal message to include in the notification email sent to the tutor..."
+      },
       "approve": {
         "title": "Approve Application",
         "description": "Are you sure you want to approve {name}'s application? This will grant them tutor access.",

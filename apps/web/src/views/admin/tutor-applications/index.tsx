@@ -25,6 +25,7 @@ import {
 } from "@/services";
 import ApplicationsTable from "./components/ApplicationsTable";
 import MetricsCards from "./components/MetricsCards";
+import ConfirmDialog from "./detail/components/ConfirmDialog";
 import TutorsPagination from "@/views/main/tutors/components/TutorsPagination";
 
 const statusFilterLabel: Record<AdminTutorApplicationStatusFilter, string> = {
@@ -32,6 +33,12 @@ const statusFilterLabel: Record<AdminTutorApplicationStatusFilter, string> = {
   PENDING: "Pending",
   APPROVED: "Approved",
   REJECTED: "Rejected",
+};
+
+type ConfirmAction = {
+  type: "approve" | "reject";
+  id: string;
+  name: string;
 };
 
 const filterApplications = (
@@ -58,14 +65,26 @@ const filterApplications = (
   });
 };
 
+const getFullName = (app: TutorProfile) =>
+  `${app.firstName ?? ""} ${app.lastName ?? ""}`.trim() || "—";
+
 export default function AdminTutorApplicationsView() {
   const t = useTranslations("Admin.TutorApplications");
   const tList = useTranslations("Admin.TutorApplications.list");
+  const tApprove = useTranslations(
+    "AdminTutorApplicationDetail.modals.approve",
+  );
+  const tReject = useTranslations("AdminTutorApplicationDetail.modals.reject");
+  const tModals = useTranslations("AdminTutorApplicationDetail.modals");
 
   const [search, setSearch] = useState("");
   const [status, setStatus] =
     useState<AdminTutorApplicationStatusFilter>("all");
   const [page, setPage] = useState(1);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
+    null,
+  );
+  const [emailNote, setEmailNote] = useState("");
 
   const { data: applications = [], isLoading: isListLoading, isFetching } =
     useAdminTutorApplications();
@@ -89,19 +108,51 @@ export default function AdminTutorApplicationsView() {
     safePage * ADMIN_TUTOR_APPLICATION_PAGE_SIZE,
   );
 
-  const handleApprove = (id: string) => {
-    approveMutation.mutate(id);
+  const closeConfirmDialog = () => {
+    setConfirmAction(null);
+    setEmailNote("");
   };
 
-  const handleReject = (id: string) => {
-    rejectMutation.mutate(id);
+  const handleApproveClick = (app: TutorProfile) => {
+    setEmailNote("");
+    setConfirmAction({
+      type: "approve",
+      id: app.id,
+      name: getFullName(app),
+    });
   };
 
-  const handlePageChange = 
-    (nextPage: number) => {
-      const clamped = Math.max(1, Math.min(totalPages, nextPage));
-      setPage(clamped);
-    }
+  const handleRejectClick = (app: TutorProfile) => {
+    setEmailNote("");
+    setConfirmAction({
+      type: "reject",
+      id: app.id,
+      name: getFullName(app),
+    });
+  };
+
+  const handleConfirmApprove = () => {
+    if (!confirmAction) return;
+    const note = emailNote.trim() || undefined;
+    approveMutation.mutate(
+      { id: confirmAction.id, note },
+      { onSuccess: closeConfirmDialog },
+    );
+  };
+
+  const handleConfirmReject = () => {
+    if (!confirmAction) return;
+    const note = emailNote.trim() || undefined;
+    rejectMutation.mutate(
+      { id: confirmAction.id, note },
+      { onSuccess: closeConfirmDialog },
+    );
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(clamped);
+  };
 
   return (
     <div className="mx-auto w-full max-w-[1280px] p-4 md:p-6">
@@ -166,15 +217,15 @@ export default function AdminTutorApplicationsView() {
       <ApplicationsTable
         applications={pageItems}
         isLoading={isListLoading}
-        onApprove={handleApprove}
-        onReject={handleReject}
+        onApprove={handleApproveClick}
+        onReject={handleRejectClick}
         approvingId={
           approveMutation.isPending
-            ? (approveMutation.variables as string)
+            ? approveMutation.variables?.id ?? null
             : null
         }
         rejectingId={
-          rejectMutation.isPending ? (rejectMutation.variables as string) : null
+          rejectMutation.isPending ? rejectMutation.variables?.id ?? null : null
         }
       />
 
@@ -186,6 +237,44 @@ export default function AdminTutorApplicationsView() {
           onPageChangeAction={handlePageChange}
         />
       </div>
+
+      <ConfirmDialog
+        open={confirmAction?.type === "approve"}
+        onOpenChange={(open) => {
+          if (!open) closeConfirmDialog();
+        }}
+        title={tApprove("title")}
+        description={tApprove("description", {
+          name: confirmAction?.name ?? "",
+        })}
+        confirmLabel={tApprove("confirm")}
+        cancelLabel={tModals("cancel")}
+        loading={approveMutation.isPending}
+        onConfirm={handleConfirmApprove}
+        emailNote={emailNote}
+        onEmailNoteChange={setEmailNote}
+        emailNoteLabel={tModals("emailNote.label")}
+        emailNotePlaceholder={tModals("emailNote.placeholder")}
+      />
+      <ConfirmDialog
+        open={confirmAction?.type === "reject"}
+        onOpenChange={(open) => {
+          if (!open) closeConfirmDialog();
+        }}
+        title={tReject("title")}
+        description={tReject("description", {
+          name: confirmAction?.name ?? "",
+        })}
+        confirmLabel={tReject("confirm")}
+        cancelLabel={tModals("cancel")}
+        variant="destructive"
+        loading={rejectMutation.isPending}
+        onConfirm={handleConfirmReject}
+        emailNote={emailNote}
+        onEmailNoteChange={setEmailNote}
+        emailNoteLabel={tModals("emailNote.label")}
+        emailNotePlaceholder={tModals("emailNote.placeholder")}
+      />
     </div>
   );
 }
