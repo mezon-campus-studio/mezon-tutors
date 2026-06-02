@@ -4,25 +4,32 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowDownToLine,
   Building2,
+  Copy,
   CreditCard,
+  Download,
   Pencil,
+  Receipt,
   ShieldCheck,
   UserRound,
   Wallet,
+  X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
+  ACCEPT_FILE_TYPES,
+  CLOUDINARY_FOLDER,
   ECurrency,
+  MAX_FILE_SIZE_MB,
   formatCurrencyAmountInputDisplay,
   formatToCurrency,
   getCurrencySymbol,
   toCanonicalCurrencyAmountInput,
   type WalletPayoutBankAccount,
 } from '@mezon-tutors/shared';
-import { useCreateWalletWithdrawal } from '@/services';
+import { cloudinaryService, useCreateWalletWithdrawal } from '@/services';
 import { cn } from '@/lib/utils';
 import {
   Button,
@@ -55,10 +62,13 @@ type WalletWithdrawDialogProps = {
     }
   | {
       mode: 'review';
-      reviewAction?: 'approve' | 'reject';
+      reviewAction?: 'approve' | 'reject' | 'detail';
       reviewDetails: Partial<WalletPayoutBankAccount> & {
         amount: number;
         tutorName?: string;
+        paymentProofUrl?: string | null;
+        adminNote?: string | null;
+        processedAt?: string | null;
       };
       reviewLabels: {
         title: string;
@@ -74,9 +84,31 @@ type WalletWithdrawDialogProps = {
         submitting: string;
         noteLabel?: string;
         notePlaceholder?: string;
+        proofTitle?: string;
+        proofHint?: string;
+        proofUploadPrompt?: string;
+        proofUploading?: string;
+        proofDropHere?: string;
+        proofRequiredError?: string;
+        proofUploadError?: string;
+        proofTooLargeError?: string;
+        proofInvalidTypeError?: string;
+        proofRemove?: string;
+        close?: string;
+        viewProof?: string;
+        noProof?: string;
+        processedAtLabel?: string;
+        copyProof?: string;
+        downloadProof?: string;
+        copyProofSuccess?: string;
+        copyProofError?: string;
       };
       isConfirming?: boolean;
-      onConfirm: (adminNote?: string) => void | Promise<void>;
+      onConfirm?: (params: {
+        adminNote?: string;
+        paymentProofUrl?: string;
+        paymentProofPublicId?: string;
+      }) => void | Promise<void>;
     }
 );
 
@@ -87,6 +119,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
   const { mutateAsync, isPending } = useCreateWalletWithdrawal();
 
   const canWithdraw = maxAmount >= WITHDRAW_MIN_AMOUNT;
+  const proofInputId = 'wallet-review-proof-upload';
   const hasSavedBank = Boolean(
     initialBank?.bankName?.trim() &&
       initialBank?.bankAccountNumber?.trim() &&
@@ -94,6 +127,14 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
   );
   const [isBankEditing, setIsBankEditing] = useState(false);
   const [adminNote, setAdminNote] = useState('');
+  const [proofUploading, setProofUploading] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+  const [proof, setProof] = useState<{
+    url: string;
+    publicId: string;
+    fileName: string;
+  } | null>(null);
+  const proofUploadSeqRef = useRef(0);
 
   const schema = useMemo(
     () =>
@@ -161,6 +202,10 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
   useEffect(() => {
     if (open && props.mode === 'review') {
       setAdminNote('');
+      setProof(null);
+      setProofError(null);
+      setProofUploading(false);
+      proofUploadSeqRef.current += 1;
     }
   }, [open, props.mode]);
 
@@ -206,6 +251,121 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
       onConfirm,
     } = props;
     const isRejectReview = reviewAction === 'reject';
+    const isApproveReview = reviewAction === 'approve';
+    const isDetailReview = reviewAction === 'detail';
+
+    const handleProofFile = (file: File) => {
+      const allowedExt = new Set(['pdf', 'jpg', 'jpeg', 'png']);
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!allowedExt.has(ext)) {
+        setProofError(reviewLabels.proofInvalidTypeError ?? 'Invalid file type');
+        return;
+      }
+      const bytesLimit = MAX_FILE_SIZE_MB * 1024 * 1024;
+      if (file.size > bytesLimit) {
+        setProofError(reviewLabels.proofTooLargeError ?? 'File too large');
+        return;
+      }
+
+      setProofError(null);
+      proofUploadSeqRef.current += 1;
+      const seq = proofUploadSeqRef.current;
+      const previousPublicId = proof?.publicId;
+      setProofUploading(true);
+
+      void cloudinaryService
+        .uploadFileWithSignature(file, CLOUDINARY_FOLDER.ADMIN_PAYMENTS, 'auto')
+        .then((uploaded) => {
+          if (proofUploadSeqRef.current !== seq) return;
+          setProof({
+            url: uploaded.secureUrl,
+            publicId: uploaded.publicId,
+            fileName: file.name,
+          });
+          if (previousPublicId && previousPublicId !== uploaded.publicId) {
+            void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
+          }
+        })
+        .catch(() => {
+          if (proofUploadSeqRef.current !== seq) return;
+          setProofError(reviewLabels.proofUploadError ?? 'Upload failed');
+        })
+        .finally(() => {
+          if (proofUploadSeqRef.current === seq) setProofUploading(false);
+        });
+    };
+
+    const handleRemoveProof = () => {
+      if (proof?.publicId) {
+        void cloudinaryService.deleteFile(proof.publicId).catch(() => null);
+      }
+      setProof(null);
+      setProofError(null);
+      proofUploadSeqRef.current += 1;
+    };
+
+    const handleCopyProof = async (proofUrl: string) => {
+      try {
+        const response = await fetch(proofUrl);
+        const blob = await response.blob();
+        if (
+          typeof ClipboardItem !== 'undefined' &&
+          navigator.clipboard?.write &&
+          blob.type.startsWith('image/')
+        ) {
+          await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        } else {
+          await navigator.clipboard.writeText(proofUrl);
+        }
+        toast.success(reviewLabels.copyProofSuccess ?? 'Copied');
+      } catch {
+        try {
+          await navigator.clipboard.writeText(proofUrl);
+          toast.success(reviewLabels.copyProofSuccess ?? 'Copied');
+        } catch {
+          toast.error(reviewLabels.copyProofError ?? 'Copy failed');
+        }
+      }
+    };
+
+    const handleDownloadProof = async (proofUrl: string) => {
+      try {
+        const response = await fetch(proofUrl);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = proofUrl.split('/').pop()?.split('?')[0] || 'payment-proof';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+      } catch {
+        window.open(proofUrl, '_blank', 'noopener,noreferrer');
+      }
+    };
+
+    const handleConfirm = () => {
+      if (!onConfirm) return;
+      if (isApproveReview) {
+        if (!proof) {
+          setProofError(reviewLabels.proofRequiredError ?? 'Payment proof is required');
+          return;
+        }
+        void onConfirm({
+          adminNote: adminNote.trim() || undefined,
+          paymentProofUrl: proof.url,
+          paymentProofPublicId: proof.publicId,
+        });
+        return;
+      }
+      void onConfirm({ adminNote: adminNote.trim() || undefined });
+    };
+
+    const confirmDisabled =
+      Boolean(isConfirming) ||
+      proofUploading ||
+      (isApproveReview && !proof);
 
     return (
       <Dialog
@@ -214,27 +374,27 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
       >
         <DialogContent
           showCloseButton
-          className="gap-0 overflow-hidden rounded-3xl border-violet-100 p-0 shadow-2xl shadow-violet-200/40 sm:max-w-[460px]"
+          className="max-h-[calc(100vh-0.75rem)] gap-0 overflow-hidden rounded-3xl border-violet-100 p-0 shadow-2xl shadow-violet-200/40 sm:max-w-[460px]"
         >
-          <div className="relative overflow-hidden bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 pb-5 pt-6">
+          <div className="relative overflow-hidden bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 pb-4 pt-5">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-2xl"
             />
-            <div className="relative flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/15 backdrop-blur-sm">
+            <div className="relative flex items-start gap-2.5">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/15 backdrop-blur-sm">
                 <ArrowDownToLine className="size-5 text-white" />
               </div>
-              <DialogHeader className="space-y-1.5 p-0 text-left">
-                <DialogTitle className="text-lg font-bold tracking-tight text-white">
+              <DialogHeader className="space-y-0.5 p-0 pr-7 text-left">
+                <DialogTitle className="text-lg font-bold leading-tight tracking-tight text-white">
                   {reviewLabels.title}
                 </DialogTitle>
-                <DialogDescription className="text-sm leading-relaxed text-white/85">
+                <DialogDescription className="text-sm leading-snug text-white/85">
                   {reviewLabels.description}
                 </DialogDescription>
               </DialogHeader>
             </div>
-            <div className="relative mt-4 flex items-center justify-between gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-sm">
+            <div className="relative mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-xs text-orange-50/90">
                 <UserRound className="size-3.5 shrink-0" />
                 <span>{reviewLabels.tutor}</span>
@@ -245,18 +405,18 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-5 px-6 py-5">
-            <div className="rounded-2xl border border-violet-100/80 bg-violet-50/70 px-4 py-3">
+          <div className="max-h-[calc(100vh-10.25rem)] space-y-4 overflow-y-auto px-5 py-4">
+            <div className="rounded-2xl border border-violet-100/80 bg-violet-50/70 px-4 py-2.5">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">
                 {reviewLabels.transferAmount}
               </p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">
+              <p className="mt-0.5 text-2xl font-bold tabular-nums text-slate-900">
                 {formatToCurrency(ECurrency.VND, reviewDetails.amount)}
               </p>
             </div>
 
             {isRejectReview ? (
-              <div className="space-y-2 border-t border-slate-100 pt-4">
+              <div className="space-y-2 border-t border-slate-100 pt-3">
                 <Label
                   htmlFor="withdraw-reject-note"
                   className="text-xs font-semibold text-slate-700"
@@ -268,60 +428,243 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
                   value={adminNote}
                   onChange={(event) => setAdminNote(event.target.value)}
                   placeholder={reviewLabels.notePlaceholder}
-                  className="min-h-[112px] resize-none rounded-xl border-violet-100 bg-white p-3 text-sm text-slate-700 focus-visible:ring-2 focus-visible:ring-violet-200"
+                  className="min-h-[96px] resize-none rounded-xl border-violet-100 bg-white p-3 text-sm text-slate-700 focus-visible:ring-2 focus-visible:ring-violet-200"
                 />
               </div>
             ) : (
-              <div className="space-y-3 border-t border-slate-100 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                  {reviewLabels.bankSectionTitle}
-                </p>
+              <>
+                <div className="space-y-2.5 border-t border-slate-100 pt-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                    {reviewLabels.bankSectionTitle}
+                  </p>
 
-                <div className="grid gap-3">
-                  <ReadonlyInfoRow
-                    icon={<Building2 className="size-4 text-violet-600" />}
-                    label={reviewLabels.bankName}
-                    value={reviewDetails.bankName ?? '—'}
-                  />
-                  <ReadonlyInfoRow
-                    icon={<CreditCard className="size-4 text-violet-600" />}
-                    label={reviewLabels.accountNumber}
-                    value={reviewDetails.bankAccountNumber ?? '—'}
-                    valueClassName="font-mono tracking-wide"
-                  />
-                  <ReadonlyInfoRow
-                    icon={<UserRound className="size-4 text-violet-600" />}
-                    label={reviewLabels.accountName}
-                    value={reviewDetails.bankAccountName ?? '—'}
-                    valueClassName="uppercase"
-                  />
+                  <div className="grid gap-2.5">
+                    <ReadonlyInfoRow
+                      icon={<Building2 className="size-4 text-violet-600" />}
+                      label={reviewLabels.bankName}
+                      value={reviewDetails.bankName ?? '—'}
+                    />
+                    <ReadonlyInfoRow
+                      icon={<CreditCard className="size-4 text-violet-600" />}
+                      label={reviewLabels.accountNumber}
+                      value={reviewDetails.bankAccountNumber ?? '—'}
+                      valueClassName="font-mono tracking-wide"
+                    />
+                    <ReadonlyInfoRow
+                      icon={<UserRound className="size-4 text-violet-600" />}
+                      label={reviewLabels.accountName}
+                      value={reviewDetails.bankAccountName ?? '—'}
+                      valueClassName="uppercase"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                {isApproveReview ? (
+                  <div className="space-y-2 border-t border-slate-100 pt-3">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="size-4 text-violet-600" />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        {reviewLabels.proofTitle ?? 'Payment proof'}
+                      </p>
+                    </div>
+                    {proof ? (
+                      <div className="flex items-center gap-3 rounded-xl border border-violet-100/90 bg-violet-50/60 px-3 py-2">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-violet-600">
+                          <Receipt className="size-4" />
+                        </div>
+                        <a
+                          href={proof.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="min-w-0 flex-1 truncate text-sm font-medium text-violet-900 hover:underline"
+                        >
+                          {proof.fileName}
+                        </a>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 shrink-0 p-0 text-slate-500 hover:text-rose-600"
+                          onClick={handleRemoveProof}
+                          disabled={Boolean(isConfirming)}
+                          aria-label={reviewLabels.proofRemove ?? 'Remove'}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <input
+                          id={proofInputId}
+                          type="file"
+                          accept={ACCEPT_FILE_TYPES}
+                          className="sr-only"
+                          disabled={proofUploading || Boolean(isConfirming)}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) handleProofFile(file);
+                            event.target.value = '';
+                          }}
+                        />
+                        <label
+                          htmlFor={proofInputId}
+                          className={cn(
+                            'flex min-h-[142px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-violet-200 bg-violet-50/35 px-4 py-4 text-center transition-colors hover:border-violet-300 hover:bg-violet-50/60',
+                            proofUploading && 'pointer-events-none opacity-70',
+                            proofError && 'border-rose-300 bg-rose-50/50'
+                          )}
+                          onDragOver={(event) => event.preventDefault()}
+                          onDrop={(event) => {
+                            event.preventDefault();
+                            const file = event.dataTransfer.files?.[0];
+                            if (file) handleProofFile(file);
+                          }}
+                        >
+                          <span className="flex size-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                            <ArrowDownToLine className="size-5 rotate-180" />
+                          </span>
+                          <span className="mt-3 text-sm font-bold text-slate-900">
+                            {proofUploading
+                              ? reviewLabels.proofUploading ?? 'Uploading...'
+                              : reviewLabels.proofUploadPrompt ?? 'Click or drag the receipt here'}
+                          </span>
+                          {reviewLabels.proofHint ? (
+                            <span className="mt-1 max-w-[310px] text-xs leading-snug text-slate-500">
+                              {reviewLabels.proofHint}
+                            </span>
+                          ) : null}
+                        </label>
+                        {proofError ? (
+                          <p className="text-xs font-medium text-rose-600">{proofError}</p>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+
+                {isDetailReview ? (
+                  <div className="space-y-2 border-t border-slate-100 pt-3">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="size-4 text-violet-600" />
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        {reviewLabels.proofTitle ?? 'Payment proof'}
+                      </p>
+                    </div>
+                    {reviewDetails.paymentProofUrl ? (
+                      (() => {
+                        const proofUrl = reviewDetails.paymentProofUrl;
+                        const isPdf = proofUrl.split('?')[0].toLowerCase().endsWith('.pdf');
+                        if (isPdf) {
+                          return (
+                            <a
+                              href={proofUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-3 rounded-xl border border-violet-100/90 bg-violet-50/60 px-3 py-2 transition-colors hover:bg-violet-50"
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-violet-600">
+                                <Receipt className="size-4" />
+                              </span>
+                              <span className="min-w-0 flex-1 truncate text-sm font-medium text-violet-900 hover:underline">
+                                {reviewLabels.viewProof ?? 'View payment proof'}
+                              </span>
+                            </a>
+                          );
+                        }
+                        return (
+                          <div className="group relative overflow-hidden rounded-xl border border-violet-100/90 bg-slate-50">
+                            <a
+                              href={proofUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={proofUrl}
+                                alt={reviewLabels.proofTitle ?? 'Payment proof'}
+                                className="max-h-[320px] w-full object-contain"
+                              />
+                            </a>
+                            <div className="absolute right-2 top-2 flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyProof(proofUrl)}
+                                aria-label={reviewLabels.copyProof ?? 'Copy'}
+                                title={reviewLabels.copyProof ?? 'Copy'}
+                                className="flex size-8 items-center justify-center rounded-lg border border-white/60 bg-white/85 text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-violet-700"
+                              >
+                                <Copy className="size-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadProof(proofUrl)}
+                                aria-label={reviewLabels.downloadProof ?? 'Download'}
+                                title={reviewLabels.downloadProof ?? 'Download'}
+                                className="flex size-8 items-center justify-center rounded-lg border border-white/60 bg-white/85 text-slate-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-violet-700"
+                              >
+                                <Download className="size-4" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs text-slate-500">
+                        {reviewLabels.noProof ?? 'No payment proof available.'}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+
+                {isDetailReview && reviewDetails.adminNote ? (
+                  <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      {reviewLabels.noteLabel ?? 'Note'}
+                    </p>
+                    <p className="rounded-xl border border-violet-100/90 bg-slate-50/80 px-3 py-2 text-sm text-slate-700">
+                      {reviewDetails.adminNote}
+                    </p>
+                  </div>
+                ) : null}
+              </>
             )}
 
-            <DialogFooter className="gap-2 pt-1 sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 rounded-full border-slate-200 px-5"
-                onClick={() => onOpenChange(false)}
-                disabled={isConfirming}
-              >
-                {reviewLabels.cancel}
-              </Button>
-              <Button
-                type="button"
-                className={cn(
-                  'h-10 rounded-full border-0 px-6 font-semibold text-white shadow-md hover:opacity-90',
-                  isRejectReview
-                    ? 'bg-rose-600 shadow-rose-300/40 hover:bg-rose-700'
-                    : 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-violet-300/40'
-                )}
-                disabled={isConfirming}
-                onClick={() => onConfirm(adminNote.trim() || undefined)}
-              >
-                {isConfirming ? reviewLabels.submitting : reviewLabels.confirm}
-              </Button>
+            <DialogFooter className="gap-2 border-t border-slate-100 pt-3 sm:justify-end">
+              {isDetailReview ? (
+                <Button
+                  type="button"
+                  className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {reviewLabels.close ?? reviewLabels.cancel}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-full border-slate-200 px-5"
+                    onClick={() => onOpenChange(false)}
+                    disabled={isConfirming}
+                  >
+                    {reviewLabels.cancel}
+                  </Button>
+                  <Button
+                    type="button"
+                    className={cn(
+                      'h-10 rounded-full border-0 px-6 font-semibold text-white shadow-md hover:opacity-90 disabled:opacity-60',
+                      isRejectReview
+                        ? 'bg-rose-600 shadow-rose-300/40 hover:bg-rose-700'
+                        : 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-violet-300/40'
+                    )}
+                    disabled={confirmDisabled}
+                    onClick={handleConfirm}
+                  >
+                    {isConfirming ? reviewLabels.submitting : reviewLabels.confirm}
+                  </Button>
+                </>
+              )}
             </DialogFooter>
           </div>
         </DialogContent>
@@ -584,8 +927,8 @@ function ReadonlyInfoRow({
   valueClassName,
 }: ReadonlyInfoRowProps) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-violet-100/90 bg-slate-50/80 px-3 py-2.5">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white">
+    <div className="flex items-center gap-2.5 rounded-xl border border-violet-100/90 bg-slate-50/80 px-3 py-2">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white">
         {icon}
       </div>
       <div className="min-w-0">

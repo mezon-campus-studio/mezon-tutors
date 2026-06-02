@@ -588,17 +588,19 @@ model LessonSettlementJob {
 }
 
 model Withdrawal {
-  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tutorId            String            @map("tutor_id") @db.Uuid
-  walletId           String            @map("wallet_id") @db.Uuid
-  amount             BigInt
-  bankName           String            @map("bank_name") @db.VarChar(100)
-  bankAccountNumber  String            @map("bank_account_number") @db.VarChar(50)
-  bankAccountName    String            @map("bank_account_name") @db.VarChar(255)
-  status             EWithdrawalStatus @default(PENDING)
-  adminNote          String?           @map("admin_note") @db.Text
-  processedAt        DateTime?         @map("processed_at")
-  createdAt          DateTime          @default(now()) @map("created_at")
+  id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tutorId               String            @map("tutor_id") @db.Uuid
+  walletId              String            @map("wallet_id") @db.Uuid
+  amount                BigInt
+  bankName              String            @map("bank_name") @db.VarChar(100)
+  bankAccountNumber     String            @map("bank_account_number") @db.VarChar(50)
+  bankAccountName       String            @map("bank_account_name") @db.VarChar(255)
+  status                EWithdrawalStatus @default(PENDING)
+  adminNote             String?           @map("admin_note") @db.Text
+  paymentProofUrl       String?           @map("payment_proof_url") @db.Text
+  paymentProofPublicId  String?           @map("payment_proof_public_id") @db.VarChar(255)
+  processedAt           DateTime?         @map("processed_at")
+  createdAt             DateTime          @default(now()) @map("created_at")
 
   tutor        User                @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   wallet       Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)

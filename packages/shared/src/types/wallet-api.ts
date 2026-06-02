@@ -88,8 +88,16 @@ export type WalletWithdrawalApiItem = {
   bankAccountName: string;
   status: WalletWithdrawalStatus;
   adminNote: string | null;
+  paymentProofUrl: string | null;
+  paymentProofPublicId: string | null;
   createdAt: string;
   processedAt: string | null;
+};
+
+export type ApproveWalletWithdrawalAdminPayload = {
+  adminNote?: string;
+  paymentProofUrl?: string;
+  paymentProofPublicId?: string;
 };
 
 export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {

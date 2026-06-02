@@ -155,7 +155,8 @@
         },
         "actions": {
           "accept": "Accept",
-          "reject": "Reject"
+          "reject": "Reject",
+          "detail": "Detail"
         },
         "approveDialog": {
           "title": "Accept withdrawal",
@@ -167,7 +168,17 @@
           "cancel": "Cancel",
           "submitting": "Processing...",
           "success": "Withdrawal accepted.",
-          "error": "Failed to accept withdrawal. Please try again."
+          "error": "Failed to accept withdrawal. Please try again.",
+          "proofTitle": "Payment proof",
+          "proofHint": "Upload a screenshot or receipt of the bank transfer (PDF, JPG, PNG, max 15MB).",
+          "proofUploadPrompt": "Click or drag the receipt here",
+          "proofUploading": "Uploading…",
+          "proofDropHere": "Drop the file here",
+          "proofRequiredError": "Please upload the payment proof before confirming.",
+          "proofUploadError": "Failed to upload the payment proof. Please try again.",
+          "proofTooLargeError": "File is too large. Maximum size is 15MB.",
+          "proofInvalidTypeError": "Unsupported file type. Allowed: PDF, JPG, PNG.",
+          "proofRemove": "Remove file"
         },
         "rejectDialog": {
           "title": "Reject withdrawal",
@@ -181,6 +192,22 @@
           "submitting": "Rejecting...",
           "success": "Withdrawal rejected.",
           "error": "Failed to reject withdrawal. Please try again."
+        },
+        "detailDialog": {
+          "title": "Withdrawal detail",
+          "description": "Withdrawal request information and the bank transfer proof.",
+          "tutor": "Tutor",
+          "transferAmount": "Transferred amount",
+          "bankSectionTitle": "Tutor bank account",
+          "noteLabel": "Admin note",
+          "proofTitle": "Payment proof",
+          "viewProof": "View payment proof",
+          "noProof": "No payment proof available.",
+          "copyProof": "Copy image",
+          "downloadProof": "Download image",
+          "copyProofSuccess": "Payment proof copied.",
+          "copyProofError": "Failed to copy image. Please try again.",
+          "close": "Close"
         }
       }
     },

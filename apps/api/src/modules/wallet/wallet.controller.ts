@@ -7,7 +7,10 @@ import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { CreateWalletWithdrawalDto } from './dto/create-wallet-withdrawal.dto';
 import { GetWalletTransactionsDto } from './dto/get-wallet-transactions.dto';
 import { GetWalletWithdrawalsDto } from './dto/get-wallet-withdrawals.dto';
-import { UpdateWithdrawalAdminDto } from './dto/update-withdrawal-admin.dto';
+import {
+  ApproveWithdrawalAdminDto,
+  UpdateWithdrawalAdminDto,
+} from './dto/update-withdrawal-admin.dto';
 import { WalletService } from './wallet.service';
 import { UpdateWalletPayoutBankDto } from './dto/update-wallet-payout-bank.dto';
 import { SkipApiResponseWrap } from '../../common/decorators/skip-api-response-wrap.decorator';
@@ -79,8 +82,12 @@ export class WalletController {
   @Patch('withdrawals/:id/approve')
   @UseGuards(AdminGuard)
   @ApiOperation({ summary: 'Admin: approve withdrawal and settle funds' })
-  approveWithdrawal(@Param('id') id: string, @Body() body: UpdateWithdrawalAdminDto) {
-    return this.walletService.approveWithdrawal(id, body.adminNote);
+  approveWithdrawal(@Param('id') id: string, @Body() body: ApproveWithdrawalAdminDto) {
+    return this.walletService.approveWithdrawal(id, {
+      adminNote: body.adminNote,
+      paymentProofUrl: body.paymentProofUrl,
+      paymentProofPublicId: body.paymentProofPublicId,
+    });
   }
 
   @Patch('withdrawals/:id/reject')

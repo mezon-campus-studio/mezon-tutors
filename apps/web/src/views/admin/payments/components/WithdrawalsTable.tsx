@@ -50,12 +50,23 @@ export default function WithdrawalsTable({
     useState<Withdrawal | null>(null);
   const [rejectingWithdrawal, setRejectingWithdrawal] =
     useState<Withdrawal | null>(null);
+  const [detailWithdrawal, setDetailWithdrawal] =
+    useState<Withdrawal | null>(null);
 
-  const handleApprove = async () => {
+  const handleApprove = async (params: {
+    adminNote?: string;
+    paymentProofUrl?: string;
+    paymentProofPublicId?: string;
+  }) => {
     if (!approvingWithdrawal) return;
 
     try {
-      await approveMutation.mutateAsync({ id: approvingWithdrawal.id });
+      await approveMutation.mutateAsync({
+        id: approvingWithdrawal.id,
+        adminNote: params.adminNote,
+        paymentProofUrl: params.paymentProofUrl,
+        paymentProofPublicId: params.paymentProofPublicId,
+      });
       toast.success(t("approveDialog.success"));
       setApprovingWithdrawal(null);
     } catch (error) {
@@ -64,13 +75,13 @@ export default function WithdrawalsTable({
     }
   };
 
-  const handleReject = async (adminNote?: string) => {
+  const handleReject = async (params: { adminNote?: string }) => {
     if (!rejectingWithdrawal) return;
 
     try {
       await rejectMutation.mutateAsync({
         id: rejectingWithdrawal.id,
-        adminNote,
+        adminNote: params.adminNote,
       });
       toast.success(t("rejectDialog.success"));
       setRejectingWithdrawal(null);
@@ -186,6 +197,11 @@ export default function WithdrawalsTable({
                       />
                       <DropdownMenuContent align="end" className="min-w-40">
                         <DropdownMenuItem
+                          onClick={() => setDetailWithdrawal(item)}
+                        >
+                          {t("actions.detail")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           disabled={isActionDisabled}
                           onClick={() => setApprovingWithdrawal(item)}
                         >
@@ -235,6 +251,16 @@ export default function WithdrawalsTable({
             confirm: t("approveDialog.confirm"),
             cancel: t("approveDialog.cancel"),
             submitting: t("approveDialog.submitting"),
+            proofTitle: t("approveDialog.proofTitle"),
+            proofHint: t("approveDialog.proofHint"),
+            proofUploadPrompt: t("approveDialog.proofUploadPrompt"),
+            proofUploading: t("approveDialog.proofUploading"),
+            proofDropHere: t("approveDialog.proofDropHere"),
+            proofRequiredError: t("approveDialog.proofRequiredError"),
+            proofUploadError: t("approveDialog.proofUploadError"),
+            proofTooLargeError: t("approveDialog.proofTooLargeError"),
+            proofInvalidTypeError: t("approveDialog.proofInvalidTypeError"),
+            proofRemove: t("approveDialog.proofRemove"),
           }}
           isConfirming={approveMutation.isPending}
           onConfirm={handleApprove}
@@ -271,6 +297,50 @@ export default function WithdrawalsTable({
           }}
           isConfirming={rejectMutation.isPending}
           onConfirm={handleReject}
+        />
+      ) : null}
+
+      {detailWithdrawal ? (
+        <WalletWithdrawDialog
+          mode="review"
+          reviewAction="detail"
+          open={Boolean(detailWithdrawal)}
+          onOpenChange={(open) => {
+            if (!open) setDetailWithdrawal(null);
+          }}
+          maxAmount={detailWithdrawal.amount}
+          reviewDetails={{
+            amount: detailWithdrawal.amount,
+            bankName: detailWithdrawal.bankName,
+            bankAccountNumber: detailWithdrawal.bankAccountNumber,
+            bankAccountName: detailWithdrawal.bankAccountName,
+            tutorName: detailWithdrawal.tutor?.username || t("unknownTutor"),
+            paymentProofUrl: detailWithdrawal.paymentProofUrl,
+            adminNote: detailWithdrawal.adminNote,
+            processedAt: detailWithdrawal.processedAt,
+          }}
+          reviewLabels={{
+            title: t("detailDialog.title"),
+            description: t("detailDialog.description"),
+            tutor: t("detailDialog.tutor"),
+            transferAmount: t("detailDialog.transferAmount"),
+            bankSectionTitle: t("detailDialog.bankSectionTitle"),
+            bankName: t("columns.bank"),
+            accountNumber: t("columns.accountNumber"),
+            accountName: t("columns.accountHolder"),
+            confirm: t("detailDialog.close"),
+            cancel: t("detailDialog.close"),
+            submitting: t("detailDialog.close"),
+            close: t("detailDialog.close"),
+            noteLabel: t("detailDialog.noteLabel"),
+            proofTitle: t("detailDialog.proofTitle"),
+            viewProof: t("detailDialog.viewProof"),
+            noProof: t("detailDialog.noProof"),
+            copyProof: t("detailDialog.copyProof"),
+            downloadProof: t("detailDialog.downloadProof"),
+            copyProofSuccess: t("detailDialog.copyProofSuccess"),
+            copyProofError: t("detailDialog.copyProofError"),
+          }}
         />
       ) : null}
     </div>

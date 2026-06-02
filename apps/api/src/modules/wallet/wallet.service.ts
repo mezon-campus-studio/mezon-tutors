@@ -182,6 +182,8 @@ export class WalletService {
     bankAccountName: string;
     status: EWithdrawalStatus;
     adminNote: string | null;
+    paymentProofUrl: string | null;
+    paymentProofPublicId: string | null;
     createdAt: Date;
     processedAt: Date | null;
   }): WalletWithdrawalApiItem {
@@ -195,6 +197,8 @@ export class WalletService {
       bankAccountName: row.bankAccountName,
       status: row.status,
       adminNote: row.adminNote,
+      paymentProofUrl: row.paymentProofUrl,
+      paymentProofPublicId: row.paymentProofPublicId,
       createdAt: row.createdAt.toISOString(),
       processedAt: row.processedAt?.toISOString() ?? null,
     };
@@ -997,8 +1001,16 @@ export class WalletService {
 
   async approveWithdrawal(
     withdrawalId: string,
-    adminNote?: string,
+    options?: {
+      adminNote?: string;
+      paymentProofUrl?: string;
+      paymentProofPublicId?: string;
+    },
   ): Promise<WalletWithdrawalApiItem> {
+    const adminNote = options?.adminNote;
+    const paymentProofUrl = options?.paymentProofUrl?.trim();
+    const paymentProofPublicId = options?.paymentProofPublicId?.trim();
+
     const created = await this.prisma.$transaction(async (tx) => {
       const withdrawal = await tx.withdrawal.findUnique({
         where: { id: withdrawalId },
@@ -1042,6 +1054,8 @@ export class WalletService {
           status: EWithdrawalStatus.COMPLETED,
           processedAt: new Date(),
           ...(adminNote !== undefined ? { adminNote: adminNote.trim() || null } : {}),
+          ...(paymentProofUrl ? { paymentProofUrl } : {}),
+          ...(paymentProofPublicId ? { paymentProofPublicId } : {}),
         },
       });
     });

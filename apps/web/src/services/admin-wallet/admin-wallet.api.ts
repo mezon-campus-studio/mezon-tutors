@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AdminWalletWithdrawalsApiResponse,
   ApiResponse,
+  ApproveWalletWithdrawalAdminPayload,
 } from "@mezon-tutors/shared";
 import { apiClient } from "../api-client";
 import { adminWalletQueryKey } from "./admin-wallet.qkey";
@@ -18,8 +19,11 @@ export const adminWalletApi = {
     >(`${BASE}/admin/withdrawals`, { params: { page, limit: 10 } });
   },
 
-  approveWithdrawal(id: string, adminNote?: string): Promise<void> {
-    return apiClient.patch(`${BASE}/withdrawals/${id}/approve`, { adminNote });
+  approveWithdrawal(
+    id: string,
+    payload: ApproveWalletWithdrawalAdminPayload = {},
+  ): Promise<void> {
+    return apiClient.patch(`${BASE}/withdrawals/${id}/approve`, payload);
   },
 
   rejectWithdrawal(id: string, adminNote?: string): Promise<void> {
@@ -38,8 +42,11 @@ export function useAdminWalletWithdrawals(page: number) {
 export function useApproveWithdrawal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, adminNote }: { id: string; adminNote?: string }) =>
-      adminWalletApi.approveWithdrawal(id, adminNote),
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & ApproveWalletWithdrawalAdminPayload) =>
+      adminWalletApi.approveWithdrawal(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminWalletQueryKey.all });
     },

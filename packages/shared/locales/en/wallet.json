@@ -81,12 +81,32 @@
       "emptyTitle": "No withdrawal requests",
       "emptyDescription": "Request a payout when your available balance is ready.",
       "bank": "Bank account",
+      "viewDetail": "View detail",
       "status": {
         "PENDING": "Pending",
         "APPROVED": "Approved",
         "PROCESSING": "Processing",
         "COMPLETED": "Completed",
         "REJECTED": "Rejected"
+      },
+      "detailDialog": {
+        "title": "Withdrawal detail",
+        "description": "Review the bank transfer information and the admin's payment proof.",
+        "tutor": "Account holder",
+        "transferAmount": "Withdrawal amount",
+        "bankSectionTitle": "Bank account",
+        "bankName": "Bank",
+        "accountNumber": "Account number",
+        "accountName": "Account holder",
+        "noteLabel": "Admin note",
+        "proofTitle": "Payment proof",
+        "viewProof": "View payment proof",
+        "noProof": "No payment proof available.",
+        "copyProof": "Copy image",
+        "downloadProof": "Download image",
+        "copyProofSuccess": "Payment proof copied.",
+        "copyProofError": "Failed to copy image. Please try again.",
+        "close": "Close"
       }
     },
     "types": {

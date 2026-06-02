@@ -5,6 +5,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Download,
+  Eye,
   Receipt,
   Search,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ import {
 import { Badge, Skeleton } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination';
+import WalletWithdrawDialog from '@/views/main/wallet/components/WalletWithdrawDialog';
 
 type TabKey = 'transactions' | 'payouts';
 type TxFilter = 'all' | 'credit' | 'debit' | 'withdrawal';
@@ -80,6 +82,8 @@ export default function TutorWalletActivitySection({
   const [tab, setTab] = useState<TabKey>('transactions');
   const [search, setSearch] = useState('');
   const [txFilter, setTxFilter] = useState<TxFilter>('all');
+  const [detailWithdrawal, setDetailWithdrawal] =
+    useState<WalletWithdrawalApiItem | null>(null);
 
   const typeLabels: Record<string, string> = {
     BOOKING_PAYMENT: tWallet('types.BOOKING_PAYMENT'),
@@ -334,9 +338,20 @@ export default function TutorWalletActivitySection({
                             {item.bankName} · •••• {item.bankAccountNumber.slice(-4)}
                           </p>
                         </div>
-                        <Badge variant="outline" className={statusStyle}>
-                          {tWallet(`withdrawals.status.${item.status}`)}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={statusStyle}>
+                            {tWallet(`withdrawals.status.${item.status}`)}
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => setDetailWithdrawal(item)}
+                            aria-label={tWallet('withdrawals.viewDetail')}
+                            title={tWallet('withdrawals.viewDetail')}
+                            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                          >
+                            <Eye className="size-4" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -355,6 +370,50 @@ export default function TutorWalletActivitySection({
           onPageChangeAction={tab === 'transactions' ? onTxPageChange : onWdPageChange}
         />
       </div>
+
+      {detailWithdrawal ? (
+        <WalletWithdrawDialog
+          mode="review"
+          reviewAction="detail"
+          open={Boolean(detailWithdrawal)}
+          onOpenChange={(openState) => {
+            if (!openState) setDetailWithdrawal(null);
+          }}
+          maxAmount={detailWithdrawal.amount}
+          reviewDetails={{
+            amount: detailWithdrawal.amount,
+            bankName: detailWithdrawal.bankName,
+            bankAccountNumber: detailWithdrawal.bankAccountNumber,
+            bankAccountName: detailWithdrawal.bankAccountName,
+            tutorName: detailWithdrawal.bankAccountName,
+            paymentProofUrl: detailWithdrawal.paymentProofUrl,
+            adminNote: detailWithdrawal.adminNote,
+            processedAt: detailWithdrawal.processedAt,
+          }}
+          reviewLabels={{
+            title: tWallet('withdrawals.detailDialog.title'),
+            description: tWallet('withdrawals.detailDialog.description'),
+            tutor: tWallet('withdrawals.detailDialog.tutor'),
+            transferAmount: tWallet('withdrawals.detailDialog.transferAmount'),
+            bankSectionTitle: tWallet('withdrawals.detailDialog.bankSectionTitle'),
+            bankName: tWallet('withdrawals.detailDialog.bankName'),
+            accountNumber: tWallet('withdrawals.detailDialog.accountNumber'),
+            accountName: tWallet('withdrawals.detailDialog.accountName'),
+            confirm: tWallet('withdrawals.detailDialog.close'),
+            cancel: tWallet('withdrawals.detailDialog.close'),
+            submitting: tWallet('withdrawals.detailDialog.close'),
+            close: tWallet('withdrawals.detailDialog.close'),
+            noteLabel: tWallet('withdrawals.detailDialog.noteLabel'),
+            proofTitle: tWallet('withdrawals.detailDialog.proofTitle'),
+            viewProof: tWallet('withdrawals.detailDialog.viewProof'),
+            noProof: tWallet('withdrawals.detailDialog.noProof'),
+            copyProof: tWallet('withdrawals.detailDialog.copyProof'),
+            downloadProof: tWallet('withdrawals.detailDialog.downloadProof'),
+            copyProofSuccess: tWallet('withdrawals.detailDialog.copyProofSuccess'),
+            copyProofError: tWallet('withdrawals.detailDialog.copyProofError'),
+          }}
+        />
+      ) : null}
     </section>
   );
 }
