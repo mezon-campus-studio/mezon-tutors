@@ -187,6 +187,7 @@
           "transferAmount": "Số tiền rút",
           "noteLabel": "Nội dung từ chối",
           "notePlaceholder": "Nhập lý do từ chối yêu cầu rút tiền...",
+          "noteRequiredError": "Vui lòng nhập lý do từ chối.",
           "confirm": "Từ chối",
           "cancel": "Hủy",
           "submitting": "Đang từ chối...",

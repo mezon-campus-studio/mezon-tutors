@@ -84,6 +84,7 @@ type WalletWithdrawDialogProps = {
         submitting: string;
         noteLabel?: string;
         notePlaceholder?: string;
+        noteRequiredError?: string;
         proofTitle?: string;
         proofHint?: string;
         proofUploadPrompt?: string;
@@ -127,6 +128,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
   );
   const [isBankEditing, setIsBankEditing] = useState(false);
   const [adminNote, setAdminNote] = useState('');
+  const [noteError, setNoteError] = useState<string | null>(null);
   const [proofUploading, setProofUploading] = useState(false);
   const [proofError, setProofError] = useState<string | null>(null);
   const [proof, setProof] = useState<{
@@ -202,6 +204,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
   useEffect(() => {
     if (open && props.mode === 'review') {
       setAdminNote('');
+      setNoteError(null);
       setProof(null);
       setProofError(null);
       setProofUploading(false);
@@ -359,6 +362,10 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
         });
         return;
       }
+      if (isRejectReview && !adminNote.trim()) {
+        setNoteError(reviewLabels.noteRequiredError ?? 'Please enter a reason for the rejection.');
+        return;
+      }
       void onConfirm({ adminNote: adminNote.trim() || undefined });
     };
 
@@ -422,14 +429,25 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
                   className="text-xs font-semibold text-slate-700"
                 >
                   {reviewLabels.noteLabel}
+                  <span className="ml-0.5 text-rose-500">*</span>
                 </Label>
                 <Textarea
                   id="withdraw-reject-note"
                   value={adminNote}
-                  onChange={(event) => setAdminNote(event.target.value)}
+                  onChange={(event) => {
+                    setAdminNote(event.target.value);
+                    if (noteError && event.target.value.trim()) setNoteError(null);
+                  }}
                   placeholder={reviewLabels.notePlaceholder}
-                  className="min-h-[96px] resize-none rounded-xl border-violet-100 bg-white p-3 text-sm text-slate-700 focus-visible:ring-2 focus-visible:ring-violet-200"
+                  aria-invalid={Boolean(noteError)}
+                  className={cn(
+                    'min-h-[96px] resize-none rounded-xl border-violet-100 bg-white p-3 text-sm text-slate-700 focus-visible:ring-2 focus-visible:ring-violet-200',
+                    noteError && 'border-rose-300 bg-rose-50/40 focus-visible:ring-rose-200'
+                  )}
                 />
+                {noteError ? (
+                  <p className="text-xs font-medium text-rose-600">{noteError}</p>
+                ) : null}
               </div>
             ) : (
               <>

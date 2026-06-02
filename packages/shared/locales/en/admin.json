@@ -187,6 +187,7 @@
           "transferAmount": "Withdrawal amount",
           "noteLabel": "Rejection message",
           "notePlaceholder": "Explain why this withdrawal request is rejected...",
+          "noteRequiredError": "Please enter a reason for the rejection.",
           "confirm": "Reject",
           "cancel": "Cancel",
           "submitting": "Rejecting...",

@@ -291,6 +291,7 @@ export default function WithdrawalsTable({
             accountName: "",
             noteLabel: t("rejectDialog.noteLabel"),
             notePlaceholder: t("rejectDialog.notePlaceholder"),
+            noteRequiredError: t("rejectDialog.noteRequiredError"),
             confirm: t("rejectDialog.confirm"),
             cancel: t("rejectDialog.cancel"),
             submitting: t("rejectDialog.submitting"),
