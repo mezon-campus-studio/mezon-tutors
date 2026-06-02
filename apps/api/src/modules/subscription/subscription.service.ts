@@ -22,6 +22,7 @@ import {
   LESSON_SETTLEMENT_GRACE_MINUTES,
   calculatePlatformFeeAmounts,
   buildMonthlySubscriptionSlotJson,
+  DEFAULT_TIMEZONE,
   expandCalendarSlotToSteps,
   getWeekMondayInTimezone,
   jsDayToDbDayOfWeek,
@@ -29,7 +30,7 @@ import {
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
   timeToMinutes,
-  tutorLocalSlotFitsUtcAvailability,
+  instantFitsUtcWeeklyAvailability,
   utcWeeklySlotsToCalendarInstances,
   type SubscriptionEligibilityDto,
   type SubscriptionEnrollmentDetailDto,
@@ -184,13 +185,13 @@ export class SubscriptionService {
       throw new BadRequestException('Completed lessons cannot be modified');
     }
 
-    const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
-    const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone);
+    const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
     const occurrence = occurrences.find((o) => o.slotIndex === slotIndex);
     if (!occurrence) {
       throw new BadRequestException('Lesson time could not be resolved');
     }
 
+    const tutorTimezone = enrollment.tutor.user?.timezone ?? DEFAULT_TIMEZONE;
     return { enrollment, slots, slot, slotIndex, occurrence, tutorTimezone };
   }
 
@@ -256,14 +257,14 @@ export class SubscriptionService {
       throw new BadRequestException('Invalid lesson start time');
     }
 
-    const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
-    const weekStart = occurrenceStart.tz(tutorTimezone).startOf('day');
+    const weekStart = occurrenceStart.utc().startOf('day');
     const mondayOffset = weekStart.day() === 0 ? 6 : weekStart.day() - 1;
     const weekStartYmd = weekStart.subtract(mondayOffset, 'day').format('YYYY-MM-DD');
     const weekOccurrences = subscriptionSlotsOccurrencesForWeek(
       weekStartYmd,
       slots,
-      tutorTimezone
+      DEFAULT_TIMEZONE,
+      DEFAULT_TIMEZONE,
     );
     const occurrence = weekOccurrences.find((o) => {
       if (o.slotIndex !== slotIndex) {
@@ -507,18 +508,6 @@ export class SubscriptionService {
 
     const planPrice = trialToPresetMonthlyPriceRow(trial, dto.lessonsPerWeek);
 
-    const tutorProfile = await this.prisma.tutorProfile.findUnique({
-      where: { id: dto.tutorId },
-      select: {
-        user: {
-          select: {
-            timezone: true,
-          },
-        },
-      },
-    });
-    const tutorTimezone = tutorProfile?.user?.timezone ?? 'UTC';
-
     if (dto.slots.length !== dto.lessonsPerWeek) {
       throw new BadRequestException('Slot count must match lessons per week');
     }
@@ -530,9 +519,13 @@ export class SubscriptionService {
     const normalized: SubscriptionWeeklySlotDto[] = [];
     const seen = new Set<string>();
     for (const s of dto.slots) {
-      const d = dayjs.tz(`${s.date} 00:00`, tutorTimezone);
-      if (!d.isValid()) {
-        throw new BadRequestException('Invalid slot date');
+      const slotStart = dayjs.tz(
+        `${s.date} ${s.startTime}`,
+        'YYYY-MM-DD HH:mm',
+        DEFAULT_TIMEZONE,
+      );
+      if (!slotStart.isValid()) {
+        throw new BadRequestException('Invalid slot start time');
       }
       const startM = timeToMinutes(s.startTime);
       const endM = timeToMinutes(s.endTime);
@@ -544,27 +537,21 @@ export class SubscriptionService {
         throw new BadRequestException('Each subscription slot must be 60 minutes');
       }
       if (
-        !tutorLocalSlotFitsUtcAvailability(
-          s.date,
-          s.startTime,
+        !instantFitsUtcWeeklyAvailability(
+          slotStart.utc().toISOString(),
           durationMinutes,
-          tutorTimezone,
           availability,
         )
       ) {
         throw new BadRequestException('Slot outside tutor availability');
       }
-      const slotStart = dayjs.tz(`${s.date} ${s.startTime}`, tutorTimezone);
-      if (!slotStart.isValid()) {
-        throw new BadRequestException('Invalid slot start time');
-      }
       await this.trialLessonBookingService.assertTutorSlotAvailable(
         dto.tutorId,
         slotStart.utc().toISOString(),
         durationMinutes,
-        tutorTimezone
+        DEFAULT_TIMEZONE,
       );
-      const dbDay = jsDayToDbDayOfWeek(d.day());
+      const dbDay = jsDayToDbDayOfWeek(slotStart.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
         throw new BadRequestException('Duplicate weekly slot');
@@ -596,7 +583,7 @@ export class SubscriptionService {
       dto.slots,
       normalized,
       SUBSCRIPTION_MONTHLY_WEEKS,
-      tutorTimezone
+      DEFAULT_TIMEZONE,
     ) as SubscriptionWeeklySlotDto[];
 
     const created = await this.prisma.subscriptionEnrollment.create({
@@ -645,7 +632,7 @@ export class SubscriptionService {
   async listTutorWeekOccurrences(
     tutorUserId: string,
     weekStartYmd: string,
-    timezoneName = 'UTC'
+    timezoneName = DEFAULT_TIMEZONE,
   ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
     const tutor = await this.prisma.tutorProfile.findUnique({
       where: { userId: tutorUserId },
@@ -671,10 +658,16 @@ export class SubscriptionService {
         },
       },
     });
+    const viewerTimezone = timezoneName?.trim() || DEFAULT_TIMEZONE;
     const out: TutorSubscriptionWeekOccurrenceDto[] = [];
     for (const e of enrollments) {
       const slots = this.parseWeeklySlots(e.weeklySlots);
-      const times = subscriptionSlotsOccurrencesForWeek(weekStartYmd, slots, timezoneName);
+      const times = subscriptionSlotsOccurrencesForWeek(
+        weekStartYmd,
+        slots,
+        viewerTimezone,
+        DEFAULT_TIMEZONE,
+      );
       for (const t of times) {
         const slot = slots[t.slotIndex];
         if (!slot) {
@@ -701,7 +694,6 @@ export class SubscriptionService {
         });
       }
     }
-
     if (out.length === 0) {
       return out;
     }
@@ -912,9 +904,7 @@ export class SubscriptionService {
       throw new BadRequestException('Completed lessons cannot be cancelled');
     }
 
-    const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC';
-
-    const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone);
+    const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
     const occurrence = occurrences.find((o) => o.slotIndex === slotIndex);
     if (!occurrence) {
       throw new BadRequestException('Lesson time could not be resolved');
@@ -991,12 +981,12 @@ export class SubscriptionService {
       orderBy: { startTime: 'asc' },
     });
 
-    const weekStart = dayjs.tz(weekStartYmd, viewerTimezone || 'UTC').startOf('day');
+    const weekStart = dayjs.tz(weekStartYmd, viewerTimezone || DEFAULT_TIMEZONE).startOf('day');
     if (!weekStart.isValid()) {
       throw new BadRequestException('Invalid week start date');
     }
 
-    const baseMonday = getWeekMondayInTimezone(viewerTimezone || 'UTC');
+    const baseMonday = getWeekMondayInTimezone(viewerTimezone || DEFAULT_TIMEZONE);
     const weekOffset = weekStart.diff(baseMonday, 'week');
 
     const utcSlots = availability.map((row) => ({
@@ -1008,11 +998,11 @@ export class SubscriptionService {
 
     const instances = utcWeeklySlotsToCalendarInstances(
       utcSlots,
-      viewerTimezone || 'UTC',
+      viewerTimezone || DEFAULT_TIMEZONE,
       weekOffset
     );
 
-    const today = dayjs().tz(viewerTimezone || 'UTC').startOf('day');
+    const today = dayjs().tz(viewerTimezone || DEFAULT_TIMEZONE).startOf('day');
     const candidates = instances
       .filter((instance) => !dayjs.tz(instance.date, viewerTimezone).isBefore(today, 'day'))
       .flatMap((instance) =>
@@ -1026,7 +1016,7 @@ export class SubscriptionService {
     const occupied = await this.trialLessonBookingService.collectOccupiedSlotsForTutorWeek(
       enrollment.tutorId,
       weekStartYmd,
-      viewerTimezone || 'UTC',
+      viewerTimezone || DEFAULT_TIMEZONE,
       {
         excludeSubscriptionSlot: { enrollmentId, slotIndex },
       }
@@ -1037,7 +1027,7 @@ export class SubscriptionService {
     const blocked = candidates.filter((candidate) => {
       const startLocal = dayjs.tz(
         `${candidate.date} ${candidate.startTime}`,
-        viewerTimezone || 'UTC'
+        viewerTimezone || DEFAULT_TIMEZONE
       );
       if (!startLocal.isValid()) {
         return false;
@@ -1111,49 +1101,46 @@ export class SubscriptionService {
       );
     }
 
-    const slotDate = dayjs.tz(`${payload.date} 00:00`, tutorTimezone);
-    if (!slotDate.isValid()) {
-      throw new BadRequestException('Invalid slot date');
-    }
-
-    const availability = await this.prisma.tutorAvailability.findMany({
-      where: { tutorId: enrollment.tutorId, isActive: true },
-    });
-    if (
-      !tutorLocalSlotFitsUtcAvailability(
-        payload.date,
-        payload.startTime,
-        durationMinutes,
-        tutorTimezone,
-        availability
-      )
-    ) {
-      throw new BadRequestException('Slot outside tutor availability');
-    }
-
-    const newStartLocal = dayjs.tz(
+    const newStartUtc = dayjs.tz(
       `${payload.date} ${payload.startTime}`,
-      tutorTimezone
+      'YYYY-MM-DD HH:mm',
+      DEFAULT_TIMEZONE,
     );
-    if (!newStartLocal.isValid() || newStartLocal.isBefore(dayjs())) {
+    if (!newStartUtc.isValid()) {
+      throw new BadRequestException('Invalid slot start time');
+    }
+    if (newStartUtc.utc().isBefore(dayjs().utc())) {
       throw new BadRequestException('Cannot reschedule to a time in the past');
     }
-    const hoursUntilNewStart = newStartLocal.utc().diff(dayjs().utc(), 'hour', true);
+    const hoursUntilNewStart = newStartUtc.utc().diff(dayjs().utc(), 'hour', true);
     if (hoursUntilNewStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
         `Cannot reschedule to a time within ${lessonChangePeriodHours} hours from now`
       );
     }
 
+    const availability = await this.prisma.tutorAvailability.findMany({
+      where: { tutorId: enrollment.tutorId, isActive: true },
+    });
+    if (
+      !instantFitsUtcWeeklyAvailability(
+        newStartUtc.utc().toISOString(),
+        durationMinutes,
+        availability,
+      )
+    ) {
+      throw new BadRequestException('Slot outside tutor availability');
+    }
+
     await this.trialLessonBookingService.assertTutorSlotAvailable(
       enrollment.tutorId,
-      newStartLocal.utc().toISOString(),
+      newStartUtc.utc().toISOString(),
       durationMinutes,
-      tutorTimezone,
+      DEFAULT_TIMEZONE,
       { excludeSubscriptionSlot: { enrollmentId, slotIndex } }
     );
 
-    const dbDay = jsDayToDbDayOfWeek(slotDate.day());
+    const dbDay = jsDayToDbDayOfWeek(newStartUtc.day());
     const originalStartAt = occurrence.startAt;
 
     const updatedSlots = slots.map((s, i) =>
@@ -1169,7 +1156,7 @@ export class SubscriptionService {
         : s
     );
 
-    const newEndAt = newStartLocal.add(durationMinutes, 'minute').toDate();
+    const newEndAt = newStartUtc.add(durationMinutes, 'minute').toDate();
     const newRunAt = dayjs(newEndAt)
       .add(settlementPeriodHours, 'hour')
       .add(LESSON_SETTLEMENT_GRACE_MINUTES, 'minute')

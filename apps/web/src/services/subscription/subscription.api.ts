@@ -12,9 +12,34 @@ import type {
   TutorSubscriptionSlotRescheduleRequestResult,
   TutorSubscriptionWeekOccurrenceDto,
 } from "@mezon-tutors/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useMemo } from "react";
 import { apiClient } from "../api-client";
 import { subscriptionQueryKey } from "./subscription.qkey";
+
+const TUTOR_WEEK_OCCURRENCES_STALE_MS = 60_000;
+
+function tutorWeekOccurrencesQueryOptions(
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+) {
+  return {
+    queryKey: subscriptionQueryKey.tutorWeekOccurrences(
+      weekStartDate,
+      timezone,
+    ),
+    queryFn: () =>
+      subscriptionApi.getTutorWeekOccurrences(weekStartDate, timezone),
+    enabled: enabled && Boolean(weekStartDate) && Boolean(timezone),
+    staleTime: TUTOR_WEEK_OCCURRENCES_STALE_MS,
+  };
+}
 
 export const subscriptionApi = {
   getPlansByTutorId(tutorId: string): Promise<TutorSubscriptionPlanDto[]> {
@@ -295,13 +320,44 @@ export function useGetTutorSubscriptionWeekOccurrences(
   timezone: string,
   enabled = true,
 ) {
-  return useQuery({
-    queryKey: subscriptionQueryKey.tutorWeekOccurrences(
-      weekStartDate,
-      timezone,
+  return useQuery(
+    tutorWeekOccurrencesQueryOptions(weekStartDate, timezone, enabled),
+  );
+}
+
+function mergeTutorSubscriptionWeekOccurrences(
+  weeks: (TutorSubscriptionWeekOccurrenceDto[] | undefined)[],
+): TutorSubscriptionWeekOccurrenceDto[] {
+  const merged: TutorSubscriptionWeekOccurrenceDto[] = [];
+  const seen = new Set<string>();
+  for (const rows of weeks) {
+    for (const row of rows ?? []) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      merged.push(row);
+    }
+  }
+  return merged;
+}
+
+export function useGetTutorSubscriptionWeekOccurrencesBatch(
+  weekStartDates: string[],
+  timezone: string,
+  enabled = true,
+) {
+  const queries = useQueries({
+    queries: weekStartDates.map((weekStartDate) =>
+      tutorWeekOccurrencesQueryOptions(weekStartDate, timezone, enabled),
     ),
-    queryFn: () =>
-      subscriptionApi.getTutorWeekOccurrences(weekStartDate, timezone),
-    enabled: Boolean(weekStartDate) && Boolean(timezone) && enabled,
   });
+
+  const data = useMemo(
+    () => mergeTutorSubscriptionWeekOccurrences(queries.map((q) => q.data)),
+    [queries],
+  );
+
+  const isLoading = queries.some((q) => q.isLoading);
+  const isFetching = queries.some((q) => q.isFetching);
+
+  return { data, isLoading, isFetching, queries };
 }

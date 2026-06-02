@@ -6,7 +6,7 @@ import type {
   MyLessonTutorApiItem,
   MyLessonWeekDayApiItem,
 } from "@mezon-tutors/shared";
-import { CALENDAR_CONFIG } from "@mezon-tutors/shared";
+import { CALENDAR_CONFIG, DEFAULT_TIMEZONE } from "@mezon-tutors/shared";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -140,6 +140,40 @@ const roundToHalfHour = (hour: number): number => {
   return wholeHour + 1;
 };
 
+function lessonDisplayFromStartAt(
+  startAtIso: string,
+  durationMinutes: number,
+  timezoneName: string,
+  weekStartYmd?: string,
+): Pick<LessonItem, "dateLabel" | "timeLabel" | "dayIndex" | "startHour" | "endHour"> {
+  const start = dayjs.utc(startAtIso).tz(timezoneName);
+  if (!start.isValid()) {
+    return {
+      dateLabel: "—",
+      timeLabel: "—",
+      dayIndex: 0,
+      startHour: 0,
+      endHour: 0,
+    };
+  }
+  const end = start.add(durationMinutes, "minute");
+  let dayIndex = 0;
+  if (weekStartYmd) {
+    const weekStart = parseYmdInTimezone(weekStartYmd, timezoneName).startOf("day");
+    dayIndex = Math.max(
+      0,
+      Math.min(6, start.startOf("day").diff(weekStart, "day")),
+    );
+  }
+  return {
+    dateLabel: start.format("ddd, MMM DD"),
+    timeLabel: `${start.format("HH:mm")} - ${end.format("HH:mm")}`,
+    dayIndex,
+    startHour: roundToHalfHour(start.hour() + start.minute() / 60),
+    endHour: roundToHalfHour(end.hour() + end.minute() / 60),
+  };
+}
+
 const readComplaintFields = (item: MyLessonApiItem) => {
   const raw = item as MyLessonApiItem & {
     canComplain?: boolean;
@@ -154,7 +188,11 @@ const readComplaintFields = (item: MyLessonApiItem) => {
   };
 };
 
-const mapLesson = (item: MyLessonApiItem): LessonItem => {
+const mapLesson = (
+  item: MyLessonApiItem,
+  timezoneName: string,
+  weekStartYmd?: string,
+): LessonItem => {
   const { canComplain, complaintStatus } = readComplaintFields(item);
   const durationMinutes =
     item.duration_minutes && item.duration_minutes > 0
@@ -162,6 +200,22 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
       : item.start_at
         ? 60
         : undefined;
+
+  const display =
+    item.start_at && durationMinutes != null
+      ? lessonDisplayFromStartAt(
+          item.start_at,
+          durationMinutes,
+          timezoneName,
+          weekStartYmd,
+        )
+      : {
+          dateLabel: item.date_label,
+          timeLabel: item.time_label,
+          dayIndex: item.day_index,
+          startHour: roundToHalfHour(item.start_hour),
+          endHour: roundToHalfHour(item.end_hour),
+        };
 
   return {
     id: item.id,
@@ -173,11 +227,7 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
     tutorMezonUserId: item.tutor_mezon_user_id,
     category: mapCategory(item.category),
     status: mapStatus(item.status),
-    dateLabel: item.date_label,
-    timeLabel: item.time_label,
-    dayIndex: item.day_index,
-    startHour: roundToHalfHour(item.start_hour),
-    endHour: roundToHalfHour(item.end_hour),
+    ...display,
     source: item.source ?? "trial",
     startAt: item.start_at,
     durationMinutes,
@@ -196,14 +246,16 @@ const mapLesson = (item: MyLessonApiItem): LessonItem => {
   };
 };
 
-const mapTutor = (item: MyLessonTutorApiItem): TutorItem => ({
+const mapTutor = (item: MyLessonTutorApiItem, timezoneName: string): TutorItem => ({
   id: item.id,
   name: item.name,
   avatar: item.avatar,
   teaches: item.teaches,
   availability: item.availability,
   completedLessons: item.completed_lessons,
-  nextLessonLabel: item.next_lesson_label,
+  nextLessonLabel: item.next_lesson_at
+    ? dayjs.utc(item.next_lesson_at).tz(timezoneName).format("ddd, h:mm A")
+    : "",
   nextLessonAt: item.next_lesson_at ?? null,
   ratingAverage: item.rating_average,
   reviewCount: item.review_count,
@@ -258,15 +310,18 @@ export const myLessonsApi = {
     }
 
     const data = await apiClient.get<MyLessonsApiResponse>(BASE, { params });
+    const tz = timezoneName ?? DEFAULT_TIMEZONE;
 
-    const calendarLessons = data.calendar_lessons.map(mapLesson);
+    const calendarLessons = data.calendar_lessons.map((item) =>
+      mapLesson(item, tz, weekStartDate),
+    );
 
     return {
-      calendar: mapCalendarMeta(data, calendarLessons, timezoneName ?? "UTC"),
+      calendar: mapCalendarMeta(data, calendarLessons, tz),
       calendarLessons,
-      upcomingLessons: data.upcoming_lessons.map(mapLesson),
-      previousLessons: data.previous_lessons.map(mapLesson),
-      tutors: data.tutors.map(mapTutor),
+      upcomingLessons: data.upcoming_lessons.map((item) => mapLesson(item, tz)),
+      previousLessons: data.previous_lessons.map((item) => mapLesson(item, tz)),
+      tutors: data.tutors.map((item) => mapTutor(item, tz)),
     };
   },
 };
