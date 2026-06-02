@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ECurrency, ENotificationType, Prisma } from '@mezon-tutors/db'
 import { ChannelMessageContent } from 'mezon-sdk'
-import { ECurrency as SharedCurrency, formatToCurrency, NOTIFICATION_I18N_KEYS } from '@mezon-tutors/shared'
+import { ECurrency as SharedCurrency, formatToCurrency, NOTIFICATION_META } from '@mezon-tutors/shared'
 import dayjs = require('dayjs')
 import utc = require('dayjs/plugin/utc')
 import timezone = require('dayjs/plugin/timezone')
@@ -123,10 +123,10 @@ export class NotificationService {
         title: 'Welcome to Mezonly',
         content: `Welcome, ${displayName}! Your Mezon account is linked.`,
         type: ENotificationType.SYSTEM,
-        i18nKey: NOTIFICATION_I18N_KEYS.templates.welcomeLinked,
+        i18nKey: NOTIFICATION_META.WELCOME_LINKED.templateKey ?? undefined,
         i18nParams: { displayName },
         metadata: {
-          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.welcomeLinked,
+          titleI18nKey: NOTIFICATION_META.WELCOME_LINKED.titleKey,
           titleI18nParams: {},
         },
       },
@@ -331,7 +331,7 @@ export class NotificationService {
           title: 'Trial lesson confirmed',
           content: `Your trial lesson with ${tutorName} is confirmed.`,
           type: ENotificationType.BOOKING,
-          i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingConfirmed,
+          i18nKey: NOTIFICATION_META.BOOKING_CONFIRMED.templateKey ?? undefined,
           i18nParams: { tutorName },
           metadata: { bookingId: params.bookingId },
         },
@@ -350,10 +350,10 @@ export class NotificationService {
           title: 'New trial lesson booking',
           content: `${studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.`,
           type: ENotificationType.BOOKING,
-          i18nKey: NOTIFICATION_I18N_KEYS.templates.bookingCreated,
+          i18nKey: NOTIFICATION_META.BOOKING_CREATED.templateKey ?? undefined,
           i18nParams: { studentName },
           metadata: {
-            titleI18nKey: NOTIFICATION_I18N_KEYS.titles.bookingCreated,
+            titleI18nKey: NOTIFICATION_META.BOOKING_CREATED.titleKey ?? undefined,
             titleI18nParams: {},
             bookingId: params.bookingId,
             studentId: params.studentId,
@@ -424,7 +424,7 @@ export class NotificationService {
           title: 'Subscription active',
           content: `Your subscription with ${tutorName} (${planLabel}) is now active.`,
           type: ENotificationType.PAYMENT,
-          i18nKey: NOTIFICATION_I18N_KEYS.templates.subscriptionEnrollmentConfirmed,
+          i18nKey: NOTIFICATION_META.SUBSCRIPTION_ENROLLMENT_CONFIRMED.templateKey ?? undefined,
           i18nParams: { tutorName, planLabel },
           metadata: { enrollmentId: params.enrollmentId },
         },
@@ -444,10 +444,10 @@ export class NotificationService {
           title: 'New subscription enrollment',
           content: `${studentName} enrolled in your ${planLabel} plan.`,
           type: ENotificationType.PAYMENT,
-          i18nKey: NOTIFICATION_I18N_KEYS.templates.subscriptionEnrollmentCreated,
+          i18nKey: NOTIFICATION_META.SUBSCRIPTION_ENROLLMENT_CREATED.templateKey ?? undefined,
           i18nParams: { studentName, planLabel },
           metadata: {
-            titleI18nKey: NOTIFICATION_I18N_KEYS.titles.subscriptionEnrollmentCreated,
+            titleI18nKey: NOTIFICATION_META.SUBSCRIPTION_ENROLLMENT_CREATED.titleKey ?? undefined,
             titleI18nParams: {},
             enrollmentId: params.enrollmentId,
             studentId: params.studentId,
@@ -496,10 +496,10 @@ export class NotificationService {
         title,
         content,
         type: ENotificationType.PAYMENT,
-        i18nKey: NOTIFICATION_I18N_KEYS.templates.tutorEarningsReleased,
+        i18nKey: NOTIFICATION_META.TUTOR_EARNINGS_RELEASED.templateKey ?? undefined,
         i18nParams: { amount: amountFormatted, lessonKind: params.lessonKind },
         metadata: {
-          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.tutorEarningsReleased,
+          titleI18nKey: NOTIFICATION_META.TUTOR_EARNINGS_RELEASED.titleKey ?? undefined,
           titleI18nParams: {},
           lessonKind: params.lessonKind,
           bookingId: params.bookingId,
@@ -554,13 +554,13 @@ export class NotificationService {
         title,
         content,
         type: ENotificationType.PAYMENT,
-        i18nKey: NOTIFICATION_I18N_KEYS.templates.tutorLessonComplaintApproved,
+        i18nKey: NOTIFICATION_META.TUTOR_LESSON_COMPLAINT_APPROVED.templateKey ?? undefined,
         i18nParams: {
           studentName: params.studentName,
           amount: amountFormatted,
         },
         metadata: {
-          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.tutorLessonComplaintApproved,
+          titleI18nKey: NOTIFICATION_META.TUTOR_LESSON_COMPLAINT_APPROVED.titleKey ?? undefined,
           titleI18nParams: {
             studentName: params.studentName,
           },
@@ -619,8 +619,8 @@ export class NotificationService {
         ? formatToCurrency(currency, Number(params.amount))
         : ''
     const i18nKey = params.refunded
-      ? NOTIFICATION_I18N_KEYS.templates.lessonComplaintApprovedRefunded
-      : NOTIFICATION_I18N_KEYS.templates.lessonComplaintApproved
+      ? NOTIFICATION_META.LESSON_COMPLAINT_APPROVED_REFUNDED.templateKey ?? undefined
+      : NOTIFICATION_META.LESSON_COMPLAINT_APPROVED.templateKey ?? undefined
     const i18nParams: Record<string, string> = {
       tutorName: params.tutorName,
       lessonStartAt: params.lessonStartAtLabel,
@@ -645,7 +645,7 @@ export class NotificationService {
         i18nParams,
         dedupeKey,
         metadata: {
-          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.lessonComplaintApproved,
+          titleI18nKey: NOTIFICATION_META.LESSON_COMPLAINT_APPROVED.titleKey ?? undefined,
           titleI18nParams: {},
           complaintId: params.complaintId,
           status: 'APPROVED',
@@ -717,7 +717,7 @@ export class NotificationService {
         title: 'Complaint rejected',
         content,
         type: ENotificationType.SYSTEM,
-        i18nKey: NOTIFICATION_I18N_KEYS.templates.lessonComplaintRejected,
+        i18nKey: NOTIFICATION_META.LESSON_COMPLAINT_REJECTED.templateKey ?? undefined,
         i18nParams: {
           tutorName: params.tutorName,
           lessonStartAt: params.lessonStartAtLabel,
@@ -726,7 +726,7 @@ export class NotificationService {
         },
         dedupeKey,
         metadata: {
-          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.lessonComplaintRejected,
+          titleI18nKey: NOTIFICATION_META.LESSON_COMPLAINT_REJECTED.titleKey ?? undefined,
           titleI18nParams: {},
           complaintId: params.complaintId,
           status: 'REJECTED',

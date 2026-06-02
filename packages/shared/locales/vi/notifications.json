@@ -15,10 +15,13 @@
   },
   "titles": {
     "bookingCreated": "Buổi học thử mới",
+    "bookingConfirmed": "Buổi học thử đã xác nhận",
+    "bookingCancelled": "Đặt lịch đã hủy",
     "subscriptionEnrollmentConfirmed": "Gói đăng ký đã kích hoạt",
     "subscriptionEnrollmentCreated": "Đăng ký gói mới",
     "welcomeLinked": "Chào mừng đến Mezonly",
     "paymentSucceeded": "Thanh toán thành công",
+    "paymentFailed": "Thanh toán thất bại",
     "systemAnnouncement": "Thông báo hệ thống",
     "lessonStartingSoon": "Buổi học sắp bắt đầu",
     "tutorEarningsReleased": "Tiền đã về ví",
