@@ -191,6 +191,7 @@ export class MezonMessageService {
   withdrawalCompleted(params: {
     amountFormatted: string;
     bankName: string;
+    bankAccountNumber?: string;
   }): ChannelMessageContent {
     return this.toChannelMessage(
       withdrawalCompletedEmbed({

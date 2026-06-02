@@ -288,6 +288,7 @@ export const withdrawalRequestedEmbed = (
 export const withdrawalCompletedEmbed = (params: {
   amountFormatted: string;
   bankName: string;
+  bankAccountNumber?: string;
   walletUrl?: string;
 }): IInteractiveMessageProps => ({
   color: MEZON_EMBED_COLORS.success,
@@ -296,6 +297,9 @@ export const withdrawalCompletedEmbed = (params: {
   fields: [
     { name: 'Amount', value: params.amountFormatted, inline: true },
     { name: 'Bank', value: params.bankName, inline: true },
+    ...(params.bankAccountNumber
+      ? [{ name: 'Account', value: params.bankAccountNumber, inline: true }]
+      : []),
   ],
   url: params.walletUrl,
   ...embedAdminThumbnail(),

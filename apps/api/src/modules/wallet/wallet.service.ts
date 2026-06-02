@@ -1081,6 +1081,26 @@ export class WalletService {
       });
     });
 
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: created.tutorId },
+      select: { mezonUserId: true },
+    });
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyTutorWithdrawalCompleted({
+        tutorUserId: created.tutorId,
+        tutorMezonUserId: tutor?.mezonUserId,
+        withdrawalId: created.id,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify tutor for completed withdrawal ${created.id}: ${detail}`);
+    }
+
     return this.mapWithdrawalRow(created);
   }
 
@@ -1123,6 +1143,27 @@ export class WalletService {
         },
       });
     });
+
+    const tutor = await this.prisma.user.findUnique({
+      where: { id: created.tutorId },
+      select: { mezonUserId: true },
+    });
+    const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+
+    try {
+      await this.notificationService.notifyTutorWithdrawalRejected({
+        tutorUserId: created.tutorId,
+        tutorMezonUserId: tutor?.mezonUserId,
+        withdrawalId: created.id,
+        amountFormatted,
+        bankName: created.bankName,
+        bankAccountNumber: created.bankAccountNumber,
+        adminNote: created.adminNote,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to notify tutor for rejected withdrawal ${created.id}: ${detail}`);
+    }
 
     return this.mapWithdrawalRow(created);
   }
