@@ -15,10 +15,13 @@
   },
   "titles": {
     "bookingCreated": "New trial lesson booking",
+    "bookingConfirmed": "Trial lesson confirmed",
+    "bookingCancelled": "Booking cancelled",
     "subscriptionEnrollmentConfirmed": "Subscription active",
     "subscriptionEnrollmentCreated": "New subscription enrollment",
     "welcomeLinked": "Welcome to Mezonly",
     "paymentSucceeded": "Payment successful",
+    "paymentFailed": "Payment failed",
     "systemAnnouncement": "System announcement",
     "lessonStartingSoon": "Lesson starting soon",
     "tutorEarningsReleased": "Earnings available",

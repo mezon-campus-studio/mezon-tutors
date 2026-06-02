@@ -178,7 +178,7 @@ export class TutorApplicationService {
     return profiles;
   }
 
-  async approve(id: string): Promise<{ success: boolean }> {
+  async approve(id: string, emailNote?: string): Promise<{ success: boolean }> {
     const profile = await this.prisma.tutorProfile.findUnique({
       where: { id },
       select: {
@@ -208,7 +208,11 @@ export class TutorApplicationService {
     const tutorName = profile.user?.username ?? 'there';
 
     if (profile.user?.email) {
-      await this.emailService.sendApprovalEmail(profile.user.email, tutorName);
+      await this.emailService.sendApprovalEmail(
+        profile.user.email,
+        tutorName,
+        emailNote?.trim() || undefined,
+      );
     }
 
     await this.notifyTutorApplicationDecision({
@@ -224,7 +228,7 @@ export class TutorApplicationService {
     return { success: true };
   }
 
-  async reject(id: string): Promise<{ success: boolean }> {
+  async reject(id: string, emailNote?: string): Promise<{ success: boolean }> {
     const profile = await this.prisma.tutorProfile.findUnique({
       where: { id },
       select: {
@@ -273,7 +277,8 @@ export class TutorApplicationService {
         profile.email,
         tutorName,
         reviewerNotes,
-        null
+        null,
+        emailNote?.trim() || undefined,
       );
     }
 

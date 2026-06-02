@@ -20,9 +20,11 @@ import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import {
   convertWallClockSlotBetweenTimezones,
   getWeekStartMondayInTimezone,
-  parseYmdInTimezone,
 } from "@/lib/timezone";
-import { PUBLIC_APP_SETTINGS_FALLBACK } from "@mezon-tutors/shared";
+import {
+  DEFAULT_TIMEZONE,
+  PUBLIC_APP_SETTINGS_FALLBACK,
+} from "@mezon-tutors/shared";
 import {
   useGetSubscriptionSlotRescheduleOptions,
   useRescheduleSubscriptionSlotMutation,
@@ -113,7 +115,6 @@ export function RescheduleSubscriptionLessonDialog({
     }
   }, [error, open, t]);
 
-  const tutorTimezone = options?.tutorTimezone ?? "UTC";
   const gridInterval = options?.gridIntervalMinutes ?? 60;
   const lessonDuration = options?.lessonDurationMinutes ?? 60;
 
@@ -189,7 +190,7 @@ export function RescheduleSubscriptionLessonDialog({
       picked.startTime,
       picked.endTime,
       userTimezone,
-      tutorTimezone,
+      DEFAULT_TIMEZONE,
     );
 
     try {

@@ -212,7 +212,12 @@
     "mySchedule": {
       "eyebrow": "Khu vực gia sư",
       "title": "Lịch dạy",
-      "subtitle": "Buổi học đã xác nhận theo tuần đang xem trên lịch; có thể chuyển tuần.",
+      "subtitle": "Theo dõi lịch dạy và quản lý các buổi học sắp tới.",
+      "tabs": {
+        "lessons": "Buổi học",
+        "calendar": "Lịch",
+        "students": "Học viên"
+      },
       "completedBadge": "Đã xong",
       "lessonTypeTrial": "Buổi thử",
       "lessonTypePlan": "Gói học",
@@ -240,6 +245,49 @@
         "cancel": "Hủy buổi học",
         "joinLesson": "Vào lớp",
         "subscriptionBadge": "Gói theo tháng"
+      },
+      "panels": {
+        "lessons": {
+          "upcoming": {
+            "eyebrow": "Sắp tới",
+            "title": "Buổi học sắp tới",
+            "emptyTitle": "Chưa có buổi học sắp tới",
+            "emptyDescription": "Khi học viên xác nhận đặt lịch, buổi học sẽ hiển thị tại đây.",
+            "viewRequests": "Buổi học thử",
+            "manageLesson": "Quản lý buổi học",
+            "viewDetail": "Chi tiết",
+            "reschedule": "Yêu cầu đổi lịch",
+            "cancel": "Hủy buổi học",
+            "rescheduleNotice": "Buổi học sắp diễn ra trong vòng {hours} tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần.",
+            "reschedulePendingNotice": "Yêu cầu đổi lịch đã được gửi và đang chờ xử lý.",
+            "cancellationPendingNotice": "Yêu cầu hủy buổi học đã được gửi và đang chờ xử lý."
+          },
+          "past": {
+            "eyebrow": "Đã qua",
+            "title": "Buổi học đã qua"
+          },
+          "status": {
+            "cancelled": "Đã hủy",
+            "reschedulePending": "Đã yêu cầu đổi lịch",
+            "cancellationPending": "Đã yêu cầu hủy"
+          }
+        },
+        "students": {
+          "eyebrow": "Học viên của tôi",
+          "title": "Học viên của tôi",
+          "subtitle": "Bạn đang dạy {count} học viên.",
+          "viewBookings": "Buổi học thử",
+          "completed": "Đã hoàn thành",
+          "nextLesson": "Buổi học tiếp theo",
+          "lessonsCount": "{count} buổi học",
+          "upcomingCount": "{count} buổi sắp tới",
+          "message": "Nhắn tin",
+          "unscheduled": "Chưa có lịch",
+          "lessonTypeTrial": "Thử",
+          "lessonTypePlan": "Gói",
+          "emptyTitle": "Chưa có học viên",
+          "emptyDescription": "Khi học viên đặt buổi thử hoặc gói học với bạn, họ sẽ hiển thị tại đây."
+        }
       }
     },
     "scheduleEventModal": {

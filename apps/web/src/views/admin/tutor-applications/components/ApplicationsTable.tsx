@@ -17,8 +17,8 @@ import StatusBadge from "./StatusBadge";
 type ApplicationsTableProps = {
   applications: TutorProfile[];
   isLoading?: boolean;
-  onApprove?: (id: string) => void;
-  onReject?: (id: string) => void;
+  onApprove?: (app: TutorProfile) => void;
+  onReject?: (app: TutorProfile) => void;
   approvingId?: string | null;
   rejectingId?: string | null;
 };
@@ -141,7 +141,7 @@ export default function ApplicationsTable({
                           variant="outline"
                           size="sm"
                           className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                          onClick={() => onApprove(app.id)}
+                          onClick={() => onApprove(app)}
                           disabled={isApproving || isRejecting}
                         >
                           <Check className="h-4 w-4" />
@@ -152,7 +152,7 @@ export default function ApplicationsTable({
                           variant="outline"
                           size="sm"
                           className="border-rose-200 text-rose-700 hover:bg-rose-50"
-                          onClick={() => onReject(app.id)}
+                          onClick={() => onReject(app)}
                           disabled={isApproving || isRejecting}
                         >
                           <X className="h-4 w-4" />
