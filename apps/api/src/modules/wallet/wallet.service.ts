@@ -26,12 +26,15 @@ import {
   type WalletPayoutBankAccount,
   type WalletStatsApiResponse,
   type WalletTransactionApiItem,
+  type WalletTransactionLessonDetail,
   type WalletTransactionsApiResponse,
   type WalletWithdrawalApiItem,
   type WalletWithdrawalsApiResponse,
   type AdminWalletWithdrawalApiItem,
   type AdminWalletWithdrawalsApiResponse,
   ECurrency as SharedCurrency,
+  DEFAULT_TIMEZONE,
+  subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
 } from '@mezon-tutors/shared';
@@ -423,25 +426,76 @@ export class WalletService {
         skip,
         take: safeLimit,
         include: {
-          booking: { select: { id: true } },
-          subscriptionEnrollment: { select: { id: true } },
+          booking: {
+            select: {
+              id: true,
+              startAt: true,
+              durationMinutes: true,
+              student: { select: { username: true, avatar: true } },
+            },
+          },
+          subscriptionEnrollment: {
+            select: {
+              id: true,
+              weeklySlots: true,
+              student: { select: { username: true, avatar: true } },
+            },
+          },
         },
       }),
     ]);
 
-    const items: WalletTransactionApiItem[] = rows.map((row) => ({
-      id: row.id,
-      type: row.type,
-      direction: row.direction,
-      amount: Number(row.amount),
-      description: row.description,
-      createdAt: row.createdAt.toISOString(),
-      referenceLabel: row.bookingId
-        ? `Booking ${row.bookingId.slice(0, 8)}`
-        : row.subscriptionEnrollmentId
-          ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
-          : null,
-    }));
+    const items: WalletTransactionApiItem[] = rows.map((row) => {
+      const isIncome =
+        row.direction === EWalletTransactionDirection.CREDIT &&
+        (row.type === EWalletTransactionType.RELEASE ||
+          row.type === EWalletTransactionType.BOOKING_PAYMENT);
+
+      let lessonDetail: WalletTransactionLessonDetail | null = null;
+      if (isIncome) {
+        if (row.booking) {
+          lessonDetail = {
+            lessonKind: 'trial',
+            studentName: row.booking.student?.username ?? 'Student',
+            studentAvatarUrl: row.booking.student?.avatar ?? null,
+            startAt: row.booking.startAt.toISOString(),
+            durationMinutes: row.booking.durationMinutes,
+          };
+        } else if (row.subscriptionEnrollment) {
+          const slots = this.parseWeeklySlots(row.subscriptionEnrollment.weeklySlots);
+          const slotIndex = row.subscriptionSlotIndex ?? 0;
+          const slot = slots[slotIndex] ?? slots[0];
+          const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
+          const occ =
+            occurrences.find((o) => o.slotIndex === slotIndex) ?? occurrences[0];
+          if (slot) {
+            lessonDetail = {
+              lessonKind: 'subscription',
+              studentName: row.subscriptionEnrollment.student?.username ?? 'Student',
+              studentAvatarUrl: row.subscriptionEnrollment.student?.avatar ?? null,
+              startAt: (occ?.startAt ?? row.createdAt).toISOString(),
+              durationMinutes: slot.durationMinutes,
+              slotIndex: row.subscriptionSlotIndex,
+            };
+          }
+        }
+      }
+
+      return {
+        id: row.id,
+        type: row.type,
+        direction: row.direction,
+        amount: Number(row.amount),
+        description: row.description,
+        createdAt: row.createdAt.toISOString(),
+        referenceLabel: row.bookingId
+          ? `Booking ${row.bookingId.slice(0, 8)}`
+          : row.subscriptionEnrollmentId
+            ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
+            : null,
+        lessonDetail,
+      };
+    });
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }

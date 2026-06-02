@@ -75,7 +75,24 @@
       "emptyTitle": "Chưa có giao dịch",
       "emptyDescription": "Khi bạn thanh toán hoặc nhận thu nhập, giao dịch sẽ hiển thị tại đây.",
       "credit": "Nhận",
-      "debit": "Chi"
+      "debit": "Chi",
+      "viewDetail": "Xem chi tiết buổi học",
+      "detailDialog": {
+        "title": "Chi tiết thu nhập",
+        "description": "Thu nhập nhận được từ buổi học này.",
+        "lessonTagTrial": "Học thử",
+        "lessonTagPlan": "Gói",
+        "student": "Học viên",
+        "lessonType": "Loại buổi học",
+        "lessonTypeTrial": "Buổi học thử",
+        "lessonTypePlan": "Buổi học gói đăng ký",
+        "lessonTime": "Thời gian học",
+        "duration": "Thời lượng",
+        "durationValue": "{minutes} phút",
+        "amountEarned": "Số tiền nhận",
+        "receivedAt": "Nhận lúc",
+        "close": "Đóng"
+      }
     },
     "withdrawals": {
       "emptyTitle": "Chưa có yêu cầu rút",

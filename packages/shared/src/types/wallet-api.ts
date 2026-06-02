@@ -68,6 +68,15 @@ export function isTutorWalletStats(
   return stats?.role === 'TUTOR';
 }
 
+export type WalletTransactionLessonDetail = {
+  lessonKind: 'trial' | 'subscription';
+  studentName: string;
+  studentAvatarUrl?: string | null;
+  startAt: string;
+  durationMinutes: number;
+  slotIndex?: number | null;
+};
+
 export type WalletTransactionApiItem = {
   id: string;
   type: WalletTransactionType | 'LESSON_PAYMENT' | 'SUBSCRIPTION_PAYMENT';
@@ -76,6 +85,7 @@ export type WalletTransactionApiItem = {
   description: string | null;
   createdAt: string;
   referenceLabel?: string | null;
+  lessonDetail?: WalletTransactionLessonDetail | null;
 };
 
 export type WalletWithdrawalApiItem = {

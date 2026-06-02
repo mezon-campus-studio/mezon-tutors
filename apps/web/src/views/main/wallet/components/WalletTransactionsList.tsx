@@ -1,11 +1,13 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { ArrowDownLeft, ArrowUpRight, Receipt } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Eye, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { formatToCurrency, ECurrency } from '@mezon-tutors/shared';
 import type { WalletTransactionApiItem } from '@mezon-tutors/shared';
 import { Badge, Card, CardContent, Skeleton } from '@/components/ui';
+import WalletEarningDetailDialog from './WalletEarningDetailDialog';
 
 type WalletTransactionsListProps = {
   items: WalletTransactionApiItem[];
@@ -21,6 +23,8 @@ function TransactionRowContent({
   creditLabel,
   debitLabel,
   compact,
+  viewDetailLabel,
+  onViewDetail,
 }: {
   item: WalletTransactionApiItem;
   isCredit: boolean;
@@ -29,6 +33,8 @@ function TransactionRowContent({
   creditLabel: string;
   debitLabel: string;
   compact?: boolean;
+  viewDetailLabel: string;
+  onViewDetail?: (item: WalletTransactionApiItem) => void;
 }) {
   const Icon = isCredit ? ArrowDownLeft : ArrowUpRight;
   const iconSize = compact ? 'size-10' : 'size-11';
@@ -62,14 +68,27 @@ function TransactionRowContent({
         </p>
         <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
       </div>
-      <p
-        className={`shrink-0 text-base font-extrabold tabular-nums ${
-          isCredit ? 'text-emerald-600' : 'text-rose-600'
-        }`}
-      >
-        {isCredit ? '+' : '−'}
-        {formatToCurrency(ECurrency.VND, item.amount)}
-      </p>
+      <div className="flex shrink-0 items-center gap-2.5">
+        <p
+          className={`text-base font-extrabold tabular-nums ${
+            isCredit ? 'text-emerald-600' : 'text-rose-600'
+          }`}
+        >
+          {isCredit ? '+' : '−'}
+          {formatToCurrency(ECurrency.VND, item.amount)}
+        </p>
+        {item.lessonDetail && onViewDetail ? (
+          <button
+            type="button"
+            onClick={() => onViewDetail(item)}
+            aria-label={viewDetailLabel}
+            title={viewDetailLabel}
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+          >
+            <Eye className="size-4" />
+          </button>
+        ) : null}
+      </div>
     </>
   );
 }
@@ -81,6 +100,7 @@ export default function WalletTransactionsList({
 }: WalletTransactionsListProps) {
   const t = useTranslations('Wallet');
   const locale = useLocale();
+  const [detailEarning, setDetailEarning] = useState<WalletTransactionApiItem | null>(null);
 
   if (isLoading) {
     if (variant === 'ledger') {
@@ -162,58 +182,80 @@ export default function WalletTransactionsList({
 
   if (variant === 'ledger') {
     return (
-      <div className="divide-y divide-slate-100">
+      <>
+        <div className="divide-y divide-slate-100">
+          {items.map((item) => {
+            const isCredit = item.direction === 'CREDIT';
+            const label = typeLabels[item.type] ?? item.type;
+            const dateLabel = dayjs(item.createdAt).locale(locale).format('DD MMM YYYY · HH:mm');
+
+            return (
+              <div
+                key={item.id}
+                className="flex items-center gap-4 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-slate-50/80"
+              >
+                <TransactionRowContent
+                  item={item}
+                  isCredit={isCredit}
+                  label={label}
+                  dateLabel={dateLabel}
+                  creditLabel={t('transactions.credit')}
+                  debitLabel={t('transactions.debit')}
+                  viewDetailLabel={t('transactions.viewDetail')}
+                  onViewDetail={setDetailEarning}
+                  compact
+                />
+              </div>
+            );
+          })}
+        </div>
+        <WalletEarningDetailDialog
+          open={Boolean(detailEarning)}
+          onOpenChange={(openState) => {
+            if (!openState) setDetailEarning(null);
+          }}
+          transaction={detailEarning}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-3">
         {items.map((item) => {
           const isCredit = item.direction === 'CREDIT';
           const label = typeLabels[item.type] ?? item.type;
           const dateLabel = dayjs(item.createdAt).locale(locale).format('DD MMM YYYY · HH:mm');
 
           return (
-            <div
+            <Card
               key={item.id}
-              className="flex items-center gap-4 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-slate-50/80"
+              className="border-violet-100 shadow-sm shadow-violet-100/30 transition-shadow hover:shadow-md hover:shadow-violet-100/50"
             >
-              <TransactionRowContent
-                item={item}
-                isCredit={isCredit}
-                label={label}
-                dateLabel={dateLabel}
-                creditLabel={t('transactions.credit')}
-                debitLabel={t('transactions.debit')}
-                compact
-              />
-            </div>
+              <CardContent className="flex items-center gap-4 p-4">
+                <TransactionRowContent
+                  item={item}
+                  isCredit={isCredit}
+                  label={label}
+                  dateLabel={dateLabel}
+                  creditLabel={t('transactions.credit')}
+                  debitLabel={t('transactions.debit')}
+                  viewDetailLabel={t('transactions.viewDetail')}
+                  onViewDetail={setDetailEarning}
+                />
+              </CardContent>
+            </Card>
           );
         })}
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {items.map((item) => {
-        const isCredit = item.direction === 'CREDIT';
-        const label = typeLabels[item.type] ?? item.type;
-        const dateLabel = dayjs(item.createdAt).locale(locale).format('DD MMM YYYY · HH:mm');
-
-        return (
-          <Card
-            key={item.id}
-            className="border-violet-100 shadow-sm shadow-violet-100/30 transition-shadow hover:shadow-md hover:shadow-violet-100/50"
-          >
-            <CardContent className="flex items-center gap-4 p-4">
-              <TransactionRowContent
-                item={item}
-                isCredit={isCredit}
-                label={label}
-                dateLabel={dateLabel}
-                creditLabel={t('transactions.credit')}
-                debitLabel={t('transactions.debit')}
-              />
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+      <WalletEarningDetailDialog
+        open={Boolean(detailEarning)}
+        onOpenChange={(openState) => {
+          if (!openState) setDetailEarning(null);
+        }}
+        transaction={detailEarning}
+      />
+    </>
   );
 }

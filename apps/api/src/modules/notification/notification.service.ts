@@ -1,7 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { ECurrency, ENotificationType, Prisma, Role } from '@mezon-tutors/db'
 import { ChannelMessageContent } from 'mezon-sdk'
-import { ECurrency as SharedCurrency, formatToCurrency, NOTIFICATION_META } from '@mezon-tutors/shared'
+import {
+  ECurrency as SharedCurrency,
+  formatToCurrency,
+  NOTIFICATION_I18N_KEYS,
+  NOTIFICATION_META,
+} from '@mezon-tutors/shared'
 import dayjs = require('dayjs')
 import utc = require('dayjs/plugin/utc')
 import timezone = require('dayjs/plugin/timezone')

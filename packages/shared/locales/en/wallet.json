@@ -75,7 +75,24 @@
       "emptyTitle": "No transactions yet",
       "emptyDescription": "When you complete a payment or receive earnings, they will appear here.",
       "credit": "Credit",
-      "debit": "Debit"
+      "debit": "Debit",
+      "viewDetail": "View lesson detail",
+      "detailDialog": {
+        "title": "Earning detail",
+        "description": "Earnings received from this lesson.",
+        "lessonTagTrial": "Trial",
+        "lessonTagPlan": "Plan",
+        "student": "Student",
+        "lessonType": "Lesson type",
+        "lessonTypeTrial": "Trial lesson",
+        "lessonTypePlan": "Subscription lesson",
+        "lessonTime": "Lesson time",
+        "duration": "Duration",
+        "durationValue": "{minutes} min",
+        "amountEarned": "Amount earned",
+        "receivedAt": "Received at",
+        "close": "Close"
+      }
     },
     "withdrawals": {
       "emptyTitle": "No withdrawal requests",
