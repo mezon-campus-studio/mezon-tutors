@@ -27,9 +27,6 @@ export const ROUTES = {
     APP_SETTINGS: '/admin/app-settings',
     PAYMENTS: '/admin/payments',
   },
-  AUTH: {
-    MEZON_CALLBACK: '/auth/mezon/callback',
-  },
   MY_LESSONS: {
     INDEX: '/my-lessons',
   },

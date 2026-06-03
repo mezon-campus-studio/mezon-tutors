@@ -14,7 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         ROUTES.CHECKOUT.INDEX,
         ROUTES.BECOME_TUTOR.INDEX,
         ROUTES.ADMIN.TUTOR_APPLICATIONS,
-        ROUTES.AUTH.MEZON_CALLBACK,
       ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,

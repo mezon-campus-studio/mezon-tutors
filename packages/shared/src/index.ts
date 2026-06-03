@@ -57,8 +57,6 @@ export * from './constants/notification';
 export * from './constants/lesson-settlement';
 export * from './constants/lesson-complaint';
 export * from './constants/app-settings';
-export * from './constants/mezon-oauth';
-
 // Utils
 export * from './utils/utils';
 export * from './utils/enum';
