@@ -73,7 +73,12 @@ export default function StudentWalletTransactionsSection({
       </header>
 
       <div className="mt-5">
-        <WalletTransactionsList items={filteredItems} isLoading={isLoading} variant="ledger" />
+        <WalletTransactionsList
+          items={filteredItems}
+          isLoading={isLoading}
+          variant="ledger"
+          detailViewerRole="student"
+        />
       </div>
 
       <div className="mt-6 border-t border-slate-100 pt-5">

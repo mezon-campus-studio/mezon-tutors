@@ -516,10 +516,13 @@ export class WalletService {
         select: {
           id: true,
           grossAmount: true,
+          startAt: true,
+          durationMinutes: true,
           paidAt: true,
           createdAt: true,
           updatedAt: true,
-          tutor: { select: { user: { select: { username: true } } } },
+          student: { select: { username: true, avatar: true } },
+          tutor: { select: { user: { select: { username: true, avatar: true } } } },
         },
       }),
       this.prisma.subscriptionEnrollment.findMany({
@@ -527,10 +530,12 @@ export class WalletService {
         select: {
           id: true,
           grossAmount: true,
+          weeklySlots: true,
           paidAt: true,
           createdAt: true,
           updatedAt: true,
-          tutor: { select: { user: { select: { username: true } } } },
+          student: { select: { username: true, avatar: true } },
+          tutor: { select: { user: { select: { username: true, avatar: true } } } },
         },
       }),
       wallet
@@ -540,7 +545,17 @@ export class WalletService {
             include: {
               booking: {
                 select: {
-                  tutor: { select: { user: { select: { username: true } } } },
+                  startAt: true,
+                  durationMinutes: true,
+                  student: { select: { username: true, avatar: true } },
+                  tutor: { select: { user: { select: { username: true, avatar: true } } } },
+                },
+              },
+              subscriptionEnrollment: {
+                select: {
+                  weeklySlots: true,
+                  student: { select: { username: true, avatar: true } },
+                  tutor: { select: { user: { select: { username: true, avatar: true } } } },
                 },
               },
             },
@@ -572,7 +587,38 @@ export class WalletService {
     ];
 
     const walletItems: WalletTransactionApiItem[] = walletRows.map((row) => {
-      const tutorName = row.booking?.tutor.user.username;
+      const tutorName =
+        row.booking?.tutor.user.username ?? row.subscriptionEnrollment?.tutor.user.username;
+      let lessonDetail: WalletTransactionLessonDetail | null = null;
+      if (row.booking) {
+        lessonDetail = {
+          lessonKind: 'trial',
+          studentName: row.booking.student?.username ?? 'Student',
+          studentAvatarUrl: row.booking.student?.avatar ?? null,
+          tutorName: row.booking.tutor.user.username ?? 'Tutor',
+          tutorAvatarUrl: row.booking.tutor.user.avatar ?? null,
+          startAt: row.booking.startAt.toISOString(),
+          durationMinutes: row.booking.durationMinutes,
+        };
+      } else if (row.subscriptionEnrollment) {
+        const slots = this.parseWeeklySlots(row.subscriptionEnrollment.weeklySlots);
+        const slotIndex = row.subscriptionSlotIndex ?? 0;
+        const slot = slots[slotIndex] ?? slots[0];
+        const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
+        const occurrence = occurrences.find((o) => o.slotIndex === slotIndex) ?? occurrences[0];
+        if (slot) {
+          lessonDetail = {
+            lessonKind: 'subscription',
+            studentName: row.subscriptionEnrollment.student?.username ?? 'Student',
+            studentAvatarUrl: row.subscriptionEnrollment.student?.avatar ?? null,
+            tutorName: row.subscriptionEnrollment.tutor.user.username ?? 'Tutor',
+            tutorAvatarUrl: row.subscriptionEnrollment.tutor.user.avatar ?? null,
+            startAt: (occurrence?.startAt ?? row.createdAt).toISOString(),
+            durationMinutes: slot.durationMinutes,
+            slotIndex: row.subscriptionSlotIndex,
+          };
+        }
+      }
       return {
         id: row.id,
         type: row.type,
@@ -586,8 +632,48 @@ export class WalletService {
               ? `Refund · ${tutorName}`
               : 'Refund'
             : row.description,
+        lessonDetail,
       };
     });
+
+    for (const item of paymentItems) {
+      if (item.id.startsWith('pay-trial-')) {
+        const bookingId = item.id.replace('pay-trial-', '');
+        const booking = trials.find((b) => b.id === bookingId);
+        if (booking) {
+          item.lessonDetail = {
+            lessonKind: 'trial',
+            studentName: booking.student?.username ?? 'Student',
+            studentAvatarUrl: booking.student?.avatar ?? null,
+            tutorName: booking.tutor.user.username ?? 'Tutor',
+            tutorAvatarUrl: booking.tutor.user.avatar ?? null,
+            startAt: booking.startAt.toISOString(),
+            durationMinutes: booking.durationMinutes,
+          };
+        }
+      } else if (item.id.startsWith('pay-sub-')) {
+        const enrollmentId = item.id.replace('pay-sub-', '');
+        const enrollment = subs.find((e) => e.id === enrollmentId);
+        if (enrollment) {
+          const slots = this.parseWeeklySlots(enrollment.weeklySlots);
+          const slot = slots[0];
+          const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
+          const firstOccurrence = occurrences[0];
+          if (slot) {
+            item.lessonDetail = {
+              lessonKind: 'subscription',
+              studentName: enrollment.student?.username ?? 'Student',
+              studentAvatarUrl: enrollment.student?.avatar ?? null,
+              tutorName: enrollment.tutor.user.username ?? 'Tutor',
+              tutorAvatarUrl: enrollment.tutor.user.avatar ?? null,
+              startAt: (firstOccurrence?.startAt ?? enrollment.createdAt).toISOString(),
+              durationMinutes: slot.durationMinutes,
+              slotIndex: firstOccurrence?.slotIndex ?? 0,
+            };
+          }
+        }
+      }
+    }
 
     const merged = [...paymentItems, ...walletItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

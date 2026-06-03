@@ -28,6 +28,7 @@ type WalletEarningDetailDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transaction: WalletTransactionApiItem | null;
+  viewerRole?: 'student' | 'tutor';
 };
 
 const initials = (name?: string) => {
@@ -46,6 +47,7 @@ export default function WalletEarningDetailDialog({
   open,
   onOpenChange,
   transaction,
+  viewerRole = 'tutor',
 }: WalletEarningDetailDialogProps) {
   const t = useTranslations('Wallet.transactions.detailDialog');
   const locale = useLocale();
@@ -53,6 +55,20 @@ export default function WalletEarningDetailDialog({
 
   const detail = transaction?.lessonDetail ?? null;
   const isPlan = detail?.lessonKind === 'subscription';
+  const isStudentViewer = viewerRole === 'student';
+  const counterpartyName = isStudentViewer
+    ? (detail?.tutorName ?? 'Tutor')
+    : (detail?.studentName ?? 'Student');
+  const counterpartyAvatarUrl = isStudentViewer
+    ? detail?.tutorAvatarUrl
+    : detail?.studentAvatarUrl;
+  const isCredit = transaction?.direction === 'CREDIT';
+  const amountPrefix = isCredit ? '+' : '−';
+  const amountLabel = isStudentViewer
+    ? isCredit
+      ? 'Amount refunded'
+      : 'Amount paid'
+    : t('amountEarned');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,10 +108,10 @@ export default function WalletEarningDetailDialog({
             <>
               <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
                 <Avatar className="size-11 shrink-0 rounded-xl border border-white shadow-sm">
-                  {detail.studentAvatarUrl ? (
+                  {counterpartyAvatarUrl ? (
                     <AvatarImage
-                      src={detail.studentAvatarUrl}
-                      alt={detail.studentName}
+                      src={counterpartyAvatarUrl}
+                      alt={counterpartyName}
                       className="object-cover"
                     />
                   ) : null}
@@ -107,13 +123,15 @@ export default function WalletEarningDetailDialog({
                         : 'bg-linear-to-br from-amber-500 to-orange-600'
                     )}
                   >
-                    {initials(detail.studentName)}
+                    {initials(counterpartyName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-slate-500">{t('student')}</p>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {isStudentViewer ? 'Tutor' : t('student')}
+                  </p>
                   <p className="truncate text-sm font-bold text-slate-900">
-                    {detail.studentName}
+                    {counterpartyName}
                   </p>
                 </div>
                 <Badge
@@ -148,14 +166,37 @@ export default function WalletEarningDetailDialog({
               </div>
 
               {transaction ? (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                    {t('amountEarned')}
+                <div
+                  className={cn(
+                    'rounded-2xl border px-4 py-3',
+                    isCredit
+                      ? 'border-emerald-100 bg-emerald-50/70'
+                      : 'border-rose-100 bg-rose-50/70'
+                  )}
+                >
+                  <p
+                    className={cn(
+                      'text-xs font-semibold uppercase tracking-[0.14em]',
+                      isCredit ? 'text-emerald-700' : 'text-rose-700'
+                    )}
+                  >
+                    {amountLabel}
                   </p>
-                  <p className="mt-0.5 text-2xl font-bold tabular-nums text-emerald-700">
-                    +{formatToCurrency(ECurrency.VND, transaction.amount)}
+                  <p
+                    className={cn(
+                      'mt-0.5 text-2xl font-bold tabular-nums',
+                      isCredit ? 'text-emerald-700' : 'text-rose-700'
+                    )}
+                  >
+                    {amountPrefix}
+                    {formatToCurrency(ECurrency.VND, transaction.amount)}
                   </p>
-                  <p className="mt-1 text-xs text-emerald-700/80">
+                  <p
+                    className={cn(
+                      'mt-1 text-xs',
+                      isCredit ? 'text-emerald-700/80' : 'text-rose-700/80'
+                    )}
+                  >
                     {t('receivedAt')}:{' '}
                     {formatInstantForLocale(transaction.createdAt, userTimezone, locale)}
                   </p>
