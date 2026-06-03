@@ -2,10 +2,12 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { createHash, randomBytes } from 'node:crypto';
 import type { User } from '@mezon-tutors/db';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
@@ -20,7 +22,7 @@ import { NotificationService } from '../notification/notification.service';
 
 const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
-const OAUTH_STATE_TTL_MS = 1000 * 60 * 10;
+const OAUTH_STATE_TTL_MS = 1000 * 60 * 5;
 
 @Injectable()
 export class AuthService {
@@ -36,8 +38,15 @@ export class AuthService {
 
   buildMezonAuthorizeUrl(): { url: string; state: string } {
     const oauth = this.appConfig.oauthConfig;
-    const state = crypto.randomUUID();
+    if (!oauth.clientId?.trim() || !oauth.clientSecret?.trim() || !oauth.redirectUri?.trim()) {
+      throw new InternalServerErrorException(
+        'Mezon OAuth config missing (client_id, client_secret, redirect_uri)'
+      );
+    }
+
+    const state = this.generateAlphaNumericState(11);
     this.registerPendingOAuthState(state);
+
     const params = new URLSearchParams({
       client_id: oauth.clientId,
       redirect_uri: oauth.redirectUri,
@@ -49,31 +58,48 @@ export class AuthService {
     return { url: `${oauth.baseUri}/oauth2/auth?${params.toString()}`, state };
   }
 
+  private generateAlphaNumericState(length: number): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let state = '';
+    while (state.length < length) {
+      const byte = randomBytes(1)[0];
+      state += chars[byte % chars.length];
+    }
+    return state;
+  }
+
   registerPendingOAuthState(state: string): void {
-    this.pendingOAuthStates.set(state, Date.now() + OAUTH_STATE_TTL_MS);
+    const key = this.getOAuthStateHash(state);
+    this.pendingOAuthStates.set(key, Date.now() + OAUTH_STATE_TTL_MS);
     if (this.pendingOAuthStates.size > 500) {
       this.pruneExpiredOAuthStates();
     }
   }
 
   isValidPendingOAuthState(state: string): boolean {
-    const expiresAt = this.pendingOAuthStates.get(state);
+    const key = this.getOAuthStateHash(state);
+    const expiresAt = this.pendingOAuthStates.get(key);
     if (!expiresAt) {
       return false;
     }
     if (Date.now() > expiresAt) {
-      this.pendingOAuthStates.delete(state);
+      this.pendingOAuthStates.delete(key);
       return false;
     }
     return true;
   }
 
   consumePendingOAuthState(state: string): boolean {
+    const key = this.getOAuthStateHash(state);
     if (!this.isValidPendingOAuthState(state)) {
       return false;
     }
-    this.pendingOAuthStates.delete(state);
+    this.pendingOAuthStates.delete(key);
     return true;
+  }
+
+  private getOAuthStateHash(state: string): string {
+    return createHash('sha256').update(state).digest('hex');
   }
 
   private pruneExpiredOAuthStates(): void {
@@ -124,16 +150,10 @@ export class AuthService {
     const oauth = this.appConfig.oauthConfig;
 
     const response = await fetch(`${oauth.baseUri}/userinfo`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${accessToken}`,
       },
-      body: new URLSearchParams({
-        access_token: encodeURIComponent(accessToken),
-        client_id: oauth.clientId,
-        client_secret: oauth.clientSecret,
-        redirect_uri: oauth.redirectUri,
-      }),
     });
 
     if (!response.ok) {
@@ -152,7 +172,12 @@ export class AuthService {
     };
   }
 
-  async syncProfileFromMezonWithCode(userId: string, code: string, state?: string, timezone?: string) {
+  async syncProfileFromMezonWithCode(
+    userId: string,
+    code: string,
+    state?: string,
+    timezone?: string
+  ) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);
 

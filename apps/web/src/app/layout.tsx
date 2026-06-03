@@ -3,7 +3,14 @@ import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { cookies } from "next/headers";
 import { DEFAULT_LOCALE } from "@/i18n/request";
-import { createRootMetadata, getSiteUrl } from "@/lib/seo";
+import {
+  createRootMetadata,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_PATH,
+  DEFAULT_OG_IMAGE_WIDTH,
+  getDefaultOgImageUrl,
+  getSiteUrl,
+} from "@/lib/seo";
 import { getSeoMessages } from "@/lib/seo-messages";
 import "./globals.css";
 import { Footer, Header } from "@/components/layouts";
@@ -43,18 +50,18 @@ export async function generateMetadata(): Promise<Metadata> {
       url: siteUrl,
       images: [
         {
-          url: "/images/Mezonly-logo.png",
-          width: 512,
-          height: 512,
+          url: DEFAULT_OG_IMAGE_PATH,
+          width: DEFAULT_OG_IMAGE_WIDTH,
+          height: DEFAULT_OG_IMAGE_HEIGHT,
           alt: seo.siteName,
         },
       ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: seo.default.title,
       description: seo.default.description,
-      images: [new URL("/images/Mezonly-logo.png", siteUrl).toString()],
+      images: [getDefaultOgImageUrl(siteUrl)],
     },
     robots: {
       index: true,

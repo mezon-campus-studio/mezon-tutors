@@ -5,6 +5,10 @@ import { getSeoMessages, type SeoMessages } from "./seo-messages";
 
 export const SITE_NAME = "Mezonly";
 
+export const DEFAULT_OG_IMAGE_PATH = "/images/home-ogp.png";
+export const DEFAULT_OG_IMAGE_WIDTH = 1536;
+export const DEFAULT_OG_IMAGE_HEIGHT = 1024;
+
 const DEFAULT_SITE_URL = "https://mezonly.site";
 
 export function getSiteUrl(): string {
@@ -29,14 +33,18 @@ export function formatSeoTemplate(
   });
 }
 
+export function getDefaultOgImageUrl(siteUrl = getSiteUrl()): string {
+  return new URL(DEFAULT_OG_IMAGE_PATH, siteUrl).toString();
+}
+
 function resolveOgImageUrl(image: string | null | undefined, siteUrl: string): string {
   if (!image) {
-    return new URL("/images/Mezonly-logo.png", siteUrl).toString();
+    return getDefaultOgImageUrl(siteUrl);
   }
   try {
     return new URL(image, siteUrl).toString();
   } catch {
-    return new URL("/images/Mezonly-logo.png", siteUrl).toString();
+    return getDefaultOgImageUrl(siteUrl);
   }
 }
 
@@ -64,7 +72,17 @@ export function buildPageMetadata(
   const url = new URL(canonicalPath, siteUrl).toString();
   const indexable = input.index !== false;
   const ogImageUrl = resolveOgImageUrl(input.image, siteUrl);
-  const images = [{ url: ogImageUrl, alt: input.title }];
+  const isDefaultOgImage = ogImageUrl === getDefaultOgImageUrl(siteUrl);
+  const images = [
+    isDefaultOgImage
+      ? {
+          url: ogImageUrl,
+          width: DEFAULT_OG_IMAGE_WIDTH,
+          height: DEFAULT_OG_IMAGE_HEIGHT,
+          alt: input.title,
+        }
+      : { url: ogImageUrl, alt: input.title },
+  ];
 
   return {
     title: { absolute: input.title },
