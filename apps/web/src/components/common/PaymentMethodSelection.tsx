@@ -25,21 +25,29 @@ const METHOD_ACCENT: Record<PaymentMethodId, string> = {
 type PaymentMethodSelectionProps = {
   totalDisplay?: string;
   onPayAction: (methodId: PaymentMethodId) => void | Promise<void>;
+  onWalletPayAction?: () => void | Promise<void>;
   onContinuePaymentAction?: () => void;
   showContinuePayment?: boolean;
   continuePaymentDisabled?: boolean;
   payDisabled?: boolean;
   isPayLoading?: boolean;
+  payWithWalletOnly?: boolean;
+  bookAndPayLabel?: string;
+  walletPayLabel?: string;
 };
 
 export function PaymentMethodSelection({
   totalDisplay,
   onPayAction,
+  onWalletPayAction,
   onContinuePaymentAction,
   showContinuePayment = false,
   continuePaymentDisabled = false,
   payDisabled = false,
   isPayLoading = false,
+  payWithWalletOnly = false,
+  bookAndPayLabel,
+  walletPayLabel,
 }: PaymentMethodSelectionProps) {
   const t = useTranslations("TrialLessonCheckout.Screen");
   const tPanel = useTranslations("Common.PaymentMethodSelection");
@@ -71,7 +79,11 @@ export function PaymentMethodSelection({
 
     try {
       setIsSubmitting(true);
-      await onPayAction(selectedMethodId);
+      if (payWithWalletOnly) {
+        await onWalletPayAction?.();
+      } else {
+        await onPayAction(selectedMethodId);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -93,8 +105,9 @@ export function PaymentMethodSelection({
         </div>
       </div>
 
-      <div className="space-y-2.5 px-5 py-4">
-        {paymentMethods.map((method) => {
+      {!payWithWalletOnly ? (
+        <div className="space-y-2.5 px-5 py-4">
+          {paymentMethods.map((method) => {
           const methodId = method.id as PaymentMethodId;
           const isDisabled = Boolean(method.disabled);
           const active = !isDisabled && selectedMethodId === method.id;
@@ -157,9 +170,10 @@ export function PaymentMethodSelection({
             </button>
           );
         })}
-      </div>
+        </div>
+      ) : null}
 
-      <div className="space-y-3 border-t border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] px-5 py-4">
+      <div className={`space-y-3 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] px-5 py-4 ${payWithWalletOnly ? "" : "border-t border-violet-100"}`}>
         <Button
           className="group h-12 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none"
           disabled={primaryButtonDisabled}
@@ -172,9 +186,15 @@ export function PaymentMethodSelection({
           ) : (
             <>
               <Lock className="mr-1.5 size-4" />
-              {totalDisplay
-                ? tPanel("bookAndPay", { amount: totalDisplay })
-                : tPanel("bookLesson")}
+              {payWithWalletOnly
+                ? walletPayLabel ??
+                  (totalDisplay
+                    ? tPanel("payWithWallet", { amount: totalDisplay })
+                    : tPanel("bookLesson"))
+                : bookAndPayLabel ??
+                  (totalDisplay
+                    ? tPanel("bookAndPay", { amount: totalDisplay })
+                    : tPanel("bookLesson"))}
               <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-0.5" />
             </>
           )}

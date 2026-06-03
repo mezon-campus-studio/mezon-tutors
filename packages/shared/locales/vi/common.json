@@ -63,6 +63,7 @@
     "methodUnavailable": "Tạm thời không khả dụng",
     "continuePayment": "Tiếp tục thanh toán",
     "bookAndPay": "Đặt và thanh toán ({amount})",
+    "payWithWallet": "Thanh toán bằng ví ({amount})",
     "bookLesson": "Đặt lớp học",
     "processing": "Đang xử lý...",
     "securityNotice": "Thanh toán 256-bit SSL được mã hóa an toàn"

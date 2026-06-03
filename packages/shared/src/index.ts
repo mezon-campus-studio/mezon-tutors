@@ -76,4 +76,5 @@ export * from './utils/student-lesson-dm';
 export * from './utils/tutor-lesson-dm';
 export * from './utils/lesson-complaint';
 export * from './utils/platform-fee';
+export * from './utils/wallet-payment';
 export * from './schemas/app-settings';

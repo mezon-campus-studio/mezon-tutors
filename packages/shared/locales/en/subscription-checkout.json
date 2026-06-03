@@ -89,10 +89,23 @@
       "removeSlot": "Remove slot",
       "back": "Back to plans",
       "submit": "Submit subscription",
+      "submitAndPay": "Submit subscription ({amount})",
+      "submitWithWallet": "Pay with wallet ({amount})",
+      "walletPaymentComingSoonTitle": "Wallet payment coming soon",
+      "walletPaymentComingSoonDescription": "Paying with wallet balance is under development. Please try again later.",
       "toastSuccessTitle": "Submitted",
       "toastSuccessDescription": "Your subscription is pending payment.",
       "toastErrorTitle": "Error",
-      "toastErrorFallback": "Could not submit."
+      "toastErrorFallback": "Could not submit.",
+      "paymentSummary": {
+        "title": "Payment summary",
+        "planLine": "Subscription ({lessonsPerWeek} sessions/week)",
+        "total": "Total",
+        "walletBalance": "Pay with wallet: {balance}",
+        "payViaWallet": "Pay via wallet",
+        "remainingViaVnpay": "Remaining via VNPay",
+        "vnpayMinWalletNote": "VNPay requires a minimum payment of {minAmount}. Using your full wallet balance ({walletBalance}) would leave less than that via VNPay, so only {deductAmount} is deducted from your wallet."
+      }
     },
     "Result": {
       "subscriptionSuccess": {

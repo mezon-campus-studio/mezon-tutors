@@ -46,7 +46,10 @@ import {
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
+import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
+import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
+import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
@@ -76,6 +79,7 @@ type SubscriptionEnrollmentSerializeRow = {
   grossAmount: bigint;
   platformFee: bigint;
   tutorAmount: bigint;
+  deductAmount: bigint;
   paymentStatus: EPaymentStatus;
   paymentRef: string | null;
   paymentUrl: string | null;
@@ -131,6 +135,9 @@ export class SubscriptionService {
     private readonly appConfig: AppConfigService,
     private readonly trialLessonBookingService: TrialLessonBookingService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly walletCheckoutService: WalletCheckoutService,
+    private readonly notificationService: NotificationService,
+    private readonly lessonSettlementService: LessonSettlementService,
   ) {}
 
   private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
@@ -443,6 +450,7 @@ export class SubscriptionService {
       grossAmount: Number(row.grossAmount),
       platformFee: Number(row.platformFee),
       tutorAmount: Number(row.tutorAmount),
+      deductAmount: Number(row.deductAmount),
       paymentStatus: row.paymentStatus,
       paymentRef: row.paymentRef,
       paymentUrl: row.paymentUrl,
@@ -489,6 +497,14 @@ export class SubscriptionService {
     const eligibility = await this.getEligibility(studentUserId, dto.tutorId);
     if (!eligibility.eligible) {
       throw new BadRequestException(eligibility.reason ?? 'Not eligible');
+    }
+
+    const tutorProfile = await this.prisma.tutorProfile.findUnique({
+      where: { id: dto.tutorId },
+      select: { userId: true },
+    });
+    if (!tutorProfile) {
+      throw new NotFoundException('Tutor not found');
     }
 
     if (
@@ -571,12 +587,29 @@ export class SubscriptionService {
       grossAmount,
       settings.platformFeePercentage,
     );
-    const amountForProvider = Number(grossAmount);
-    if (!Number.isFinite(amountForProvider) || amountForProvider < 1) {
-      throw new BadRequestException('Invalid payment amount');
-    }
-    if (!this.vnpayService.isConfigured()) {
-      throw new ServiceUnavailableException('VNPay is not configured; cannot create payment');
+
+    const walletBalance =
+      await this.walletCheckoutService.getStudentWalletBalance(studentUserId);
+    const { deductAmount, vnpayAmount } =
+      this.walletCheckoutService.resolveWalletCheckoutSplit({
+        grossAmount,
+        walletBalance,
+        useWalletBalance: dto.useWalletBalance ?? false,
+        currency: selectedCurrency,
+      });
+    this.walletCheckoutService.assertSufficientWalletBalance(
+      walletBalance,
+      deductAmount,
+    );
+
+    const vnpayAmountNumber = Number(vnpayAmount);
+    if (vnpayAmount > 0n) {
+      if (!this.vnpayService.isConfigured()) {
+        throw new ServiceUnavailableException('VNPay is not configured; cannot create payment');
+      }
+      if (!Number.isFinite(vnpayAmountNumber) || vnpayAmountNumber < 1) {
+        throw new BadRequestException('Invalid payment amount');
+      }
     }
 
     const expandedSlots = buildMonthlySubscriptionSlotJson(
@@ -585,6 +618,21 @@ export class SubscriptionService {
       SUBSCRIPTION_MONTHLY_WEEKS,
       DEFAULT_TIMEZONE,
     ) as SubscriptionWeeklySlotDto[];
+
+    if (vnpayAmount === 0n) {
+      return this.createEnrollmentPaidByWallet({
+        studentUserId,
+        tutorId: dto.tutorId,
+        tutorUserId: tutorProfile.userId,
+        lessonsPerWeek: dto.lessonsPerWeek,
+        expandedSlots,
+        grossAmount,
+        platformFee,
+        tutorAmount,
+        deductAmount,
+        currency: selectedCurrency,
+      });
+    }
 
     const created = await this.prisma.subscriptionEnrollment.create({
       data: {
@@ -597,6 +645,7 @@ export class SubscriptionService {
         grossAmount,
         platformFee,
         tutorAmount,
+        deductAmount,
         paymentStatus: EPaymentStatus.PENDING,
       },
       select: { id: true },
@@ -608,7 +657,7 @@ export class SubscriptionService {
     const vnpTxnRef = created.id.replaceAll('-', '').slice(0, 32);
 
     const checkoutUrl = this.vnpayService.createPaymentUrl({
-      vnp_Amount: amountForProvider,
+      vnp_Amount: vnpayAmountNumber,
       vnp_OrderInfo: description,
       vnp_TxnRef: vnpTxnRef,
       vnp_ReturnUrl: returnUrl,
@@ -626,6 +675,67 @@ export class SubscriptionService {
     return this.serializeEnrollmentRow(
       updated as unknown as SubscriptionEnrollmentSerializeRow,
       expandedSlots
+    );
+  }
+
+  private async createEnrollmentPaidByWallet(params: {
+    studentUserId: string;
+    tutorId: string;
+    tutorUserId: string;
+    lessonsPerWeek: number;
+    expandedSlots: SubscriptionWeeklySlotDto[];
+    grossAmount: bigint;
+    platformFee: bigint;
+    tutorAmount: bigint;
+    deductAmount: bigint;
+    currency: PrismaCurrency;
+  }): Promise<SubscriptionEnrollmentDto> {
+    const now = new Date();
+
+    const enrollment = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.subscriptionEnrollment.create({
+        data: {
+          studentId: params.studentUserId,
+          tutorId: params.tutorId,
+          lessonsPerWeek: params.lessonsPerWeek,
+          status: ESubscriptionEnrollmentStatus.ACTIVE,
+          weeklySlots: params.expandedSlots as unknown as Prisma.InputJsonValue,
+          currency: params.currency,
+          grossAmount: params.grossAmount,
+          platformFee: params.platformFee,
+          tutorAmount: params.tutorAmount,
+          deductAmount: params.deductAmount,
+          paymentStatus: EPaymentStatus.SUCCEEDED,
+          paidAt: now,
+        },
+      });
+
+      await this.walletCheckoutService.debitStudentForSubscriptionEnrollment(tx, {
+        studentUserId: params.studentUserId,
+        enrollmentId: created.id,
+        deductAmount: params.deductAmount,
+      });
+      await this.walletCheckoutService.creditTutorForSubscriptionEnrollment(tx, {
+        tutorUserId: params.tutorUserId,
+        enrollmentId: created.id,
+        tutorAmount: params.tutorAmount,
+      });
+
+      return created;
+    });
+
+    await this.notificationService.notifySubscriptionEnrollmentConfirmed({
+      enrollmentId: enrollment.id,
+      studentId: params.studentUserId,
+      tutorProfileId: params.tutorId,
+    });
+    await this.lessonSettlementService.scheduleSubscriptionEnrollmentSettlements(
+      enrollment.id,
+    );
+
+    return this.serializeEnrollmentRow(
+      enrollment as unknown as SubscriptionEnrollmentSerializeRow,
+      params.expandedSlots,
     );
   }
 

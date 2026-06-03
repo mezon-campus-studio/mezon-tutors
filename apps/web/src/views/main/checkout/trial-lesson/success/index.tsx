@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
 import {
   Avatar,
@@ -37,6 +38,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ApiError } from '@/services/api-client';
 import { useGetTrialLessonBookingDetail } from '@/services/trial-lesson-booking/trial-lesson-booking.api';
+import { walletQueryKey } from '@/services/wallet/wallet.qkey';
 import { isAuthenticatedAtom } from '@/store/auth.atom';
 import {
   ECurrency,
@@ -112,6 +114,7 @@ function CheckoutSuccessLoadingView({ loadingMessage }: { loadingMessage: string
 export default function TrialLessonCheckoutSuccessPage({ bookingId }: { bookingId: string }) {
   const t = useTranslations('TrialLessonCheckout.Result.successDetail');
   const locale = useLocale();
+  const queryClient = useQueryClient();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [authHydrated, setAuthHydrated] = useState(false);
 
@@ -125,6 +128,12 @@ export default function TrialLessonCheckoutSuccessPage({ bookingId }: { bookingI
     bookingId,
     canFetchBooking
   );
+
+  useEffect(() => {
+    if (data?.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED) {
+      void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
+    }
+  }, [data?.paymentStatus, queryClient]);
 
   const schedule = useMemo(() => {
     if (!data) {

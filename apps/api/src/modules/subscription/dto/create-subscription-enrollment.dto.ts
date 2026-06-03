@@ -3,8 +3,10 @@ import { ECurrency } from '@mezon-tutors/db'
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
+  IsOptional,
   IsString,
   IsUUID,
   Matches,
@@ -45,4 +47,8 @@ export class CreateSubscriptionEnrollmentBodyDto {
   @ValidateNested({ each: true })
   @Type(() => SubscriptionEnrollmentSlotBodyDto)
   slots: SubscriptionEnrollmentSlotBodyDto[]
+
+  @IsOptional()
+  @IsBoolean()
+  useWalletBalance?: boolean
 }

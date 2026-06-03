@@ -14,6 +14,7 @@ import {
 } from "@tanstack/react-query";
 import { apiClient } from "../api-client";
 import { trialLessonBookingQueryKey } from "./trial-lesson-booking.qkey";
+import { walletQueryKey } from "../wallet/wallet.qkey";
 
 export type CreateTrialLessonBookingPayload = {
   tutorId: string;
@@ -21,6 +22,7 @@ export type CreateTrialLessonBookingPayload = {
   dayOfWeek: number;
   durationMinutes: number;
   currency?: ECurrency;
+  useWalletBalance?: boolean;
 };
 
 export type TrialLessonBooking = {
@@ -34,6 +36,7 @@ export type TrialLessonBooking = {
   grossAmount: number;
   platformFee: number;
   tutorAmount: number;
+  deductAmount: number;
   paymentRef: string | null;
   paymentUrl: string | null;
 };
@@ -370,9 +373,24 @@ export function useGetCurrentTrialLessonBooking(
 }
 
 export function useCreateTrialLessonBookingMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateTrialLessonBookingPayload) =>
       trialLessonBookingApi.createTrialLessonBooking(payload),
+    onSuccess: (data, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: trialLessonBookingQueryKey.currentBooking(variables.tutorId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: trialLessonBookingQueryKey.alreadyBooked(variables.tutorId),
+      });
+      if (data.paymentStatus === "SUCCEEDED") {
+        void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
+        void queryClient.invalidateQueries({
+          queryKey: trialLessonBookingQueryKey.detail(data.id),
+        });
+      }
+    },
   });
 }
 

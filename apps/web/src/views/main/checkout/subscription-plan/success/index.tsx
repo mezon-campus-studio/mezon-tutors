@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, Copy, Loader2, Sparkles, Users } from "lucid
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import {
   Avatar,
@@ -24,6 +25,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/services/api-client";
 import { useGetSubscriptionEnrollment } from "@/services";
+import { walletQueryKey } from "@/services/wallet/wallet.qkey";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
 import { ECurrency, ROUTES, formatToCurrency } from "@mezon-tutors/shared";
 
@@ -65,6 +67,7 @@ export default function SubscriptionPlanCheckoutSuccessPage({
 }) {
   const t = useTranslations("SubscriptionCheckout.Result.subscriptionSuccess");
   const locale = useLocale();
+  const queryClient = useQueryClient();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [authHydrated, setAuthHydrated] = useState(false);
 
@@ -77,6 +80,12 @@ export default function SubscriptionPlanCheckoutSuccessPage({
     enrollmentId,
     canFetch,
   );
+
+  useEffect(() => {
+    if (data?.paymentStatus === "SUCCEEDED") {
+      void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
+    }
+  }, [data?.paymentStatus, queryClient]);
 
   const amountLabel = useMemo(() => {
     if (!data) {

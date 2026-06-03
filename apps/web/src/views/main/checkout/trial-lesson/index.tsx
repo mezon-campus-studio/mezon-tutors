@@ -3,6 +3,7 @@
 import { useAtomValue } from "jotai";
 import { AlertCircle, CalendarCheck, Clock, Info } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -22,14 +23,17 @@ import {
   useCreateTrialLessonBookingMutation,
   useGetCurrentTrialLessonBooking,
   useGetVerifiedTutorAbout,
+  useWalletDetails,
 } from "@/services";
 import { userAtom } from "@/store";
-import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
+import { ECurrency, ETrialLessonBookingPaymentStatus, formatToCurrency, ROUTES } from "@mezon-tutors/shared";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
+import { computeWalletPaymentSplit } from "./components/wallet-payment";
 
 export default function TrialLessonCheckoutPage() {
   const t = useTranslations("TrialLessonCheckout.Screen");
+  const router = useRouter();
   const { currency } = useCurrency();
   const currentUser = useAtomValue(userAtom);
   const searchParams = useSearchParams();
@@ -77,6 +81,8 @@ export default function TrialLessonCheckoutPage() {
   } = useGetCurrentTrialLessonBooking(tutorId, shouldLoadCurrentBooking);
   const isCurrentBookingLoading = shouldLoadCurrentBooking && isCurrentBookingPending;
   const createBooking = useCreateTrialLessonBookingMutation();
+  const { data: walletDetails } = useWalletDetails();
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
 
   const redirectToVnpay = useCallback((url: string) => {
     if (typeof window === "undefined") {
@@ -105,36 +111,68 @@ export default function TrialLessonCheckoutPage() {
     }
   }, [currentBooking]);
 
-  const createVnpayBooking = useCallback(async () => {
-    if (!query || !tutor) {
-      return;
-    }
-    if (currentBooking?.hasBooked && currentBooking.status !== "CANCELLED") {
-      if (currentBooking.paymentStatus === "PENDING" && currentBooking.paymentUrl) {
-        setPaymentLink(currentBooking.paymentUrl);
-        redirectToVnpay(currentBooking.paymentUrl);
+  const submitBooking = useCallback(
+    async (withWallet: boolean) => {
+      if (!query || !tutor) {
         return;
       }
-      toast.error(t("toast.alreadyBookedTitle"), { description: t("toast.alreadyBookedDescription") });
-      return;
-    }
-    try {
-      const booking = await createBooking.mutateAsync({
-        tutorId: query.tutorId,
-        startAt: query.startAt,
-        dayOfWeek: query.dayOfWeek,
-        durationMinutes: query.durationMinutes,
-        currency,
-      });
-      setPaymentLink(booking.paymentUrl);
-      if (booking.paymentUrl) {
-        redirectToVnpay(booking.paymentUrl);
+      if (currentBooking?.hasBooked && currentBooking.status !== "CANCELLED") {
+        if (currentBooking.paymentStatus === "PENDING" && currentBooking.paymentUrl) {
+          setPaymentLink(currentBooking.paymentUrl);
+          redirectToVnpay(currentBooking.paymentUrl);
+          return;
+        }
+        toast.error(t("toast.alreadyBookedTitle"), {
+          description: t("toast.alreadyBookedDescription"),
+        });
+        return;
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("toast.bookingFailedFallback");
-      toast.error(t("toast.bookingFailedTitle"), { description: message });
-    }
-  }, [createBooking, currency, currentBooking, redirectToVnpay, query, t, tutor]);
+      try {
+        const booking = await createBooking.mutateAsync({
+          tutorId: query.tutorId,
+          startAt: query.startAt,
+          dayOfWeek: query.dayOfWeek,
+          durationMinutes: query.durationMinutes,
+          currency,
+          useWalletBalance:
+            withWallet &&
+            currency === ECurrency.VND &&
+            (walletDetails?.walletBalance ?? walletDetails?.availableBalance ?? 0) > 0,
+        });
+        setPaymentLink(booking.paymentUrl);
+        if (booking.paymentUrl) {
+          redirectToVnpay(booking.paymentUrl);
+        } else if (
+          booking.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED
+        ) {
+          router.push(ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(booking.id));
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t("toast.bookingFailedFallback");
+        toast.error(t("toast.bookingFailedTitle"), { description: message });
+      }
+    },
+    [
+      createBooking,
+      currency,
+      currentBooking,
+      query,
+      redirectToVnpay,
+      router,
+      walletDetails,
+      t,
+      tutor,
+    ],
+  );
+
+  const createVnpayBooking = useCallback(async () => {
+    await submitBooking(useWalletBalance);
+  }, [submitBooking, useWalletBalance]);
+
+  const handleWalletPay = useCallback(async () => {
+    await submitBooking(true);
+  }, [submitBooking]);
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
@@ -201,6 +239,73 @@ export default function TrialLessonCheckoutPage() {
     hasMounted,
   ]);
 
+  const unitPrice = useMemo(() => {
+    const lessonPrice = (
+      tutor as
+        | (typeof tutor & {
+            prices?: {
+              usd?: number;
+              vnd?: number;
+              php?: number;
+            };
+          })
+        | undefined
+    )?.prices;
+    if (!lessonPrice) {
+      return 0;
+    }
+    if (currency === ECurrency.USD) {
+      return lessonPrice.usd ?? 0;
+    }
+    if (currency === ECurrency.PHP) {
+      return lessonPrice.php ?? 0;
+    }
+    return lessonPrice.vnd ?? 0;
+  }, [tutor, currency]);
+
+  const hasPrice = unitPrice > 0;
+  const total = useMemo(() => {
+    if (!query || !hasPrice) {
+      return 0;
+    }
+    return Math.round((query.durationMinutes / 60) * unitPrice * 100) / 100;
+  }, [query, hasPrice, unitPrice]);
+
+  const totalDisplay = hasPrice ? formatToCurrency(currency, total) : undefined;
+
+  const walletBalance = useMemo(
+    () =>
+      currency === ECurrency.VND
+        ? (walletDetails?.walletBalance ?? walletDetails?.availableBalance ?? 0)
+        : 0,
+    [currency, walletDetails],
+  );
+  const showWalletRow = currency === ECurrency.VND && walletBalance > 0;
+
+  useEffect(() => {
+    if (!showWalletRow) {
+      setUseWalletBalance(false);
+    }
+  }, [showWalletRow]);
+
+  const walletPayment = useMemo(
+    () =>
+      computeWalletPaymentSplit(
+        total,
+        walletBalance,
+        useWalletBalance && showWalletRow,
+      ),
+    [total, walletBalance, useWalletBalance, showWalletRow],
+  );
+
+  const payWithWalletOnly =
+    showWalletRow && useWalletBalance && walletPayment.vnpayAmount === 0;
+  const paymentButtonAmountDisplay = payWithWalletOnly
+    ? totalDisplay
+    : useWalletBalance && showWalletRow && walletPayment.vnpayAmount > 0
+      ? formatToCurrency(ECurrency.VND, walletPayment.vnpayAmount)
+      : totalDisplay;
+
   if (!query) {
     return (
       <div className="relative min-h-screen overflow-hidden">
@@ -225,27 +330,6 @@ export default function TrialLessonCheckoutPage() {
 
   const { dateLabel, timeLabel } = scheduleLabels;
   const durationLabel = t("durationLabel", { durationMinutes: query.durationMinutes });
-
-  const lessonPrice = (
-    tutor as
-      | (typeof tutor & {
-          prices?: {
-            usd?: number;
-            vnd?: number;
-            php?: number;
-          };
-        })
-      | undefined
-  )?.prices;
-  const unitPrice =
-    currency === ECurrency.USD
-      ? (lessonPrice?.usd ?? 0)
-      : currency === ECurrency.PHP
-        ? (lessonPrice?.php ?? 0)
-        : (lessonPrice?.vnd ?? 0);
-  const hasPrice = unitPrice > 0;
-  const total = Math.round((query.durationMinutes / 60) * unitPrice * 100) / 100;
-  const totalDisplay = hasPrice ? formatToCurrency(currency, total) : undefined;
 
   const tutorLastName = tutor?.lastName?.trim() || t("tutor.fallbackName");
   const tutorDisplayName = tutor ? `${tutor.firstName} ${tutor.lastName}` : t("tutor.loadingName");
@@ -329,6 +413,13 @@ export default function TrialLessonCheckoutPage() {
               <PaymentSummaryCard
                 durationMinutes={query.durationMinutes}
                 totalDisplay={totalDisplay ?? ""}
+                lessonPrice={total}
+                walletBalance={walletBalance}
+                showWalletRow={showWalletRow}
+                useWalletBalance={useWalletBalance}
+                onUseWalletBalanceChange={setUseWalletBalance}
+                deductFromWallet={walletPayment.deductFromWallet}
+                vnpayAmount={walletPayment.vnpayAmount}
               />
             ) : (
               <div className="flex items-center gap-2 rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm text-slate-500">
@@ -340,8 +431,10 @@ export default function TrialLessonCheckoutPage() {
 
           <div className="w-full lg:sticky lg:top-24 lg:max-w-[460px] lg:basis-1/3">
             <PaymentMethodSelection
-              totalDisplay={tutor && hasPrice ? totalDisplay : undefined}
+              totalDisplay={tutor && hasPrice ? paymentButtonAmountDisplay : undefined}
               onPayAction={handlePay}
+              onWalletPayAction={handleWalletPay}
+              payWithWalletOnly={payWithWalletOnly}
               onContinuePaymentAction={handleContinuePayment}
               showContinuePayment={isPendingPayment && Boolean(paymentLink)}
               continuePaymentDisabled={isCurrentBookingLoading}

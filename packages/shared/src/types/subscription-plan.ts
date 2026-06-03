@@ -47,6 +47,7 @@ export interface CreateSubscriptionEnrollmentDto {
   lessonsPerWeek: number
   currency: ECurrency
   slots: CreateSubscriptionEnrollmentSlotDto[]
+  useWalletBalance?: boolean
 }
 
 export interface SubscriptionEnrollmentDto {
@@ -60,6 +61,7 @@ export interface SubscriptionEnrollmentDto {
   grossAmount: number
   platformFee: number
   tutorAmount: number
+  deductAmount: number
   paymentStatus: string
   paymentRef: string | null
   paymentUrl: string | null
