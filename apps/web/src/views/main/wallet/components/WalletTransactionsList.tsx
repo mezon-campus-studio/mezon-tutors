@@ -13,6 +13,7 @@ type WalletTransactionsListProps = {
   items: WalletTransactionApiItem[];
   isLoading?: boolean;
   variant?: 'cards' | 'ledger';
+  detailViewerRole?: 'student' | 'tutor';
 };
 
 function TransactionRowContent({
@@ -97,6 +98,7 @@ export default function WalletTransactionsList({
   items,
   isLoading,
   variant = 'cards',
+  detailViewerRole = 'tutor',
 }: WalletTransactionsListProps) {
   const t = useTranslations('Wallet');
   const locale = useLocale();
@@ -215,6 +217,7 @@ export default function WalletTransactionsList({
             if (!openState) setDetailEarning(null);
           }}
           transaction={detailEarning}
+          viewerRole={detailViewerRole}
         />
       </>
     );
@@ -255,6 +258,7 @@ export default function WalletTransactionsList({
           if (!openState) setDetailEarning(null);
         }}
         transaction={detailEarning}
+        viewerRole={detailViewerRole}
       />
     </>
   );

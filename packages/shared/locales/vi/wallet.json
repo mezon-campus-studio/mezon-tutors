@@ -80,9 +80,15 @@
       "detailDialog": {
         "title": "Chi tiết thu nhập",
         "description": "Thu nhập nhận được từ buổi học này.",
+        "refundTitle": "Chi tiết hoàn tiền",
+        "refundDescription": "Số tiền hoàn trả về ví từ buổi học đã huỷ.",
+        "paymentTitle": "Chi tiết thanh toán",
+        "paymentDescriptionTrial": "Thanh toán cho buổi học thử này.",
+        "paymentDescriptionPlan": "Thanh toán cho gói đăng ký này.",
         "lessonTagTrial": "Học thử",
         "lessonTagPlan": "Gói",
         "student": "Học viên",
+        "tutor": "Gia sư",
         "lessonType": "Loại buổi học",
         "lessonTypeTrial": "Buổi học thử",
         "lessonTypePlan": "Buổi học gói đăng ký",
@@ -90,7 +96,12 @@
         "duration": "Thời lượng",
         "durationValue": "{minutes} phút",
         "amountEarned": "Số tiền nhận",
+        "amountPaid": "Số tiền đã thanh toán",
+        "amountRefunded": "Số tiền hoàn",
+        "paidAt": "Thanh toán lúc",
         "receivedAt": "Nhận lúc",
+        "refundedAt": "Hoàn lúc",
+        "refundSourceLabel": "Hoàn tiền từ buổi học",
         "close": "Đóng"
       }
     },

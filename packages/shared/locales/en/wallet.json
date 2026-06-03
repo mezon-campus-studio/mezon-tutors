@@ -80,9 +80,15 @@
       "detailDialog": {
         "title": "Earning detail",
         "description": "Earnings received from this lesson.",
+        "refundTitle": "Refund detail",
+        "refundDescription": "Amount refunded to your wallet from a cancelled lesson.",
+        "paymentTitle": "Payment detail",
+        "paymentDescriptionTrial": "Payment made for this trial lesson.",
+        "paymentDescriptionPlan": "Payment made for this subscription plan.",
         "lessonTagTrial": "Trial",
         "lessonTagPlan": "Plan",
         "student": "Student",
+        "tutor": "Tutor",
         "lessonType": "Lesson type",
         "lessonTypeTrial": "Trial lesson",
         "lessonTypePlan": "Subscription lesson",
@@ -90,7 +96,12 @@
         "duration": "Duration",
         "durationValue": "{minutes} min",
         "amountEarned": "Amount earned",
+        "amountPaid": "Amount paid",
+        "amountRefunded": "Amount refunded",
+        "paidAt": "Paid at",
         "receivedAt": "Received at",
+        "refundedAt": "Refunded at",
+        "refundSourceLabel": "Refunded from lesson",
         "close": "Close"
       }
     },

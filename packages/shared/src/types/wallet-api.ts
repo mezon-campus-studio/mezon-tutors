@@ -72,6 +72,8 @@ export type WalletTransactionLessonDetail = {
   lessonKind: 'trial' | 'subscription';
   studentName: string;
   studentAvatarUrl?: string | null;
+  tutorName?: string | null;
+  tutorAvatarUrl?: string | null;
   startAt: string;
   durationMinutes: number;
   slotIndex?: number | null;

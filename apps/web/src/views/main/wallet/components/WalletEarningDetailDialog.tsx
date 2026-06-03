@@ -28,6 +28,7 @@ type WalletEarningDetailDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transaction: WalletTransactionApiItem | null;
+  viewerRole?: 'student' | 'tutor';
 };
 
 const initials = (name?: string) => {
@@ -46,6 +47,7 @@ export default function WalletEarningDetailDialog({
   open,
   onOpenChange,
   transaction,
+  viewerRole = 'tutor',
 }: WalletEarningDetailDialogProps) {
   const t = useTranslations('Wallet.transactions.detailDialog');
   const locale = useLocale();
@@ -53,6 +55,52 @@ export default function WalletEarningDetailDialog({
 
   const detail = transaction?.lessonDetail ?? null;
   const isPlan = detail?.lessonKind === 'subscription';
+  const isStudentViewer = viewerRole === 'student';
+  const isCredit = transaction?.direction === 'CREDIT';
+  // Student + CREDIT = Refund; Student + DEBIT = Payment
+  const isRefund = isStudentViewer && isCredit;
+  const isPayment = isStudentViewer && !isCredit;
+
+  // Counterparty: student sees tutor, tutor sees student
+  const counterpartyName = isStudentViewer
+    ? (detail?.tutorName ?? 'Tutor')
+    : (detail?.studentName ?? 'Student');
+  const counterpartyAvatarUrl = isStudentViewer
+    ? detail?.tutorAvatarUrl
+    : detail?.studentAvatarUrl;
+
+  const amountPrefix = isCredit ? '+' : '−';
+  const amountLabel = isRefund
+    ? t('amountRefunded')
+    : isStudentViewer
+      ? t('amountPaid')
+      : t('amountEarned');
+
+  // Header gradient: refund=emerald, plan=purple, trial=amber
+  const headerGradient = isRefund
+    ? 'bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)]'
+    : isPlan
+      ? 'bg-[linear-gradient(135deg,#a21caf_0%,#7c3aed_100%)]'
+      : 'bg-[linear-gradient(135deg,#d97706_0%,#ea580c_100%)]';
+
+  const dialogTitle = isRefund
+    ? t('refundTitle')
+    : isPayment
+      ? t('paymentTitle')
+      : t('title');
+  const dialogDescription = isRefund
+    ? t('refundDescription')
+    : isPayment
+      ? isPlan
+        ? t('paymentDescriptionPlan')
+        : t('paymentDescriptionTrial')
+      : t('description');
+  const timestampLabel = isRefund
+    ? t('refundedAt')
+    : isPayment
+      ? t('paidAt')
+      : t('receivedAt');
+  const counterpartyRoleLabel = isStudentViewer ? t('tutor') : t('student');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,9 +111,7 @@ export default function WalletEarningDetailDialog({
         <div
           className={cn(
             'relative overflow-hidden px-5 pb-4 pt-5',
-            isPlan
-              ? 'bg-[linear-gradient(135deg,#a21caf_0%,#7c3aed_100%)]'
-              : 'bg-[linear-gradient(135deg,#d97706_0%,#ea580c_100%)]'
+            headerGradient
           )}
         >
           <div
@@ -78,10 +124,10 @@ export default function WalletEarningDetailDialog({
             </div>
             <DialogHeader className="space-y-0.5 p-0 pr-7 text-left">
               <DialogTitle className="text-lg font-bold leading-tight tracking-tight text-white">
-                {t('title')}
+                {dialogTitle}
               </DialogTitle>
               <DialogDescription className="text-sm leading-snug text-white/85">
-                {t('description')}
+                {dialogDescription}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -90,51 +136,78 @@ export default function WalletEarningDetailDialog({
         <div className="max-h-[calc(100vh-10.25rem)] space-y-4 overflow-y-auto px-5 py-4">
           {detail ? (
             <>
+              {/* Counterparty card */}
               <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
                 <Avatar className="size-11 shrink-0 rounded-xl border border-white shadow-sm">
-                  {detail.studentAvatarUrl ? (
+                  {counterpartyAvatarUrl ? (
                     <AvatarImage
-                      src={detail.studentAvatarUrl}
-                      alt={detail.studentName}
+                      src={counterpartyAvatarUrl}
+                      alt={counterpartyName}
                       className="object-cover"
                     />
                   ) : null}
                   <AvatarFallback
                     className={cn(
                       'rounded-xl text-xs font-bold text-white',
-                      isPlan
-                        ? 'bg-linear-to-br from-fuchsia-600 to-violet-600'
-                        : 'bg-linear-to-br from-amber-500 to-orange-600'
+                      isRefund
+                        ? 'bg-linear-to-br from-emerald-500 to-cyan-600'
+                        : isPlan
+                          ? 'bg-linear-to-br from-fuchsia-600 to-violet-600'
+                          : 'bg-linear-to-br from-amber-500 to-orange-600'
                     )}
                   >
-                    {initials(detail.studentName)}
+                    {initials(counterpartyName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-slate-500">{t('student')}</p>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {counterpartyRoleLabel}
+                  </p>
                   <p className="truncate text-sm font-bold text-slate-900">
-                    {detail.studentName}
+                    {counterpartyName}
                   </p>
                 </div>
                 <Badge
                   variant="secondary"
                   className={cn(
                     'shrink-0 border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                    isPlan
-                      ? 'border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800'
-                      : 'border-amber-200/60 bg-amber-100/90 text-amber-900'
+                    isRefund
+                      ? 'border-emerald-200/60 bg-emerald-100/90 text-emerald-800'
+                      : isPlan
+                        ? 'border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800'
+                        : 'border-amber-200/60 bg-amber-100/90 text-amber-900'
                   )}
                 >
                   {isPlan ? t('lessonTagPlan') : t('lessonTagTrial')}
                 </Badge>
               </div>
 
+              {/* Refund source banner — only shown for student refunds */}
+              {isRefund && (
+                <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
+                    <GraduationCap className="size-3.5 text-emerald-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-emerald-700">
+                      {t('refundSourceLabel')}
+                    </p>
+                    <p className="truncate text-xs font-bold text-emerald-900">
+                      {isPlan ? t('lessonTypePlan') : t('lessonTypeTrial')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-2.5">
-                <DetailRow
-                  icon={<GraduationCap className="size-4 text-violet-600" />}
-                  label={t('lessonType')}
-                  value={isPlan ? t('lessonTypePlan') : t('lessonTypeTrial')}
-                />
+                {/* Lesson type row — hidden for refund since refundSourceLabel already shows it */}
+                {!isRefund && (
+                  <DetailRow
+                    icon={<GraduationCap className="size-4 text-violet-600" />}
+                    label={t('lessonType')}
+                    value={isPlan ? t('lessonTypePlan') : t('lessonTypeTrial')}
+                  />
+                )}
                 <DetailRow
                   icon={<CalendarClock className="size-4 text-violet-600" />}
                   label={t('lessonTime')}
@@ -148,15 +221,38 @@ export default function WalletEarningDetailDialog({
               </div>
 
               {transaction ? (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                    {t('amountEarned')}
+                <div
+                  className={cn(
+                    'rounded-2xl border px-4 py-3',
+                    isCredit
+                      ? 'border-emerald-100 bg-emerald-50/70'
+                      : 'border-rose-100 bg-rose-50/70'
+                  )}
+                >
+                  <p
+                    className={cn(
+                      'text-xs font-semibold uppercase tracking-[0.14em]',
+                      isCredit ? 'text-emerald-700' : 'text-rose-700'
+                    )}
+                  >
+                    {amountLabel}
                   </p>
-                  <p className="mt-0.5 text-2xl font-bold tabular-nums text-emerald-700">
-                    +{formatToCurrency(ECurrency.VND, transaction.amount)}
+                  <p
+                    className={cn(
+                      'mt-0.5 text-2xl font-bold tabular-nums',
+                      isCredit ? 'text-emerald-700' : 'text-rose-700'
+                    )}
+                  >
+                    {amountPrefix}
+                    {formatToCurrency(ECurrency.VND, transaction.amount)}
                   </p>
-                  <p className="mt-1 text-xs text-emerald-700/80">
-                    {t('receivedAt')}:{' '}
+                  <p
+                    className={cn(
+                      'mt-1 text-xs',
+                      isCredit ? 'text-emerald-700/80' : 'text-rose-700/80'
+                    )}
+                  >
+                    {timestampLabel}:{' '}
                     {formatInstantForLocale(transaction.createdAt, userTimezone, locale)}
                   </p>
                 </div>
