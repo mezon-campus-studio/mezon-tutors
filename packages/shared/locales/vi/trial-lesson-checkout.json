@@ -25,7 +25,9 @@
         "popupBlockedTitle": "Không mở được cửa sổ thanh toán",
         "popupBlockedDescription": "Vui lòng cho phép popup và thử lại.",
         "paypalUnavailableTitle": "PayPal chưa khả dụng",
-        "paypalUnavailableDescription": "PayPal chưa được cấu hình. Vui lòng chọn VNPAY."
+        "paypalUnavailableDescription": "PayPal chưa được cấu hình. Vui lòng chọn VNPAY.",
+        "walletPaymentComingSoonTitle": "Thanh toán ví sắp ra mắt",
+        "walletPaymentComingSoonDescription": "Tính năng thanh toán bằng số dư ví đang được phát triển. Vui lòng thử lại sau."
       },
       "tutor": {
         "professionalPrefix": "Chuyên nghiệp ",
@@ -58,7 +60,11 @@
       "total": "Tổng cộng",
       "promoCode": "Mã giảm giá",
       "promoPlaceholder": "Nhập mã",
-      "apply": "Áp dụng"
+      "apply": "Áp dụng",
+      "walletBalance": "Số dư ví: {balance}",
+      "payViaWallet": "Thanh toán qua ví",
+      "remainingViaVnpay": "Còn lại qua VNPay",
+      "vnpayMinWalletNote": "VNPay yêu cầu thanh toán tối thiểu {minAmount}. Nếu dùng hết số dư ví ({walletBalance}), phần còn lại qua VNPay sẽ thấp hơn mức này — vì vậy chỉ trừ {deductAmount} từ ví."
     },
     "TrialLessonDetailsCard": {
       "trialLesson": "Buổi học thử",

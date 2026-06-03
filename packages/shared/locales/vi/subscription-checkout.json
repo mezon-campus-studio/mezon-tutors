@@ -89,10 +89,23 @@
       "removeSlot": "Bỏ buổi này",
       "back": "Quay lại chọn gói",
       "submit": "Gửi đăng ký",
+      "submitAndPay": "Gửi đăng ký ({amount})",
+      "submitWithWallet": "Thanh toán bằng ví ({amount})",
+      "walletPaymentComingSoonTitle": "Thanh toán ví sắp ra mắt",
+      "walletPaymentComingSoonDescription": "Tính năng thanh toán bằng số dư ví đang được phát triển. Vui lòng thử lại sau.",
       "toastSuccessTitle": "Đã gửi",
       "toastSuccessDescription": "Đăng ký đang chờ thanh toán.",
       "toastErrorTitle": "Lỗi",
-      "toastErrorFallback": "Không thể gửi."
+      "toastErrorFallback": "Không thể gửi.",
+      "paymentSummary": {
+        "title": "Tóm tắt thanh toán",
+        "planLine": "Gói đăng ký ({lessonsPerWeek} buổi/tuần)",
+        "total": "Tổng cộng",
+        "walletBalance": "Thanh toán từ ví: {balance}",
+        "payViaWallet": "Thanh toán qua ví",
+        "remainingViaVnpay": "Còn lại qua VNPay",
+        "vnpayMinWalletNote": "VNPay yêu cầu thanh toán tối thiểu {minAmount}. Nếu dùng hết số dư ví ({walletBalance}), phần còn lại qua VNPay sẽ thấp hơn mức này — vì vậy chỉ trừ {deductAmount} từ ví."
+      }
     },
     "Result": {
       "subscriptionSuccess": {

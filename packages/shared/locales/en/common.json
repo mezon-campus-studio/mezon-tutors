@@ -63,6 +63,7 @@
     "methodUnavailable": "Temporarily unavailable",
     "continuePayment": "Continue payment",
     "bookAndPay": "Book and Pay ({amount})",
+    "payWithWallet": "Pay with wallet ({amount})",
     "bookLesson": "Book Lesson",
     "processing": "Processing...",
     "securityNotice": "Secure 256-bit SSL encrypted payment"

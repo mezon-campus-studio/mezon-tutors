@@ -1,16 +1,15 @@
 "use client";
 
-import { Receipt, TicketPercent, Wallet } from "lucide-react";
+import { Receipt, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button, Input } from "@/components/ui";
 import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
 import {
   isVnpayMinWalletCapApplied,
   VNPAY_MIN_AMOUNT_VND,
-} from "./wallet-payment";
+} from "../../trial-lesson/components/wallet-payment";
 
-type PaymentSummaryCardProps = {
-  durationMinutes: number;
+type SubscriptionPaymentSummaryCardProps = {
+  lessonsPerWeek: number;
   totalDisplay: string;
   lessonPrice?: number;
   walletBalance?: number;
@@ -57,8 +56,8 @@ function WalletBalanceToggle({
   );
 }
 
-export function PaymentSummaryCard({
-  durationMinutes,
+export function SubscriptionPaymentSummaryCard({
+  lessonsPerWeek,
   totalDisplay,
   lessonPrice = 0,
   walletBalance = 0,
@@ -67,8 +66,8 @@ export function PaymentSummaryCard({
   onUseWalletBalanceChange,
   deductFromWallet = 0,
   vnpayAmount = 0,
-}: PaymentSummaryCardProps) {
-  const t = useTranslations("TrialLessonCheckout.PaymentSummaryCard");
+}: SubscriptionPaymentSummaryCardProps) {
+  const t = useTranslations("SubscriptionCheckout.SchedulePicker.paymentSummary");
   const walletBalanceDisplay = formatToCurrency(ECurrency.VND, walletBalance);
   const deductDisplay = formatToCurrency(ECurrency.VND, deductFromWallet);
   const vnpayRemainderDisplay = formatToCurrency(ECurrency.VND, vnpayAmount);
@@ -98,18 +97,16 @@ export function PaymentSummaryCard({
       </div>
 
       <div className="space-y-4 px-5 py-4">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between gap-3 text-sm">
           <p className="text-slate-600">
-            {t("trialLesson", { durationMinutes })}
+            {t("planLine", { lessonsPerWeek })}
           </p>
-          <p className="font-bold text-slate-900">{totalDisplay}</p>
+          <p className="shrink-0 font-bold text-slate-900">{totalDisplay}</p>
         </div>
 
         <div className="rounded-2xl bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-4 py-3 ring-1 ring-violet-100">
           <div className="flex items-center justify-between">
-            <p className="text-base font-extrabold text-slate-900">
-              {t("total")}
-            </p>
+            <p className="text-base font-extrabold text-slate-900">{t("total")}</p>
             <p className="bg-[linear-gradient(135deg,#7c3aed,#9333ea,#ec4899)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
               {totalDisplay}
             </p>
@@ -145,26 +142,8 @@ export function PaymentSummaryCard({
             </div>
           </div>
         ) : null}
-
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            <TicketPercent className="size-3.5 text-violet-500" />
-            {t("promoCode")}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              className="h-11 rounded-full border-slate-200 bg-slate-50/60 px-4 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              placeholder={t("promoPlaceholder")}
-            />
-            <Button
-              variant="outline"
-              className="h-11 rounded-full border-slate-200 px-5 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
-            >
-              {t("apply")}
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );
+
 }

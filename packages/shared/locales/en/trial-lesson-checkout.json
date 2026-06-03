@@ -25,7 +25,9 @@
         "popupBlockedTitle": "Unable to open payment window",
         "popupBlockedDescription": "Please allow popups and try again.",
         "paypalUnavailableTitle": "PayPal is not available",
-        "paypalUnavailableDescription": "PayPal is not configured yet. Please choose VNPAY."
+        "paypalUnavailableDescription": "PayPal is not configured yet. Please choose VNPAY.",
+        "walletPaymentComingSoonTitle": "Wallet payment coming soon",
+        "walletPaymentComingSoonDescription": "Paying with wallet balance is under development. Please try again later."
       },
       "tutor": {
         "professionalPrefix": "Professional ",
@@ -58,7 +60,11 @@
       "total": "Total",
       "promoCode": "Promo Code",
       "promoPlaceholder": "Enter code",
-      "apply": "Apply"
+      "apply": "Apply",
+      "walletBalance": "Wallet balance: {balance}",
+      "payViaWallet": "Pay via wallet",
+      "remainingViaVnpay": "Remaining via VNPay",
+      "vnpayMinWalletNote": "VNPay requires a minimum payment of {minAmount}. Using your full wallet balance ({walletBalance}) would leave less than that via VNPay, so only {deductAmount} is deducted from your wallet."
     },
     "TrialLessonDetailsCard": {
       "trialLesson": "Trial Lesson",
