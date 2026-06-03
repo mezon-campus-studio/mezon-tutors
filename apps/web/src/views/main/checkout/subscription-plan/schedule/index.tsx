@@ -16,6 +16,7 @@ import { useAtomValue } from "jotai";
 import { AlertCircle, Calendar, Clock, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -82,6 +83,7 @@ function slotKey(s: { date: string; startTime: string }): string {
 
 export default function SubscriptionPlanSchedulePage() {
   const t = useTranslations("SubscriptionCheckout.SchedulePicker");
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tutorId = searchParams.get("tutorId") ?? "";
   const lessonsPerWeekRaw = searchParams.get("lessonsPerWeek") ?? "";
@@ -292,55 +294,66 @@ export default function SubscriptionPlanSchedulePage() {
       selectedSlots.length === lessonsPerWeek,
   );
 
-  const submitEnrollment = useCallback(async () => {
-    if (!canSubmit || !plan) {
-      return;
-    }
-    const enrollment = await createEnrollment.mutateAsync({
-      tutorId,
-      lessonsPerWeek: plan.lessonsPerWeek,
-      currency,
-      slots: selectedSlots.map((s) =>
-        convertWallClockSlotBetweenTimezones(
-          s.date,
-          s.startTime,
-          s.endTime,
-          userTimezone,
-          DEFAULT_TIMEZONE,
+  const submitEnrollment = useCallback(
+    async (withWallet: boolean) => {
+      if (!canSubmit || !plan) {
+        return;
+      }
+      const enrollment = await createEnrollment.mutateAsync({
+        tutorId,
+        lessonsPerWeek: plan.lessonsPerWeek,
+        currency,
+        useWalletBalance: withWallet && showWalletRow,
+        slots: selectedSlots.map((s) =>
+          convertWallClockSlotBetweenTimezones(
+            s.date,
+            s.startTime,
+            s.endTime,
+            userTimezone,
+            DEFAULT_TIMEZONE,
+          ),
         ),
-      ),
-    });
-    if (enrollment.paymentUrl) {
-      redirectToVnpay(enrollment.paymentUrl);
-    }
-    return enrollment;
-  }, [
-    canSubmit,
-    createEnrollment,
-    currency,
-    plan,
-    redirectToVnpay,
-    selectedSlots,
-    tutorId,
-    userTimezone,
-  ]);
+      });
+      if (enrollment.paymentUrl) {
+        redirectToVnpay(enrollment.paymentUrl);
+      } else if (enrollment.paymentStatus === "SUCCEEDED") {
+        router.push(ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(enrollment.id));
+      }
+      return enrollment;
+    },
+    [
+      canSubmit,
+      createEnrollment,
+      currency,
+      plan,
+      redirectToVnpay,
+      router,
+      selectedSlots,
+      showWalletRow,
+      tutorId,
+      userTimezone,
+    ],
+  );
 
   const handleWalletPay = useCallback(async () => {
-    toast.info(t("walletPaymentComingSoonTitle"), {
-      description: t("walletPaymentComingSoonDescription"),
-    });
-  }, [t]);
+    try {
+      await submitEnrollment(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t("toastErrorFallback");
+      toast.error(t("toastErrorTitle"), { description: msg });
+    }
+  }, [submitEnrollment, t]);
 
   const handlePay = useCallback(
     async (_methodId: PaymentMethodId) => {
       try {
-        await submitEnrollment();
+        await submitEnrollment(useWalletBalance);
       } catch (e) {
         const msg = e instanceof Error ? e.message : t("toastErrorFallback");
         toast.error(t("toastErrorTitle"), { description: msg });
       }
     },
-    [submitEnrollment, t],
+    [submitEnrollment, t, useWalletBalance],
   );
 
   const removeSlot = (key: string) => {

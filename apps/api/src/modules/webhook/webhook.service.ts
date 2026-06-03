@@ -3,8 +3,6 @@ import {
   EPaymentStatus,
   ESubscriptionEnrollmentStatus,
   ETrialLessonStatus,
-  EWalletTransactionDirection,
-  EWalletTransactionType,
   Prisma,
 } from '@mezon-tutors/db';
 import {
@@ -17,6 +15,7 @@ import { AppConfigService } from '../../shared/services/app-config.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
 import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
+import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 
 type VnpayQuery = Record<string, string | string[] | undefined>;
 
@@ -47,7 +46,8 @@ export class WebhookService {
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
     private readonly notificationService: NotificationService,
-    private readonly lessonSettlementService: LessonSettlementService
+    private readonly lessonSettlementService: LessonSettlementService,
+    private readonly walletCheckoutService: WalletCheckoutService,
   ) {}
 
   async buildTrialLessonVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
@@ -174,6 +174,7 @@ export class WebhookService {
         studentId: true,
         paymentStatus: true,
         tutorAmount: true,
+        deductAmount: true,
         tutor: {
           select: {
             userId: true,
@@ -192,6 +193,7 @@ export class WebhookService {
         studentId: true,
         tutorId: true,
         tutorAmount: true,
+        deductAmount: true,
         paymentStatus: true,
         tutor: {
           select: {
@@ -220,6 +222,7 @@ export class WebhookService {
       studentId: string;
       paymentStatus: EPaymentStatus;
       tutorAmount: bigint;
+      deductAmount: bigint;
       tutor: { userId: string };
     },
     responseCode: string | undefined,
@@ -260,32 +263,17 @@ export class WebhookService {
       const didUpdateBooking = updateBookingResult.count > 0;
 
       if (didUpdateBooking && isSucceeded) {
-        const tutorUserId = booking.tutor.userId;
-        const wallet = await tx.wallet.upsert({
-          where: { userId: tutorUserId },
-          update: {
-            pendingBalance: { increment: booking.tutorAmount },
-            totalEarned: { increment: booking.tutorAmount },
-          },
-          create: {
-            userId: tutorUserId,
-            balance: 0n,
-            pendingBalance: booking.tutorAmount,
-            totalEarned: booking.tutorAmount,
-            totalWithdrawn: 0n,
-          },
-          select: { id: true },
-        });
-
-        await tx.transaction.create({
-          data: {
-            walletId: wallet.id,
+        if (booking.deductAmount > 0n) {
+          await this.walletCheckoutService.debitStudentForTrialBooking(tx, {
+            studentUserId: booking.studentId,
             bookingId: booking.id,
-            type: EWalletTransactionType.BOOKING_PAYMENT,
-            direction: EWalletTransactionDirection.CREDIT,
-            amount: booking.tutorAmount,
-            description: `Trial lesson payment settled for booking ${booking.id}`,
-          },
+            deductAmount: booking.deductAmount,
+          });
+        }
+        await this.walletCheckoutService.creditTutorForTrialBooking(tx, {
+          tutorUserId: booking.tutor.userId,
+          bookingId: booking.id,
+          tutorAmount: booking.tutorAmount,
         });
       }
 
@@ -343,6 +331,7 @@ export class WebhookService {
       studentId: string;
       tutorId: string;
       tutorAmount: bigint;
+      deductAmount: bigint;
       paymentStatus: EPaymentStatus;
       tutor: { userId: string };
     },
@@ -384,32 +373,17 @@ export class WebhookService {
       const didUpdateEnrollment = updateEnrollmentResult.count > 0;
 
       if (didUpdateEnrollment && isSucceeded) {
-        const tutorUserId = enrollment.tutor.userId;
-        const wallet = await tx.wallet.upsert({
-          where: { userId: tutorUserId },
-          update: {
-            pendingBalance: { increment: enrollment.tutorAmount },
-            totalEarned: { increment: enrollment.tutorAmount },
-          },
-          create: {
-            userId: tutorUserId,
-            balance: 0n,
-            pendingBalance: enrollment.tutorAmount,
-            totalEarned: enrollment.tutorAmount,
-            totalWithdrawn: 0n,
-          },
-          select: { id: true },
-        });
-
-        await tx.transaction.create({
-          data: {
-            walletId: wallet.id,
-            subscriptionEnrollmentId: enrollment.id,
-            type: EWalletTransactionType.BOOKING_PAYMENT,
-            direction: EWalletTransactionDirection.CREDIT,
-            amount: enrollment.tutorAmount,
-            description: `Subscription enrollment payment settled for ${enrollment.id}`,
-          },
+        if (enrollment.deductAmount > 0n) {
+          await this.walletCheckoutService.debitStudentForSubscriptionEnrollment(tx, {
+            studentUserId: enrollment.studentId,
+            enrollmentId: enrollment.id,
+            deductAmount: enrollment.deductAmount,
+          });
+        }
+        await this.walletCheckoutService.creditTutorForSubscriptionEnrollment(tx, {
+          tutorUserId: enrollment.tutor.userId,
+          enrollmentId: enrollment.id,
+          tutorAmount: enrollment.tutorAmount,
         });
       }
 

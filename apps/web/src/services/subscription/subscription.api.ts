@@ -21,6 +21,7 @@ import {
 import { useMemo } from "react";
 import { apiClient } from "../api-client";
 import { subscriptionQueryKey } from "./subscription.qkey";
+import { walletQueryKey } from "../wallet/wallet.qkey";
 
 const TUTOR_WEEK_OCCURRENCES_STALE_MS = 60_000;
 
@@ -187,6 +188,9 @@ export function useCreateSubscriptionEnrollmentMutation() {
         queryKey: subscriptionQueryKey.enrollment(data.id),
       });
       void qc.invalidateQueries({ queryKey: subscriptionQueryKey.root });
+      if (data.paymentStatus === "SUCCEEDED") {
+        void qc.invalidateQueries({ queryKey: walletQueryKey.all });
+      }
     },
   });
 }

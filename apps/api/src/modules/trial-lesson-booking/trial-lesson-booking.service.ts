@@ -51,7 +51,10 @@ import type { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.d
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
 import { WalletService } from '../wallet/wallet.service'
+import { WalletCheckoutService } from '../wallet/wallet-checkout.service'
 import { AppSettingsService } from '../app-settings/app-settings.service'
+import { NotificationService } from '../notification/notification.service'
+import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service'
 
 @Injectable()
 export class TrialLessonBookingService {
@@ -60,7 +63,10 @@ export class TrialLessonBookingService {
     private readonly vnpayService: VnpayService,
     private readonly appConfig: AppConfigService,
     private readonly walletService: WalletService,
+    private readonly walletCheckoutService: WalletCheckoutService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly notificationService: NotificationService,
+    private readonly lessonSettlementService: LessonSettlementService,
   ) {}
 
   async getTutorBookingRequests(
@@ -760,6 +766,7 @@ export class TrialLessonBookingService {
       } as unknown as Prisma.TutorProfileInclude,
     }) as unknown as {
       id: string
+      userId: string
       verificationStatus: VerificationStatus
       trialLessonPrice?: { usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } | null
       user?: { timezone: string } | null
@@ -806,13 +813,43 @@ export class TrialLessonBookingService {
       settings.platformFeePercentage,
     )
 
-    const amountForProvider = Number(grossAmount)
-    if (!Number.isFinite(amountForProvider) || amountForProvider < 1) {
-      throw new BadRequestException('Invalid payment amount for this lesson')
+    const walletBalance =
+      await this.walletCheckoutService.getStudentWalletBalance(studentId)
+    const { deductAmount, vnpayAmount } =
+      this.walletCheckoutService.resolveWalletCheckoutSplit({
+        grossAmount,
+        walletBalance,
+        useWalletBalance: dto.useWalletBalance ?? false,
+        currency: selectedCurrency,
+      })
+    this.walletCheckoutService.assertSufficientWalletBalance(
+      walletBalance,
+      deductAmount,
+    )
+
+    const vnpayAmountNumber = Number(vnpayAmount)
+    if (vnpayAmount > 0n) {
+      if (!this.vnpayService.isConfigured()) {
+        throw new ServiceUnavailableException('VNPay is not configured; cannot create payment')
+      }
+      if (!Number.isFinite(vnpayAmountNumber) || vnpayAmountNumber < 1) {
+        throw new BadRequestException('Invalid payment amount for this lesson')
+      }
     }
 
-    if (!this.vnpayService.isConfigured()) {
-      throw new ServiceUnavailableException('VNPay is not configured; cannot create payment')
+    if (vnpayAmount === 0n) {
+      return this.createTrialLessonBookingPaidByWallet({
+        tutorId: tutor.id,
+        tutorUserId: tutor.userId,
+        studentId,
+        startAt: startAt.toDate(),
+        durationMinutes: dto.durationMinutes,
+        grossAmount,
+        platformFee,
+        tutorAmount,
+        deductAmount,
+        currency: selectedCurrency,
+      })
     }
 
     const booking = await this.prisma.trialLessonBooking.create({
@@ -824,6 +861,7 @@ export class TrialLessonBookingService {
         grossAmount,
         platformFee,
         tutorAmount,
+        deductAmount,
         currency: selectedCurrency,
         status: ETrialLessonStatus.PENDING,
         paymentStatus: EPaymentStatus.PENDING,
@@ -837,7 +875,7 @@ export class TrialLessonBookingService {
     const vnpTxnRef = booking.id.replaceAll('-', '').slice(0, 32)
 
     const checkoutUrl = this.vnpayService.createPaymentUrl({
-      vnp_Amount: amountForProvider,
+      vnp_Amount: vnpayAmountNumber,
       vnp_OrderInfo: description,
       vnp_TxnRef: vnpTxnRef,
       vnp_ReturnUrl: returnUrl,
@@ -862,12 +900,85 @@ export class TrialLessonBookingService {
         grossAmount: true,
         platformFee: true,
         tutorAmount: true,
+        deductAmount: true,
         paymentRef: true,
         paymentUrl: true,
       },
     })
 
     return this.serializeTrialLessonBookingResponse(updated)
+  }
+
+  private async createTrialLessonBookingPaidByWallet(params: {
+    tutorId: string
+    tutorUserId: string
+    studentId: string
+    startAt: Date
+    durationMinutes: number
+    grossAmount: bigint
+    platformFee: bigint
+    tutorAmount: bigint
+    deductAmount: bigint
+    currency: ECurrency
+  }) {
+    const now = new Date()
+
+    const booking = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.trialLessonBooking.create({
+        data: {
+          tutorId: params.tutorId,
+          studentId: params.studentId,
+          startAt: params.startAt,
+          durationMinutes: params.durationMinutes,
+          grossAmount: params.grossAmount,
+          platformFee: params.platformFee,
+          tutorAmount: params.tutorAmount,
+          deductAmount: params.deductAmount,
+          currency: params.currency,
+          status: ETrialLessonStatus.CONFIRMED,
+          paymentStatus: EPaymentStatus.SUCCEEDED,
+          paidAt: now,
+        },
+        select: {
+          id: true,
+          tutorId: true,
+          studentId: true,
+          startAt: true,
+          durationMinutes: true,
+          status: true,
+          currency: true,
+          paymentStatus: true,
+          grossAmount: true,
+          platformFee: true,
+          tutorAmount: true,
+          deductAmount: true,
+          paymentRef: true,
+          paymentUrl: true,
+        },
+      })
+
+      await this.walletCheckoutService.debitStudentForTrialBooking(tx, {
+        studentUserId: params.studentId,
+        bookingId: created.id,
+        deductAmount: params.deductAmount,
+      })
+      await this.walletCheckoutService.creditTutorForTrialBooking(tx, {
+        tutorUserId: params.tutorUserId,
+        bookingId: created.id,
+        tutorAmount: params.tutorAmount,
+      })
+
+      return created
+    })
+
+    await this.notificationService.notifyStudentBookingConfirmed({
+      studentId: params.studentId,
+      bookingId: booking.id,
+      tutorProfileId: params.tutorId,
+    })
+    await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id)
+
+    return this.serializeTrialLessonBookingResponse(booking)
   }
 
   private serializeTrialLessonBookingResponse(
@@ -883,6 +994,7 @@ export class TrialLessonBookingService {
     grossAmount: bigint
     platformFee: bigint
     tutorAmount: bigint
+    deductAmount: bigint
     paymentRef: string | null
     paymentUrl: string | null
   },
@@ -898,6 +1010,7 @@ export class TrialLessonBookingService {
       grossAmount: Number(booking.grossAmount),
       platformFee: Number(booking.platformFee),
       tutorAmount: Number(booking.tutorAmount),
+      deductAmount: Number(booking.deductAmount),
       currency: booking.currency,
       paymentProvider: 'vnpay',
       paymentUrl: booking.paymentUrl,

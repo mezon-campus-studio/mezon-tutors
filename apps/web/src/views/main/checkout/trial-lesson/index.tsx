@@ -3,6 +3,7 @@
 import { useAtomValue } from "jotai";
 import { AlertCircle, CalendarCheck, Clock, Info } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -25,13 +26,14 @@ import {
   useWalletDetails,
 } from "@/services";
 import { userAtom } from "@/store";
-import { ECurrency, formatToCurrency } from "@mezon-tutors/shared";
+import { ECurrency, ETrialLessonBookingPaymentStatus, formatToCurrency, ROUTES } from "@mezon-tutors/shared";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
 import { computeWalletPaymentSplit } from "./components/wallet-payment";
 
 export default function TrialLessonCheckoutPage() {
   const t = useTranslations("TrialLessonCheckout.Screen");
+  const router = useRouter();
   const { currency } = useCurrency();
   const currentUser = useAtomValue(userAtom);
   const searchParams = useSearchParams();
@@ -109,42 +111,68 @@ export default function TrialLessonCheckoutPage() {
     }
   }, [currentBooking]);
 
-  const createVnpayBooking = useCallback(async () => {
-    if (!query || !tutor) {
-      return;
-    }
-    if (currentBooking?.hasBooked && currentBooking.status !== "CANCELLED") {
-      if (currentBooking.paymentStatus === "PENDING" && currentBooking.paymentUrl) {
-        setPaymentLink(currentBooking.paymentUrl);
-        redirectToVnpay(currentBooking.paymentUrl);
+  const submitBooking = useCallback(
+    async (withWallet: boolean) => {
+      if (!query || !tutor) {
         return;
       }
-      toast.error(t("toast.alreadyBookedTitle"), { description: t("toast.alreadyBookedDescription") });
-      return;
-    }
-    try {
-      const booking = await createBooking.mutateAsync({
-        tutorId: query.tutorId,
-        startAt: query.startAt,
-        dayOfWeek: query.dayOfWeek,
-        durationMinutes: query.durationMinutes,
-        currency,
-      });
-      setPaymentLink(booking.paymentUrl);
-      if (booking.paymentUrl) {
-        redirectToVnpay(booking.paymentUrl);
+      if (currentBooking?.hasBooked && currentBooking.status !== "CANCELLED") {
+        if (currentBooking.paymentStatus === "PENDING" && currentBooking.paymentUrl) {
+          setPaymentLink(currentBooking.paymentUrl);
+          redirectToVnpay(currentBooking.paymentUrl);
+          return;
+        }
+        toast.error(t("toast.alreadyBookedTitle"), {
+          description: t("toast.alreadyBookedDescription"),
+        });
+        return;
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("toast.bookingFailedFallback");
-      toast.error(t("toast.bookingFailedTitle"), { description: message });
-    }
-  }, [createBooking, currency, currentBooking, redirectToVnpay, query, t, tutor]);
+      try {
+        const booking = await createBooking.mutateAsync({
+          tutorId: query.tutorId,
+          startAt: query.startAt,
+          dayOfWeek: query.dayOfWeek,
+          durationMinutes: query.durationMinutes,
+          currency,
+          useWalletBalance:
+            withWallet &&
+            currency === ECurrency.VND &&
+            (walletDetails?.walletBalance ?? walletDetails?.availableBalance ?? 0) > 0,
+        });
+        setPaymentLink(booking.paymentUrl);
+        if (booking.paymentUrl) {
+          redirectToVnpay(booking.paymentUrl);
+        } else if (
+          booking.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED
+        ) {
+          router.push(ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(booking.id));
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t("toast.bookingFailedFallback");
+        toast.error(t("toast.bookingFailedTitle"), { description: message });
+      }
+    },
+    [
+      createBooking,
+      currency,
+      currentBooking,
+      query,
+      redirectToVnpay,
+      router,
+      walletDetails,
+      t,
+      tutor,
+    ],
+  );
+
+  const createVnpayBooking = useCallback(async () => {
+    await submitBooking(useWalletBalance);
+  }, [submitBooking, useWalletBalance]);
 
   const handleWalletPay = useCallback(async () => {
-    toast.info(t("toast.walletPaymentComingSoonTitle"), {
-      description: t("toast.walletPaymentComingSoonDescription"),
-    });
-  }, [t]);
+    await submitBooking(true);
+  }, [submitBooking]);
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
