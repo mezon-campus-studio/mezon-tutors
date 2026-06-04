@@ -21,6 +21,7 @@ export * from "./admin-tutor-application/admin-tutor-application.qkey";
 export * from "./lesson-complaint/lesson-complaint.api";
 export * from "./admin-lesson-complaint/admin-lesson-complaint.api";
 export * from "./admin-lesson-complaint/admin-lesson-complaint.qkey";
+export * from "./tutor-lesson-complaint/tutor-lesson-complaint.api";
 export * from "./admin-app-settings/admin-app-settings.api";
 export * from "./admin-app-settings/admin-app-settings.qkey";
 export * from "./admin-wallet/admin-wallet.api";

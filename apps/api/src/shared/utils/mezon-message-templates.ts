@@ -335,6 +335,53 @@ export const tutorApplicationSubmittedEmbed = (
   ...embedSenderThumbnail(params.senderAvatarUrl),
 });
 
+export const tutorLessonComplaintSubmittedEmbed = (
+  params: {
+    complaintId: string;
+    studentName: string;
+    lessonStartAtLabel: string;
+    reason: string;
+    message?: string | null;
+    reviewUrl?: string;
+  } & SenderAvatarParams
+): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.warning,
+  title: 'Student lesson complaint',
+  description: `${params.studentName} submitted a complaint about your lesson.`,
+  fields: [
+    { name: 'Student', value: params.studentName, inline: true },
+    { name: 'Lesson start', value: params.lessonStartAtLabel, inline: false },
+    { name: 'Reason', value: params.reason, inline: false },
+    ...(params.message?.trim()
+      ? [{ name: 'Message', value: params.message.trim().slice(0, 500), inline: false }]
+      : []),
+    { name: 'Complaint ID', value: params.complaintId, inline: false },
+  ],
+  url: params.reviewUrl,
+  ...embedSenderThumbnail(params.senderAvatarUrl),
+});
+
+export const lessonComplaintTutorConfirmedEmbed = (params: {
+  complaintId: string;
+  studentName: string;
+  tutorName: string;
+  lessonStartAtLabel: string;
+  reason: string;
+  reviewUrl?: string;
+}): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.success,
+  title: 'Tutor confirmed complaint',
+  description: `${params.tutorName} confirmed a lesson complaint from ${params.studentName}. You can review and approve the refund.`,
+  fields: [
+    { name: 'Student', value: params.studentName, inline: true },
+    { name: 'Tutor', value: params.tutorName, inline: true },
+    { name: 'Lesson start', value: params.lessonStartAtLabel, inline: false },
+    { name: 'Reason', value: params.reason, inline: false },
+    { name: 'Complaint ID', value: params.complaintId, inline: false },
+  ],
+  url: params.reviewUrl,
+});
+
 export const lessonComplaintSubmittedEmbed = (
   params: {
     complaintId: string;
@@ -439,3 +486,53 @@ export const studentLessonComplaintRejectedEmbed = (params: {
     ...embedAdminThumbnail(),
   };
 };
+
+export const studentLessonComplaintTutorRejectedEmbed = (params: {
+  tutorName: string;
+  lessonStartAtLabel: string;
+  submittedAtLabel: string;
+  reason: string;
+  tutorNote?: string | null;
+  complaintsUrl?: string;
+}): IInteractiveMessageProps => {
+  const tutorNoteText = params.tutorNote?.trim() || 'No additional note from the tutor.';
+  return {
+    color: MEZON_EMBED_COLORS.error,
+    title: 'Complaint declined by tutor',
+    description: `${params.tutorName} declined your complaint. You can contact support if you disagree.`,
+    fields: [
+      { name: 'Tutor', value: params.tutorName, inline: true },
+      { name: 'Lesson time', value: params.lessonStartAtLabel, inline: true },
+      { name: 'Submitted at', value: params.submittedAtLabel, inline: true },
+      { name: 'Reason', value: params.reason, inline: false },
+      { name: 'Tutor note', value: tutorNoteText.slice(0, 500), inline: false },
+    ],
+    url: params.complaintsUrl,
+    ...embedAdminThumbnail(),
+  };
+};
+
+export const lessonComplaintTutorRejectedEmbed = (params: {
+  complaintId: string;
+  studentName: string;
+  tutorName: string;
+  lessonStartAtLabel: string;
+  reason: string;
+  tutorNote?: string | null;
+  reviewUrl?: string;
+}): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.warning,
+  title: 'Tutor declined complaint',
+  description: `${params.tutorName} declined a lesson complaint from ${params.studentName}. Admin may still review.`,
+  fields: [
+    { name: 'Student', value: params.studentName, inline: true },
+    { name: 'Tutor', value: params.tutorName, inline: true },
+    { name: 'Lesson start', value: params.lessonStartAtLabel, inline: false },
+    { name: 'Reason', value: params.reason, inline: false },
+    ...(params.tutorNote?.trim()
+      ? [{ name: 'Tutor note', value: params.tutorNote.trim().slice(0, 500), inline: false }]
+      : []),
+    { name: 'Complaint ID', value: params.complaintId, inline: false },
+  ],
+  url: params.reviewUrl,
+});

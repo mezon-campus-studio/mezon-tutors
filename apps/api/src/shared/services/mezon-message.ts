@@ -26,9 +26,13 @@ import {
   withdrawalRequestedEmbed,
   subscriptionEnrollmentBookedEmbed,
   lessonComplaintSubmittedEmbed,
+  tutorLessonComplaintSubmittedEmbed,
+  lessonComplaintTutorConfirmedEmbed,
   tutorLessonComplaintApprovedEmbed,
   studentLessonComplaintRefundedEmbed,
   studentLessonComplaintRejectedEmbed,
+  studentLessonComplaintTutorRejectedEmbed,
+  lessonComplaintTutorRejectedEmbed,
 } from '../utils/mezon-message-templates';
 
 @Injectable()
@@ -246,6 +250,38 @@ export class MezonMessageService {
     );
   }
 
+  tutorLessonComplaintSubmitted(
+    params: {
+      complaintId: string;
+      studentName: string;
+      lessonStartAtLabel: string;
+      reason: string;
+      message?: string | null;
+    } & SenderAvatarParams
+  ): ChannelMessageContent {
+    return this.toChannelMessage(
+      tutorLessonComplaintSubmittedEmbed({
+        ...params,
+        reviewUrl: this.url(ROUTES.DASHBOARD.TUTOR_LESSON_COMPLAINTS),
+      })
+    );
+  }
+
+  lessonComplaintTutorConfirmed(params: {
+    complaintId: string;
+    studentName: string;
+    tutorName: string;
+    lessonStartAtLabel: string;
+    reason: string;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      lessonComplaintTutorConfirmedEmbed({
+        ...params,
+        reviewUrl: this.url(ROUTES.ADMIN.LESSON_COMPLAINTS),
+      })
+    );
+  }
+
   tutorLessonComplaintApproved(
     params: {
       studentName: string;
@@ -291,6 +327,37 @@ export class MezonMessageService {
       studentLessonComplaintRejectedEmbed({
         ...params,
         complaintsUrl: this.url(ROUTES.DASHBOARD.COMPLAINTS),
+      })
+    );
+  }
+
+  studentLessonComplaintTutorRejected(params: {
+    tutorName: string;
+    lessonStartAtLabel: string;
+    submittedAtLabel: string;
+    reason: string;
+    tutorNote?: string | null;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      studentLessonComplaintTutorRejectedEmbed({
+        ...params,
+        complaintsUrl: this.url(ROUTES.DASHBOARD.COMPLAINTS),
+      })
+    );
+  }
+
+  lessonComplaintTutorRejected(params: {
+    complaintId: string;
+    studentName: string;
+    tutorName: string;
+    lessonStartAtLabel: string;
+    reason: string;
+    tutorNote?: string | null;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      lessonComplaintTutorRejectedEmbed({
+        ...params,
+        reviewUrl: this.url(ROUTES.ADMIN.LESSON_COMPLAINTS),
       })
     );
   }

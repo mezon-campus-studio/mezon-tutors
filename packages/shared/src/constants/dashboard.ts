@@ -16,6 +16,7 @@ export type DashboardMenuIconKey =
 export type DashboardMenuLabelKey =
   | 'myLessons'
   | 'complaints'
+  | 'lessonComplaints'
   | 'trialBookings'
   | 'mySchedule'
   | 'logout'
@@ -84,6 +85,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'mySchedule',
     iconKey: 'calendar',
     href: ROUTES.DASHBOARD.MY_SCHEDULE,
+    roles: ['TUTOR'],
+  },
+  {
+    key: 'tutor-lesson-complaints',
+    type: 'link',
+    labelKey: 'lessonComplaints',
+    iconKey: 'complaints',
+    href: ROUTES.DASHBOARD.TUTOR_LESSON_COMPLAINTS,
     roles: ['TUTOR'],
   },
   {
@@ -172,6 +181,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-schedule') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_SCHEDULE);
+  }
+  if (item.key === 'tutor-lesson-complaints') {
+    return pathname.startsWith(ROUTES.DASHBOARD.TUTOR_LESSON_COMPLAINTS);
   }
   if (item.key === 'my-lessons') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);

@@ -13,6 +13,7 @@
       "earnings": "Earnings",
       "myLessons": "My Lessons",
       "complaints": "Complaints",
+      "lessonComplaints": "Lesson complaints",
       "wallet": "Wallet",
       "tutorApplications": "Tutor applications",
       "dashboard": "Dashboard",
@@ -308,7 +309,7 @@
       "title": "My complaints",
       "description": "Track lesson complaints you submitted and their review status.",
       "metrics": {
-        "pending": "Pending review",
+        "pending": "In review",
         "approved": "Approved",
         "rejected": "Rejected"
       },
@@ -318,7 +319,9 @@
         "lessonTime": "Lesson time",
         "submittedAt": "Submitted",
         "reason": "Reason",
+        "attachments": "Evidence photos",
         "adminNote": "Admin note",
+        "tutorNote": "Tutor note",
         "contactSupport": "Chat with support",
         "openingSupportChat": "Opening chat…"
       },
@@ -332,14 +335,79 @@
       "emptyDescription": "When you report an issue with a completed lesson, it will appear here.",
       "filters": {
         "all": "All statuses",
-        "PENDING": "Pending",
+        "PENDING": "Awaiting tutor",
+        "TUTOR_CONFIRMED": "Awaiting admin",
+        "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
         "REJECTED": "Rejected"
       },
       "status": {
-        "PENDING": "Pending",
+        "PENDING": "Awaiting tutor confirmation",
+        "TUTOR_CONFIRMED": "Awaiting admin review",
+        "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
         "REJECTED": "Rejected"
+      }
+    },
+    "TutorLessonComplaints": {
+      "title": "Lesson complaints",
+      "description": "Review complaints from your students. Confirm when you agree so admin can process a refund.",
+      "searchPlaceholder": "Search by student or reason...",
+      "loading": "Loading complaints...",
+      "emptyTitle": "No complaints yet",
+      "emptyDescription": "When a student reports an issue with a completed lesson, it will appear here.",
+      "metrics": {
+        "pending": "In review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "filters": {
+        "all": "All statuses",
+        "PENDING": "Awaiting your confirmation",
+        "TUTOR_CONFIRMED": "Awaiting admin",
+        "TUTOR_REJECTED": "Declined by you",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "status": {
+        "PENDING": "Awaiting your confirmation",
+        "TUTOR_CONFIRMED": "Awaiting admin review",
+        "TUTOR_REJECTED": "Declined by you",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "list": {
+        "title": "Complaint history",
+        "subtitle": "{count, plural, one {# complaint} other {# complaints}}",
+        "studentLabel": "Student",
+        "lessonTime": "Lesson time",
+        "submittedAt": "Submitted",
+        "reason": "Reason",
+        "duration": "{minutes} min",
+        "attachments": "Evidence photos",
+        "confirm": "Confirm complaint",
+        "reject": "Decline complaint",
+        "rejectSuccess": "Complaint declined.",
+        "rejectFailed": "Could not decline complaint. Please try again.",
+        "tutorNote": "Your note",
+        "contactSupport": "Chat with support",
+        "openingSupportChat": "Opening chat…",
+        "confirmSuccess": "Complaint confirmed. Admin will review next.",
+        "confirmFailed": "Could not confirm complaint. Please try again.",
+        "rejectDialog": {
+          "title": "Decline this complaint?",
+          "description": "The student and admin will be notified. You can add a short note explaining why you disagree.",
+          "noteLabel": "Note to student (optional)",
+          "notePlaceholder": "Explain why you disagree with this complaint...",
+          "confirm": "Decline",
+          "cancel": "Cancel"
+        },
+        "confirmDialog": {
+          "title": "Confirm this complaint?",
+          "description": "You acknowledge the student's report. Admin will decide whether to refund the lesson payment.",
+          "confirm": "Confirm",
+          "cancel": "Cancel"
+        }
       }
     },
     "placeholder": {

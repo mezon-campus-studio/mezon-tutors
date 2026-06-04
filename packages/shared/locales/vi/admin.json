@@ -85,7 +85,9 @@
       },
       "filters": {
         "all": "Tất cả",
-        "PENDING": "Chờ xử lý",
+        "PENDING": "Chờ gia sư xác nhận",
+        "TUTOR_CONFIRMED": "Gia sư đã xác nhận",
+        "TUTOR_REJECTED": "Gia sư từ chối",
         "APPROVED": "Đã duyệt",
         "REJECTED": "Đã từ chối"
       },
@@ -104,11 +106,21 @@
         },
         "approve": "Duyệt & hoàn tiền",
         "reject": "Từ chối",
+        "awaitingTutorConfirmation": "Gia sư chưa xác nhận khiếu nại này.",
+        "tutorRejectedHint": "Gia sư đã từ chối khiếu nại này.",
         "trial": "Thử",
         "subscription": "Gói",
         "lessonStart": "Giờ học",
         "lessonDuration": "{minutes} phút",
         "submittedAt": "Gửi khiếu nại",
+        "attachments": "Ảnh minh chứng",
+        "attachmentAlt": "Ảnh minh chứng {index}",
+        "moreAttachments": "+{count}",
+        "galleryTitle": "Ảnh minh chứng",
+        "galleryDescription": "Ảnh {current}/{total}",
+        "galleryThumbnails": "Tất cả ảnh",
+        "galleryPrevious": "Ảnh trước",
+        "galleryNext": "Ảnh sau",
         "adminNotePlaceholder": "Ghi chú admin (tùy chọn)",
         "approveSuccess": "Đã duyệt và hoàn tiền.",
         "approveSuccessNoRefund": "Đã duyệt khiếu nại.",
@@ -116,8 +128,14 @@
         "actionFailed": "Thao tác thất bại. Vui lòng thử lại.",
         "confirmApprove": {
           "title": "Duyệt khiếu nại này?",
-          "description": "Tiền buổi học sẽ được hoàn về ví học sinh. Thao tác này không thể hoàn tác.",
+          "description": "Gia sư đã xác nhận khiếu nại. Tiền buổi học sẽ được hoàn về ví học sinh. Thao tác này không thể hoàn tác.",
           "confirm": "Duyệt & hoàn tiền",
+          "cancel": "Hủy"
+        },
+        "confirmApproveWithoutTutor": {
+          "title": "Duyệt khi chưa có xác nhận từ gia sư?",
+          "description": "Gia sư chưa xác nhận khiếu nại này. Nếu duyệt ngay, học sinh sẽ được hoàn tiền. Chỉ tiếp tục khi bạn đã xem xét đủ minh chứng.",
+          "confirm": "Vẫn duyệt",
           "cancel": "Hủy"
         },
         "confirmReject": {

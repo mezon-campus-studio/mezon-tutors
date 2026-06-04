@@ -18,6 +18,8 @@ import {
   type StudentLessonComplaintItem,
   type AdminLessonComplaintListItem,
   type AdminLessonComplaintMetrics,
+  type TutorLessonComplaintListItem,
+  type TutorConfirmLessonComplaintResult,
   type LessonComplaintCreatedResult,
   type ReviewLessonComplaintResult,
   ELessonComplaintStatus as LessonComplaintStatusApi,
@@ -41,6 +43,10 @@ import { WalletService } from '../wallet/wallet.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import type { CreateLessonComplaintDto } from './dto/create-lesson-complaint.dto';
 import type { ReviewLessonComplaintDto } from './dto/review-lesson-complaint.dto';
+import {
+  parseLessonComplaintAttachments,
+  serializeLessonComplaintAttachments,
+} from './lesson-complaint-attachments.util';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -144,6 +150,7 @@ export class LessonComplaintService {
         subscriptionSlotIndex: context.subscriptionSlotIndex ?? null,
         lessonStartAt: context.lessonStartAt,
         lessonDurationMinutes: context.lessonDurationMinutes,
+        attachmentUrls: serializeLessonComplaintAttachments(dto.attachments),
       },
       select: {
         id: true,
@@ -167,20 +174,42 @@ export class LessonComplaintService {
         `${complaint.tutor.firstName ?? ''} ${complaint.tutor.lastName ?? ''}`.trim() ||
         complaint.tutor.user.username ||
         'Tutor';
+      const lessonStartAtLabel = dayjs(complaint.lessonStartAt)
+        .utc()
+        .format('ddd, D MMM YYYY · HH:mm [UTC]');
+
       await this.notificationService.notifyAdminLessonComplaintSubmitted({
         complaintId: complaint.id,
         studentName: student.username || 'Student',
         tutorName,
-        lessonStartAtLabel: dayjs(complaint.lessonStartAt)
-          .utc()
-          .format('ddd, D MMM YYYY · HH:mm [UTC]'),
+        lessonStartAtLabel,
         reason: complaint.reason,
         message: complaint.message,
         senderAvatarUrl: student.avatar,
       });
+
+      const tutorProfile = await this.prisma.tutorProfile.findUnique({
+        where: { id: context.tutorId },
+        select: {
+          userId: true,
+          user: { select: { mezonUserId: true, username: true } },
+        },
+      });
+      if (tutorProfile) {
+        await this.notificationService.notifyTutorLessonComplaintSubmitted({
+          complaintId: complaint.id,
+          tutorUserId: tutorProfile.userId,
+          tutorMezonUserId: tutorProfile.user.mezonUserId,
+          studentName: student.username || 'Student',
+          lessonStartAtLabel,
+          reason: complaint.reason,
+          message: complaint.message,
+          senderAvatarUrl: student.avatar,
+        });
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to notify admin for complaint ${complaint.id}: ${detail}`);
+      this.logger.warn(`Failed to notify for complaint ${complaint.id}: ${detail}`);
     }
 
     return {
@@ -212,10 +241,12 @@ export class LessonComplaintService {
       lesson_type: row.lessonType,
       reason: row.reason,
       message: row.message,
+      attachment_urls: parseLessonComplaintAttachments(row.attachmentUrls),
       lesson_start_at: row.lessonStartAt.toISOString(),
       lesson_duration_minutes: row.lessonDurationMinutes,
       created_at: row.createdAt.toISOString(),
       admin_note: row.adminNote,
+      tutor_note: row.tutorNote,
       reviewed_at: row.reviewedAt?.toISOString() ?? null,
       tutor: {
         id: row.tutor.id,
@@ -278,6 +309,7 @@ export class LessonComplaintService {
         lesson_type: row.lessonType,
         reason: row.reason,
         message: row.message,
+        attachment_urls: parseLessonComplaintAttachments(row.attachmentUrls),
         lesson_start_at: row.lessonStartAt.toISOString(),
         lesson_duration_minutes: row.lessonDurationMinutes,
         created_at: row.createdAt.toISOString(),
@@ -300,9 +332,217 @@ export class LessonComplaintService {
         gross_amount: grossAmount,
         currency,
         admin_note: row.adminNote,
+        tutor_note: row.tutorNote,
         reviewed_at: row.reviewedAt?.toISOString() ?? null,
       };
     });
+  }
+
+  async listForTutor(tutorUserId: string): Promise<TutorLessonComplaintListItem[]> {
+    await this.assertTutorUser(tutorUserId);
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    });
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    const rows = await this.prisma.lessonComplaint.findMany({
+      where: { tutorId: tutor.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        student: {
+          select: { id: true, username: true, avatar: true },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      status: row.status as LessonComplaintStatusApi,
+      lesson_type: row.lessonType,
+      reason: row.reason,
+      message: row.message,
+      attachment_urls: parseLessonComplaintAttachments(row.attachmentUrls),
+      lesson_start_at: row.lessonStartAt.toISOString(),
+      lesson_duration_minutes: row.lessonDurationMinutes,
+      created_at: row.createdAt.toISOString(),
+      student: {
+        id: row.student.id,
+        username: row.student.username,
+        avatar: row.student.avatar,
+      },
+      trial_lesson_booking_id: row.trialLessonBookingId,
+      subscription_enrollment_id: row.subscriptionEnrollmentId,
+      subscription_slot_index: row.subscriptionSlotIndex,
+      tutor_note: row.tutorNote,
+    }));
+  }
+
+  async confirmComplaintByTutor(
+    tutorUserId: string,
+    complaintId: string
+  ): Promise<TutorConfirmLessonComplaintResult> {
+    await this.assertTutorUser(tutorUserId);
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { username: true } },
+      },
+    });
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    const complaint = await this.prisma.lessonComplaint.findUnique({
+      where: { id: complaintId },
+      include: {
+        student: { select: { username: true } },
+      },
+    });
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found');
+    }
+    if (complaint.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to confirm this complaint');
+    }
+    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+      throw new BadRequestException('This complaint cannot be confirmed');
+    }
+
+    const updated = await this.prisma.lessonComplaint.update({
+      where: { id: complaintId },
+      data: { status: ELessonComplaintStatus.TUTOR_CONFIRMED },
+      select: { id: true, status: true, reason: true, lessonStartAt: true },
+    });
+
+    try {
+      const tutorDisplay =
+        `${tutor.firstName ?? ''} ${tutor.lastName ?? ''}`.trim() ||
+        tutor.user.username ||
+        'Tutor';
+
+      await this.notificationService.notifyAdminLessonComplaintTutorConfirmed({
+        complaintId: updated.id,
+        studentName: complaint.student.username || 'Student',
+        tutorName: tutorDisplay,
+        lessonStartAtLabel: dayjs(updated.lessonStartAt)
+          .utc()
+          .format('ddd, D MMM YYYY · HH:mm [UTC]'),
+        reason: updated.reason,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to notify admin for tutor-confirmed complaint ${updated.id}: ${detail}`
+      );
+    }
+
+    return {
+      id: updated.id,
+      status: updated.status as LessonComplaintStatusApi,
+    };
+  }
+
+  async rejectComplaintByTutor(
+    tutorUserId: string,
+    complaintId: string,
+    dto: { tutorNote?: string }
+  ): Promise<{ id: string; status: LessonComplaintStatusApi }> {
+    await this.assertTutorUser(tutorUserId);
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { username: true } },
+      },
+    });
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    const complaint = await this.prisma.lessonComplaint.findUnique({
+      where: { id: complaintId },
+      include: {
+        student: { select: { id: true, username: true, mezonUserId: true } },
+      },
+    });
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found');
+    }
+    if (complaint.tutorId !== tutor.id) {
+      throw new ForbiddenException('Not allowed to reject this complaint');
+    }
+    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+      throw new BadRequestException('This complaint cannot be rejected');
+    }
+
+    const tutorNote = dto.tutorNote?.trim() || null;
+    const updated = await this.prisma.lessonComplaint.update({
+      where: { id: complaintId },
+      data: {
+        status: ELessonComplaintStatus.TUTOR_REJECTED,
+        tutorNote,
+      },
+      select: { id: true, status: true, reason: true, lessonStartAt: true, createdAt: true },
+    });
+
+    const tutorDisplay =
+      `${tutor.firstName ?? ''} ${tutor.lastName ?? ''}`.trim() ||
+      tutor.user.username ||
+      'Tutor';
+    const lessonStartAtLabel = dayjs(updated.lessonStartAt)
+      .utc()
+      .format('ddd, D MMM YYYY · HH:mm [UTC]');
+    const submittedAtLabel = dayjs(updated.createdAt)
+      .utc()
+      .format('ddd, D MMM YYYY · HH:mm [UTC]');
+
+    try {
+      await this.notificationService.notifyStudentLessonComplaintTutorRejected({
+        studentUserId: complaint.student.id,
+        studentMezonUserId: complaint.student.mezonUserId,
+        tutorName: tutorDisplay,
+        lessonStartAtLabel,
+        lessonStartAtIso: updated.lessonStartAt.toISOString(),
+        submittedAtLabel,
+        reason: updated.reason,
+        tutorNote,
+        complaintId: updated.id,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to notify student for tutor-rejected complaint ${updated.id}: ${detail}`
+      );
+    }
+
+    try {
+      await this.notificationService.notifyAdminLessonComplaintTutorRejected({
+        complaintId: updated.id,
+        studentName: complaint.student.username || 'Student',
+        tutorName: tutorDisplay,
+        lessonStartAtLabel,
+        reason: updated.reason,
+        tutorNote,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to notify admin for tutor-rejected complaint ${updated.id}: ${detail}`
+      );
+    }
+
+    return {
+      id: updated.id,
+      status: updated.status as LessonComplaintStatusApi,
+    };
   }
 
   async getAdminMetrics(): Promise<AdminLessonComplaintMetrics> {
@@ -378,13 +618,24 @@ export class LessonComplaintService {
     if (!complaint) {
       throw new NotFoundException('Complaint not found');
     }
-    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+    if (
+      complaint.status === ELessonComplaintStatus.APPROVED ||
+      complaint.status === ELessonComplaintStatus.REJECTED
+    ) {
       throw new BadRequestException('This complaint has already been reviewed');
     }
 
     let refunded = false;
 
     if (targetStatus === 'APPROVED') {
+      if (
+        complaint.status === ELessonComplaintStatus.PENDING &&
+        !dto.acknowledgeWithoutTutorConfirmation
+      ) {
+        throw new BadRequestException(
+          'Tutor has not confirmed this complaint yet. Confirm override to approve without tutor confirmation.'
+        );
+      }
       if (
         complaint.lessonType === ELessonChangeLessonType.TRIAL &&
         complaint.trialLessonBookingId
@@ -466,7 +717,7 @@ export class LessonComplaintService {
         if (refunded) {
           await this.notifyTutorOnApprovedRefund(complaint, updated, notificationDetails);
         }
-      } else {
+      } else if (complaint.status !== ELessonComplaintStatus.TUTOR_REJECTED) {
         await this.notificationService.notifyStudentLessonComplaintRejected({
           studentUserId: complaint.studentId,
           studentMezonUserId: student?.mezonUserId,
@@ -610,6 +861,16 @@ export class LessonComplaintService {
   private formatComplaintInstantLabel(at: Date, timezoneName: string): string {
     const tz = timezoneName?.trim() || 'UTC';
     return dayjs(at).tz(tz).format('ddd, D MMM YYYY · HH:mm z');
+  }
+
+  private async assertTutorUser(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    if (!user || user.role !== Role.TUTOR) {
+      throw new ForbiddenException('Only tutors can access lesson complaints');
+    }
   }
 
   private async resolveLessonContext(

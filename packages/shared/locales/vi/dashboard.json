@@ -13,6 +13,7 @@
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
       "complaints": "Khiếu nại",
+      "lessonComplaints": "Khiếu nại buổi học",
       "wallet": "Ví",
       "tutorApplications": "Hồ sơ gia sư",
       "dashboard": "Bảng điều khiển",
@@ -308,7 +309,7 @@
       "title": "Khiếu nại của tôi",
       "description": "Theo dõi các khiếu nại buổi học bạn đã gửi và trạng thái xử lý.",
       "metrics": {
-        "pending": "Đang chờ duyệt",
+        "pending": "Đang xử lý",
         "approved": "Đã duyệt",
         "rejected": "Đã từ chối"
       },
@@ -318,7 +319,9 @@
         "lessonTime": "Giờ buổi học",
         "submittedAt": "Gửi lúc",
         "reason": "Lý do",
+        "attachments": "Ảnh minh chứng",
         "adminNote": "Ghi chú từ quản trị",
+        "tutorNote": "Ghi chú từ gia sư",
         "contactSupport": "Chat với hỗ trợ",
         "openingSupportChat": "Đang mở chat…"
       },
@@ -332,14 +335,79 @@
       "emptyDescription": "Khi bạn báo cáo vấn đề với buổi học đã hoàn thành, khiếu nại sẽ hiển thị tại đây.",
       "filters": {
         "all": "Tất cả trạng thái",
-        "PENDING": "Đang chờ",
+        "PENDING": "Chờ gia sư",
+        "TUTOR_CONFIRMED": "Chờ admin",
+        "TUTOR_REJECTED": "Gia sư từ chối",
         "APPROVED": "Đã duyệt",
         "REJECTED": "Đã từ chối"
       },
       "status": {
-        "PENDING": "Đang chờ",
+        "PENDING": "Chờ gia sư xác nhận",
+        "TUTOR_CONFIRMED": "Chờ admin duyệt",
+        "TUTOR_REJECTED": "Gia sư đã từ chối",
         "APPROVED": "Đã duyệt",
         "REJECTED": "Đã từ chối"
+      }
+    },
+    "TutorLessonComplaints": {
+      "title": "Khiếu nại buổi học",
+      "description": "Xem khiếu nại từ học viên. Xác nhận nếu bạn đồng ý để admin xử lý hoàn tiền.",
+      "searchPlaceholder": "Tìm theo học viên hoặc lý do...",
+      "loading": "Đang tải khiếu nại...",
+      "emptyTitle": "Chưa có khiếu nại",
+      "emptyDescription": "Khi học viên báo cáo vấn đề với buổi học đã hoàn thành, khiếu nại sẽ hiển thị tại đây.",
+      "metrics": {
+        "pending": "Đang xử lý",
+        "approved": "Đã duyệt",
+        "rejected": "Đã từ chối"
+      },
+      "filters": {
+        "all": "Tất cả trạng thái",
+        "PENDING": "Chờ bạn xác nhận",
+        "TUTOR_CONFIRMED": "Chờ admin",
+        "TUTOR_REJECTED": "Bạn đã từ chối",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      },
+      "status": {
+        "PENDING": "Chờ bạn xác nhận",
+        "TUTOR_CONFIRMED": "Chờ admin duyệt",
+        "TUTOR_REJECTED": "Bạn đã từ chối",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Đã từ chối"
+      },
+      "list": {
+        "title": "Lịch sử khiếu nại",
+        "subtitle": "{count} khiếu nại",
+        "studentLabel": "Học viên",
+        "lessonTime": "Giờ buổi học",
+        "submittedAt": "Gửi lúc",
+        "reason": "Lý do",
+        "duration": "{minutes} phút",
+        "attachments": "Ảnh minh chứng",
+        "confirm": "Xác nhận khiếu nại",
+        "reject": "Từ chối khiếu nại",
+        "rejectSuccess": "Đã từ chối khiếu nại.",
+        "rejectFailed": "Không từ chối được. Vui lòng thử lại.",
+        "tutorNote": "Ghi chú của bạn",
+        "contactSupport": "Chat với hỗ trợ",
+        "openingSupportChat": "Đang mở chat…",
+        "confirmSuccess": "Đã xác nhận. Admin sẽ xem xét tiếp.",
+        "confirmFailed": "Không xác nhận được. Vui lòng thử lại.",
+        "rejectDialog": {
+          "title": "Từ chối khiếu nại này?",
+          "description": "Học viên và admin sẽ được thông báo. Bạn có thể thêm ghi chú giải thích lý do không đồng ý.",
+          "noteLabel": "Ghi chú gửi học viên (tùy chọn)",
+          "notePlaceholder": "Giải thích vì sao bạn không đồng ý với khiếu nại này...",
+          "confirm": "Từ chối",
+          "cancel": "Hủy"
+        },
+        "confirmDialog": {
+          "title": "Xác nhận khiếu nại này?",
+          "description": "Bạn đồng ý với báo cáo của học viên. Admin sẽ quyết định có hoàn tiền buổi học hay không.",
+          "confirm": "Xác nhận",
+          "cancel": "Hủy"
+        }
       }
     },
     "placeholder": {

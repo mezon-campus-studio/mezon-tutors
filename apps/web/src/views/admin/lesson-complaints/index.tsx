@@ -37,6 +37,10 @@ import {
   useRejectLessonComplaint,
 } from "@/services";
 import ConfirmDialog from "@/views/admin/tutor-applications/detail/components/ConfirmDialog";
+import {
+  ImageAttachmentGallery,
+  toImageGalleryItems,
+} from "@/components/common/ImageAttachmentGallery";
 
 function formatLessonWindow(
   startAtIso: string,
@@ -128,6 +132,8 @@ function statusVariant(
   status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
   if (status === "PENDING") return "secondary";
+  if (status === "TUTOR_CONFIRMED") return "default";
+  if (status === "TUTOR_REJECTED") return "destructive";
   if (status === "APPROVED") return "default";
   if (status === "REJECTED") return "destructive";
   return "outline";
@@ -141,7 +147,7 @@ export default function AdminLessonComplaintsView() {
   const [status, setStatus] = useState<LessonComplaintStatusFilter>("PENDING");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [confirmState, setConfirmState] = useState<{
-    action: "approve" | "reject";
+    action: "approve" | "approveWithoutTutor" | "reject";
     id: string;
   } | null>(null);
 
@@ -152,11 +158,18 @@ export default function AdminLessonComplaintsView() {
 
   const filtered = useMemo(() => filterComplaints(items, search), [items, search]);
 
-  const handleApprove = async (id: string): Promise<boolean> => {
+  const handleApprove = async (
+    id: string,
+    options?: { acknowledgeWithoutTutorConfirmation?: boolean },
+  ): Promise<boolean> => {
     try {
       const result = await approveMutation.mutateAsync({
         id,
-        body: { adminNote: notes[id]?.trim() || undefined },
+        body: {
+          adminNote: notes[id]?.trim() || undefined,
+          acknowledgeWithoutTutorConfirmation:
+            options?.acknowledgeWithoutTutorConfirmation,
+        },
       });
       toast.success(
         result.refunded
@@ -194,7 +207,11 @@ export default function AdminLessonComplaintsView() {
     const success =
       confirmState.action === "approve"
         ? await handleApprove(confirmState.id)
-        : await handleReject(confirmState.id);
+        : confirmState.action === "approveWithoutTutor"
+          ? await handleApprove(confirmState.id, {
+              acknowledgeWithoutTutorConfirmation: true,
+            })
+          : await handleReject(confirmState.id);
 
     if (success) {
       setConfirmState(null);
@@ -304,6 +321,9 @@ export default function AdminLessonComplaintsView() {
                         ? t("list.trial")
                         : t("list.subscription");
                     const isPending = item.status === "PENDING";
+                    const isTutorConfirmed = item.status === "TUTOR_CONFIRMED";
+                    const isTutorRejected = item.status === "TUTOR_REJECTED";
+                    const isReviewable = isPending || isTutorConfirmed || isTutorRejected;
                     const busy =
                       approveMutation.isPending || rejectMutation.isPending;
 
@@ -343,25 +363,48 @@ export default function AdminLessonComplaintsView() {
                             submittedAtLabel={t("list.submittedAt")}
                           />
                         </td>
-                        <td className="max-w-[200px] px-4 py-3">
+                        <td className="max-w-[280px] px-4 py-3">
                           <p className="font-medium">{item.reason}</p>
                           {item.message ? (
                             <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
                               {item.message}
                             </p>
                           ) : null}
+                          {item.attachment_urls.length > 0 ? (
+                            <div className="mt-3">
+                              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                {t("list.attachments")}
+                              </p>
+                              <ImageAttachmentGallery
+                                images={toImageGalleryItems(item.attachment_urls)}
+                              />
+                            </div>
+                          ) : null}
                         </td>
                         <td className="px-4 py-3">{amountLabel}</td>
                         <td className="px-4 py-3">
-                          <Badge
-                            variant={statusVariant(item.status)}
-                          >
-                            {item.status}
+                          <Badge variant={statusVariant(item.status)}>
+                            {tFilters(item.status)}
                           </Badge>
                         </td>
                         <td className="px-4 py-3">
-                          {isPending ? (
+                          {isReviewable ? (
                             <div className="flex min-w-[200px] flex-col gap-2">
+                              {isPending ? (
+                                <p className="text-xs text-amber-700">
+                                  {t("list.awaitingTutorConfirmation")}
+                                </p>
+                              ) : null}
+                              {isTutorRejected ? (
+                                <div className="space-y-1">
+                                  <p className="text-xs font-medium text-rose-700">
+                                    {t("list.tutorRejectedHint")}
+                                  </p>
+                                  {item.tutor_note ? (
+                                    <p className="text-xs text-rose-600">{item.tutor_note}</p>
+                                  ) : null}
+                                </div>
+                              ) : null}
                               <Textarea
                                 rows={2}
                                 placeholder={t("list.adminNotePlaceholder")}
@@ -378,7 +421,10 @@ export default function AdminLessonComplaintsView() {
                                   size="sm"
                                   disabled={busy}
                                   onClick={() =>
-                                    setConfirmState({ action: "approve", id: item.id })
+                                    setConfirmState({
+                                      action: isPending ? "approveWithoutTutor" : "approve",
+                                      id: item.id,
+                                    })
                                   }
                                 >
                                   {t("list.approve")}
@@ -424,6 +470,22 @@ export default function AdminLessonComplaintsView() {
         description={t("list.confirmApprove.description")}
         confirmLabel={t("list.confirmApprove.confirm")}
         cancelLabel={t("list.confirmApprove.cancel")}
+        loading={approveMutation.isPending}
+        onConfirm={handleConfirmAction}
+      />
+      <ConfirmDialog
+        open={confirmState?.action === "approveWithoutTutor"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmState((current) =>
+              current?.action === "approveWithoutTutor" ? null : current,
+            );
+          }
+        }}
+        title={t("list.confirmApproveWithoutTutor.title")}
+        description={t("list.confirmApproveWithoutTutor.description")}
+        confirmLabel={t("list.confirmApproveWithoutTutor.confirm")}
+        cancelLabel={t("list.confirmApproveWithoutTutor.cancel")}
         loading={approveMutation.isPending}
         onConfirm={handleConfirmAction}
       />

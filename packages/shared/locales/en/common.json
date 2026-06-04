@@ -77,5 +77,14 @@
       "notAvailable": "Not available",
       "bookedByYou": "Booked by you"
     }
+  },
+  "imageGallery": {
+    "attachmentAlt": "Image {index}",
+    "moreAttachments": "+{count}",
+    "galleryTitle": "Images",
+    "galleryDescription": "Image {current} of {total}",
+    "galleryThumbnails": "All images",
+    "galleryPrevious": "Previous image",
+    "galleryNext": "Next image"
   }
 }

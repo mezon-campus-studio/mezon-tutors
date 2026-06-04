@@ -36,6 +36,7 @@ export const ROUTES = {
     TRIAL_BOOKING: '/dashboard/tutor/trial-bookings',
     TRIAL_BOOKING_DETAIL: (id: string) => `/dashboard/tutor/trial-bookings/${id}`,
     MY_SCHEDULE: '/dashboard/tutor/my-schedule',
+    TUTOR_LESSON_COMPLAINTS: '/dashboard/tutor/lesson-complaints',
     MY_LESSONS: '/dashboard/my-lesson',
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',

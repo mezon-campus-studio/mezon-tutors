@@ -6,6 +6,7 @@ export const CLOUDINARY_FOLDER = {
   TUTOR_CERTIFICATE: `${BASIC_FOLDER}/tutor-certificate`,
   TUTOR_DIPLOMA: `${BASIC_FOLDER}/tutor-diploma`,
   ADMIN_PAYMENTS: `${BASIC_FOLDER}/admin-payments`,
+  LESSON_COMPLAINT: `${BASIC_FOLDER}/lesson-complaint`,
 };
 
 export const MAX_IMAGE_SIZE_MB = 5;
