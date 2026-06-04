@@ -22,6 +22,8 @@
         "alreadyBookedDescription": "Bạn đã có booking với gia sư này và không thể tạo thêm.",
         "bookingFailedTitle": "Đặt lịch thất bại",
         "bookingFailedFallback": "Không thể tạo booking",
+        "slotUnavailableTitle": "Khung giờ không còn trống",
+        "slotUnavailableDescription": "Có người khác vừa giữ hoặc đặt khung giờ này. Vui lòng chọn lịch khác.",
         "popupBlockedTitle": "Không mở được cửa sổ thanh toán",
         "popupBlockedDescription": "Vui lòng cho phép popup và thử lại.",
         "paypalUnavailableTitle": "PayPal chưa khả dụng",
@@ -161,6 +163,19 @@
               "retry": "Tạo lại đặt buổi học thử từ hồ sơ gia sư.",
               "mistake": "Nếu tài khoản đã bị trừ tiền, giữ chứng từ ngân hàng và liên hệ hỗ trợ ngay."
             }
+          },
+          "slot_unavailable_after_payment": {
+            "badge": "Đã thanh toán — hết chỗ",
+            "title": "Thanh toán thành công, nhưng khung giờ này không còn trống",
+            "description": "VNPay đã xác nhận thanh toán của bạn. Trong lúc hệ thống xác nhận buổi học, có học viên khác đã giữ hoặc đặt trùng khung giờ. Đăng ký/buổi học không được xác nhận.",
+            "nextStepsTitle": "Tiếp theo bạn nên làm gì",
+            "nextSteps": {
+              "noCharge": "Chúng tôi đã hoàn toàn bộ tiền buổi học vào ví Mezonly của bạn. Bạn không bị trừ hai lần — hãy dùng số dư này cho lần đặt tiếp theo.",
+              "retry": "Vào danh sách gia sư, chọn khung giờ khác (buổi thử hoặc gói tháng) và thanh toán lại. Bật “Thanh toán bằng ví” để dùng số tiền vừa hoàn.",
+              "mistake": "Số dư ví thường cập nhật trong vài phút. Mở mục Ví trên dashboard; nếu vẫn chưa thấy, liên hệ hỗ trợ kèm biên lai ngân hàng và mã booking."
+            },
+            "ctaWallet": "Xem số dư ví",
+            "ctaPending": "Đơn chờ thanh toán"
           },
           "unknown": {
             "badge": "Thanh toán không thành công",

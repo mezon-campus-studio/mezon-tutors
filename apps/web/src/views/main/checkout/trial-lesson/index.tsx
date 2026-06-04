@@ -20,6 +20,7 @@ import {
   resolveUserTimezone,
 } from "@/lib/timezone";
 import {
+  trialLessonBookingApi,
   useCreateTrialLessonBookingMutation,
   useGetCurrentTrialLessonBooking,
   useGetVerifiedTutorAbout,
@@ -127,6 +128,26 @@ export default function TrialLessonCheckoutPage() {
         });
         return;
       }
+      const timezoneName =
+        resolveStableTimezone(currentUser?.timezone, timezoneFromQuery) ??
+        (hasMounted ? detectBrowserTimezone() : null) ??
+        "UTC";
+
+      const slotCheck = await trialLessonBookingApi.checkTutorLessonSlotBookable({
+        tutorId: query.tutorId,
+        startAt: query.startAt,
+        durationMinutes: query.durationMinutes,
+        timezone: timezoneName,
+        excludeBookingId: currentBooking?.bookingId ?? undefined,
+      });
+
+      if (!slotCheck.available) {
+        toast.error(t("toast.slotUnavailableTitle"), {
+          description: t("toast.slotUnavailableDescription"),
+        });
+        return;
+      }
+
       try {
         const booking = await createBooking.mutateAsync({
           tutorId: query.tutorId,
@@ -157,9 +178,12 @@ export default function TrialLessonCheckoutPage() {
       createBooking,
       currency,
       currentBooking,
+      currentUser?.timezone,
+      hasMounted,
       query,
       redirectToVnpay,
       router,
+      timezoneFromQuery,
       walletDetails,
       t,
       tutor,

@@ -22,6 +22,8 @@
         "alreadyBookedDescription": "You already have a booking with this tutor and cannot create another one.",
         "bookingFailedTitle": "Booking failed",
         "bookingFailedFallback": "Could not create booking",
+        "slotUnavailableTitle": "Time slot no longer available",
+        "slotUnavailableDescription": "Someone else booked this time while you were checking out. Please choose another slot.",
         "popupBlockedTitle": "Unable to open payment window",
         "popupBlockedDescription": "Please allow popups and try again.",
         "paypalUnavailableTitle": "PayPal is not available",
@@ -161,6 +163,19 @@
               "retry": "Create the trial lesson booking again from the tutor’s profile.",
               "mistake": "If money left your account, save the transaction reference from your bank and contact support immediately."
             }
+          },
+          "slot_unavailable_after_payment": {
+            "badge": "Payment succeeded — slot taken",
+            "title": "Your payment went through, but this time slot is no longer available",
+            "description": "VNPay confirmed your payment. While we were confirming your lesson, another student reserved this time (or it was on hold). Your booking was not confirmed.",
+            "nextStepsTitle": "What happens next",
+            "nextSteps": {
+              "noCharge": "We added the full lesson price to your Mezonly wallet balance. You were not charged twice — use this balance for your next booking.",
+              "retry": "Browse tutors, pick another slot (trial or monthly plan), and check out again. Turn on “Pay with wallet” to use the refunded balance.",
+              "mistake": "Wallet balance usually updates within a minute. Open Wallet in your dashboard; if it is still missing, contact support with your bank receipt and booking ID."
+            },
+            "ctaWallet": "View wallet balance",
+            "ctaPending": "Pending bookings"
           },
           "unknown": {
             "badge": "Payment unsuccessful",

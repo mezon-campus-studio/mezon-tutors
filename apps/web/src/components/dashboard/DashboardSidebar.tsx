@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
   Calendar,
+  Clock,
   ClipboardList,
   CreditCard,
   FileCheck,
@@ -27,6 +28,7 @@ import { ROUTES, type DashboardMenuItem, getDashboardMenuItemsByRole, DASHBOARD_
 const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
   complaints: MessageSquareWarning,
+  bookingRequests: Clock,
   calendar: Calendar,
   trialBookings: ClipboardList,
   logout: LogOut,
@@ -42,6 +44,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
   complaints: "from-violet-500 to-fuchsia-500",
+  bookingRequests: "from-amber-500 to-orange-500",
   calendar: "from-purple-500 to-fuchsia-500",
   trialBookings: "from-fuchsia-500 to-rose-500",
   logout: "from-rose-500 to-orange-500",

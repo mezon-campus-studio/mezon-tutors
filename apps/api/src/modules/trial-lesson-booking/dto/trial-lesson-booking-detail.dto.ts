@@ -25,6 +25,7 @@ export type TrialLessonBookingDetailDto = {
   tutorAmount: number
   currency: string
   paidAt: string | null
+  cancelReason: string | null
   createdAt: string
   tutor: TrialLessonBookingDetailTutorDto
   student: TrialLessonBookingDetailStudentDto

@@ -47,9 +47,13 @@ import {
   resolveStableTimezone,
   startOfTodayInTimezone,
 } from "@/lib/timezone";
-import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
+import {
+  computeBlockedWallClockSlots,
+  partitionOccupiedSlotsByHold,
+} from "@/lib/schedule-slot-occupancy";
 import { cn } from "@/lib/utils";
 import {
+  trialLessonBookingApi,
   useCreateSubscriptionEnrollmentMutation,
   useGetSubscriptionEligibility,
   useGetOccupiedTrialLessonSlotsForWeek,
@@ -240,6 +244,11 @@ export default function SubscriptionPlanSchedulePage() {
     return candidates;
   }, [schedule?.availability, userTimezone, weekBounds.start]);
 
+  const { confirmed: occupiedConfirmed, held: occupiedHeld } = useMemo(
+    () => partitionOccupiedSlotsByHold(occupiedWeekItems),
+    [occupiedWeekItems],
+  );
+
   const scheduleBlockedSlots = useMemo(() => {
     if (!isOccupiedWeekReady && !isOccupiedWeekError) {
       return [];
@@ -248,20 +257,41 @@ export default function SubscriptionPlanSchedulePage() {
       scheduleAvailableSlots,
       SUBSCRIPTION_LESSON_MINUTES,
       userTimezone,
-      { occupied: occupiedWeekItems },
+      { occupied: occupiedConfirmed },
     );
   }, [
     scheduleAvailableSlots,
     userTimezone,
-    occupiedWeekItems,
+    occupiedConfirmed,
+    isOccupiedWeekReady,
+    isOccupiedWeekError,
+  ]);
+
+  const scheduleHeldSlots = useMemo(() => {
+    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+      return [];
+    }
+    return computeBlockedWallClockSlots(
+      scheduleAvailableSlots,
+      SUBSCRIPTION_LESSON_MINUTES,
+      userTimezone,
+      { occupied: occupiedHeld },
+    );
+  }, [
+    scheduleAvailableSlots,
+    userTimezone,
+    occupiedHeld,
     isOccupiedWeekReady,
     isOccupiedWeekError,
   ]);
 
   const scheduleSelectableSlots = useMemo(() => {
-    const blockedKeys = new Set(scheduleBlockedSlots.map((s) => slotKey(s)));
+    const blockedKeys = new Set([
+      ...scheduleBlockedSlots.map((s) => slotKey(s)),
+      ...scheduleHeldSlots.map((s) => slotKey(s)),
+    ]);
     return scheduleAvailableSlots.filter((s) => !blockedKeys.has(slotKey(s)));
-  }, [scheduleAvailableSlots, scheduleBlockedSlots]);
+  }, [scheduleAvailableSlots, scheduleBlockedSlots, scheduleHeldSlots]);
 
   const handleWeekChange = useCallback(
     (payload: { weekOffset: number; startDate: string; endDate: string }) => {
@@ -330,6 +360,7 @@ export default function SubscriptionPlanSchedulePage() {
       router,
       selectedSlots,
       showWalletRow,
+      t,
       tutorId,
       userTimezone,
     ],
@@ -470,6 +501,7 @@ export default function SubscriptionPlanSchedulePage() {
               <ScheduleSelection
                 availableSlots={scheduleAvailableSlots}
                 blockedSlots={scheduleBlockedSlots}
+                heldSlots={scheduleHeldSlots}
                 timezone={userTimezone}
                 selectionMode="multiple"
                 maxSelections={lessonsPerWeek}

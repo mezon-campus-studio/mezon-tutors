@@ -37,6 +37,7 @@ export interface ScheduleSelectionProps {
   availableSlots: ScheduleSlotInput[];
   /** Shown on the grid with strikethrough styling; not selectable (e.g. occupied trial/subscription). */
   blockedSlots?: ScheduleSlotInput[];
+  heldSlots?: ScheduleSlotInput[];
   selectionMode?: SelectionMode;
   maxSelections?: number;
   value?: SelectedScheduleSlot[];
@@ -140,6 +141,7 @@ type ScheduleCellType =
   | "futureAvailableMuted"
   | "pastAvailable"
   | "occupiedBlocked"
+  | "paymentHoldBlocked"
   | "selected"
   | "pastSelected";
 
@@ -149,9 +151,16 @@ function getScheduleCellType(input: {
   isPast: boolean;
   isSelectable: boolean;
   isOccupiedBlocked: boolean;
+  isPaymentHoldBlocked: boolean;
 }): ScheduleCellType {
-  const { isAvailable, isSelected, isPast, isSelectable, isOccupiedBlocked } =
-    input;
+  const {
+    isAvailable,
+    isSelected,
+    isPast,
+    isSelectable,
+    isOccupiedBlocked,
+    isPaymentHoldBlocked,
+  } = input;
   if (!isAvailable) {
     return isPast ? "emptyPast" : "empty";
   }
@@ -160,6 +169,9 @@ function getScheduleCellType(input: {
   }
   if (isSelected) {
     return "selected";
+  }
+  if (isPaymentHoldBlocked) {
+    return "paymentHoldBlocked";
   }
   if (isOccupiedBlocked) {
     return "occupiedBlocked";
@@ -183,6 +195,8 @@ function getScheduleCellClassName(type: ScheduleCellType): string {
       "cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30",
     type === "occupiedBlocked" &&
       "cursor-not-allowed bg-primary/50 ring-1 ring-inset ring-primary/30",
+    type === "paymentHoldBlocked" &&
+      "cursor-not-allowed bg-amber-400/85 ring-1 ring-inset ring-amber-600/40",
     type === "pastSelected" &&
       "cursor-not-allowed bg-[#e7d65c]/45 opacity-90 ring-2 ring-inset ring-primary/40",
   );
@@ -209,6 +223,7 @@ function expandSlotsToCellKeys(
 export function ScheduleSelection({
   availableSlots,
   blockedSlots = [],
+  heldSlots = [],
   selectionMode = "single",
   maxSelections,
   value,
@@ -291,6 +306,16 @@ export function ScheduleSelection({
     [blockedSlots, gridIntervalMinutes, lessonDurationMinutes],
   );
 
+  const heldCellSet = useMemo(
+    () =>
+      expandSlotsToCellKeys(
+        heldSlots,
+        gridIntervalMinutes,
+        lessonDurationMinutes,
+      ),
+    [heldSlots, gridIntervalMinutes, lessonDurationMinutes],
+  );
+
   const { visibleAvailableCellSet, selectableCellSet } = useMemo(() => {
     const visibleAvailableCellSet = new Set<string>();
     for (const slot of availableSlots) {
@@ -304,7 +329,7 @@ export function ScheduleSelection({
     }
 
     const isStartSelectable = (key: string) => {
-      if (blockedCellSet.has(key)) {
+      if (blockedCellSet.has(key) || heldCellSet.has(key)) {
         return false;
       }
       const [date, startTime] = key.split("|");
@@ -317,7 +342,8 @@ export function ScheduleSelection({
         const cellKey = `${date}|${minutesToTime(minute)}`;
         if (
           !visibleAvailableCellSet.has(cellKey) ||
-          blockedCellSet.has(cellKey)
+          blockedCellSet.has(cellKey) ||
+          heldCellSet.has(cellKey)
         ) {
           return false;
         }
@@ -345,6 +371,7 @@ export function ScheduleSelection({
   }, [
     availableSlots,
     blockedCellSet,
+    heldCellSet,
     gridIntervalMinutes,
     lessonDurationMinutes,
   ]);
@@ -512,6 +539,15 @@ export function ScheduleSelection({
           <div className="flex items-center gap-2">
             <span
               className={cn(
+                "size-3 rounded-full",
+                getScheduleCellClassName("paymentHoldBlocked"),
+              )}
+            />
+            <span className="font-medium">{t("status.paymentHoldBlocked")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
                 "size-3 rounded-full border border-border",
                 getScheduleCellClassName("empty"),
               )}
@@ -607,15 +643,22 @@ export function ScheduleSelection({
                 const nowMs = nowInTimezone(timezone).valueOf();
                 const isPast =
                   toCellTimestamp(day.id, startTime, timezone) <= nowMs;
+                const isPaymentHoldBlocked =
+                  isAvailable && !isPast && heldCellSet.has(key);
                 const isOccupiedBlocked =
-                  isAvailable && !isPast && blockedCellSet.has(key);
-                const disabled = isPast || isOccupiedBlocked || !isSelectable;
+                  isAvailable &&
+                  !isPast &&
+                  !isPaymentHoldBlocked &&
+                  blockedCellSet.has(key);
+                const disabled =
+                  isPast || isOccupiedBlocked || isPaymentHoldBlocked || !isSelectable;
                 const cellType = getScheduleCellType({
                   isAvailable,
                   isSelected,
                   isPast,
                   isSelectable,
                   isOccupiedBlocked,
+                  isPaymentHoldBlocked,
                 });
 
                 return (

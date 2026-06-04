@@ -12,6 +12,7 @@
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
+      "pendingBookings": "Pending payment",
       "complaints": "Complaints",
       "lessonComplaints": "Lesson complaints",
       "wallet": "Wallet",
@@ -413,6 +414,20 @@
           "cancel": "Cancel"
         }
       }
+    },
+    "pendingBookings": {
+      "eyebrow": "Student workspace",
+      "title": "Pending payment",
+      "subtitle": "Complete payment before the hold expires, or the slot will be released.",
+      "empty": {
+        "title": "No pending bookings",
+        "description": "When you book a lesson and reach checkout, it will appear here until you pay or the 10-minute hold ends."
+      },
+      "expiresIn": "Pay within {time}",
+      "expired": "Hold expired",
+      "payNow": "Pay now",
+      "lessonWith": "Trial lesson with {tutor}",
+      "duration": "{minutes} min"
     },
     "placeholder": {
       "title": "Feature Coming Soon",

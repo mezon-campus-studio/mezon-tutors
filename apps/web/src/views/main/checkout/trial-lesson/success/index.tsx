@@ -13,6 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -45,6 +46,8 @@ import {
   ETrialLessonBookingPaymentStatus,
   MEZON_CHAT_URL,
   ROUTES,
+  LESSON_CANCEL_REASON_SLOT_CONFLICT,
+  LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
   formatToCurrency,
 } from '@mezon-tutors/shared';
 
@@ -114,6 +117,7 @@ function CheckoutSuccessLoadingView({ loadingMessage }: { loadingMessage: string
 export default function TrialLessonCheckoutSuccessPage({ bookingId }: { bookingId: string }) {
   const t = useTranslations('TrialLessonCheckout.Result.successDetail');
   const locale = useLocale();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [authHydrated, setAuthHydrated] = useState(false);
@@ -134,6 +138,14 @@ export default function TrialLessonCheckoutSuccessPage({ bookingId }: { bookingI
       void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
     }
   }, [data?.paymentStatus, queryClient]);
+
+  useEffect(() => {
+    if (data?.cancelReason === LESSON_CANCEL_REASON_SLOT_CONFLICT) {
+      router.replace(
+        `${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE)}&bookingId=${encodeURIComponent(bookingId)}`,
+      );
+    }
+  }, [bookingId, data?.cancelReason, router]);
 
   const schedule = useMemo(() => {
     if (!data) {

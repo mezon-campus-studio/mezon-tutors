@@ -8,6 +8,26 @@ dayjs.extend(timezone);
 
 export type OccupiedSlotItem = { startAt: string; durationMinutes: number };
 
+export type OccupiedSlotItemWithHold = OccupiedSlotItem & { hold?: boolean };
+
+export function partitionOccupiedSlotsByHold(items: OccupiedSlotItemWithHold[]): {
+  confirmed: OccupiedSlotItem[];
+  held: OccupiedSlotItem[];
+} {
+  const confirmed: OccupiedSlotItem[] = [];
+  const held: OccupiedSlotItem[] = [];
+  for (const item of items) {
+    const { hold, startAt, durationMinutes } = item;
+    const slot = { startAt, durationMinutes };
+    if (hold) {
+      held.push(slot);
+    } else {
+      confirmed.push(slot);
+    }
+  }
+  return { confirmed, held };
+}
+
 export type WallClockSlot = {
   date: string;
   startTime: string;

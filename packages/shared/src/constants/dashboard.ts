@@ -3,6 +3,7 @@ import { ROUTES } from './routes';
 export type DashboardMenuIconKey =
   | 'document'
   | 'complaints'
+  | 'bookingRequests'
   | 'trialBookings'
   | 'calendar'
   | 'logout'
@@ -15,6 +16,7 @@ export type DashboardMenuIconKey =
   | 'profile';
 export type DashboardMenuLabelKey =
   | 'myLessons'
+  | 'pendingBookings'
   | 'complaints'
   | 'lessonComplaints'
   | 'trialBookings'
@@ -53,6 +55,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'myLessons',
     iconKey: 'document',
     href: ROUTES.DASHBOARD.MY_LESSONS,
+    roles: ['STUDENT'],
+  },
+  {
+    key: 'pending-bookings',
+    type: 'link',
+    labelKey: 'pendingBookings',
+    iconKey: 'bookingRequests',
+    href: ROUTES.DASHBOARD.PENDING_BOOKINGS,
     roles: ['STUDENT'],
   },
   {
@@ -187,6 +197,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-lessons') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);
+  }
+  if (item.key === 'pending-bookings') {
+    return pathname.startsWith(ROUTES.DASHBOARD.PENDING_BOOKINGS);
   }
   if (item.key === 'complaints') {
     return pathname.startsWith(ROUTES.DASHBOARD.COMPLAINTS);

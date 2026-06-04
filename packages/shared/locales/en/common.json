@@ -74,6 +74,7 @@
       "available": "Available",
       "pastAvailable": "Past (view only)",
       "occupiedBlocked": "Already booked",
+      "paymentHoldBlocked": "Payment pending (hold)",
       "notAvailable": "Not available",
       "bookedByYou": "Booked by you"
     }
