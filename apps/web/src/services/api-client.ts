@@ -1,5 +1,4 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import authService from './auth/auth.service';
 import { getDefaultStore } from "jotai";
 import { accessTokenAtom } from "@/store/token.atom";
 
@@ -24,6 +23,21 @@ export class ApiError extends Error {
 let refreshPromise: Promise<string> | null = null;
 const store = getDefaultStore();
 
+export async function refreshAccessTokenWithLock(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = apiClient
+      .post<{ accessToken: string }>('/auth/refresh')
+      .then((data) => {
+        store.set(accessTokenAtom, data.accessToken);
+        return data.accessToken;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -35,7 +49,7 @@ export const apiClient = axios.create({
 function isAuthRefreshRequest(config: InternalAxiosRequestConfig | undefined): boolean {
   const url = config?.url ?? '';
   const path = url.split('?')[0] ?? '';
-  return path === '/auth/refresh';
+  return path === '/auth/refresh' || path.endsWith('/auth/refresh');
 }
 
 apiClient.interceptors.request.use(
@@ -81,19 +95,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        if (!refreshPromise) {
-          refreshPromise = authService
-            .refreshToken()
-            .then(async (newToken) => {
-              store.set(accessTokenAtom, newToken.accessToken);
-              return newToken.accessToken;
-            })
-            .finally(() => {
-              refreshPromise = null;
-            });
-        }
-
-        const newAccessToken = await refreshPromise;
+        const newAccessToken = await refreshAccessTokenWithLock();
         originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient.request(originalRequest);

@@ -35,16 +35,26 @@ export class AuthController {
   ) {}
 
   private getCrossSiteCookieOptions(maxAge: number): CookieOptions {
-    const isProduction = this.appConfig.nodeEnv === 'production';
 
     return {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      secure: true,
+      sameSite: 'lax',
       maxAge,
       path: '/',
-      ...(isProduction ? { partitioned: true } : {}),
+      partitioned: true,
     };
+  }
+
+  private buildFrontendReturnUrl(
+    frontendBase: string,
+    params: Record<string, string>
+  ): string {
+    const url = new URL(frontendBase);
+    for (const [key, value] of Object.entries(params)) {
+      url.searchParams.set(key, value);
+    }
+    return url.toString();
   }
 
   private getRefreshCookieOptions(): CookieOptions {
@@ -150,12 +160,24 @@ export class AuthController {
         state
       );
       res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
-      return res.redirect(302, `${frontendBase}/dashboard?sync=success`);
+      return res.redirect(
+        302,
+        this.buildFrontendReturnUrl(`${frontendBase}/dashboard`, {
+          sync: 'success',
+          accessToken: result.tokens.accessToken,
+        })
+      );
     }
 
     const result = await this.authService.handleMezonCallback(code, state);
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
-    return res.redirect(302, `${frontendBase}/?oauth=success`);
+    return res.redirect(
+      302,
+      this.buildFrontendReturnUrl(frontendBase, {
+        oauth: 'success',
+        accessToken: result.tokens.accessToken,
+      })
+    );
   }
 
   @Post('refresh')
