@@ -997,6 +997,66 @@ export class NotificationService {
     }
   }
 
+  async notifyTutorLessonComplaintSubmitted(params: {
+    complaintId: string
+    tutorUserId: string
+    tutorMezonUserId?: string | null
+    studentName: string
+    lessonStartAtLabel: string
+    reason: string
+    message?: string | null
+    senderAvatarUrl?: string | null
+  }): Promise<void> {
+    await this.notifyInAppAndMezon({
+      userId: params.tutorUserId,
+      mezonUserId: params.tutorMezonUserId,
+      dedupeKey: `lesson-complaint-submitted-tutor:${params.complaintId}`,
+      notification: {
+        title: 'New lesson complaint',
+        content: `${params.studentName} submitted a complaint about your lesson.`,
+        type: ENotificationType.SYSTEM,
+        i18nKey: NOTIFICATION_I18N_KEYS.templates.tutorLessonComplaintSubmitted,
+        i18nParams: {
+          studentName: params.studentName,
+          lessonStartAtLabel: params.lessonStartAtLabel,
+          reason: params.reason,
+        },
+        metadata: {
+          titleI18nKey: NOTIFICATION_I18N_KEYS.titles.tutorLessonComplaintSubmitted,
+          titleI18nParams: {},
+          complaintId: params.complaintId,
+        },
+      },
+      mezonMessage: this.mezonMessageService.tutorLessonComplaintSubmitted({
+        complaintId: params.complaintId,
+        studentName: params.studentName,
+        lessonStartAtLabel: params.lessonStartAtLabel,
+        reason: params.reason,
+        message: params.message,
+        senderAvatarUrl: params.senderAvatarUrl,
+      }),
+    })
+  }
+
+  async notifyAdminLessonComplaintTutorConfirmed(params: {
+    complaintId: string
+    studentName: string
+    tutorName: string
+    lessonStartAtLabel: string
+    reason: string
+  }): Promise<void> {
+    await this.sendAdminMezonDm(
+      this.mezonMessageService.lessonComplaintTutorConfirmed({
+        complaintId: params.complaintId,
+        studentName: params.studentName,
+        tutorName: params.tutorName,
+        lessonStartAtLabel: params.lessonStartAtLabel,
+        reason: params.reason,
+      }),
+      `lesson-complaint-tutor-confirmed:${params.complaintId}`
+    )
+  }
+
   async notifyAdminLessonComplaintSubmitted(params: {
     complaintId: string
     studentName: string
@@ -1017,6 +1077,97 @@ export class NotificationService {
         senderAvatarUrl: params.senderAvatarUrl,
       }),
       `lesson-complaint-submitted:${params.complaintId}`
+    )
+  }
+
+  async notifyStudentLessonComplaintTutorRejected(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    tutorName: string
+    lessonStartAtLabel: string
+    lessonStartAtIso: string
+    submittedAtLabel: string
+    reason: string
+    tutorNote?: string | null
+    complaintId: string
+  }): Promise<void> {
+    const tutorNoteLabel = params.tutorNote?.trim() || '—'
+    const content = `Your complaint about the lesson with ${params.tutorName} at ${params.lessonStartAtLabel} was declined by the tutor. Reason: ${params.reason}. Tutor note: ${tutorNoteLabel}`
+    const dedupeKey = `lesson-complaint-tutor-rejected:${params.complaintId}`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Complaint declined by tutor',
+        content,
+        type: ENotificationType.SYSTEM,
+        i18nKey: NOTIFICATION_META.LESSON_COMPLAINT_TUTOR_REJECTED.templateKey ?? undefined,
+        i18nParams: {
+          tutorName: params.tutorName,
+          lessonStartAt: params.lessonStartAtLabel,
+          reason: params.reason,
+          tutorNote: tutorNoteLabel,
+        },
+        dedupeKey,
+        metadata: {
+          titleI18nKey: NOTIFICATION_META.LESSON_COMPLAINT_TUTOR_REJECTED.titleKey ?? undefined,
+          titleI18nParams: {},
+          complaintId: params.complaintId,
+          status: 'TUTOR_REJECTED',
+          tutorNote: params.tutorNote?.trim() || null,
+          startAt: params.lessonStartAtIso,
+          tutorName: params.tutorName,
+          reason: params.reason,
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student complaint-tutor-rejected web notification (${params.complaintId}): ${detail}`
+      )
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId || !this.mezonBotService.isConfigured()) {
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.studentLessonComplaintTutorRejected({
+          tutorName: params.tutorName,
+          lessonStartAtLabel: params.lessonStartAtLabel,
+          submittedAtLabel: params.submittedAtLabel,
+          reason: params.reason,
+          tutorNote: params.tutorNote,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to send Mezon DM for student complaint-tutor-rejected (${dedupeKey}): ${detail}`
+      )
+    }
+  }
+
+  async notifyAdminLessonComplaintTutorRejected(params: {
+    complaintId: string
+    studentName: string
+    tutorName: string
+    lessonStartAtLabel: string
+    reason: string
+    tutorNote?: string | null
+  }): Promise<void> {
+    await this.sendAdminMezonDm(
+      this.mezonMessageService.lessonComplaintTutorRejected({
+        complaintId: params.complaintId,
+        studentName: params.studentName,
+        tutorName: params.tutorName,
+        lessonStartAtLabel: params.lessonStartAtLabel,
+        reason: params.reason,
+        tutorNote: params.tutorNote,
+      }),
+      `lesson-complaint-tutor-rejected:${params.complaintId}`
     )
   }
 }

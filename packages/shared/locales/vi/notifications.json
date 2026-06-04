@@ -27,7 +27,9 @@
     "tutorEarningsReleased": "Tiền đã về ví",
     "lessonComplaintApproved": "Khiếu nại đã được duyệt",
     "lessonComplaintRejected": "Khiếu nại bị từ chối",
+    "lessonComplaintTutorRejected": "Gia sư từ chối khiếu nại",
     "tutorLessonComplaintApproved": "Khiếu nại về buổi học của bạn đã được duyệt",
+    "tutorLessonComplaintSubmitted": "Khiếu nại buổi học mới",
     "adminWithdrawalRequested": "Yêu cầu rút tiền mới",
     "tutorWithdrawalCompleted": "Rút tiền thành công",
     "tutorWithdrawalRejected": "Rút tiền bị từ chối"
@@ -47,7 +49,9 @@
     "lessonComplaintApproved": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã được duyệt.",
     "lessonComplaintApprovedRefunded": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã được duyệt. {amount} đã được hoàn về ví.",
     "lessonComplaintRejected": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã bị từ chối. Lý do: {reason}. Ghi chú admin: {adminNote}",
+    "lessonComplaintTutorRejected": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã bị gia sư từ chối. Lý do: {reason}. Ghi chú gia sư: {tutorNote}",
     "tutorLessonComplaintApproved": "Khiếu nại của học viên về buổi học với bạn (học viên {studentName}) đã được duyệt. Hệ thống đã hoàn tiền từ phần thu nhập tương ứng.",
+    "tutorLessonComplaintSubmitted": "{studentName} đã gửi khiếu nại về buổi học lúc {lessonStartAt} ({reason}). Vui lòng xem và xác nhận trong bảng điều khiển.",
     "adminWithdrawalRequested": "{tutorName} đã yêu cầu rút {amount} về {bankName} · {bankAccountNumber}. Vui lòng kiểm tra và xử lý.",
     "tutorWithdrawalCompleted": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã được xử lý thành công.",
     "tutorWithdrawalRejected": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã bị từ chối. Số tiền đã được hoàn lại vào số dư khả dụng. Ghi chú admin: {adminNote}"

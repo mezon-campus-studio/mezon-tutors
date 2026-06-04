@@ -139,6 +139,8 @@ enum ELessonChangeInitiatorRole {
 
 enum ELessonComplaintStatus {
   PENDING
+  TUTOR_CONFIRMED
+  TUTOR_REJECTED
   APPROVED
   REJECTED
 }
@@ -466,6 +468,7 @@ model LessonComplaint {
   lessonType               ELessonChangeLessonType  @map("lesson_type")
   reason                   String
   message                  String?                  @db.Text
+  attachmentUrls           Json?                    @default("[]") @map("attachment_urls")
   status                   ELessonComplaintStatus   @default(PENDING)
   trialLessonBookingId     String?                  @unique @map("trial_lesson_booking_id") @db.Uuid
   subscriptionEnrollmentId String?                  @map("subscription_enrollment_id") @db.Uuid
@@ -474,6 +477,7 @@ model LessonComplaint {
   lessonDurationMinutes    Int                      @map("lesson_duration_minutes")
   reviewedByUserId         String?                  @map("reviewed_by_user_id") @db.Uuid
   adminNote                String?                  @map("admin_note") @db.Text
+  tutorNote                String?                  @map("tutor_note") @db.Text
   reviewedAt               DateTime?                @map("reviewed_at")
   createdAt                DateTime                 @default(now()) @map("created_at")
   updatedAt                DateTime                 @updatedAt @map("updated_at")

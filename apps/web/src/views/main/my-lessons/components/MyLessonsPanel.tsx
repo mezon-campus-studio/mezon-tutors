@@ -227,6 +227,8 @@ type PastLessonListItemProps = {
   cancelledLabel: string;
   complainLabel: string;
   complaintPendingLabel: string;
+  complaintTutorConfirmedLabel: string;
+  complaintTutorRejectedLabel: string;
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
   appSettingsRules: AppSettingsRules;
@@ -244,6 +246,8 @@ function PastLessonListItem({
   cancelledLabel,
   complainLabel,
   complaintPendingLabel,
+  complaintTutorConfirmedLabel,
+  complaintTutorRejectedLabel,
   complaintApprovedLabel,
   complaintRejectedLabel,
   appSettingsRules,
@@ -287,11 +291,22 @@ function PastLessonListItem({
               <>
                 {complaintStatus === "PENDING" ? (
                   <LessonStatusBadge label={complaintPendingLabel} tone="pending" />
+                ) : complaintStatus === "TUTOR_CONFIRMED" ? (
+                  <LessonStatusBadge label={complaintTutorConfirmedLabel} tone="pending" />
+                ) : complaintStatus === "TUTOR_REJECTED" ? (
+                  <LessonStatusBadge label={complaintTutorRejectedLabel} tone="rejected" />
                 ) : complaintStatus === "APPROVED" ? (
                   <LessonStatusBadge label={complaintApprovedLabel} tone="approved" />
-                ) : complaintStatus === "REJECTED" ? (
+                ) : complaintStatus === "REJECTED" || complaintStatus === "TUTOR_REJECTED" ? (
                   <>
-                    <LessonStatusBadge label={complaintRejectedLabel} tone="rejected" />
+                    <LessonStatusBadge
+                      label={
+                        complaintStatus === "TUTOR_REJECTED"
+                          ? complaintTutorRejectedLabel
+                          : complaintRejectedLabel
+                      }
+                      tone="rejected"
+                    />
                     <Button
                       variant="outline"
                       className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
@@ -605,6 +620,8 @@ type PastLessonsSectionProps = {
   cancelledLabel: string;
   complainLabel: string;
   complaintPendingLabel: string;
+  complaintTutorConfirmedLabel: string;
+  complaintTutorRejectedLabel: string;
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
   appSettingsRules: AppSettingsRules;
@@ -623,6 +640,8 @@ function PastLessonsSection({
   cancelledLabel,
   complainLabel,
   complaintPendingLabel,
+  complaintTutorConfirmedLabel,
+  complaintTutorRejectedLabel,
   complaintApprovedLabel,
   complaintRejectedLabel,
   appSettingsRules,
@@ -652,6 +671,8 @@ function PastLessonsSection({
             cancelledLabel={cancelledLabel}
             complainLabel={complainLabel}
             complaintPendingLabel={complaintPendingLabel}
+            complaintTutorConfirmedLabel={complaintTutorConfirmedLabel}
+            complaintTutorRejectedLabel={complaintTutorRejectedLabel}
             complaintApprovedLabel={complaintApprovedLabel}
             complaintRejectedLabel={complaintRejectedLabel}
             appSettingsRules={appSettingsRules}
@@ -840,7 +861,11 @@ export default function MyLessonsPanel({
     setIsComplainDialogOpen(true);
   };
 
-  const handleConfirmComplaint = async (reason: string, message?: string) => {
+  const handleConfirmComplaint = async (
+    reason: string,
+    message?: string,
+    attachments?: { url: string; publicId: string }[],
+  ) => {
     if (!complainLesson) return;
 
     try {
@@ -858,6 +883,7 @@ export default function MyLessonsPanel({
           lessonStartAt: complainLesson.startAt,
           reason,
           message,
+          attachments,
         });
       } else {
         await createComplaintMutation.mutateAsync({
@@ -865,6 +891,7 @@ export default function MyLessonsPanel({
           trialLessonBookingId: complainLesson.id,
           reason,
           message,
+          attachments,
         });
       }
       toast.success(t("panels.lessons.complaint.dialog.success"));
@@ -997,6 +1024,8 @@ export default function MyLessonsPanel({
           cancelledLabel={t("panels.lessons.past.statusCancelled")}
           complainLabel={t("panels.lessons.complaint.action")}
           complaintPendingLabel={t("panels.lessons.complaint.statusPending")}
+          complaintTutorConfirmedLabel={t("panels.lessons.complaint.statusTutorConfirmed")}
+          complaintTutorRejectedLabel={t("panels.lessons.complaint.statusTutorRejected")}
           complaintApprovedLabel={t("panels.lessons.complaint.statusApproved")}
           complaintRejectedLabel={t("panels.lessons.complaint.statusRejected")}
           appSettingsRules={appSettingsRules}

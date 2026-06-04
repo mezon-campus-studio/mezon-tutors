@@ -85,7 +85,9 @@
       },
       "filters": {
         "all": "All",
-        "PENDING": "Pending",
+        "PENDING": "Awaiting tutor",
+        "TUTOR_CONFIRMED": "Tutor confirmed",
+        "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
         "REJECTED": "Rejected"
       },
@@ -104,11 +106,21 @@
         },
         "approve": "Approve & refund",
         "reject": "Reject",
+        "awaitingTutorConfirmation": "The tutor has not confirmed this complaint yet.",
+        "tutorRejectedHint": "The tutor declined this complaint.",
         "trial": "Trial",
         "subscription": "Plan",
         "lessonStart": "Lesson time",
         "lessonDuration": "{minutes} min",
         "submittedAt": "Submitted",
+        "attachments": "Evidence photos",
+        "attachmentAlt": "Evidence photo {index}",
+        "moreAttachments": "+{count}",
+        "galleryTitle": "Evidence photos",
+        "galleryDescription": "Photo {current} of {total}",
+        "galleryThumbnails": "All photos",
+        "galleryPrevious": "Previous photo",
+        "galleryNext": "Next photo",
         "adminNotePlaceholder": "Admin note (optional)",
         "approveSuccess": "Complaint approved and refund processed.",
         "approveSuccessNoRefund": "Complaint approved.",
@@ -116,8 +128,14 @@
         "actionFailed": "Action failed. Please try again.",
         "confirmApprove": {
           "title": "Approve this complaint?",
-          "description": "The lesson payment will be refunded to the student's wallet. This action cannot be undone.",
+          "description": "The tutor has confirmed this complaint. The lesson payment will be refunded to the student's wallet. This action cannot be undone.",
           "confirm": "Approve & refund",
+          "cancel": "Cancel"
+        },
+        "confirmApproveWithoutTutor": {
+          "title": "Approve without tutor confirmation?",
+          "description": "The tutor has not confirmed this complaint yet. Approving now will refund the student immediately. Continue only if you have reviewed the evidence.",
+          "confirm": "Approve anyway",
           "cancel": "Cancel"
         },
         "confirmReject": {

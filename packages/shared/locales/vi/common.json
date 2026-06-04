@@ -77,5 +77,14 @@
       "notAvailable": "Không có lịch",
       "bookedByYou": "Bạn đã đặt"
     }
+  },
+  "imageGallery": {
+    "attachmentAlt": "Ảnh {index}",
+    "moreAttachments": "+{count}",
+    "galleryTitle": "Hình ảnh",
+    "galleryDescription": "Ảnh {current}/{total}",
+    "galleryThumbnails": "Tất cả ảnh",
+    "galleryPrevious": "Ảnh trước",
+    "galleryNext": "Ảnh sau"
   }
 }

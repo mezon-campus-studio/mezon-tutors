@@ -27,7 +27,9 @@
     "tutorEarningsReleased": "Earnings available",
     "lessonComplaintApproved": "Complaint approved",
     "lessonComplaintRejected": "Complaint rejected",
+    "lessonComplaintTutorRejected": "Complaint declined by tutor",
     "tutorLessonComplaintApproved": "Complaint against your lesson approved",
+    "tutorLessonComplaintSubmitted": "New lesson complaint",
     "adminWithdrawalRequested": "New withdrawal request",
     "tutorWithdrawalCompleted": "Withdrawal completed",
     "tutorWithdrawalRejected": "Withdrawal declined"
@@ -46,7 +48,9 @@
     "lessonComplaintApproved": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was approved.",
     "lessonComplaintApprovedRefunded": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was approved. {amount} has been credited to your wallet.",
     "lessonComplaintRejected": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was rejected. Reason: {reason}. Admin note: {adminNote}",
+    "lessonComplaintTutorRejected": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was declined by the tutor. Reason: {reason}. Tutor note: {tutorNote}",
     "tutorLessonComplaintApproved": "A student complaint about your lesson with {studentName} has been approved. A refund has been processed from your earnings.",
+    "tutorLessonComplaintSubmitted": "{studentName} filed a complaint about your lesson on {lessonStartAt} ({reason}). Please review and confirm in your dashboard.",
     "adminWithdrawalRequested": "{tutorName} requested a withdrawal of {amount} to {bankName} · {bankAccountNumber}. Please review and process it.",
     "tutorWithdrawalCompleted": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} has been completed.",
     "tutorWithdrawalRejected": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} was declined. The amount has been returned to your available balance. Admin note: {adminNote}"
