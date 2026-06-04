@@ -139,6 +139,7 @@ enum ELessonChangeInitiatorRole {
 
 enum ELessonComplaintStatus {
   PENDING
+  TUTOR_REVIEW_REQUESTED
   TUTOR_CONFIRMED
   TUTOR_REJECTED
   APPROVED
@@ -492,6 +493,7 @@ model LessonComplaint {
   @@index([status, createdAt])
   @@index([studentId, createdAt])
   @@index([tutorId, createdAt])
+  @@index([tutorId, status])
   @@map("lesson_complaints")
 }
 

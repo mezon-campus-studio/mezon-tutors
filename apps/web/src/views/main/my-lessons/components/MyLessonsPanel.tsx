@@ -227,6 +227,7 @@ type PastLessonListItemProps = {
   cancelledLabel: string;
   complainLabel: string;
   complaintPendingLabel: string;
+  complaintTutorReviewRequestedLabel: string;
   complaintTutorConfirmedLabel: string;
   complaintTutorRejectedLabel: string;
   complaintApprovedLabel: string;
@@ -246,6 +247,7 @@ function PastLessonListItem({
   cancelledLabel,
   complainLabel,
   complaintPendingLabel,
+  complaintTutorReviewRequestedLabel,
   complaintTutorConfirmedLabel,
   complaintTutorRejectedLabel,
   complaintApprovedLabel,
@@ -291,6 +293,8 @@ function PastLessonListItem({
               <>
                 {complaintStatus === "PENDING" ? (
                   <LessonStatusBadge label={complaintPendingLabel} tone="pending" />
+                ) : complaintStatus === "TUTOR_REVIEW_REQUESTED" ? (
+                  <LessonStatusBadge label={complaintTutorReviewRequestedLabel} tone="pending" />
                 ) : complaintStatus === "TUTOR_CONFIRMED" ? (
                   <LessonStatusBadge label={complaintTutorConfirmedLabel} tone="pending" />
                 ) : complaintStatus === "TUTOR_REJECTED" ? (
@@ -620,6 +624,7 @@ type PastLessonsSectionProps = {
   cancelledLabel: string;
   complainLabel: string;
   complaintPendingLabel: string;
+  complaintTutorReviewRequestedLabel: string;
   complaintTutorConfirmedLabel: string;
   complaintTutorRejectedLabel: string;
   complaintApprovedLabel: string;
@@ -640,6 +645,7 @@ function PastLessonsSection({
   cancelledLabel,
   complainLabel,
   complaintPendingLabel,
+  complaintTutorReviewRequestedLabel,
   complaintTutorConfirmedLabel,
   complaintTutorRejectedLabel,
   complaintApprovedLabel,
@@ -671,6 +677,7 @@ function PastLessonsSection({
             cancelledLabel={cancelledLabel}
             complainLabel={complainLabel}
             complaintPendingLabel={complaintPendingLabel}
+            complaintTutorReviewRequestedLabel={complaintTutorReviewRequestedLabel}
             complaintTutorConfirmedLabel={complaintTutorConfirmedLabel}
             complaintTutorRejectedLabel={complaintTutorRejectedLabel}
             complaintApprovedLabel={complaintApprovedLabel}
@@ -1024,6 +1031,9 @@ export default function MyLessonsPanel({
           cancelledLabel={t("panels.lessons.past.statusCancelled")}
           complainLabel={t("panels.lessons.complaint.action")}
           complaintPendingLabel={t("panels.lessons.complaint.statusPending")}
+          complaintTutorReviewRequestedLabel={t(
+            "panels.lessons.complaint.statusTutorReviewRequested",
+          )}
           complaintTutorConfirmedLabel={t("panels.lessons.complaint.statusTutorConfirmed")}
           complaintTutorRejectedLabel={t("panels.lessons.complaint.statusTutorRejected")}
           complaintApprovedLabel={t("panels.lessons.complaint.statusApproved")}

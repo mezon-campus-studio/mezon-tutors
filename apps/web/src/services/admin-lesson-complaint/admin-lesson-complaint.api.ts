@@ -4,6 +4,7 @@ import type {
   LessonComplaintStatusFilter,
   ReviewLessonComplaintBody,
   ReviewLessonComplaintResult,
+  RequestTutorLessonComplaintReviewResult,
 } from "@mezon-tutors/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../api-client";
@@ -43,6 +44,13 @@ export const adminLessonComplaintApi = {
     return apiClient.post<ReviewLessonComplaintResult>(
       `${BASE}/lesson-complaints/${id}/reject`,
       body,
+    );
+  },
+
+  requestTutorReview(id: string): Promise<RequestTutorLessonComplaintReviewResult> {
+    return apiClient.post<RequestTutorLessonComplaintReviewResult>(
+      `${BASE}/lesson-complaints/${id}/request-tutor-review`,
+      {},
     );
   },
 };
@@ -87,6 +95,16 @@ export const useRejectLessonComplaint = () => {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body?: ReviewLessonComplaintBody }) =>
       adminLessonComplaintApi.reject(id, body ?? {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminLessonComplaintQueryKey.all });
+    },
+  });
+};
+
+export const useRequestTutorLessonComplaintReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminLessonComplaintApi.requestTutorReview(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminLessonComplaintQueryKey.all });
     },

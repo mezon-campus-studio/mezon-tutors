@@ -95,7 +95,8 @@
       },
       "complaint": {
         "action": "Khiếu nại",
-        "statusPending": "Đang chờ xử lý",
+        "statusPending": "Chờ admin xử lý",
+        "statusTutorReviewRequested": "Chờ gia sư xem xét",
         "statusTutorConfirmed": "Gia sư đã xác nhận — chờ admin",
         "statusTutorRejected": "Gia sư đã từ chối",
         "statusApproved": "Đã duyệt hoàn tiền",

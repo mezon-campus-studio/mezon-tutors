@@ -45,7 +45,7 @@ const STATUS_STYLES: Record<
     cardClass: string;
   }
 > = {
-  PENDING: {
+  TUTOR_REVIEW_REQUESTED: {
     icon: Clock3,
     badgeClass: 'border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-100',
     cardClass: 'border-amber-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fffaf0_100%)]',
@@ -73,7 +73,7 @@ const STATUS_STYLES: Record<
 };
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  if (status === 'PENDING') return 'secondary';
+  if (status === 'TUTOR_REVIEW_REQUESTED') return 'secondary';
   if (status === 'TUTOR_CONFIRMED') return 'default';
   if (status === 'TUTOR_REJECTED') return 'destructive';
   if (status === 'APPROVED') return 'default';
@@ -118,7 +118,7 @@ export default function TutorLessonComplaintsView() {
 
   const metrics = useMemo(() => {
     const pending = items.filter(
-      (c) => c.status === 'PENDING' || c.status === 'TUTOR_CONFIRMED'
+      (c) => c.status === 'TUTOR_REVIEW_REQUESTED' || c.status === 'TUTOR_CONFIRMED'
     ).length;
     const approved = items.filter((c) => c.status === 'APPROVED').length;
     const rejected = items.filter(
@@ -236,7 +236,7 @@ export default function TutorLessonComplaintsView() {
             <div className="space-y-4">
               {filtered.map((item) => {
                 const style = STATUS_STYLES[item.status] ?? STATUS_STYLES.PENDING;
-                const isPending = item.status === 'PENDING';
+                const isPending = item.status === 'TUTOR_REVIEW_REQUESTED';
 
                 return (
                   <Card key={item.id} className={style.cardClass}>

@@ -85,7 +85,8 @@
       },
       "filters": {
         "all": "Tất cả",
-        "PENDING": "Chờ gia sư xác nhận",
+        "PENDING": "Đang chờ",
+        "TUTOR_REVIEW_REQUESTED": "Chờ gia sư",
         "TUTOR_CONFIRMED": "Gia sư đã xác nhận",
         "TUTOR_REJECTED": "Gia sư từ chối",
         "APPROVED": "Đã duyệt",
@@ -106,7 +107,10 @@
         },
         "approve": "Duyệt & hoàn tiền",
         "reject": "Từ chối",
-        "awaitingTutorConfirmation": "Gia sư chưa xác nhận khiếu nại này.",
+        "awaitingAdminReview": "Chưa gửi cho gia sư. Hãy yêu cầu gia sư xem xét hoặc duyệt/từ chối trực tiếp.",
+        "awaitingTutorConfirmation": "Đang chờ gia sư xác nhận hoặc từ chối khiếu nại.",
+        "requestTutorReview": "Yêu cầu gia sư xem xét",
+        "requestTutorReviewSuccess": "Đã gửi thông báo cho gia sư xem xét khiếu nại.",
         "tutorRejectedHint": "Gia sư đã từ chối khiếu nại này.",
         "trial": "Thử",
         "subscription": "Gói",
@@ -134,7 +138,7 @@
         },
         "confirmApproveWithoutTutor": {
           "title": "Duyệt khi chưa có xác nhận từ gia sư?",
-          "description": "Gia sư chưa xác nhận khiếu nại này. Nếu duyệt ngay, học sinh sẽ được hoàn tiền. Chỉ tiếp tục khi bạn đã xem xét đủ minh chứng.",
+          "description": "Gia sư chưa xác nhận khiếu nại này (hoặc chưa được yêu cầu xem xét). Nếu duyệt ngay, học sinh sẽ được hoàn tiền. Chỉ tiếp tục khi bạn đã xem xét đủ minh chứng.",
           "confirm": "Vẫn duyệt",
           "cancel": "Hủy"
         },

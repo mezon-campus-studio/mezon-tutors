@@ -335,14 +335,16 @@
       "emptyDescription": "When you report an issue with a completed lesson, it will appear here.",
       "filters": {
         "all": "All statuses",
-        "PENDING": "Awaiting tutor",
+        "PENDING": "Awaiting admin",
+        "TUTOR_REVIEW_REQUESTED": "Awaiting tutor",
         "TUTOR_CONFIRMED": "Awaiting admin",
         "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
         "REJECTED": "Rejected"
       },
       "status": {
-        "PENDING": "Awaiting tutor confirmation",
+        "PENDING": "Awaiting admin review",
+        "TUTOR_REVIEW_REQUESTED": "Awaiting tutor confirmation",
         "TUTOR_CONFIRMED": "Awaiting admin review",
         "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
@@ -364,6 +366,7 @@
       "filters": {
         "all": "All statuses",
         "PENDING": "Awaiting your confirmation",
+        "TUTOR_REVIEW_REQUESTED": "Awaiting your confirmation",
         "TUTOR_CONFIRMED": "Awaiting admin",
         "TUTOR_REJECTED": "Declined by you",
         "APPROVED": "Approved",
@@ -371,6 +374,7 @@
       },
       "status": {
         "PENDING": "Awaiting your confirmation",
+        "TUTOR_REVIEW_REQUESTED": "Awaiting your confirmation",
         "TUTOR_CONFIRMED": "Awaiting admin review",
         "TUTOR_REJECTED": "Declined by you",
         "APPROVED": "Approved",
