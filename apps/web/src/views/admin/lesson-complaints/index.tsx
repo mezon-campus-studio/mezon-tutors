@@ -35,6 +35,7 @@ import {
   useAdminLessonComplaintMetrics,
   useApproveLessonComplaint,
   useRejectLessonComplaint,
+  useRequestTutorLessonComplaintReview,
 } from "@/services";
 import ConfirmDialog from "@/views/admin/tutor-applications/detail/components/ConfirmDialog";
 import {
@@ -132,6 +133,7 @@ function statusVariant(
   status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
   if (status === "PENDING") return "secondary";
+  if (status === "TUTOR_REVIEW_REQUESTED") return "secondary";
   if (status === "TUTOR_CONFIRMED") return "default";
   if (status === "TUTOR_REJECTED") return "destructive";
   if (status === "APPROVED") return "default";
@@ -155,6 +157,7 @@ export default function AdminLessonComplaintsView() {
   const { data: metrics } = useAdminLessonComplaintMetrics();
   const approveMutation = useApproveLessonComplaint();
   const rejectMutation = useRejectLessonComplaint();
+  const requestTutorReviewMutation = useRequestTutorLessonComplaintReview();
 
   const filtered = useMemo(() => filterComplaints(items, search), [items, search]);
 
@@ -176,6 +179,18 @@ export default function AdminLessonComplaintsView() {
           ? t("list.approveSuccess")
           : t("list.approveSuccessNoRefund"),
       );
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error(t("list.actionFailed"));
+      return false;
+    }
+  };
+
+  const handleRequestTutorReview = async (id: string): Promise<boolean> => {
+    try {
+      await requestTutorReviewMutation.mutateAsync(id);
+      toast.success(t("list.requestTutorReviewSuccess"));
       return true;
     } catch (error) {
       console.error(error);
@@ -321,11 +336,19 @@ export default function AdminLessonComplaintsView() {
                         ? t("list.trial")
                         : t("list.subscription");
                     const isPending = item.status === "PENDING";
+                    const isTutorReviewRequested = item.status === "TUTOR_REVIEW_REQUESTED";
                     const isTutorConfirmed = item.status === "TUTOR_CONFIRMED";
                     const isTutorRejected = item.status === "TUTOR_REJECTED";
-                    const isReviewable = isPending || isTutorConfirmed || isTutorRejected;
+                    const isReviewable =
+                      isPending ||
+                      isTutorReviewRequested ||
+                      isTutorConfirmed ||
+                      isTutorRejected;
+                    const needsTutorOverrideApprove = isPending || isTutorReviewRequested;
                     const busy =
-                      approveMutation.isPending || rejectMutation.isPending;
+                      approveMutation.isPending ||
+                      rejectMutation.isPending ||
+                      requestTutorReviewMutation.isPending;
 
                     return (
                       <tr key={item.id} className="border-t align-top">
@@ -392,6 +415,11 @@ export default function AdminLessonComplaintsView() {
                             <div className="flex min-w-[200px] flex-col gap-2">
                               {isPending ? (
                                 <p className="text-xs text-amber-700">
+                                  {t("list.awaitingAdminReview")}
+                                </p>
+                              ) : null}
+                              {isTutorReviewRequested ? (
+                                <p className="text-xs text-amber-700">
                                   {t("list.awaitingTutorConfirmation")}
                                 </p>
                               ) : null}
@@ -416,13 +444,25 @@ export default function AdminLessonComplaintsView() {
                                   }))
                                 }
                               />
-                              <div className="flex gap-2">
+                              <div className="flex flex-wrap gap-2">
+                                {isPending ? (
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    disabled={busy}
+                                    onClick={() => void handleRequestTutorReview(item.id)}
+                                  >
+                                    {t("list.requestTutorReview")}
+                                  </Button>
+                                ) : null}
                                 <Button
                                   size="sm"
                                   disabled={busy}
                                   onClick={() =>
                                     setConfirmState({
-                                      action: isPending ? "approveWithoutTutor" : "approve",
+                                      action: needsTutorOverrideApprove
+                                        ? "approveWithoutTutor"
+                                        : "approve",
                                       id: item.id,
                                     })
                                   }

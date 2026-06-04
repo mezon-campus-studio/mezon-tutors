@@ -22,6 +22,7 @@ import {
   type TutorConfirmLessonComplaintResult,
   type LessonComplaintCreatedResult,
   type ReviewLessonComplaintResult,
+  type RequestTutorLessonComplaintReviewResult,
   ELessonComplaintStatus as LessonComplaintStatusApi,
   ESubscriptionLessonSlotStatus,
   isLessonFinishedForComplaint,
@@ -187,26 +188,6 @@ export class LessonComplaintService {
         message: complaint.message,
         senderAvatarUrl: student.avatar,
       });
-
-      const tutorProfile = await this.prisma.tutorProfile.findUnique({
-        where: { id: context.tutorId },
-        select: {
-          userId: true,
-          user: { select: { mezonUserId: true, username: true } },
-        },
-      });
-      if (tutorProfile) {
-        await this.notificationService.notifyTutorLessonComplaintSubmitted({
-          complaintId: complaint.id,
-          tutorUserId: tutorProfile.userId,
-          tutorMezonUserId: tutorProfile.user.mezonUserId,
-          studentName: student.username || 'Student',
-          lessonStartAtLabel,
-          reason: complaint.reason,
-          message: complaint.message,
-          senderAvatarUrl: student.avatar,
-        });
-      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Failed to notify for complaint ${complaint.id}: ${detail}`);
@@ -338,6 +319,62 @@ export class LessonComplaintService {
     });
   }
 
+  async requestTutorReview(
+    _adminUserId: string,
+    complaintId: string
+  ): Promise<RequestTutorLessonComplaintReviewResult> {
+    const complaint = await this.prisma.lessonComplaint.findUnique({
+      where: { id: complaintId },
+      include: {
+        student: { select: { username: true, avatar: true } },
+        tutor: {
+          select: {
+            userId: true,
+            user: { select: { mezonUserId: true } },
+          },
+        },
+      },
+    });
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found');
+    }
+    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+      throw new BadRequestException('Only pending complaints can be sent to the tutor');
+    }
+
+    const updated = await this.prisma.lessonComplaint.update({
+      where: { id: complaintId },
+      data: { status: ELessonComplaintStatus.TUTOR_REVIEW_REQUESTED },
+      select: { id: true, status: true, lessonStartAt: true, reason: true, message: true },
+    });
+
+    try {
+      const lessonStartAtLabel = dayjs(updated.lessonStartAt)
+        .utc()
+        .format('ddd, D MMM YYYY · HH:mm [UTC]');
+      await this.notificationService.notifyTutorLessonComplaintSubmitted({
+        complaintId: updated.id,
+        tutorUserId: complaint.tutor.userId,
+        tutorMezonUserId: complaint.tutor.user.mezonUserId,
+        studentName: complaint.student.username || 'Student',
+        lessonStartAtLabel,
+        reason: updated.reason,
+        message: updated.message,
+        senderAvatarUrl: complaint.student.avatar,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to notify tutor for complaint review request ${updated.id}: ${detail}`
+      );
+    }
+
+    return {
+      id: updated.id,
+      status: updated.status as LessonComplaintStatusApi,
+    };
+  }
+
   async listForTutor(tutorUserId: string): Promise<TutorLessonComplaintListItem[]> {
     await this.assertTutorUser(tutorUserId);
     const tutor = await this.prisma.tutorProfile.findUnique({
@@ -349,7 +386,17 @@ export class LessonComplaintService {
     }
 
     const rows = await this.prisma.lessonComplaint.findMany({
-      where: { tutorId: tutor.id },
+      where: {
+        tutorId: tutor.id,
+        status: {
+          in: [
+            ELessonComplaintStatus.TUTOR_REVIEW_REQUESTED,
+            ELessonComplaintStatus.TUTOR_CONFIRMED,
+            ELessonComplaintStatus.TUTOR_REJECTED,
+            ELessonComplaintStatus.APPROVED,
+          ],
+        },
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         student: {
@@ -410,7 +457,7 @@ export class LessonComplaintService {
     if (complaint.tutorId !== tutor.id) {
       throw new ForbiddenException('Not allowed to confirm this complaint');
     }
-    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+    if (complaint.status !== ELessonComplaintStatus.TUTOR_REVIEW_REQUESTED) {
       throw new BadRequestException('This complaint cannot be confirmed');
     }
 
@@ -479,7 +526,7 @@ export class LessonComplaintService {
     if (complaint.tutorId !== tutor.id) {
       throw new ForbiddenException('Not allowed to reject this complaint');
     }
-    if (complaint.status !== ELessonComplaintStatus.PENDING) {
+    if (complaint.status !== ELessonComplaintStatus.TUTOR_REVIEW_REQUESTED) {
       throw new BadRequestException('This complaint cannot be rejected');
     }
 
@@ -629,7 +676,8 @@ export class LessonComplaintService {
 
     if (targetStatus === 'APPROVED') {
       if (
-        complaint.status === ELessonComplaintStatus.PENDING &&
+        (complaint.status === ELessonComplaintStatus.PENDING ||
+          complaint.status === ELessonComplaintStatus.TUTOR_REVIEW_REQUESTED) &&
         !dto.acknowledgeWithoutTutorConfirmation
       ) {
         throw new BadRequestException(

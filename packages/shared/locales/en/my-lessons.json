@@ -95,7 +95,8 @@
       },
       "complaint": {
         "action": "Complain",
-        "statusPending": "Complaint pending",
+        "statusPending": "Awaiting admin review",
+        "statusTutorReviewRequested": "Awaiting tutor review",
         "statusTutorConfirmed": "Tutor confirmed — awaiting admin",
         "statusTutorRejected": "Declined by tutor",
         "statusApproved": "Refund approved",

@@ -335,14 +335,16 @@
       "emptyDescription": "Khi bạn báo cáo vấn đề với buổi học đã hoàn thành, khiếu nại sẽ hiển thị tại đây.",
       "filters": {
         "all": "Tất cả trạng thái",
-        "PENDING": "Chờ gia sư",
+        "PENDING": "Chờ admin",
+        "TUTOR_REVIEW_REQUESTED": "Chờ gia sư",
         "TUTOR_CONFIRMED": "Chờ admin",
         "TUTOR_REJECTED": "Gia sư từ chối",
         "APPROVED": "Đã duyệt",
         "REJECTED": "Đã từ chối"
       },
       "status": {
-        "PENDING": "Chờ gia sư xác nhận",
+        "PENDING": "Chờ admin xử lý",
+        "TUTOR_REVIEW_REQUESTED": "Chờ gia sư xác nhận",
         "TUTOR_CONFIRMED": "Chờ admin duyệt",
         "TUTOR_REJECTED": "Gia sư đã từ chối",
         "APPROVED": "Đã duyệt",
@@ -364,6 +366,7 @@
       "filters": {
         "all": "Tất cả trạng thái",
         "PENDING": "Chờ bạn xác nhận",
+        "TUTOR_REVIEW_REQUESTED": "Chờ bạn xác nhận",
         "TUTOR_CONFIRMED": "Chờ admin",
         "TUTOR_REJECTED": "Bạn đã từ chối",
         "APPROVED": "Đã duyệt",
@@ -371,6 +374,7 @@
       },
       "status": {
         "PENDING": "Chờ bạn xác nhận",
+        "TUTOR_REVIEW_REQUESTED": "Chờ bạn xác nhận",
         "TUTOR_CONFIRMED": "Chờ admin duyệt",
         "TUTOR_REJECTED": "Bạn đã từ chối",
         "APPROVED": "Đã duyệt",

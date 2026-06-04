@@ -85,7 +85,8 @@
       },
       "filters": {
         "all": "All",
-        "PENDING": "Awaiting tutor",
+        "PENDING": "Pending",
+        "TUTOR_REVIEW_REQUESTED": "Awaiting tutor",
         "TUTOR_CONFIRMED": "Tutor confirmed",
         "TUTOR_REJECTED": "Declined by tutor",
         "APPROVED": "Approved",
@@ -106,7 +107,10 @@
         },
         "approve": "Approve & refund",
         "reject": "Reject",
-        "awaitingTutorConfirmation": "The tutor has not confirmed this complaint yet.",
+        "awaitingAdminReview": "Not sent to the tutor yet. Request tutor review or approve/reject directly.",
+        "awaitingTutorConfirmation": "Waiting for the tutor to confirm or decline this complaint.",
+        "requestTutorReview": "Request tutor review",
+        "requestTutorReviewSuccess": "The tutor has been notified to review this complaint.",
         "tutorRejectedHint": "The tutor declined this complaint.",
         "trial": "Trial",
         "subscription": "Plan",
@@ -134,7 +138,7 @@
         },
         "confirmApproveWithoutTutor": {
           "title": "Approve without tutor confirmation?",
-          "description": "The tutor has not confirmed this complaint yet. Approving now will refund the student immediately. Continue only if you have reviewed the evidence.",
+          "description": "The tutor has not confirmed this complaint yet (or has not been asked to review it). Approving now will refund the student immediately. Continue only if you have reviewed the evidence.",
           "confirm": "Approve anyway",
           "cancel": "Cancel"
         },

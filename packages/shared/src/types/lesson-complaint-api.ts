@@ -81,6 +81,11 @@ export type AdminLessonComplaintListItem = {
   reviewed_at: string | null;
 };
 
+export type RequestTutorLessonComplaintReviewResult = {
+  id: string;
+  status: ELessonComplaintStatus;
+};
+
 export type AdminLessonComplaintMetrics = {
   total_requests: number;
   total_this_week: number;

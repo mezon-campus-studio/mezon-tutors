@@ -8,6 +8,7 @@ import type {
   AdminLessonComplaintListItem,
   AdminLessonComplaintMetrics,
   ReviewLessonComplaintResult,
+  RequestTutorLessonComplaintReviewResult,
 } from '@mezon-tutors/shared';
 import { LessonComplaintService } from './lesson-complaint.service';
 import { ListLessonComplaintsQueryDto } from './dto/list-lesson-complaints-query.dto';
@@ -30,6 +31,15 @@ export class AdminLessonComplaintController {
   @Get('lesson-complaints/metrics')
   async metrics(): Promise<AdminLessonComplaintMetrics> {
     return this.lessonComplaintService.getAdminMetrics();
+  }
+
+  @Post('lesson-complaints/:id/request-tutor-review')
+  async requestTutorReview(
+    @Req() req: Request,
+    @Param('id', ParseUUIDPipe) id: string
+  ): Promise<RequestTutorLessonComplaintReviewResult> {
+    const user = req.user as AuthUserPayload;
+    return this.lessonComplaintService.requestTutorReview(user.sub, id);
   }
 
   @Post('lesson-complaints/:id/approve')
