@@ -276,11 +276,15 @@ export class AuthService {
         return null;
       }
 
+      const now = new Date();
       const refreshTokenRecord = await this.prisma.refreshToken.findFirst({
         where: {
           token,
-          revokedAt: null,
-          expiresAt: { gt: new Date() },
+          expiresAt: { gt: now },
+          OR: [
+            { revokedAt: null },
+            { revokedAt: { gte: new Date(now.getTime() - 15_000) } },
+          ],
         },
       });
 

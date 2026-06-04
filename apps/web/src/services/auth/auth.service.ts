@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDefaultStore } from "jotai";
-import { apiClient } from "@/services/api-client";
+import { apiClient, refreshAccessTokenWithLock } from "@/services/api-client";
 import { accessTokenAtom } from "@/store/token.atom";
 import { storage } from "../storage/storage.service";
 import { base64EncodeUtf8 } from "@/lib/mezon-channel-app";
@@ -51,9 +51,8 @@ class AuthService {
   }
 
   async refreshToken(): Promise<{ accessToken: string }> {
-    const data = await apiClient.post<{ accessToken: string }>("/auth/refresh");
-    this.store.set(accessTokenAtom, data.accessToken);
-    return data;
+    const accessToken = await refreshAccessTokenWithLock();
+    return { accessToken };
   }
 
   async logout(): Promise<void> {

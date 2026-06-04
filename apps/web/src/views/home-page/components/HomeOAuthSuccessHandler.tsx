@@ -28,10 +28,16 @@ export default function HomeOAuthSuccessHandler() {
     inFlightRef.current = true;
 
     async function completeReturn() {
+      setAccessToken(null);
+
       try {
-        const refreshed = await authService.refreshToken();
+        const accessTokenFromUrl = searchParams?.get("accessToken")?.trim();
+        const accessToken = accessTokenFromUrl
+          ? accessTokenFromUrl
+          : (await authService.refreshToken()).accessToken;
+
+        setAccessToken(accessToken);
         const me = await authService.getMe();
-        setAccessToken(refreshed.accessToken);
         setUser(toAuthUser(me));
 
         if (syncSuccess) {
