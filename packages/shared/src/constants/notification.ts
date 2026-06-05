@@ -3,48 +3,6 @@ import { ROUTES } from './routes'
 
 export const NOTIFICATION_I18N_NAMESPACE = 'Notifications' as const
 
-export const NOTIFICATION_I18N_KEYS = {
-  templates: {
-    bookingCreated: 'templates.bookingCreated',
-    bookingConfirmed: 'templates.bookingConfirmed',
-    bookingCancelled: 'templates.bookingCancelled',
-    subscriptionEnrollmentConfirmed: 'templates.subscriptionEnrollmentConfirmed',
-    subscriptionEnrollmentCreated: 'templates.subscriptionEnrollmentCreated',
-    welcomeLinked: 'templates.welcomeLinked',
-    paymentSucceeded: 'templates.paymentSucceeded',
-    paymentFailed: 'templates.paymentFailed',
-    systemAnnouncement: 'templates.systemAnnouncement',
-    lessonStartingSoon: 'templates.lessonStartingSoon',
-    tutorEarningsReleased: 'templates.tutorEarningsReleased',
-    lessonComplaintApproved: 'templates.lessonComplaintApproved',
-    lessonComplaintApprovedRefunded: 'templates.lessonComplaintApprovedRefunded',
-    lessonComplaintRejected: 'templates.lessonComplaintRejected',
-    lessonComplaintTutorRejected: 'templates.lessonComplaintTutorRejected',
-    tutorLessonComplaintSubmitted: 'templates.tutorLessonComplaintSubmitted',
-    tutorLessonComplaintApproved: 'templates.tutorLessonComplaintApproved',
-    adminWithdrawalRequested: 'templates.adminWithdrawalRequested',
-    tutorWithdrawalCompleted: 'templates.tutorWithdrawalCompleted',
-    tutorWithdrawalRejected: 'templates.tutorWithdrawalRejected',
-  },
-  titles: {
-    bookingCreated: 'titles.bookingCreated',
-    subscriptionEnrollmentConfirmed: 'titles.subscriptionEnrollmentConfirmed',
-    subscriptionEnrollmentCreated: 'titles.subscriptionEnrollmentCreated',
-    welcomeLinked: 'titles.welcomeLinked',
-    paymentSucceeded: 'titles.paymentSucceeded',
-    systemAnnouncement: 'titles.systemAnnouncement',
-    lessonStartingSoon: 'titles.lessonStartingSoon',
-    tutorEarningsReleased: 'titles.tutorEarningsReleased',
-    lessonComplaintApproved: 'titles.lessonComplaintApproved',
-    lessonComplaintRejected: 'titles.lessonComplaintRejected',
-    lessonComplaintTutorRejected: 'titles.lessonComplaintTutorRejected',
-    tutorLessonComplaintSubmitted: 'titles.tutorLessonComplaintSubmitted',
-    tutorLessonComplaintApproved: 'titles.tutorLessonComplaintApproved',
-    adminWithdrawalRequested: 'titles.adminWithdrawalRequested',
-    tutorWithdrawalCompleted: 'titles.tutorWithdrawalCompleted',
-    tutorWithdrawalRejected: 'titles.tutorWithdrawalRejected',
-  },
-} as const
 export type NotificationMetaTone = 'positive' | 'negative'
 
 export type NotificationLinkContext = {
@@ -203,5 +161,29 @@ export const NOTIFICATION_META: Record<string, NotificationMetaItem> = {
     tone: 'negative',
     borderColor: '#7c3aed',
     resolveLink: () => ROUTES.DASHBOARD.TUTOR_LESSON_COMPLAINTS,
+  },
+  ADMIN_WITHDRAWAL_REQUESTED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.adminWithdrawalRequested',
+    templateKey: 'templates.adminWithdrawalRequested',
+    tone: 'positive',
+    borderColor: '#d97706',
+    resolveLink: () => ROUTES.ADMIN.PAYMENTS,
+  },
+  TUTOR_WITHDRAWAL_COMPLETED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.tutorWithdrawalCompleted',
+    templateKey: 'templates.tutorWithdrawalCompleted',
+    tone: 'positive',
+    borderColor: '#15803d',
+    resolveLink: () => ROUTES.DASHBOARD.WALLET,
+  },
+  TUTOR_WITHDRAWAL_REJECTED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.tutorWithdrawalRejected',
+    templateKey: 'templates.tutorWithdrawalRejected',
+    tone: 'negative',
+    borderColor: '#dc2626',
+    resolveLink: () => ROUTES.DASHBOARD.WALLET,
   },
 }
