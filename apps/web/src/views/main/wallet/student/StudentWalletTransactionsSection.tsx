@@ -44,23 +44,23 @@ export default function StudentWalletTransactionsSection({
   return (
     <section
       aria-labelledby="wallet-transactions-heading"
-      className="rounded-[1.75rem] border border-slate-200/80 bg-white p-5 shadow-sm md:p-6"
+      className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:rounded-[1.75rem] sm:p-5 md:p-6"
     >
-      <header className="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+      <header className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:pb-5 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
           <h2 id="wallet-transactions-heading" className="text-lg font-bold tracking-tight text-slate-900">
             {t('title')}
           </h2>
           <p className="mt-0.5 text-sm text-slate-500">{t('subtitle')}</p>
         </div>
-        <div className="flex flex-wrap gap-1.5 rounded-full border border-slate-200 bg-slate-50 p-1">
+        <div className="grid w-full grid-cols-3 gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 md:w-auto md:flex md:flex-wrap">
           {filters.map(({ key, label }) => (
             <button
               key={key}
               type="button"
               onClick={() => setFilter(key)}
               className={cn(
-                'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                'min-h-11 rounded-full px-3 text-xs font-semibold transition-colors sm:px-3.5 sm:py-1.5 md:min-h-0',
                 filter === key
                   ? 'bg-white text-violet-700 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900',

@@ -234,6 +234,7 @@
         "week": "Week",
         "month": "Month",
         "today": "Today",
+        "emptyDay": "No lessons scheduled for this day",
         "company": "Mezonly Tutors"
       },
       "upcoming": {

@@ -84,7 +84,7 @@ export default async function RootLayout({
       className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-white text-slate-900">
+      <body className="flex min-h-full w-full flex-col bg-white text-slate-900">
         <NextIntlClientProvider locale={locale}>
           <AppProvider>
             <Header />

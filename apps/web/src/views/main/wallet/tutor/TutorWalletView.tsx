@@ -36,17 +36,17 @@ export default function TutorWalletView() {
   const wdItems = wdData?.items ?? [];
 
   return (
-    <div className="relative mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-10">
+    <div className="relative mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(99,102,241,0.18),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[360px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(99,102,241,0.18),transparent)] md:h-[440px] lg:h-[520px]"
       />
 
-      <header className="relative mb-8 flex items-center gap-3">
-        <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-300/40">
+      <header className="relative mb-6 flex items-center gap-3 md:mb-8">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-300/40">
           <Wallet className="size-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
             {t('title')}
           </h1>
@@ -54,7 +54,7 @@ export default function TutorWalletView() {
         </div>
       </header>
 
-      <div className="relative mb-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-stretch lg:gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="relative mb-6 grid grid-cols-1 items-stretch gap-4 md:mb-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
         <TutorWalletHero
           details={details}
           stats={stats}
@@ -69,7 +69,7 @@ export default function TutorWalletView() {
         />
       </div>
 
-      <div className="relative mb-8">
+      <div className="relative mb-6 md:mb-8">
         <TutorWalletBentoStats details={details} stats={stats} isPending={headerPending} />
       </div>
 

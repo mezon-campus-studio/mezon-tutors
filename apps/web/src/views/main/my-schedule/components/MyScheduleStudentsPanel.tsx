@@ -4,6 +4,7 @@ import {
   CalendarPlus,
   CheckCircle2,
   MessageCircle,
+  Plus,
   UserRound,
   Users,
 } from 'lucide-react';
@@ -82,35 +83,37 @@ function StudentCard({ student, onMessage }: StudentCardProps) {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-1.5">
-              <CheckCircle2 className="size-3.5 text-emerald-600" />
-              <div className="leading-tight">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+          <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50/60 px-2 py-1 sm:w-auto sm:flex-none sm:gap-2 sm:px-3 sm:py-1.5">
+              <CheckCircle2 className="size-3 shrink-0 text-emerald-600 sm:size-3.5" />
+              <div className="min-w-0 leading-tight sm:min-w-0">
+                <p className="truncate text-[9px] font-bold uppercase tracking-wide text-emerald-600 sm:overflow-visible sm:whitespace-normal sm:text-[10px] sm:tracking-wider">
                   {t('completed')}
                 </p>
-                <p className="text-xs font-extrabold text-emerald-900">
+                <p className="truncate text-[10px] font-extrabold text-emerald-900 sm:overflow-visible sm:whitespace-normal sm:text-xs">
                   {t('lessonsCount', { count: student.completedLessons })}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-3 py-1.5">
-              <CalendarPlus className="size-3.5 text-violet-600" />
-              <div className="leading-tight">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-2 py-1 sm:w-auto sm:flex-none sm:gap-2 sm:px-3 sm:py-1.5">
+              <CalendarPlus className="size-3 shrink-0 text-violet-600 sm:size-3.5" />
+              <div className="min-w-0 leading-tight sm:min-w-0">
+                <p className="truncate text-[9px] font-bold uppercase tracking-wide text-violet-600 sm:overflow-visible sm:whitespace-normal sm:text-[10px] sm:tracking-wider">
                   {t('nextLesson')}
                 </p>
-                <p className="text-xs font-extrabold text-violet-900">{displayNextLesson}</p>
+                <p className="truncate text-[10px] font-extrabold text-violet-900 sm:overflow-visible sm:whitespace-normal sm:text-xs">
+                  {displayNextLesson}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 sm:justify-end">
+      <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         {student.upcomingLessons > 0 ? (
-          <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-sky-50 px-3 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
+          <span className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-sky-50 px-3 text-xs font-bold text-sky-700 ring-1 ring-sky-100 sm:h-9">
             {t('upcomingCount', { count: student.upcomingLessons })}
           </span>
         ) : null}
@@ -118,7 +121,7 @@ function StudentCard({ student, onMessage }: StudentCardProps) {
         <Button
           type="button"
           onClick={() => onMessage(student)}
-          className="h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:min-w-28"
+          className="h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28"
         >
           <MessageCircle className="mr-1 size-3.5" />
           {t('message')}
@@ -142,9 +145,9 @@ export default function MyScheduleStudentsPanel({ students }: MyScheduleStudents
 
   return (
     <>
-      <div className="flex w-full max-w-[1032px] flex-col gap-5">
-        <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-          <div className="flex items-center gap-3">
+      <div className="flex w-full max-w-full flex-col gap-5 lg:max-w-[1032px]">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
               <Users className="size-5" />
             </div>
@@ -158,20 +161,27 @@ export default function MyScheduleStudentsPanel({ students }: MyScheduleStudents
               </p>
             </div>
           </div>
-
-          <Button
-            type="button"
-            onClick={() => router.push(ROUTES.DASHBOARD.TRIAL_BOOKING)}
-            className="h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-          >
-            {t('viewBookings')}
-          </Button>
         </div>
 
         {students.length === 0 ? (
-          <div className="rounded-2xl border border-violet-100 bg-white px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-slate-700">{t('emptyTitle')}</p>
-            <p className="mt-1 text-sm text-slate-500">{t('emptyDescription')}</p>
+          <div className="relative mt-2 overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-6 sm:p-8">
+            <div className="pointer-events-none absolute -top-12 left-1/2 size-48 -translate-x-1/2 rounded-full bg-violet-300/30 blur-3xl" />
+
+            <div className="relative flex flex-col items-center gap-3 text-center">
+              <div className="relative">
+                <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+                  <Users className="size-5" />
+                </div>
+              </div>
+
+              <h3 className="max-w-lg text-balance text-xl font-extrabold text-slate-900 sm:text-2xl">
+                {t('emptyTitle')}
+              </h3>
+              <p className="max-w-md text-sm text-slate-600">
+                {t('emptyDescription')}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3">

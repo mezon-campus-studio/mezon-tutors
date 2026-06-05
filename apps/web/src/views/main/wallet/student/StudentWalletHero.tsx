@@ -32,7 +32,7 @@ export default function StudentWalletHero({ details, stats, isPending }: Student
 
   if (isPending || !details) {
     return (
-      <div className="relative min-h-[280px] overflow-hidden rounded-[1.75rem] border border-violet-200/50 bg-slate-900 p-6 md:min-h-[300px] md:p-8">
+      <div className="relative min-h-[240px] overflow-hidden rounded-2xl border border-violet-200/50 bg-slate-900 p-4 sm:min-h-[280px] sm:rounded-[1.75rem] sm:p-6 md:min-h-[300px] md:p-8">
         <Skeleton className="h-4 w-24 bg-white/15" />
         <Skeleton className="mt-6 h-12 w-56 bg-white/15" />
         <Skeleton className="mt-8 h-20 w-full rounded-2xl bg-white/10" />
@@ -45,12 +45,12 @@ export default function StudentWalletHero({ details, stats, isPending }: Student
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[1.75rem] border border-violet-500/20 bg-[linear-gradient(145deg,#0f0720_0%,#2e1065_38%,#5b21b6_68%,#7c3aed_100%)] p-6 text-white shadow-2xl shadow-violet-900/25 md:p-8">
+    <section className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[linear-gradient(145deg,#0f0720_0%,#2e1065_38%,#5b21b6_68%,#7c3aed_100%)] p-4 text-white shadow-2xl shadow-violet-900/25 sm:rounded-[1.75rem] sm:p-6 md:p-8">
       <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 left-1/4 size-80 rounded-full bg-violet-400/15 blur-3xl" />
 
-      <div className="relative flex flex-col gap-20 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0 flex flex-col flex-1 gap-5">
+      <div className="relative flex flex-col gap-6 sm:gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-5">
+        <div className="flex min-w-0 flex-1 flex-col gap-4 sm:gap-5">
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-violet-100">
               <Sparkles className="size-3" />
@@ -86,24 +86,24 @@ export default function StudentWalletHero({ details, stats, isPending }: Student
             </div>
           ) : (
             <>
-              <p className="mt-5 text-sm font-medium text-violet-200/90">{tCard('studentLabel')}</p>
-              <p className="mt-1 text-4xl font-extrabold tracking-tight tabular-nums md:text-5xl">
+              <p className="mt-4 text-sm font-medium text-violet-200/90 sm:mt-5">{tCard('studentLabel')}</p>
+              <p className="mt-1 text-3xl font-extrabold tracking-tight break-words tabular-nums sm:text-4xl md:text-5xl">
                 {formatToCurrency(ECurrency.VND, balance)}
               </p>
             </>
           )}
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Link href={ROUTES.TUTOR.INDEX}>
-              <Button className="h-10 rounded-full border-0 bg-white px-5 font-semibold text-violet-900 shadow-lg shadow-violet-950/30 hover:bg-violet-50">
+          <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:flex-wrap">
+            <Link href={ROUTES.TUTOR.INDEX} className="w-full sm:w-auto">
+              <Button className="h-11 min-h-11 w-full rounded-full border-0 bg-white px-5 font-semibold text-violet-900 shadow-lg shadow-violet-950/30 hover:bg-violet-50 sm:h-10 sm:w-auto">
                 {t('actionTutors')}
                 <ArrowUpRight className="size-4" />
               </Button>
             </Link>
-            <Link href={ROUTES.DASHBOARD.MY_LESSONS}>
+            <Link href={ROUTES.DASHBOARD.MY_LESSONS} className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="h-10 rounded-full border-white/25 bg-white/10 px-5 font-semibold text-white backdrop-blur-sm hover:bg-white/15"
+                className="h-11 min-h-11 w-full rounded-full border-white/25 bg-white/10 px-5 font-semibold text-white backdrop-blur-sm hover:bg-white/15 sm:h-10 sm:w-auto"
               >
                 <BookOpen className="size-4" />
                 {t('actionLessons')}
@@ -112,34 +112,38 @@ export default function StudentWalletHero({ details, stats, isPending }: Student
           </div>
         </div>
 
-        <div className="w-full shrink-0 lg:w-[220px]">
+        <div className="w-full shrink-0 sm:max-w-sm lg:max-w-none lg:w-[220px]">
           <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-md">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-200/80">
               {t('activityTitle')}
             </p>
-            <div className="mt-4 flex h-24 items-end gap-2">
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <div
-                  className="w-full max-w-[52px] rounded-t-lg bg-rose-400/90 transition-all"
-                  style={{ height: `${Math.max(12, (spendPct / 100) * 72)}px` }}
-                />
-                <div className="flex items-center gap-1 text-[10px] text-violet-100/70">
-                  <TrendingDown className="size-3 text-rose-300" />
-                  {t('chartSpend')}
+            <div className="mt-4">
+              <div className="flex h-20 items-end gap-3">
+                <div className="flex h-full flex-1 items-end justify-center">
+                  <div
+                    className="w-full max-w-[52px] rounded-t-lg bg-rose-400/90 transition-all"
+                    style={{ height: `${Math.max(12, (spendPct / 100) * 64)}px` }}
+                  />
+                </div>
+                <div className="flex h-full flex-1 items-end justify-center">
+                  <div
+                    className="w-full max-w-[52px] rounded-t-lg bg-emerald-400/90 transition-all"
+                    style={{ height: `${Math.max(12, (refundPct / 100) * 64)}px` }}
+                  />
                 </div>
               </div>
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <div
-                  className="w-full max-w-[52px] rounded-t-lg bg-emerald-400/90 transition-all"
-                  style={{ height: `${Math.max(12, (refundPct / 100) * 72)}px` }}
-                />
-                <div className="flex items-center gap-1 text-[10px] text-violet-100/70">
-                  <TrendingUp className="size-3 text-emerald-300" />
+              <div className="mt-2 flex gap-3">
+                <div className="flex flex-1 items-center justify-center gap-1 text-[10px] text-violet-100/70">
+                  <TrendingDown className="size-3 shrink-0 text-rose-300" />
+                  {t('chartSpend')}
+                </div>
+                <div className="flex flex-1 items-center justify-center gap-1 text-[10px] text-violet-100/70">
+                  <TrendingUp className="size-3 shrink-0 text-emerald-300" />
                   {t('chartRefund')}
                 </div>
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-xs">
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-center text-xs">
               <div>
                 <p className="text-violet-200/70">{t('chartSpend')}</p>
                 <p className="mt-0.5 font-semibold tabular-nums">

@@ -1,25 +1,15 @@
 'use client'
 
 import { ClipboardList, Search } from 'lucide-react'
-
 import { useLocale, useTranslations } from 'next-intl'
-
 import { useMemo, useState } from 'react'
-
 import { useRouter } from 'next/navigation'
-
 import { useQueryClient } from '@tanstack/react-query'
-
 import { toast } from 'sonner'
-
 import dayjs from 'dayjs'
-
 import timezone from 'dayjs/plugin/timezone'
-
 import utc from 'dayjs/plugin/utc'
-
 import { useAtomValue } from 'jotai'
-
 import {
   Input,
   Select,
@@ -28,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui'
-
 import {
   useGetMyTrialLessonBookingRequests,
   useTutorCancelTrialLessonMutation,
@@ -46,7 +35,6 @@ import {
   resolveTutorCancelToastMessage,
   resolveTutorRescheduleToastMessage,
 } from '@/lib/tutor-lesson-request-errors'
-
 import {
   buildTutorLessonCancelledDmContent,
   buildTutorLessonRescheduleRequestDmContent,
@@ -57,9 +45,7 @@ import {
 } from '@mezon-tutors/shared'
 import { sendLessonDmToPeer } from '@/lib/send-lesson-dm'
 import { getTutorRescheduleReasonLabel } from '@/lib/tutor-lesson-dm-reasons'
-
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination'
-
 import BookingRequestsMetrics from './components/BookingRequestsMetrics'
 import BookingRequestsTable from './components/BookingRequestsTable'
 import {
@@ -70,7 +56,6 @@ import {
   RescheduleLessonDialog,
   type TutorRescheduleLessonTarget,
 } from './components/RescheduleLessonDialog'
-
 import type { TutorBookingRequestUiStatus } from '@/lib/trial-booking-status'
 
 dayjs.extend(utc)
@@ -391,14 +376,14 @@ export default function BookingRequestsView() {
   }
 
   return (
-    <div className="mx-auto w-full px-4 py-6 md:px-7 md:py-8">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
-            <ClipboardList className="size-6" />
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
+        <header className="mb-6 flex items-center gap-3 md:mb-8">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40 sm:size-12">
+            <ClipboardList className="size-5 sm:size-6" />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
               {t('eyebrow')}
             </p>
@@ -411,91 +396,95 @@ export default function BookingRequestsView() {
               {t('subtitle', { count: counts.pending })}
             </p>
           </div>
+        </header>
+
+        <div className="mb-6">
+          <BookingRequestsMetrics counts={counts} isLoading={isLoading} />
         </div>
-      </div>
 
-      <div className="mb-6">
-        <BookingRequestsMetrics counts={counts} isLoading={isLoading} />
-      </div>
+        <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative min-w-0 flex-1 sm:max-w-md">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
 
-      <div className="mb-4 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder={t('searchPlaceholder')}
+              className="h-11 rounded-full border-violet-100 bg-white pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-          <Input
-            placeholder={t('searchPlaceholder')}
-            className="h-11 rounded-full border-violet-100 bg-white pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value as 'all' | TrialLessonBookingRequestStatusFilter)
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="h-11 w-full rounded-full border-violet-100 bg-white sm:w-48">
+              <SelectValue>
+                {t(
+                  `filters.${STATUS_FILTERS.find((option) => option.value === statusFilter)?.labelKey ?? 'all'}`,
+                )}
+              </SelectValue>
+            </SelectTrigger>
+
+            <SelectContent>
+              {STATUS_FILTERS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {t(`filters.${option.labelKey}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <BookingRequestsTable
+          items={filtered}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          lessonChangePeriodHours={publicAppSettings?.lessonChangePeriodHours}
+          onViewDetail={handleViewDetail}
+          onReschedule={handleReschedule}
+          onCancel={handleCancel}
+        />
+
+        <div className="pt-6">
+          <TutorsPagination
+            page={page}
+            totalPages={totalPages}
+            isFetching={isFetching}
+            onPageChangeAction={setPage}
           />
         </div>
 
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => {
-            setStatusFilter(value as 'all' | TrialLessonBookingRequestStatusFilter)
-            setPage(1)
+        <RescheduleLessonDialog
+          isOpen={isRescheduleDialogOpen}
+          onClose={() => {
+            setIsRescheduleDialogOpen(false)
+            setRescheduleTarget(null)
+            setRescheduleBooking(null)
           }}
-        >
-          <SelectTrigger className="h-11 w-full rounded-full border-violet-100 bg-white md:w-48">
-            <SelectValue />
-          </SelectTrigger>
+          onConfirm={handleConfirmReschedule}
+          lesson={rescheduleTarget}
+          lessonKind="trial"
+          isLoading={isSubmitting}
+        />
 
-          <SelectContent>
-            {STATUS_FILTERS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {t(`filters.${option.labelKey}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <BookingRequestsTable
-        items={filtered}
-        isLoading={isLoading}
-        isFetching={isFetching}
-        lessonChangePeriodHours={publicAppSettings?.lessonChangePeriodHours}
-        onViewDetail={handleViewDetail}
-        onReschedule={handleReschedule}
-        onCancel={handleCancel}
-      />
-
-      <div className="pt-6">
-        <TutorsPagination
-          page={page}
-          totalPages={totalPages}
-          isFetching={isFetching}
-          onPageChangeAction={setPage}
+        <CancelLessonDialog
+          isOpen={isCancelDialogOpen}
+          onClose={() => {
+            setIsCancelDialogOpen(false)
+            setCancelTarget(null)
+            setCancelBooking(null)
+          }}
+          onConfirm={handleConfirmCancel}
+          lesson={cancelTarget}
+          isLoading={isCancelSubmitting}
+          variant="tutor"
+          lessonKind="trial"
         />
       </div>
-
-      <RescheduleLessonDialog
-        isOpen={isRescheduleDialogOpen}
-        onClose={() => {
-          setIsRescheduleDialogOpen(false)
-          setRescheduleTarget(null)
-          setRescheduleBooking(null)
-        }}
-        onConfirm={handleConfirmReschedule}
-        lesson={rescheduleTarget}
-        lessonKind="trial"
-        isLoading={isSubmitting}
-      />
-
-      <CancelLessonDialog
-        isOpen={isCancelDialogOpen}
-        onClose={() => {
-          setIsCancelDialogOpen(false)
-          setCancelTarget(null)
-          setCancelBooking(null)
-        }}
-        onConfirm={handleConfirmCancel}
-        lesson={cancelTarget}
-        isLoading={isCancelSubmitting}
-        variant="tutor"
-        lessonKind="trial"
-      />
     </div>
   )
 }

@@ -29,13 +29,15 @@ type BentoTileProps = {
 function BentoTile({ label, value, helper, icon, className, valueClassName }: BentoTileProps) {
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border border-violet-100/90 bg-white p-5 shadow-sm transition-shadow hover:shadow-md hover:shadow-violet-100/60 ${className ?? ''}`}
+      className={`group relative overflow-hidden rounded-2xl border border-violet-100/90 bg-white p-4 shadow-sm transition-shadow hover:shadow-md hover:shadow-violet-100/60 sm:p-5 ${className ?? ''}`}
     >
       <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-violet-100/40 blur-2xl transition-opacity group-hover:opacity-80" />
       <div className="relative flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-slate-500">{label}</p>
-          <p className={`mt-2 text-2xl font-extrabold tracking-tight tabular-nums md:text-3xl ${valueClassName ?? 'text-slate-900'}`}>
+          <p
+            className={`mt-2 text-xl font-extrabold tracking-tight break-words tabular-nums sm:text-2xl md:text-3xl ${valueClassName ?? 'text-slate-900'}`}
+          >
             {value}
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-500">{helper}</p>
@@ -62,12 +64,12 @@ export default function StudentWalletBentoStats({
     return (
       <section>
         <Skeleton className="mb-4 h-6 w-40" />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:grid-rows-2 md:gap-4">
-          <Skeleton className="col-span-2 row-span-2 min-h-[180px] rounded-2xl" />
-          <Skeleton className="min-h-[84px] rounded-2xl md:col-span-2" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 lg:gap-4">
+          <Skeleton className="min-h-[140px] rounded-2xl sm:col-span-2 sm:row-span-2 sm:min-h-[180px] lg:col-span-2 lg:row-span-2" />
+          <Skeleton className="min-h-[84px] rounded-2xl sm:col-span-2 lg:col-span-2" />
           <Skeleton className="min-h-[84px] rounded-2xl" />
-          <Skeleton className="min-h-[84px] rounded-2xl md:col-span-2" />
-          <Skeleton className="min-h-[84px] rounded-2xl md:col-span-2" />
+          <Skeleton className="min-h-[84px] rounded-2xl sm:col-span-2 lg:col-span-2" />
+          <Skeleton className="min-h-[84px] rounded-2xl sm:col-span-2 lg:col-span-2" />
         </div>
       </section>
     );
@@ -84,9 +86,9 @@ export default function StudentWalletBentoStats({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:grid-rows-2 md:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 lg:gap-4">
         <BentoTile
-          className="col-span-2 row-span-2 md:p-6"
+          className="sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2 lg:p-6"
           label={t('monthActivity.title')}
           value={formatToCurrency(ECurrency.VND, studentStats?.monthSpent ?? 0)}
           helper={t('monthActivity.studentHelper')}
@@ -94,7 +96,7 @@ export default function StudentWalletBentoStats({
           valueClassName="text-slate-900"
         />
         <BentoTile
-          className="md:col-span-2"
+          className="sm:col-span-2 lg:col-span-2"
           label={t('monthRefunds.title')}
           value={formatToCurrency(ECurrency.VND, studentStats?.monthRefunded ?? 0)}
           helper={t('monthRefunds.helper')}

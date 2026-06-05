@@ -1,14 +1,11 @@
 "use client";
 
 import {
-  ArrowRight,
   CalendarPlus,
   CheckCircle2,
-  Compass,
   GraduationCap,
   MessageCircle,
   Plus,
-  Sparkles,
   Star,
 } from "lucide-react";
 import Image from "next/image";
@@ -67,14 +64,14 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-1.5">
-              <CheckCircle2 className="size-3.5 text-emerald-600" />
-              <div className="leading-tight">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+          <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50/60 px-2 py-1 sm:w-auto sm:flex-none sm:gap-2 sm:px-3 sm:py-1.5">
+              <CheckCircle2 className="size-3 shrink-0 text-emerald-600 sm:size-3.5" />
+              <div className="min-w-0 leading-tight sm:min-w-0">
+                <p className="truncate text-[9px] font-bold uppercase tracking-wide text-emerald-600 sm:overflow-visible sm:whitespace-normal sm:text-[10px] sm:tracking-wider">
                   {t("panels.tutors.completed")}
                 </p>
-                <p className="text-xs font-extrabold text-emerald-900">
+                <p className="truncate text-[10px] font-extrabold text-emerald-900 sm:overflow-visible sm:whitespace-normal sm:text-xs">
                   {t("panels.tutors.lessonsCount", {
                     count: tutor.completedLessons,
                   })}
@@ -82,13 +79,13 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-3 py-1.5">
-              <CalendarPlus className="size-3.5 text-violet-600" />
-              <div className="leading-tight">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-2 py-1 sm:w-auto sm:flex-none sm:gap-2 sm:px-3 sm:py-1.5">
+              <CalendarPlus className="size-3 shrink-0 text-violet-600 sm:size-3.5" />
+              <div className="min-w-0 leading-tight sm:min-w-0">
+                <p className="truncate text-[9px] font-bold uppercase tracking-wide text-violet-600 sm:overflow-visible sm:whitespace-normal sm:text-[10px] sm:tracking-wider">
                   {t("panels.tutors.nextLesson")}
                 </p>
-                <p className="text-xs font-extrabold text-violet-900">
+                <p className="truncate text-[10px] font-extrabold text-violet-900 sm:overflow-visible sm:whitespace-normal sm:text-xs">
                   {displayNextLesson}
                 </p>
               </div>
@@ -97,7 +94,7 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
         </div>
       </button>
 
-      <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+      <div className="flex shrink-0 flex-col gap-3 sm:items-end">
         <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600 ring-1 ring-amber-100 sm:self-end">
           <Star className="size-3 fill-amber-400 text-amber-400" />
           {tutor.ratingAverage.toFixed(1)}
@@ -106,14 +103,14 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
           </span>
         </span>
 
-        <div className="flex gap-2">
-          <Button className="group/btn h-9 flex-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:flex-none sm:min-w-28">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28">
             <CalendarPlus className="mr-1 size-3.5" />
             {t("panels.tutors.schedule")}
           </Button>
           <Button
             variant="outline"
-            className="h-9 flex-1 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:flex-none sm:min-w-28"
+            className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto sm:min-w-28"
           >
             <MessageCircle className="mr-1 size-3.5" />
             {t("panels.tutors.message")}
@@ -124,46 +121,28 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
   );
 }
 
-function DiscoverCard() {
+function EmptyTutorsState() {
   const t = useTranslations("MyLessons");
   const router = useRouter();
 
   return (
-    <div className="relative mt-2 overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-8">
+    <div className="relative mt-2 overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-6 sm:p-8">
       <div className="pointer-events-none absolute -top-12 left-1/2 size-48 -translate-x-1/2 rounded-full bg-violet-300/30 blur-3xl" />
 
       <div className="relative flex flex-col items-center gap-3 text-center">
         <div className="relative">
           <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
           <div className="flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
-            <Compass className="size-5" />
+            <GraduationCap className="size-5" />
           </div>
         </div>
 
         <h3 className="max-w-lg text-balance text-xl font-extrabold text-slate-900 sm:text-2xl">
-          {t("panels.tutors.discoverTitle")}
+          {t("panels.tutors.emptyTitle")}
         </h3>
         <p className="max-w-md text-sm text-slate-600">
-          {t("panels.tutors.discoverDescription")}
+          {t("panels.tutors.emptyDescription")}
         </p>
-
-        <div className="mt-2 flex flex-wrap justify-center gap-2">
-          <Button
-            onClick={() => router.push("/tutors")}
-            className="group h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-          >
-            <Sparkles className="mr-1.5 size-3.5" />
-            {t("panels.tutors.findTutors")}
-            <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/tutors")}
-            className="h-10 rounded-full border-slate-200 px-5 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
-          >
-            {t("panels.tutors.viewSubjects")}
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -182,9 +161,9 @@ export default function MyTutorsPanel({ tutors }: MyTutorsPanelProps) {
   };
 
   return (
-    <div className="flex w-full max-w-[1032px] flex-col gap-5">
-      <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-        <div className="flex items-center gap-3">
+    <div className="flex w-full max-w-full flex-col gap-5 lg:max-w-[1032px]">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
             <GraduationCap className="size-5" />
           </div>
@@ -203,7 +182,7 @@ export default function MyTutorsPanel({ tutors }: MyTutorsPanelProps) {
 
         <Button
           onClick={() => router.push("/tutors")}
-          className="group h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+          className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto md:shrink-0"
         >
           <Plus className="mr-1 size-3.5" />
           {t("panels.tutors.findNewTutors")}
@@ -211,16 +190,18 @@ export default function MyTutorsPanel({ tutors }: MyTutorsPanelProps) {
       </div>
 
       <div className="flex flex-col gap-3">
-        {tutors.map((tutor) => (
-          <TutorCard
-            key={tutor.id}
-            tutor={tutor}
-            onOpenTutor={handleOpenTutor}
-          />
-        ))}
+        {tutors.length > 0 ? (
+          tutors.map((tutor) => (
+            <TutorCard
+              key={tutor.id}
+              tutor={tutor}
+              onOpenTutor={handleOpenTutor}
+            />
+          ))
+        ) : (
+          <EmptyTutorsState />
+        )}
       </div>
-
-      <DiscoverCard />
     </div>
   );
 }

@@ -44,10 +44,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="relative flex min-h-screen">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+    <div className="relative flex min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
-        <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/15 blur-[140px]" />
+        <div className="absolute -top-40 left-1/2 size-[44rem] max-w-[100vw] -translate-x-1/2 rounded-full bg-violet-300/15 blur-[140px]" />
       </div>
       <DashboardSidebar userRole={user.role} />
       <DashboardMobileDrawer
@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         onLogoutAction={handleLogout}
       />
 
-      <main className="flex-1 overflow-auto md:ml-64">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto md:ml-64">{children}</main>
     </div>
   );
 }

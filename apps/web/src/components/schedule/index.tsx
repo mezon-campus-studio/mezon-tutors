@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CalendarCard, type CalendarEvent } from '@/components/calendar';
-import { useCalendarNow } from '@/hooks';
+import { useCalendarNow, useIsBelowLaptop, useBreakpoint } from '@/hooks';
 import type { CalendarType } from '@/components/calendar/types';
 import {
   addCalendarEventHourTicks,
@@ -12,25 +12,14 @@ import {
   getFallbackWeekHours,
 } from '@mezon-tutors/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import DashboardScheduleMobileList from './DashboardScheduleMobileList';
+import type {
+  DashboardScheduleCalendarEvent,
+  DashboardScheduleCalendarLabels,
+  DashboardScheduleWeekDay,
+} from './types';
 
-export type DashboardScheduleWeekDay = {
-  shortLabel: string;
-  dateLabel: string;
-};
-
-export type DashboardScheduleCalendarEvent = {
-  id: string;
-  dayIndex: number;
-  startHour: number;
-  endHour: number;
-};
-
-export type DashboardScheduleCalendarLabels = {
-  today: string;
-  weekBadge: string;
-  prevWeekAria?: string;
-  nextWeekAria?: string;
-};
+export type { DashboardScheduleWeekDay, DashboardScheduleCalendarEvent, DashboardScheduleCalendarLabels };
 
 export type DashboardScheduleCalendarProps<T extends DashboardScheduleCalendarEvent> = {
   title: string;
@@ -43,7 +32,7 @@ export type DashboardScheduleCalendarProps<T extends DashboardScheduleCalendarEv
   onNextWeek?: () => void;
   onGoToToday?: () => void;
   labels: DashboardScheduleCalendarLabels;
-  renderEvent: (event: T) => ReactNode;
+  renderEvent: (event: T, layout?: 'grid' | 'list') => ReactNode;
   onEventClick?: (event: T, anchorRect: DOMRect) => void;
   calendarType?: CalendarType;
   timezoneName?: string;
@@ -85,6 +74,10 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
 }: DashboardScheduleCalendarProps<T>) {
   const prevAria = labels.prevWeekAria ?? 'Previous week';
   const nextAria = labels.nextWeekAria ?? 'Next week';
+  const emptyDayMessage = labels.emptyDay ?? 'No lessons scheduled for this day';
+  const isBelowLaptop = useIsBelowLaptop();
+  const breakpoint = useBreakpoint();
+  const isCompactGrid = breakpoint === 'laptop';
 
   const liveNow = useCalendarNow(
     timezoneName ?? '',
@@ -98,6 +91,32 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
   const resolvedHour = isCurrentWeek
     ? (liveNow.currentHour ?? currentHour)
     : currentHour;
+
+  const [selectedDayIndex, setSelectedDayIndex] = useState(
+    resolvedDayIndex ?? 0,
+  );
+
+  useEffect(() => {
+    if (isCurrentWeek && resolvedDayIndex !== undefined) {
+      setSelectedDayIndex(resolvedDayIndex);
+      return;
+    }
+    setSelectedDayIndex(0);
+  }, [weekStartYmd, isCurrentWeek, resolvedDayIndex]);
+
+  const isViewingToday =
+    isCurrentWeek &&
+    resolvedDayIndex !== undefined &&
+    selectedDayIndex === resolvedDayIndex;
+
+  const isTodayDisabled = isBelowLaptop ? isViewingToday : Boolean(isCurrentWeek);
+
+  const handleGoToToday = () => {
+    onGoToToday?.();
+    if (resolvedDayIndex !== undefined) {
+      setSelectedDayIndex(resolvedDayIndex);
+    }
+  };
 
   const calendarEvents: CalendarEvent<T>[] = useMemo(
     () =>
@@ -120,10 +139,10 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
   const finalWeekHours = weekHours.length ? weekHours : getFallbackWeekHours();
 
   const header = (
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
-      <div className="flex items-center gap-3">
+    <div className="mb-3 flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3 sm:justify-start">
         <h2
-          className="text-2xl font-extrabold tracking-tight md:text-3xl"
+          className="text-xl font-extrabold tracking-tight sm:text-2xl lg:text-3xl"
           style={{
             background: 'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
             WebkitBackgroundClip: 'text',
@@ -137,7 +156,7 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
           <button
             type="button"
             aria-label={prevAria}
-            className="flex size-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex size-11 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40 sm:size-9"
             onClick={onPrevWeek}
             disabled={!onPrevWeek}
           >
@@ -146,7 +165,7 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
           <button
             type="button"
             aria-label={nextAria}
-            className="flex size-8 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex size-11 items-center justify-center rounded-full border border-violet-200 bg-white text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-40 sm:size-9"
             onClick={onNextWeek}
             disabled={!onNextWeek}
           >
@@ -158,17 +177,17 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-            isCurrentWeek
+          className={`min-h-11 rounded-full border px-4 py-2 text-xs font-semibold transition-colors sm:min-h-0 sm:px-3.5 sm:py-1.5 ${
+            isTodayDisabled
               ? 'cursor-not-allowed border-slate-200 text-slate-400'
               : 'cursor-pointer border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50'
           }`}
-          onClick={isCurrentWeek ? undefined : onGoToToday}
-          disabled={isCurrentWeek}
+          onClick={isTodayDisabled ? undefined : handleGoToToday}
+          disabled={isTodayDisabled}
         >
           {labels.today}
         </button>
-        <span className="rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-violet-300/40">
+        <span className="inline-flex min-h-11 items-center rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-violet-300/40 sm:min-h-0 sm:px-3.5 sm:py-1.5">
           {labels.weekBadge}
         </span>
       </div>
@@ -176,20 +195,35 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
   );
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40 sm:p-5">
-      <CalendarCard<T>
-        type={calendarType}
-        weekDays={finalWeekDays}
-        weekHours={finalWeekHours}
-        events={calendarEvents}
-        currentDayIndex={resolvedDayIndex}
-        currentHour={resolvedHour}
-        enableGapCollapse
-        readonly
-        onEventClick={onEventClick ? (ev, rect) => onEventClick(ev.data, rect) : undefined}
-        renderEvent={(ev, _isCompact) => renderEvent(ev.data)}
-        header={header}
-      />
+    <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40 sm:p-4 lg:p-5">
+      {header}
+
+      {isBelowLaptop ? (
+        <DashboardScheduleMobileList
+          weekDays={finalWeekDays}
+          events={events}
+          selectedDayIndex={selectedDayIndex}
+          onSelectDay={setSelectedDayIndex}
+          currentDayIndex={resolvedDayIndex}
+          emptyMessage={emptyDayMessage}
+          renderEvent={renderEvent}
+          onEventClick={onEventClick}
+        />
+      ) : (
+        <CalendarCard<T>
+          type={calendarType}
+          weekDays={finalWeekDays}
+          weekHours={finalWeekHours}
+          events={calendarEvents}
+          currentDayIndex={resolvedDayIndex}
+          currentHour={resolvedHour}
+          enableGapCollapse
+          readonly
+          isCompact={isCompactGrid}
+          onEventClick={onEventClick ? (ev, rect) => onEventClick(ev.data, rect) : undefined}
+          renderEvent={(ev, _isCompact) => renderEvent(ev.data, 'grid')}
+        />
+      )}
     </div>
   );
 }

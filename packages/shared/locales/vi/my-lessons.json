@@ -38,6 +38,7 @@
   },
   "calendar": {
     "today": "Hôm nay",
+    "emptyDay": "Không có buổi học nào trong ngày này",
     "switchWeek": "Tuần",
     "switchMonth": "Tháng",
     "legendSuffix": "Buổi học",
@@ -192,6 +193,8 @@
       "schedule": "Đặt lịch",
       "message": "Nhắn tin",
       "unscheduled": "Chưa có lịch",
+      "emptyTitle": "Chưa có gia sư nào",
+      "emptyDescription": "Khi bạn đặt buổi học đầu tiên, danh sách gia sư sẽ xuất hiện ở đây. Bạn cũng có thể tìm gia sư để bắt đầu.",
       "discoverTitle": "Muốn mở rộng việc học của bạn?",
       "discoverDescription": "Khám phá gia sư được đánh giá cao ở Vật lý, Hóa học, Thiết kế và hơn 100 môn khác.",
       "findTutors": "Tìm gia sư",

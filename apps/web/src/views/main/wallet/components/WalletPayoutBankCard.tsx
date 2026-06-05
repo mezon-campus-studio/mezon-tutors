@@ -43,7 +43,7 @@ export default function WalletPayoutBankCard({ bank, onManageBankClick }: Wallet
             type="button"
             variant="ghost"
             size="icon"
-            className="size-8 shrink-0 rounded-lg text-slate-500 hover:text-violet-700"
+            className="size-11 min-h-11 min-w-11 shrink-0 rounded-lg text-slate-500 hover:text-violet-700 sm:size-8 sm:min-h-0 sm:min-w-0"
             onClick={onManageBankClick}
             aria-label={t('cardEdit')}
           >
@@ -56,7 +56,7 @@ export default function WalletPayoutBankCard({ bank, onManageBankClick }: Wallet
         <Button
           type="button"
           variant="outline"
-          className="mt-3 h-9 w-full rounded-full border-violet-200 text-xs font-semibold text-violet-800 hover:bg-violet-50"
+          className="mt-3 h-11 min-h-11 w-full rounded-full border-violet-200 text-xs font-semibold text-violet-800 hover:bg-violet-50"
           onClick={onManageBankClick}
         >
           {t('cardAddCta')}

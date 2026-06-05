@@ -583,27 +583,9 @@ export default function MyScheduleView() {
   };
 
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-7 md:py-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <div className="flex flex-col gap-5 md:gap-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
-                {t('title')}
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">{t('subtitle')}</p>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => router.push(ROUTES.DASHBOARD.TRIAL_BOOKING)}
-              className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-            >
-              <Sparkles className="size-4" />
-              {t('header.viewRequests')}
-            </Button>
-          </div>
-
           <MyScheduleHeader activeTab={activeTab} onTabChange={setActiveTab} />
 
           {((activeTab === 'calendar' && isLoading) ||
@@ -676,6 +658,6 @@ export default function MyScheduleView() {
           cancelItem?.scheduleKind === 'subscription' ? 'subscription' : 'trial'
         }
       />
-    </main>
+    </div>
   );
 }

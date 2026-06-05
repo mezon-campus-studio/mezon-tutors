@@ -234,6 +234,7 @@
         "week": "Tuần",
         "month": "Tháng",
         "today": "Hôm nay",
+        "emptyDay": "Không có buổi học nào trong ngày này",
         "company": "Mezonly Tutors"
       },
       "upcoming": {

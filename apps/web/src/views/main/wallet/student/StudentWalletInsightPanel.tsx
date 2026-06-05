@@ -42,8 +42,8 @@ export default function StudentWalletInsightPanel({
   const hasPendingPayment = (details.pendingBalance ?? 0) > 0;
 
   return (
-    <aside className="flex flex-col gap-3">
-      <div className="rounded-2xl border border-violet-100/80 bg-gradient-to-br from-violet-50/80 to-white p-4 shadow-sm">
+    <aside className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col">
+      <div className="rounded-2xl border border-violet-100/80 bg-gradient-to-br from-violet-50/80 to-white p-4 shadow-sm sm:col-span-2 lg:col-span-1">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-600">
           {t('monthlyTitle')}
         </p>
@@ -64,7 +64,7 @@ export default function StudentWalletInsightPanel({
       </div>
 
       {hasPendingPayment ? (
-        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4">
+        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-4 sm:col-span-2 lg:col-span-1">
           <div className="flex gap-2.5">
             <Bell className="mt-0.5 size-4 shrink-0 text-amber-700" />
             <div>
@@ -78,10 +78,12 @@ export default function StudentWalletInsightPanel({
         </div>
       ) : null}
 
-      <WalletPayoutBankCard
-        bank={details.payoutBankAccount ?? null}
-        onManageBankClick={onManageBankClick}
-      />
+      <div className="sm:col-span-2 lg:col-span-1">
+        <WalletPayoutBankCard
+          bank={details.payoutBankAccount ?? null}
+          onManageBankClick={onManageBankClick}
+        />
+      </div>
     </aside>
   );
 }
