@@ -12,6 +12,7 @@ import {
   VerificationStatus,
   PROFESSIONAL_DOCUMENT_TYPE,
   normalizeUtcAvailabilityRows,
+  EXISTING_SECURE_FILE,
 } from '@mezon-tutors/shared';
 import { useGetMyProfile } from '@/services';
 import {
@@ -108,18 +109,6 @@ export default function FinalPage() {
     const profile = result.profile;
     setIsEditingRejected(true);
 
-    const extractFileName = (url: string) => {
-      if (!url) return '';
-      try {
-        const parts = url.split('/');
-        const lastPart = parts[parts.length - 1];
-        const fileNameWithExt = lastPart.split('?')[0];
-        return decodeURIComponent(fileNameWithExt);
-      } catch {
-        return 'uploaded-file';
-      }
-    };
-
     const languages = profile.languages.map((l: any) => l.languageCode).join(', ');
     const proficiencies = profile.languages.map((l: any) => l.proficiency).join(', ');
 
@@ -139,11 +128,11 @@ export default function FinalPage() {
 
     setPhoto({
       photo: { uploadedUrl: profile.avatar, dataUrl: '', publicId: '', fileName: '' },
-      identity: { 
-        uploadedUrl: profile.identityVerification?.fileKey || '', 
-        dataUrl: '', 
-        publicId: '', 
-        fileName: extractFileName(profile.identityVerification?.fileKey || '')
+      identity: {
+        uploadedUrl: null,
+        publicId: profile.identityVerification?.hasFile ? EXISTING_SECURE_FILE : null,
+        dataUrl: '',
+        fileName: profile.identityVerification?.hasFile ? 'uploaded-document' : '',
       },
       headline: profile.headline,
       motivate: profile.motivate,
@@ -154,22 +143,22 @@ export default function FinalPage() {
       teachingCertificate: {
         name: teachingCertDoc?.name || '',
         year: teachingCertDoc?.yearOfComplete ? String(teachingCertDoc.yearOfComplete) : '',
-        file: { 
-          uploadedUrl: teachingCertDoc?.fileKey || '', 
-          dataUrl: '', 
-          publicId: '', 
-          fileName: extractFileName(teachingCertDoc?.fileKey || '')
+        file: {
+          uploadedUrl: null,
+          publicId: teachingCertDoc?.hasFile ? EXISTING_SECURE_FILE : null,
+          dataUrl: '',
+          fileName: teachingCertDoc?.hasFile ? teachingCertDoc.name || 'uploaded-document' : '',
         },
       },
       higherEducation: {
         university: educationDoc?.institution || '',
         degree: educationDoc?.name || '',
         specialization: educationDoc?.specialization || '',
-        file: { 
-          uploadedUrl: educationDoc?.fileKey || '', 
-          dataUrl: '', 
-          publicId: '', 
-          fileName: extractFileName(educationDoc?.fileKey || '')
+        file: {
+          uploadedUrl: null,
+          publicId: educationDoc?.hasFile ? EXISTING_SECURE_FILE : null,
+          dataUrl: '',
+          fileName: educationDoc?.hasFile ? educationDoc.name || 'uploaded-document' : '',
         },
       },
     });

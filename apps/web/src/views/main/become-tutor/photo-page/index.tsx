@@ -19,6 +19,7 @@ import {
   calculateStepProgress,
   CLOUDINARY_FOLDER,
   DEFAULT_AVATAR_URL,
+  EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
 import { Input, Label } from "@/components/ui";
@@ -51,9 +52,7 @@ export default function PhotoPage() {
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const currentUser = useAtomValue(userAtom);
   const [previewIdentityUrl, setPreviewIdentityUrl] = useState<string | null>(
-    tutorProfilePhoto.identity?.dataUrl ||
-      tutorProfilePhoto.identity?.uploadedUrl ||
-      null,
+    tutorProfilePhoto.identity?.dataUrl || null,
   );
   const [isUploading, setIsUploading] = useState(false);
   const identityUploadSeqRef = useRef(0);
@@ -102,7 +101,7 @@ export default function PhotoPage() {
           const hasIdentity =
             data.identityPhotoFile !== null ||
             !!tutorProfilePhoto.identity?.dataUrl ||
-            !!tutorProfilePhoto.identity?.uploadedUrl;
+            !!tutorProfilePhoto.identity?.publicId;
           if (!hasIdentity) {
             ctx.addIssue({
               path: ["identityPhotoFile"],
@@ -116,7 +115,7 @@ export default function PhotoPage() {
     [
       t,
       tutorProfilePhoto.identity?.dataUrl,
-      tutorProfilePhoto.identity?.uploadedUrl,
+      tutorProfilePhoto.identity?.publicId,
       allowedImageExt,
     ],
   );
@@ -145,15 +144,8 @@ export default function PhotoPage() {
   } = form;
 
   useEffect(() => {
-    setPreviewIdentityUrl(
-      tutorProfilePhoto.identity?.dataUrl ||
-        tutorProfilePhoto.identity?.uploadedUrl ||
-        null,
-    );
-  }, [
-    tutorProfilePhoto.identity?.dataUrl,
-    tutorProfilePhoto.identity?.uploadedUrl,
-  ]);
+    setPreviewIdentityUrl(tutorProfilePhoto.identity?.dataUrl || null);
+  }, [tutorProfilePhoto.identity?.dataUrl]);
 
   useEffect(() => {
     const avatarUrl = currentUser?.avatar || DEFAULT_AVATAR_URL;
@@ -217,7 +209,7 @@ export default function PhotoPage() {
           setPreviewIdentityUrl(dataUrl);
           setLastSavedAt(new Date().toISOString());
 
-          const uploadedFile = await cloudinaryService.uploadFileWithSignature(
+          const uploadedFile = await cloudinaryService.uploadPrivateFile(
             file,
             CLOUDINARY_FOLDER.TUTOR_IDENTITY,
             "image",
@@ -227,11 +219,15 @@ export default function PhotoPage() {
             ...prev,
             identity: {
               ...prev.identity,
-              uploadedUrl: uploadedFile.secureUrl,
+              uploadedUrl: null,
               publicId: uploadedFile.publicId,
             },
           }));
-          if (previousPublicId && previousPublicId !== uploadedFile.publicId) {
+          if (
+            previousPublicId &&
+            previousPublicId !== uploadedFile.publicId &&
+            previousPublicId !== EXISTING_SECURE_FILE
+          ) {
             void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
           }
           await form.trigger("identityPhotoFile");
@@ -263,7 +259,7 @@ export default function PhotoPage() {
     const { identityPhotoFile: _identityPhotoFile, ...textValues } = values;
     if (isUploading) return;
 
-    if (!tutorProfilePhoto.identity?.uploadedUrl) {
+    if (!tutorProfilePhoto.identity?.publicId) {
       form.setError("identityPhotoFile", {
         type: "manual",
         message: t("validation.identityUploadFailed"),

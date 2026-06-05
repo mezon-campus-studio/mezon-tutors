@@ -34,19 +34,19 @@ export interface SubmitTutorProfileDto {
   languages: TutorLanguageDto[]
 
   avatar: string
-  identityPhotoUrl: string
+  identityPhotoPublicId?: string
   headline: string
   motivate: string
   introduce: string
 
   teachingCertificateName: string
   teachingYear: string
-  teachingCertificateFileUrl: string
+  teachingCertificatePublicId?: string
 
   university: string
   degree: string
   specialization: string
-  educationFileUrl: string
+  educationPublicId?: string
 
   videoUrl: string
 
@@ -125,7 +125,7 @@ export type ProfessionalDocument = {
   uploadedAt: Date
   specialization: string | null
   yearOfComplete: number | null
-  fileKey: string
+  hasFile: boolean
   reviewedAt: Date | null
   institution: string | null
 }
@@ -140,7 +140,7 @@ export type IdentityVerification = {
   notExpired: boolean
   photoClarity: boolean
   uploadedAt: Date
-  fileKey: string
+  hasFile: boolean
   reviewedAt: Date | null
 }
 

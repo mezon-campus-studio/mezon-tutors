@@ -70,6 +70,40 @@ export class CloudinaryController {
     });
   }
 
+  @Post('upload-private')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        folder: { type: 'string' },
+        resourceType: { type: 'string', enum: ['image', 'video', 'raw', 'auto'] },
+      },
+      required: ['file'],
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1024 * 1024 },
+    })
+  )
+  async uploadPrivateFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('folder') folder?: string,
+    @Body('resourceType') resourceType?: 'image' | 'video' | 'raw' | 'auto'
+  ) {
+    if (!file?.buffer) {
+      throw new BadRequestException('File is required');
+    }
+
+    return this.cloudinaryService.uploadPrivateFile(file.buffer, {
+      folder,
+      resourceType,
+    });
+  }
+
   @Delete('asset')
   async deleteFile(
     @Query('publicId') publicId: string,

@@ -11,3 +11,6 @@ export const CLOUDINARY_FOLDER = {
 
 export const MAX_IMAGE_SIZE_MB = 5;
 export const MAX_FILE_SIZE_MB = 15;
+
+/** Sentinel in become-tutor draft when document already exists on server (re-edit flow). */
+export const EXISTING_SECURE_FILE = '__existing__' as const;

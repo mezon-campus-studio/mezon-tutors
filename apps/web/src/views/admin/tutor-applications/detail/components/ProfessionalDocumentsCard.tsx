@@ -4,11 +4,15 @@ import type { ProfessionalDocument } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAtomValue } from "jotai";
 import { Card, CardContent } from "@/components/ui";
+import { openSecureProxyInNewTab } from "@/lib/open-secure-proxy-in-new-tab";
+import { accessTokenAtom } from "@/store/token.atom";
 import StatusBadge from "../../components/StatusBadge";
 
 type ProfessionalDocumentsCardProps = {
   documents: ProfessionalDocument[];
+  tutorId: string;
 };
 
 const formatDate = (date: Date | string | null | undefined) => {
@@ -17,8 +21,33 @@ const formatDate = (date: Date | string | null | undefined) => {
   return d.isValid() ? d.format("MMM DD, YYYY") : "—";
 };
 
+function OpenDocumentButton({
+  tutorId,
+  documentId,
+  label,
+}: {
+  tutorId: string;
+  documentId: string;
+  label: string;
+}) {
+  const token = useAtomValue(accessTokenAtom);
+  const proxyPath = `/admin/tutor-profiles/${tutorId}/documents/${documentId}/image`;
+
+  return (
+    <button
+      type="button"
+      onClick={() => void openSecureProxyInNewTab(proxyPath, token)}
+      className="inline-flex items-center gap-1 text-violet-600 hover:underline"
+    >
+      <ExternalLink className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
 export default function ProfessionalDocumentsCard({
   documents,
+  tutorId,
 }: ProfessionalDocumentsCardProps) {
   const t = useTranslations(
     "AdminTutorApplicationDetail.sections.documents.professionalDocuments",
@@ -61,16 +90,12 @@ export default function ProfessionalDocumentsCard({
                       {formatDate(doc.uploadedAt)}
                     </td>
                     <td className="py-3">
-                      {doc.fileKey ? (
-                        <a
-                          href={doc.fileKey}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-violet-600 hover:underline"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          {t("openFile")}
-                        </a>
+                      {doc.hasFile ? (
+                        <OpenDocumentButton
+                          tutorId={tutorId}
+                          documentId={doc.id}
+                          label={t("openFile")}
+                        />
                       ) : (
                         "—"
                       )}

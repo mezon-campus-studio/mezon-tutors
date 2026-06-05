@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CountryLabel,
@@ -268,6 +268,69 @@ export class TutorProfileService {
     }
   }
 
+  private normalizeCloudinaryPublicId(value: string | undefined): string | null {
+    const trimmed = value?.trim();
+    if (!trimmed) return null;
+    if (/^https?:\/\//i.test(trimmed)) {
+      throw new BadRequestException('Secure document reference must be a Cloudinary public_id, not a URL');
+    }
+    return trimmed;
+  }
+
+  private sanitizeMyProfileForClient(
+    profile: Prisma.TutorProfileGetPayload<{
+      include: {
+        languages: true;
+        availability: true;
+        identityVerification: true;
+        professionalDocuments: true;
+        trialLessonPrice: true;
+      };
+    }>
+  ) {
+    const { identityVerification, professionalDocuments, trialLessonPrice, ...rest } = profile;
+
+    const profileData = trialLessonPrice
+      ? {
+          ...rest,
+          trialLessonPrice: {
+            ...trialLessonPrice,
+            vnd: trialLessonPrice.vnd.toString(),
+          },
+        }
+      : rest;
+
+    return {
+      ...profileData,
+      identityVerification: identityVerification
+        ? {
+            id: identityVerification.id,
+            tutorId: identityVerification.tutorId,
+            status: identityVerification.status,
+            nameMatch: identityVerification.nameMatch,
+            notExpired: identityVerification.notExpired,
+            photoClarity: identityVerification.photoClarity,
+            uploadedAt: identityVerification.uploadedAt,
+            reviewedAt: identityVerification.reviewedAt,
+            hasFile: Boolean(identityVerification.fileKey?.trim()),
+          }
+        : null,
+      professionalDocuments: professionalDocuments.map((doc) => ({
+        id: doc.id,
+        tutorId: doc.tutorId,
+        name: doc.name,
+        type: doc.type,
+        status: doc.status,
+        uploadedAt: doc.uploadedAt,
+        specialization: doc.specialization,
+        yearOfComplete: doc.yearOfComplete,
+        institution: doc.institution,
+        reviewedAt: doc.reviewedAt,
+        hasFile: Boolean(doc.fileKey?.trim()),
+      })),
+    };
+  }
+
   async getMyProfile(userId: string) {
     const profile = await this.prisma.tutorProfile.findUnique({
       where: { userId },
@@ -288,13 +351,7 @@ export class TutorProfileService {
       };
     }
 
-    const profileData = profile.trialLessonPrice ? {
-      ...profile,
-      trialLessonPrice: {
-        ...profile.trialLessonPrice,
-        vnd: profile.trialLessonPrice.vnd.toString(),
-      },
-    } : profile;
+    const profileData = this.sanitizeMyProfileForClient(profile);
 
     return {
       hasProfile: true,
@@ -416,23 +473,26 @@ export class TutorProfileService {
       await this.upsertTutorAvailabilitySlotByUserId(profile.id, dto.availability);
     }
 
-    if (dto.identityPhotoUrl && profile) {
-      await this.createTutorIdentityVerificationByUserId(profile.id, dto.identityPhotoUrl);
+    const identityPublicId = this.normalizeCloudinaryPublicId(dto.identityPhotoPublicId);
+    if (identityPublicId && profile) {
+      await this.createTutorIdentityVerificationByUserId(profile.id, identityPublicId);
     }
 
-    if (dto.teachingCertificateFileUrl && profile) {
+    const teachingCertPublicId = this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId);
+    if (teachingCertPublicId && profile) {
       await this.createTutorCertificateByUserId(profile.id, {
         name: dto.teachingCertificateName,
-        fileUrl: dto.teachingCertificateFileUrl,
+        fileUrl: teachingCertPublicId,
         type: ProfessionalDocumentType.CERTIFICATE,
         yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
       });
     }
 
-    if (dto.educationFileUrl && profile) {
+    const educationPublicId = this.normalizeCloudinaryPublicId(dto.educationPublicId);
+    if (educationPublicId && profile) {
       await this.createTutorCertificateByUserId(profile.id, {
         name: dto.degree,
-        fileUrl: dto.educationFileUrl,
+        fileUrl: educationPublicId,
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
         specialization: dto.specialization,
@@ -510,23 +570,26 @@ export class TutorProfileService {
       await this.upsertTutorAvailabilitySlotByUserId(profile.id, dto.availability);
     }
 
-    if (dto.identityPhotoUrl && profile) {
-      await this.upsertTutorIdentityVerificationByUserId(profile.id, dto.identityPhotoUrl);
+    const identityPublicId = this.normalizeCloudinaryPublicId(dto.identityPhotoPublicId);
+    if (identityPublicId && profile) {
+      await this.upsertTutorIdentityVerificationByUserId(profile.id, identityPublicId);
     }
 
-    if (dto.teachingCertificateFileUrl && profile) {
+    const teachingCertPublicId = this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId);
+    if (teachingCertPublicId && profile) {
       await this.upsertTutorCertificateByUserId(profile.id, {
         name: dto.teachingCertificateName,
-        fileUrl: dto.teachingCertificateFileUrl,
+        fileUrl: teachingCertPublicId,
         type: ProfessionalDocumentType.CERTIFICATE,
         yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
       });
     }
 
-    if (dto.educationFileUrl && profile) {
+    const educationPublicId = this.normalizeCloudinaryPublicId(dto.educationPublicId);
+    if (educationPublicId && profile) {
       await this.upsertTutorCertificateByUserId(profile.id, {
         name: dto.degree,
-        fileUrl: dto.educationFileUrl,
+        fileUrl: educationPublicId,
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
         specialization: dto.specialization,
@@ -640,12 +703,12 @@ export class TutorProfileService {
 
   async createTutorIdentityVerificationByUserId(
     userId: string,
-    identityPhotoUrl: string
+    cloudinaryPublicId: string
   ): Promise<void> {
     await this.prisma.identityVerification.create({
       data: {
         tutorId: userId,
-        fileKey: identityPhotoUrl,
+        fileKey: cloudinaryPublicId,
         status: IdentityVerificationStatus.PENDING,
       },
     });
@@ -653,18 +716,18 @@ export class TutorProfileService {
 
   async upsertTutorIdentityVerificationByUserId(
     userId: string,
-    identityPhotoUrl: string
+    cloudinaryPublicId: string
   ): Promise<void> {
     await this.prisma.identityVerification.upsert({
       where: { tutorId: userId },
       update: {
-        fileKey: identityPhotoUrl,
+        fileKey: cloudinaryPublicId,
         status: IdentityVerificationStatus.PENDING,
         uploadedAt: new Date(),
       },
       create: {
         tutorId: userId,
-        fileKey: identityPhotoUrl,
+        fileKey: cloudinaryPublicId,
         status: IdentityVerificationStatus.PENDING,
       },
     });
