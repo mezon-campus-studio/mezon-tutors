@@ -14,7 +14,31 @@ type CloudinarySignatureResponse = {
   publicId: string | null;
 };
 
+type CloudinaryPrivateUploadResponse = {
+  publicId: string;
+  resourceType: string;
+  format?: string;
+};
+
 class CloudinaryService {
+  async uploadPrivateFile(
+    file: File,
+    folder: string,
+    resourceType: 'auto' | 'image' | 'video' | 'raw' = 'auto'
+  ): Promise<{ publicId: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (folder) formData.append('folder', folder);
+    if (resourceType) formData.append('resourceType', resourceType);
+
+    const result = await apiClient.post<CloudinaryPrivateUploadResponse>(
+      '/cloudinary/upload-private',
+      formData
+    );
+
+    return { publicId: result.publicId };
+  }
+
   async uploadFileWithSignature(
     file: File,
     folder: string,

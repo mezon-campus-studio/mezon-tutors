@@ -45,6 +45,7 @@ import {
   emptySlotsByDay,
   readAvailabilityDraftToLocalSlots,
   writeLocalSlotsToAvailabilityDraftUtc,
+  EXISTING_SECURE_FILE,
 } from '@mezon-tutors/shared';
 import {
   useSubmitTutorProfileMutation,
@@ -57,6 +58,12 @@ import type { SubmitTutorProfileDto, TimeSlot } from '@mezon-tutors/shared';
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.AVAILABILITY;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
+
+function resolvePublicIdForSubmit(publicId: string | null | undefined): string | undefined {
+  const trimmed = publicId?.trim();
+  if (!trimmed || trimmed === EXISTING_SECURE_FILE) return undefined;
+  return trimmed;
+}
 
 type AvailabilityFormValues = {
   hourlyRate: string;
@@ -307,17 +314,19 @@ export default function AvailabilityPage() {
       subject: about.subject,
       languages,
       avatar: photo.photo?.uploadedUrl || DEFAULT_AVATAR_URL,
-      identityPhotoUrl: photo.identity?.uploadedUrl ?? '',
+      identityPhotoPublicId: resolvePublicIdForSubmit(photo.identity?.publicId),
       headline: photo.headline,
       motivate: photo.motivate,
       introduce: photo.introduce,
       teachingCertificateName: certification.teachingCertificate.name,
       teachingYear: certification.teachingCertificate.year,
-      teachingCertificateFileUrl: certification.teachingCertificate.file?.uploadedUrl ?? '',
+      teachingCertificatePublicId: resolvePublicIdForSubmit(
+        certification.teachingCertificate.file?.publicId,
+      ),
       university: certification.higherEducation.university,
       degree: certification.higherEducation.degree,
       specialization: certification.higherEducation.specialization,
-      educationFileUrl: certification.higherEducation.file?.uploadedUrl ?? '',
+      educationPublicId: resolvePublicIdForSubmit(certification.higherEducation.file?.publicId),
       videoUrl: video.videoLink,
       pricePerHour: Number.parseFloat(hourlyRate) || 0,
       currency,

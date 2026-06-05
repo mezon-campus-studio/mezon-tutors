@@ -79,7 +79,7 @@ export type ProfessionalDocument = {
   uploadedAt: Date;
   specialization: string | null;
   yearOfComplete: number | null;
-  fileKey: string;
+  hasFile: boolean;
   reviewedAt: Date | null;
   institution: string | null;
 };
@@ -94,7 +94,7 @@ export type IdentityVerification = {
   notExpired: boolean;
   photoClarity: boolean;
   uploadedAt: Date;
-  fileKey: string;
+  hasFile: boolean;
   reviewedAt: Date | null;
 };
 

@@ -189,8 +189,8 @@ export default function AdminTutorApplicationDetailView({
         <div className="space-y-5 lg:col-span-2">
           <PersonalInfoCard profile={profile} />
           <VideoBioCard profile={profile} />
-          <IdentityVerificationCard verification={identityVerification} />
-          <ProfessionalDocumentsCard documents={professionalDocuments} />
+          <IdentityVerificationCard verification={identityVerification} tutorId={profile.id} />
+          <ProfessionalDocumentsCard documents={professionalDocuments} tutorId={profile.id} />
           <AvailabilityCard profile={profile} availability={availability} />
         </div>
         <div className="space-y-5">

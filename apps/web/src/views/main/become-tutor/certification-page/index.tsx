@@ -11,7 +11,7 @@ import { Input, Label, YearPicker } from "@/components/ui";
 import { BadgeCheck, Wallet, Info } from "lucide-react";
 import UploadFile from "@/components/common/UploadFile";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
-import { CLOUDINARY_FOLDER, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
+import { CLOUDINARY_FOLDER, EXISTING_SECURE_FILE, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
 import { cloudinaryService } from "@/services";
 import { BecomeTutorSection, BecomeTutorShell } from "../_shared/BecomeTutorShell";
 
@@ -60,21 +60,21 @@ export default function CertificationPage() {
           }
         };
 
-        const hasTeaching = data.teachingCertificateFile !== null || !!certificationMerged.teachingCertificate.file.dataUrl || !!certificationMerged.teachingCertificate.file.uploadedUrl;
+        const hasTeaching = data.teachingCertificateFile !== null || !!certificationMerged.teachingCertificate.file.dataUrl || !!certificationMerged.teachingCertificate.file.publicId;
         if (!hasTeaching) {
           ctx.addIssue({ path: ["teachingCertificateFile"], code: "custom", message: t("validation.certificateFileRequired") });
         } else if (data.teachingCertificateFile) {
           validateFile(data.teachingCertificateFile, "teachingCertificateFile", t("validation.certificateFileInvalidType"), t("validation.certificateFileTooLarge", { max: MAX_FILE_SIZE_MB }));
         }
 
-        const hasEducation = data.educationFile !== null || !!certificationMerged.higherEducation.file.dataUrl || !!certificationMerged.higherEducation.file.uploadedUrl;
+        const hasEducation = data.educationFile !== null || !!certificationMerged.higherEducation.file.dataUrl || !!certificationMerged.higherEducation.file.publicId;
         if (!hasEducation) {
           ctx.addIssue({ path: ["educationFile"], code: "custom", message: t("validation.educationFileRequired") });
         } else if (data.educationFile) {
           validateFile(data.educationFile, "educationFile", t("validation.educationFileInvalidType"), t("validation.educationFileTooLarge", { max: MAX_FILE_SIZE_MB }));
         }
       }),
-    [t, certificationMerged.teachingCertificate.file.dataUrl, certificationMerged.teachingCertificate.file.uploadedUrl, certificationMerged.higherEducation.file.dataUrl, certificationMerged.higherEducation.file.uploadedUrl]
+    [t, certificationMerged.teachingCertificate.file.dataUrl, certificationMerged.teachingCertificate.file.publicId, certificationMerged.higherEducation.file.dataUrl, certificationMerged.higherEducation.file.publicId]
   );
 
   type CertificationFormValues = z.infer<typeof certificationSchema>;
@@ -130,7 +130,7 @@ export default function CertificationPage() {
         }));
         setLastSavedAt(new Date().toISOString());
 
-        const uploadedFile = await cloudinaryService.uploadFileWithSignature(file, CLOUDINARY_FOLDER.TUTOR_CERTIFICATE, "auto");
+        const uploadedFile = await cloudinaryService.uploadPrivateFile(file, CLOUDINARY_FOLDER.TUTOR_CERTIFICATE, "auto");
         if (teachingUploadSeqRef.current !== seq) return;
         setCertification((prev) => ({ 
           ...prev, 
@@ -138,12 +138,12 @@ export default function CertificationPage() {
             ...prev.teachingCertificate, 
             file: { 
               ...(prev.teachingCertificate?.file || {}), 
-              uploadedUrl: uploadedFile.secureUrl, 
+              uploadedUrl: null,
               publicId: uploadedFile.publicId 
             } 
           } 
         }));
-        if (previousPublicId && previousPublicId !== uploadedFile.publicId) {
+        if (previousPublicId && previousPublicId !== uploadedFile.publicId && previousPublicId !== EXISTING_SECURE_FILE) {
           void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
         }
         await form.trigger("teachingCertificateFile");
@@ -191,7 +191,7 @@ export default function CertificationPage() {
         }));
         setLastSavedAt(new Date().toISOString());
 
-        const uploadedFile = await cloudinaryService.uploadFileWithSignature(file, CLOUDINARY_FOLDER.TUTOR_DIPLOMA, "auto");
+        const uploadedFile = await cloudinaryService.uploadPrivateFile(file, CLOUDINARY_FOLDER.TUTOR_DIPLOMA, "auto");
         if (educationUploadSeqRef.current !== seq) return;
         setCertification((prev) => ({ 
           ...prev, 
@@ -199,12 +199,12 @@ export default function CertificationPage() {
             ...prev.higherEducation, 
             file: { 
               ...(prev.higherEducation?.file || {}), 
-              uploadedUrl: uploadedFile.secureUrl, 
+              uploadedUrl: null,
               publicId: uploadedFile.publicId 
             } 
           } 
         }));
-        if (previousPublicId && previousPublicId !== uploadedFile.publicId) {
+        if (previousPublicId && previousPublicId !== uploadedFile.publicId && previousPublicId !== EXISTING_SECURE_FILE) {
           void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
         }
         await form.trigger("educationFile");
@@ -222,12 +222,12 @@ export default function CertificationPage() {
     const { teachingCertificateFile: _tcf, educationFile: _ef, certificateType, ...textFields } = values;
     if (teachingUploading || educationUploading) return;
 
-    if (!certificationMerged.teachingCertificate.file.uploadedUrl) {
+    if (!certificationMerged.teachingCertificate.file.publicId) {
       form.setError("teachingCertificateFile", { type: "manual", message: t("validation.certificateUploadFailed") });
       return;
     }
 
-    if (!certificationMerged.higherEducation.file.uploadedUrl) {
+    if (!certificationMerged.higherEducation.file.publicId) {
       form.setError("educationFile", { type: "manual", message: t("validation.educationUploadFailed") });
       return;
     }

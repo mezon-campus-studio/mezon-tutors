@@ -2,13 +2,17 @@
 
 import type { ProfessionalDocument } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
-import { ExternalLink } from "lucide-react";
+import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAtomValue } from "jotai";
 import { Card, CardContent } from "@/components/ui";
+import { accessTokenAtom } from "@/store/token.atom";
+import { BASE_URL } from "@/services/api-client";
 import StatusBadge from "../../components/StatusBadge";
 
 type ProfessionalDocumentsCardProps = {
   documents: ProfessionalDocument[];
+  tutorId: string;
 };
 
 const formatDate = (date: Date | string | null | undefined) => {
@@ -17,8 +21,49 @@ const formatDate = (date: Date | string | null | undefined) => {
   return d.isValid() ? d.format("MMM DD, YYYY") : "—";
 };
 
+function DownloadDocumentButton({
+  tutorId,
+  documentId,
+  label,
+}: {
+  tutorId: string;
+  documentId: string;
+  label: string;
+}) {
+  const token = useAtomValue(accessTokenAtom);
+
+  const handleDownload = async () => {
+    if (!token) return;
+    const proxyPath = `/admin/tutor-profiles/${tutorId}/documents/${documentId}/image`;
+    const res = await fetch(`${BASE_URL}${proxyPath}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const ext = blob.type.split("/")[1] ?? "jpg";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `document-${documentId}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      className="inline-flex items-center gap-1 text-violet-600 hover:underline"
+    >
+      <Download className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
 export default function ProfessionalDocumentsCard({
   documents,
+  tutorId,
 }: ProfessionalDocumentsCardProps) {
   const t = useTranslations(
     "AdminTutorApplicationDetail.sections.documents.professionalDocuments",
@@ -61,16 +106,12 @@ export default function ProfessionalDocumentsCard({
                       {formatDate(doc.uploadedAt)}
                     </td>
                     <td className="py-3">
-                      {doc.fileKey ? (
-                        <a
-                          href={doc.fileKey}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-violet-600 hover:underline"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          {t("openFile")}
-                        </a>
+                      {doc.hasFile ? (
+                        <DownloadDocumentButton
+                          tutorId={tutorId}
+                          documentId={doc.id}
+                          label={t("openFile")}
+                        />
                       ) : (
                         "—"
                       )}

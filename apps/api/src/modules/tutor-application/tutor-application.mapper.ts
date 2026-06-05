@@ -76,7 +76,7 @@ export class TutorApplicationMapper {
       uploadedAt: doc.uploadedAt,
       specialization: doc.specialization,
       yearOfComplete: doc.yearOfComplete,
-      fileKey: doc.fileKey,
+      hasFile: Boolean(doc.fileKey?.trim()),
       institution: doc.institution,
       reviewedAt: doc.reviewedAt,
     };
@@ -97,7 +97,7 @@ export class TutorApplicationMapper {
       notExpired: verification.notExpired,
       photoClarity: verification.photoClarity,
       uploadedAt: verification.uploadedAt,
-      fileKey: verification.fileKey,
+      hasFile: Boolean(verification.fileKey?.trim()),
       reviewedAt: verification.reviewedAt,
     };
   }

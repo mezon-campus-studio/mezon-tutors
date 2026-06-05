@@ -36,11 +36,11 @@ export type MyTutorProfileRecord = {
   ratingAverage: string | number;
   languages: TutorLanguageRow[];
   availability: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
-  identityVerification?: { fileKey: string } | null;
+  identityVerification?: { hasFile: boolean } | null;
   professionalDocuments?: Array<{
     type: string;
     name: string;
-    fileKey: string;
+    hasFile: boolean;
     institution?: string | null;
     specialization?: string | null;
     yearOfComplete?: number | null;
