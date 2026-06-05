@@ -6,6 +6,7 @@ import {
   ECurrency,
   type ETrialLessonBookingStatus,
   formatLessonRangeInTimezone,
+  calendarEventHoursFromDayjs,
   isTrialLessonRescheduleEligible,
   ROUTES,
   type TutorSubscriptionWeekOccurrenceDto,
@@ -68,14 +69,6 @@ dayjs.extend(timezone);
 
 const INITIAL_SUBSCRIPTION_WEEKS_TO_LOAD = 2;
 
-const roundToHalfHour = (hour: number): number => {
-  const wholeHour = Math.floor(hour);
-  const minutes = (hour - wholeHour) * 60;
-  if (minutes < 15) return wholeHour;
-  if (minutes < 45) return wholeHour + 0.5;
-  return wholeHour + 1;
-};
-
 const toScheduleEvent = (
   item: TrialLessonBookingRequestItem,
   weekStart: dayjs.Dayjs,
@@ -89,6 +82,7 @@ const toScheduleEvent = (
 
   const startLocal = start.locale(locale);
   const endLocal = startLocal.add(item.durationMinutes, 'minute');
+  const { startHour, endHour } = calendarEventHoursFromDayjs(startLocal, endLocal);
   const now = dayjs().tz(timezoneName);
   const uiStatus = mapTutorBookingStatusToUi(item.status);
   const isCompleted = endLocal.isBefore(now) || uiStatus === 'completed';
@@ -105,8 +99,8 @@ const toScheduleEvent = (
     startAt: item.startAt,
     durationMinutes: item.durationMinutes,
     dayIndex: Math.max(0, Math.min(6, diffDays)),
-    startHour: roundToHalfHour(startLocal.hour() + startLocal.minute() / 60),
-    endHour: roundToHalfHour(endLocal.hour() + endLocal.minute() / 60),
+    startHour,
+    endHour,
     dateLabel: startLocal.format('ddd, MMM DD'),
     timeLabel: `${startLocal.format('HH:mm')} - ${endLocal.format('HH:mm')}`,
     lessonKind: item.scheduleKind === 'subscription' ? 'subscription' : 'trial',
@@ -627,6 +621,8 @@ export default function MyScheduleView() {
               currentDayIndex={todayInWeek}
               currentHour={currentHourValue}
               isCurrentWeek={isCurrentWeek}
+              timezoneName={userTimezone}
+              weekStartYmd={weekStartYmd}
               onPrevWeek={handlePrevWeek}
               onNextWeek={handleNextWeek}
               onGoToToday={handleGoToToday}

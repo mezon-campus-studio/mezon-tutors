@@ -8,6 +8,8 @@ export const subscriptionQueryKey = {
     [...SUBSCRIPTION_QK_ROOT, "eligibility", tutorId] as const,
   enrollment: (id: string) =>
     [...SUBSCRIPTION_QK_ROOT, "enrollment", id] as const,
+  pendingPayments: () =>
+    [...SUBSCRIPTION_QK_ROOT, "pending-payments"] as const,
   tutorWeekOccurrences: (weekStart: string, timezone: string) =>
     [
       ...SUBSCRIPTION_QK_ROOT,

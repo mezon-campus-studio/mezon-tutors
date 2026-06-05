@@ -48,7 +48,10 @@ import {
   useGetTutorAvailability,
   usePublicAppSettings,
 } from "@/services";
-import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
+import {
+  computeBlockedWallClockSlots,
+  partitionOccupiedSlotsByHold,
+} from "@/lib/schedule-slot-occupancy";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
 
 dayjs.extend(utc);
@@ -231,9 +234,14 @@ export function TrialBookingSheet({
     ];
   }, [isReschedule, rescheduleOriginalStartAt, initialDurationMinutes, duration]);
 
+  const { confirmed: occupiedConfirmed, held: occupiedHeld } = useMemo(
+    () => partitionOccupiedSlotsByHold(occupiedWeekItems),
+    [occupiedWeekItems],
+  );
+
   const occupiedForBlocking = useMemo(
-    () => [...occupiedWeekItems, ...ownLessonOccupied],
-    [occupiedWeekItems, ownLessonOccupied],
+    () => [...occupiedConfirmed, ...ownLessonOccupied],
+    [occupiedConfirmed, ownLessonOccupied],
   );
 
   const scheduleBlockedSlots = useMemo(() => {
@@ -260,14 +268,34 @@ export function TrialBookingSheet({
     lessonChangePeriodHours,
   ]);
 
-  const scheduleSelectableSlots = useMemo(() => {
-    const blockedKeys = new Set(
-      scheduleBlockedSlots.map((s) => `${s.date}|${s.startTime}`),
+  const scheduleHeldSlots = useMemo(() => {
+    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+      return [];
+    }
+    return computeBlockedWallClockSlots(
+      scheduleAvailableSlots,
+      duration,
+      userTimezone,
+      { occupied: occupiedHeld },
     );
+  }, [
+    scheduleAvailableSlots,
+    duration,
+    userTimezone,
+    occupiedHeld,
+    isOccupiedWeekReady,
+    isOccupiedWeekError,
+  ]);
+
+  const scheduleSelectableSlots = useMemo(() => {
+    const blockedKeys = new Set([
+      ...scheduleBlockedSlots.map((s) => `${s.date}|${s.startTime}`),
+      ...scheduleHeldSlots.map((s) => `${s.date}|${s.startTime}`),
+    ]);
     return scheduleAvailableSlots.filter(
       (s) => !blockedKeys.has(`${s.date}|${s.startTime}`),
     );
-  }, [scheduleAvailableSlots, scheduleBlockedSlots]);
+  }, [scheduleAvailableSlots, scheduleBlockedSlots, scheduleHeldSlots]);
 
   const timeSlots = useMemo(() => {
     const matching = scheduleSelectableSlots.filter(
@@ -499,6 +527,7 @@ export function TrialBookingSheet({
               className="min-h-0 flex-1"
               availableSlots={scheduleAvailableSlots}
               blockedSlots={scheduleBlockedSlots}
+              heldSlots={scheduleHeldSlots}
               timezone={userTimezone}
               selectionMode="single"
               lessonDurationMinutes={duration}

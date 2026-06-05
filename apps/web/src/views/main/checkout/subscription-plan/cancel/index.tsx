@@ -2,9 +2,9 @@
 
 import { AlertCircle, CircleX } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   Badge,
   Card,
@@ -15,19 +15,57 @@ import {
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { subscriptionApi } from "@/services/subscription/subscription.api";
 import {
-  resolveTrialLessonCancelCodeFromSearchParams,
+  LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+  lessonCheckoutCancelIsSoftTone,
+  resolveLessonCancelCodeFromSearchParams,
   ROUTES,
-  trialLessonCheckoutCancelIsSoftTone,
 } from "@mezon-tutors/shared";
 
 export default function SubscriptionPlanCheckoutCancelPage() {
-  const t = useTranslations("TrialLessonCheckout.Result.cancel");
+  const t = useTranslations("LessonCheckout.Result.cancel");
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  const outcomeCode = useMemo(() => resolveTrialLessonCancelCodeFromSearchParams(searchParams), [searchParams]);
-  const isSoft = trialLessonCheckoutCancelIsSoftTone(outcomeCode);
+  const outcomeCode = useMemo(
+    () => resolveLessonCancelCodeFromSearchParams(searchParams),
+    [searchParams],
+  );
+  const isSoft = lessonCheckoutCancelIsSoftTone(outcomeCode);
   const c = useMemo(() => `codes.${outcomeCode}` as const, [outcomeCode]);
+  const isSlotUnavailableAfterPayment =
+    outcomeCode === LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE;
+
+  useEffect(() => {
+    if (outcomeCode !== "unknown") {
+      return;
+    }
+    const enrollmentId = searchParams.get("enrollmentId")?.trim();
+    if (!enrollmentId) {
+      return;
+    }
+    let cancelled = false;
+    void subscriptionApi
+      .getEnrollment(enrollmentId)
+      .then((detail) => {
+        if (cancelled) {
+          return;
+        }
+        if (
+          detail.paymentStatus === "REFUNDED" &&
+          detail.status === "CANCELLED"
+        ) {
+          router.replace(
+            `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE)}&enrollmentId=${encodeURIComponent(enrollmentId)}`,
+          );
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [outcomeCode, router, searchParams]);
 
   return (
     <div className="relative min-h-screen bg-linear-to-b from-muted/30 via-background to-muted/15">
@@ -81,7 +119,9 @@ export default function SubscriptionPlanCheckoutCancelPage() {
         <div className="space-y-5">
           <Card className="gap-0 rounded-2xl border-border/55 bg-muted/25 py-5 shadow-sm sm:py-7">
             <CardHeader className="px-5 pb-0 sm:px-7">
-              <CardTitle className="text-base font-semibold sm:text-lg">{t(`${c}.nextStepsTitle`)}</CardTitle>
+              <CardTitle className="text-base font-semibold sm:text-lg">
+                {t(`${c}.nextStepsTitle`)}
+              </CardTitle>
             </CardHeader>
             <CardContent className="px-5 pt-5 sm:px-7">
               <ul className="space-y-3.5 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
@@ -137,6 +177,28 @@ export default function SubscriptionPlanCheckoutCancelPage() {
                 >
                   {t("secondaryCta")}
                 </Link>
+                {isSlotUnavailableAfterPayment ? (
+                  <>
+                    <Link
+                      href={ROUTES.DASHBOARD.PENDING_BOOKINGS}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "lg" }),
+                        "min-h-11 w-full justify-center sm:w-auto sm:min-w-[180px]",
+                      )}
+                    >
+                      {t(`${c}.ctaPending`)}
+                    </Link>
+                    <Link
+                      href={ROUTES.DASHBOARD.WALLET}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "lg" }),
+                        "min-h-11 w-full justify-center sm:w-auto sm:min-w-[180px]",
+                      )}
+                    >
+                      {t(`${c}.ctaWallet`)}
+                    </Link>
+                  </>
+                ) : null}
                 <Link
                   href={ROUTES.TUTOR.INDEX}
                   className={cn(

@@ -39,12 +39,14 @@ export type TrialLessonBooking = {
   deductAmount: number;
   paymentRef: string | null;
   paymentUrl: string | null;
+  paymentExpiresAt?: string | null;
 };
 
 export type OccupiedTrialLessonSlotDto = {
   id: string;
   startAt: string;
   durationMinutes: number;
+  hold?: boolean;
 };
 
 export type OccupiedTrialLessonSlotsResponse = {
@@ -58,6 +60,7 @@ export type AlreadyBookedTrialLessonResponse = {
   paymentStatus: ETrialLessonBookingPaymentStatus | null;
   startAt: string | null;
   durationMinutes: number | null;
+  paymentExpiresAt?: string | null;
 };
 
 export type CurrentTrialLessonBookingResponse = {
@@ -66,7 +69,37 @@ export type CurrentTrialLessonBookingResponse = {
   status: ETrialLessonBookingStatus | null;
   paymentStatus: ETrialLessonBookingPaymentStatus | null;
   paymentUrl: string | null;
+  paymentExpiresAt?: string | null;
 };
+
+export type StudentPendingPaymentBooking = {
+  id: string;
+  tutorId: string;
+  tutorName: string;
+  tutorAvatarUrl: string | null;
+  startAt: string;
+  durationMinutes: number;
+  grossAmount: number;
+  currency: string;
+  paymentUrl: string | null;
+  createdAt: string;
+  expiresAt: string;
+};
+
+export type StudentPendingPaymentBookingsResponse = {
+  items: StudentPendingPaymentBooking[];
+};
+
+export type CheckTutorLessonSlotBookableResult =
+  | { available: true }
+  | {
+      available: false;
+      reason:
+        | "SLOT_OCCUPIED"
+        | "SUBSCRIPTION_OVERLAP"
+        | "NOT_IN_AVAILABILITY"
+        | "INVALID_START_TIME";
+    };
 
 export type TrialLessonBookingRequestItem = {
   id: string;
@@ -110,6 +143,7 @@ export type TrialLessonBookingDetail = {
   tutorAmount: number;
   currency: string;
   paidAt: string | null;
+  cancelReason: string | null;
   createdAt: string;
   tutor: {
     id: string;
@@ -178,6 +212,29 @@ export const trialLessonBookingApi = {
     );
   },
 
+  checkTutorLessonSlotBookable(params: {
+    tutorId: string;
+    startAt: string;
+    durationMinutes: number;
+    timezone: string;
+    excludeBookingId?: string;
+  }): Promise<CheckTutorLessonSlotBookableResult> {
+    return apiClient.get<
+      ApiResponse<CheckTutorLessonSlotBookableResult>,
+      CheckTutorLessonSlotBookableResult
+    >("/trial-lesson-bookings/check-slot", {
+      params: {
+        tutorId: params.tutorId,
+        startAt: params.startAt,
+        durationMinutes: params.durationMinutes,
+        timezone: params.timezone,
+        ...(params.excludeBookingId
+          ? { excludeBookingId: params.excludeBookingId }
+          : {}),
+      },
+    });
+  },
+
   getAlreadyBookedStatus(
     tutorId: string,
   ): Promise<AlreadyBookedTrialLessonResponse> {
@@ -187,6 +244,13 @@ export const trialLessonBookingApi = {
     >("/trial-lesson-bookings/already-booked", {
       params: { tutorId },
     });
+  },
+
+  getPendingPaymentBookings(): Promise<StudentPendingPaymentBookingsResponse> {
+    return apiClient.get<
+      ApiResponse<StudentPendingPaymentBookingsResponse>,
+      StudentPendingPaymentBookingsResponse
+    >("/trial-lesson-bookings/pending-payments");
   },
 
   getCurrentBookingStatus(
@@ -372,6 +436,15 @@ export function useGetCurrentTrialLessonBooking(
   });
 }
 
+export function useGetStudentPendingPaymentBookings(enabled = true) {
+  return useQuery({
+    queryKey: trialLessonBookingQueryKey.pendingPayments(),
+    queryFn: () => trialLessonBookingApi.getPendingPaymentBookings(),
+    enabled,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useCreateTrialLessonBookingMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -383,6 +456,15 @@ export function useCreateTrialLessonBookingMutation() {
       });
       void queryClient.invalidateQueries({
         queryKey: trialLessonBookingQueryKey.alreadyBooked(variables.tutorId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: trialLessonBookingQueryKey.pendingPayments(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
       });
       if (data.paymentStatus === "SUCCEEDED") {
         void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });

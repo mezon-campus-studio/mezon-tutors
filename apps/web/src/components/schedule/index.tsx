@@ -2,10 +2,13 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { CalendarCard, type CalendarEvent } from '@/components/calendar';
+import { useCalendarNow } from '@/hooks';
 import type { CalendarType } from '@/components/calendar/types';
 import {
+  addCalendarEventHourTicks,
   buildFallbackWeekDays,
   CALENDAR_CONFIG,
+  filterCalendarWeekHourTicks,
   getFallbackWeekHours,
 } from '@mezon-tutors/shared';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -43,6 +46,8 @@ export type DashboardScheduleCalendarProps<T extends DashboardScheduleCalendarEv
   renderEvent: (event: T) => ReactNode;
   onEventClick?: (event: T, anchorRect: DOMRect) => void;
   calendarType?: CalendarType;
+  timezoneName?: string;
+  weekStartYmd?: string;
 };
 
 export function buildDashboardScheduleWeekHours(
@@ -53,14 +58,12 @@ export function buildDashboardScheduleWeekHours(
   const defaultHours = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i);
   const hourSet = new Set<number>(defaultHours);
   for (const event of events) {
-    const start = Math.floor(event.startHour);
-    const end = Math.ceil(event.endHour);
-    for (let h = start; h <= end; h++) hourSet.add(h);
+    addCalendarEventHourTicks(hourSet, event.startHour, event.endHour);
   }
   if (currentHour !== undefined) {
-    hourSet.add(Math.floor(currentHour));
+    hourSet.add(Math.min(CALENDAR_CONFIG.DEFAULT_VISIBLE_RANGE.MAX, Math.floor(currentHour)));
   }
-  return Array.from(hourSet).sort((a, b) => a - b);
+  return filterCalendarWeekHourTicks(Array.from(hourSet)).sort((a, b) => a - b);
 }
 
 export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEvent>({
@@ -77,9 +80,24 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
   renderEvent,
   onEventClick,
   calendarType = 'mySchedule',
+  timezoneName,
+  weekStartYmd,
 }: DashboardScheduleCalendarProps<T>) {
   const prevAria = labels.prevWeekAria ?? 'Previous week';
   const nextAria = labels.nextWeekAria ?? 'Next week';
+
+  const liveNow = useCalendarNow(
+    timezoneName ?? '',
+    weekStartYmd,
+    Boolean(isCurrentWeek && timezoneName && weekStartYmd),
+  );
+
+  const resolvedDayIndex = isCurrentWeek
+    ? (liveNow.currentDayIndex ?? currentDayIndex)
+    : currentDayIndex;
+  const resolvedHour = isCurrentWeek
+    ? (liveNow.currentHour ?? currentHour)
+    : currentHour;
 
   const calendarEvents: CalendarEvent<T>[] = useMemo(
     () =>
@@ -94,8 +112,8 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
   );
 
   const weekHours = useMemo(
-    () => buildDashboardScheduleWeekHours(events, currentHour),
-    [events, currentHour],
+    () => buildDashboardScheduleWeekHours(events, resolvedHour),
+    [events, resolvedHour],
   );
 
   const finalWeekDays = weekDays.length ? weekDays : buildFallbackWeekDays();
@@ -164,8 +182,8 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
         weekDays={finalWeekDays}
         weekHours={finalWeekHours}
         events={calendarEvents}
-        currentDayIndex={currentDayIndex}
-        currentHour={currentHour}
+        currentDayIndex={resolvedDayIndex}
+        currentHour={resolvedHour}
         enableGapCollapse
         readonly
         onEventClick={onEventClick ? (ev, rect) => onEventClick(ev.data, rect) : undefined}

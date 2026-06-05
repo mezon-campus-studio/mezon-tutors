@@ -6,9 +6,11 @@ import {
   Prisma,
 } from '@mezon-tutors/db';
 import {
-  mapVnpayResponseToTrialLessonCancelCode,
+  LESSON_CANCEL_REASON_SLOT_CONFLICT,
+  LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+  mapVnpayResponseToLessonCancelCode,
   ROUTES,
-  type TrialLessonCheckoutCancelCode,
+  type LessonCheckoutCancelCode,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
@@ -16,6 +18,7 @@ import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.
 import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
+import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 
 type VnpayQuery = Record<string, string | string[] | undefined>;
 
@@ -26,6 +29,7 @@ export type ApplyVnpayPaymentResult =
       bookingId: string;
       paymentStatus: EPaymentStatus;
       status: ETrialLessonStatus;
+      slotConflictAfterPayment: boolean;
       responseCode: string | undefined;
       transactionStatus: string | undefined;
     }
@@ -35,6 +39,7 @@ export type ApplyVnpayPaymentResult =
       enrollmentId: string;
       paymentStatus: EPaymentStatus;
       status: ESubscriptionEnrollmentStatus;
+      slotConflictAfterPayment: boolean;
       responseCode: string | undefined;
       transactionStatus: string | undefined;
     };
@@ -48,14 +53,32 @@ export class WebhookService {
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
     private readonly walletCheckoutService: WalletCheckoutService,
+    private readonly trialLessonBookingService: TrialLessonBookingService,
   ) {}
+
+  private lessonCheckoutCancelUrl(
+    frontend: string,
+    checkout: 'trial' | 'subscription',
+    code: LessonCheckoutCancelCode,
+    resourceId?: string,
+  ): string {
+    const base =
+      checkout === 'trial'
+        ? `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(code)}`
+        : `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(code)}`;
+    if (!resourceId) {
+      return base;
+    }
+    const param = checkout === 'trial' ? 'bookingId' : 'enrollmentId';
+    return `${base}&${param}=${encodeURIComponent(resourceId)}`;
+  }
 
   async buildTrialLessonVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
     const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
-    const toTrialCancel = (code: TrialLessonCheckoutCancelCode) =>
-      `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(code)}`;
-    const toSubCancel = (code: TrialLessonCheckoutCancelCode) =>
-      `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(code)}`;
+    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
+    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
 
     const verification = this.vnpayService.verifyReturnUrl(query);
     if (!verification.isVerified) {
@@ -65,23 +88,35 @@ export class WebhookService {
     try {
       const result = await this.applyVnpayPaymentResult(query);
       if (result.kind === 'subscription') {
+        if (result.slotConflictAfterPayment) {
+          return toSubCancel(
+            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+            result.enrollmentId,
+          );
+        }
         if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
           return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
         }
-        const code = mapVnpayResponseToTrialLessonCancelCode(
+        const code = mapVnpayResponseToLessonCancelCode(
           result.responseCode,
           result.transactionStatus
         );
-        return toSubCancel(code);
+        return toSubCancel(code, result.enrollmentId);
+      }
+      if (result.slotConflictAfterPayment) {
+        return toTrialCancel(
+          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+          result.bookingId,
+        );
       }
       if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
         return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
       }
-      const code = mapVnpayResponseToTrialLessonCancelCode(
+      const code = mapVnpayResponseToLessonCancelCode(
         result.responseCode,
         result.transactionStatus
       );
-      return toTrialCancel(code);
+      return toTrialCancel(code, result.bookingId);
     } catch (e) {
       if (e instanceof NotFoundException) {
         return toTrialCancel('order_not_found');
@@ -95,10 +130,10 @@ export class WebhookService {
 
   async buildSubscriptionEnrollmentVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
     const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
-    const toSubCancel = (code: TrialLessonCheckoutCancelCode) =>
-      `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(code)}`;
-    const toTrialCancel = (code: TrialLessonCheckoutCancelCode) =>
-      `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(code)}`;
+    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
+    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
 
     const verification = this.vnpayService.verifyReturnUrl(query);
     if (!verification.isVerified) {
@@ -108,23 +143,35 @@ export class WebhookService {
     try {
       const result = await this.applyVnpayPaymentResult(query);
       if (result.kind === 'trial') {
+        if (result.slotConflictAfterPayment) {
+          return toTrialCancel(
+            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+            result.bookingId,
+          );
+        }
         if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
           return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
         }
-        const code = mapVnpayResponseToTrialLessonCancelCode(
+        const code = mapVnpayResponseToLessonCancelCode(
           result.responseCode,
           result.transactionStatus
         );
-        return toTrialCancel(code);
+        return toTrialCancel(code, result.bookingId);
+      }
+      if (result.slotConflictAfterPayment) {
+        return toSubCancel(
+          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+          result.enrollmentId,
+        );
       }
       if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
         return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
       }
-      const code = mapVnpayResponseToTrialLessonCancelCode(
+      const code = mapVnpayResponseToLessonCancelCode(
         result.responseCode,
         result.transactionStatus
       );
-      return toSubCancel(code);
+      return toSubCancel(code, result.enrollmentId);
     } catch (e) {
       if (e instanceof NotFoundException) {
         return toSubCancel('order_not_found');
@@ -233,6 +280,27 @@ export class WebhookService {
     const eventType = isSucceeded ? 'vnpay.payment.succeeded' : 'vnpay.payment.failed';
     const txnRef = this.getScalarQueryValue(query.vnp_TxnRef)!;
 
+    const bookingSlot = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: booking.id },
+      select: {
+        startAt: true,
+        durationMinutes: true,
+        tutor: { select: { user: { select: { timezone: true } } } },
+      },
+    });
+
+    let slotConflictOnSuccess = false;
+    if (isSucceeded && bookingSlot) {
+      const slotCheck = await this.trialLessonBookingService.checkTutorLessonSlotBookable(
+        booking.tutorId,
+        bookingSlot.startAt.toISOString(),
+        bookingSlot.durationMinutes,
+        bookingSlot.tutor.user?.timezone ?? 'UTC',
+        { excludeTrialBookingId: booking.id }
+      );
+      slotConflictOnSuccess = !slotCheck.available;
+    }
+
     const processed = await this.prisma.$transaction(async (tx) => {
       const webhookLog = await this.upsertWebhookLog(tx, {
         orderCode: txnRef,
@@ -246,23 +314,32 @@ export class WebhookService {
           id: booking.id,
           paymentStatus: EPaymentStatus.PENDING,
         },
-        data: isSucceeded
-          ? {
-              paymentStatus: EPaymentStatus.SUCCEEDED,
-              paidAt: now,
-              failedAt: null,
-              status: ETrialLessonStatus.CONFIRMED,
-            }
-          : {
-              paymentStatus: EPaymentStatus.FAILED,
-              failedAt: now,
-              paidAt: null,
-              status: ETrialLessonStatus.CANCELLED,
-            },
+        data:
+          isSucceeded && slotConflictOnSuccess
+            ? {
+                paymentStatus: EPaymentStatus.SUCCEEDED,
+                paidAt: now,
+                failedAt: null,
+                status: ETrialLessonStatus.CANCELLED,
+                cancelReason: LESSON_CANCEL_REASON_SLOT_CONFLICT,
+              }
+            : isSucceeded
+              ? {
+                  paymentStatus: EPaymentStatus.SUCCEEDED,
+                  paidAt: now,
+                  failedAt: null,
+                  status: ETrialLessonStatus.CONFIRMED,
+                }
+              : {
+                  paymentStatus: EPaymentStatus.FAILED,
+                  failedAt: now,
+                  paidAt: null,
+                  status: ETrialLessonStatus.CANCELLED,
+                },
       });
       const didUpdateBooking = updateBookingResult.count > 0;
 
-      if (didUpdateBooking && isSucceeded) {
+      if (didUpdateBooking && isSucceeded && !slotConflictOnSuccess) {
         if (booking.deductAmount > 0n) {
           await this.walletCheckoutService.debitStudentForTrialBooking(tx, {
             studentUserId: booking.studentId,
@@ -301,10 +378,13 @@ export class WebhookService {
       return {
         booking: bookingAfter,
         updated: didUpdateBooking,
+        slotConflictOnSuccess,
       };
     });
 
-    if (processed.updated && isSucceeded) {
+    if (processed.updated && isSucceeded && processed.slotConflictOnSuccess) {
+      await this.trialLessonBookingService.refundPaidBookingDueToSlotConflict(booking.id);
+    } else if (processed.updated && isSucceeded) {
       await this.notificationService.notifyStudentBookingConfirmed({
         studentId: booking.studentId,
         bookingId: booking.id,
@@ -313,12 +393,26 @@ export class WebhookService {
       await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id);
     }
 
+    const bookingAfterRefund = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: booking.id },
+      select: {
+        paymentStatus: true,
+        status: true,
+        cancelReason: true,
+      },
+    });
+
+    const slotConflictAfterPayment =
+      processed.slotConflictOnSuccess ||
+      bookingAfterRefund?.cancelReason === LESSON_CANCEL_REASON_SLOT_CONFLICT;
+
     return {
       kind: 'trial',
       updated: processed.updated,
       bookingId: processed.booking.id,
-      paymentStatus: processed.booking.paymentStatus,
-      status: processed.booking.status,
+      paymentStatus: bookingAfterRefund?.paymentStatus ?? processed.booking.paymentStatus,
+      status: bookingAfterRefund?.status ?? processed.booking.status,
+      slotConflictAfterPayment,
       responseCode,
       transactionStatus,
     };
@@ -343,6 +437,27 @@ export class WebhookService {
     const eventType = isSucceeded ? 'vnpay.payment.succeeded' : 'vnpay.payment.failed';
     const txnRef = this.getScalarQueryValue(query.vnp_TxnRef)!;
 
+    const enrollmentSlots = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollment.id },
+      select: {
+        weeklySlots: true,
+        tutor: { select: { user: { select: { timezone: true } } } },
+      },
+    });
+
+    let slotConflictOnSuccess = false;
+    if (isSucceeded && enrollmentSlots) {
+      const timezoneName = enrollmentSlots.tutor.user?.timezone ?? 'UTC';
+      const slotsCheck =
+        await this.trialLessonBookingService.checkSubscriptionEnrollmentSlotsBookable(
+          enrollment.id,
+          enrollment.tutorId,
+          enrollmentSlots.weeklySlots,
+          timezoneName,
+        );
+      slotConflictOnSuccess = !slotsCheck.available;
+    }
+
     const processed = await this.prisma.$transaction(async (tx) => {
       const webhookLog = await this.upsertWebhookLog(tx, {
         orderCode: txnRef,
@@ -356,23 +471,31 @@ export class WebhookService {
           id: enrollment.id,
           paymentStatus: EPaymentStatus.PENDING,
         },
-        data: isSucceeded
-          ? {
-              paymentStatus: EPaymentStatus.SUCCEEDED,
-              paidAt: now,
-              failedAt: null,
-              status: ESubscriptionEnrollmentStatus.ACTIVE,
-            }
-          : {
-              paymentStatus: EPaymentStatus.FAILED,
-              failedAt: now,
-              paidAt: null,
-              status: ESubscriptionEnrollmentStatus.CANCELLED,
-            },
+        data:
+          isSucceeded && slotConflictOnSuccess
+            ? {
+                paymentStatus: EPaymentStatus.SUCCEEDED,
+                paidAt: now,
+                failedAt: null,
+                status: ESubscriptionEnrollmentStatus.CANCELLED,
+              }
+            : isSucceeded
+              ? {
+                  paymentStatus: EPaymentStatus.SUCCEEDED,
+                  paidAt: now,
+                  failedAt: null,
+                  status: ESubscriptionEnrollmentStatus.ACTIVE,
+                }
+              : {
+                  paymentStatus: EPaymentStatus.FAILED,
+                  failedAt: now,
+                  paidAt: null,
+                  status: ESubscriptionEnrollmentStatus.CANCELLED,
+                },
       });
       const didUpdateEnrollment = updateEnrollmentResult.count > 0;
 
-      if (didUpdateEnrollment && isSucceeded) {
+      if (didUpdateEnrollment && isSucceeded && !slotConflictOnSuccess) {
         if (enrollment.deductAmount > 0n) {
           await this.walletCheckoutService.debitStudentForSubscriptionEnrollment(tx, {
             studentUserId: enrollment.studentId,
@@ -411,10 +534,15 @@ export class WebhookService {
       return {
         enrollment: enrollmentAfter,
         updated: didUpdateEnrollment,
+        slotConflictOnSuccess,
       };
     });
 
-    if (processed.updated && isSucceeded) {
+    if (processed.updated && isSucceeded && processed.slotConflictOnSuccess) {
+      await this.trialLessonBookingService.refundPaidSubscriptionEnrollmentDueToSlotConflict(
+        enrollment.id,
+      );
+    } else if (processed.updated && isSucceeded) {
       await this.notificationService.notifySubscriptionEnrollmentConfirmed({
         enrollmentId: enrollment.id,
         studentId: enrollment.studentId,
@@ -425,12 +553,27 @@ export class WebhookService {
       );
     }
 
+    const enrollmentAfterRefund = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollment.id },
+      select: {
+        paymentStatus: true,
+        status: true,
+      },
+    });
+
+    const slotConflictAfterPayment =
+      processed.slotConflictOnSuccess ||
+      (enrollmentAfterRefund?.paymentStatus === EPaymentStatus.REFUNDED &&
+        enrollmentAfterRefund?.status === ESubscriptionEnrollmentStatus.CANCELLED);
+
     return {
       kind: 'subscription',
       updated: processed.updated,
       enrollmentId: processed.enrollment.id,
-      paymentStatus: processed.enrollment.paymentStatus,
-      status: processed.enrollment.status,
+      paymentStatus:
+        enrollmentAfterRefund?.paymentStatus ?? processed.enrollment.paymentStatus,
+      status: enrollmentAfterRefund?.status ?? processed.enrollment.status,
+      slotConflictAfterPayment,
       responseCode,
       transactionStatus,
     };

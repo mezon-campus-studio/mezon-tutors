@@ -6,7 +6,14 @@ import type {
   MyLessonTutorApiItem,
   MyLessonWeekDayApiItem,
 } from "@mezon-tutors/shared";
-import { CALENDAR_CONFIG, DEFAULT_TIMEZONE } from "@mezon-tutors/shared";
+import {
+  addCalendarEventHourTicks,
+  CALENDAR_CONFIG,
+  calendarEventHoursFromDayjs,
+  calendarEventHoursFromDecimals,
+  DEFAULT_TIMEZONE,
+  filterCalendarWeekHourTicks,
+} from "@mezon-tutors/shared";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -57,7 +64,6 @@ export type LessonItem = {
   endHour: number;
   rating?: number;
   source?: "trial" | "subscription";
-  /** UTC ISO-8601; cancellation refund policy. */
   startAt?: string;
   durationMinutes?: number;
   grossAmount?: number;
@@ -127,19 +133,6 @@ const mapWeekDay = (
     : undefined,
 });
 
-const roundToHalfHour = (hour: number): number => {
-  const wholeHour = Math.floor(hour);
-  const minutes = (hour - wholeHour) * 60;
-
-  if (minutes < 15) {
-    return wholeHour;
-  }
-  if (minutes < 45) {
-    return wholeHour + 0.5;
-  }
-  return wholeHour + 1;
-};
-
 function lessonDisplayFromStartAt(
   startAtIso: string,
   durationMinutes: number,
@@ -165,12 +158,14 @@ function lessonDisplayFromStartAt(
       Math.min(6, start.startOf("day").diff(weekStart, "day")),
     );
   }
+  const { startHour, endHour } = calendarEventHoursFromDayjs(start, end);
+
   return {
     dateLabel: start.format("ddd, MMM DD"),
     timeLabel: `${start.format("HH:mm")} - ${end.format("HH:mm")}`,
     dayIndex,
-    startHour: roundToHalfHour(start.hour() + start.minute() / 60),
-    endHour: roundToHalfHour(end.hour() + end.minute() / 60),
+    startHour,
+    endHour,
   };
 }
 
@@ -213,8 +208,7 @@ const mapLesson = (
           dateLabel: item.date_label,
           timeLabel: item.time_label,
           dayIndex: item.day_index,
-          startHour: roundToHalfHour(item.start_hour),
-          endHour: roundToHalfHour(item.end_hour),
+          ...calendarEventHoursFromDecimals(item.start_hour, item.end_hour),
         };
 
   return {
@@ -272,19 +266,26 @@ const mapCalendarMeta = (
 
   const currentHour = data.current_hour;
 
-  const hourSet = new Set([...defaultHours, ...(data.week_hours || [])]);
+  const hourSet = new Set([
+    ...defaultHours,
+    ...filterCalendarWeekHourTicks(data.week_hours || []),
+  ]);
 
   if (lessons.length > 0) {
     lessons.forEach((lesson) => {
-      const start = Math.floor(lesson.startHour);
-      const end = Math.ceil(lesson.endHour);
-      for (let h = start; h <= end; h++) hourSet.add(h);
+      addCalendarEventHourTicks(hourSet, lesson.startHour, lesson.endHour);
     });
 
-    if (currentHour !== undefined) hourSet.add(Math.floor(currentHour));
+    if (currentHour !== undefined) {
+      hourSet.add(
+        Math.min(MAX, Math.floor(currentHour)),
+      );
+    }
   }
 
-  const weekHours = Array.from(hourSet).sort((a, b) => a - b);
+  const weekHours = filterCalendarWeekHourTicks(Array.from(hourSet)).sort(
+    (a, b) => a - b,
+  );
 
   return {
     title: data.calendar_title,

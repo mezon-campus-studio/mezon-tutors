@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizeCalendarEventEndHour } from '@mezon-tutors/shared';
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { CalendarType, CalendarEvent, CalendarRowModel, CalendarSlotState } from '../types';
@@ -49,13 +50,11 @@ type ColumnEventSlotProps<TEvent> = {
   config: CalendarColumnConfig<TEvent>;
 };
 
-type ColumnNowLineProps<TEvent> = {
-  type: CalendarType;
-  config: CalendarColumnConfig<TEvent>;
-};
-
 const getEventEndHour = (event: CalendarEvent<unknown>): number =>
-  event.endHour ?? event.startHour + 1;
+  normalizeCalendarEventEndHour(
+    event.startHour,
+    event.endHour ?? event.startHour + 1,
+  );
 
 const EVENT_ANCHOR_SELECTOR = '[data-calendar-event-anchor]';
 
@@ -130,20 +129,6 @@ function ColumnEventSlot<TEvent>({ event, config }: ColumnEventSlotProps<TEvent>
       ) : (
         config.renderEvent?.(event, config.isCompact)
       )}
-    </div>
-  );
-}
-
-function ColumnNowLine<TEvent>({ type, config }: ColumnNowLineProps<TEvent>) {
-  if (!config.showNowLine || config.currentHour === undefined) return null;
-
-  const top = config.layoutEngine.getY(config.currentHour);
-  const nowLineColor = `var(--calendar-${type}-now-line)`;
-
-  return (
-    <div className="absolute left-0 right-0 flex items-center pointer-events-none z-20" style={{ top }}>
-      <div className="w-[7px] h-[7px] rounded-full -ml-1" style={{ backgroundColor: nowLineColor }} />
-      <div className="flex-1 h-0.5" style={{ backgroundColor: nowLineColor }} />
     </div>
   );
 }
@@ -254,7 +239,6 @@ export function CalendarColumn<TEvent = unknown>({
         <WeekendNoSlotLabel type={type} label={config.weekendNoSlotLabel} headerHeight={config.headerHeight} />
       )}
 
-      {isActive && <ColumnNowLine type={type} config={config} />}
     </div>
   );
 }

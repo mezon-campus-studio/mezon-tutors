@@ -20,6 +20,7 @@ import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.d
 import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
 import { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.dto'
 import { GetMyTrialLessonBookingsDto } from './dto/get-my-trial-lesson-bookings.dto'
+import { CheckTrialLessonSlotQueryDto } from './dto/check-trial-lesson-slot.dto'
 import { getRequestClientIp } from '../../common/utils/request-ip.util'
 import { TrialLessonBookingService } from './trial-lesson-booking.service'
 import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson-booking-request.dto'
@@ -64,6 +65,18 @@ export class TrialLessonBookingController {
     )
   }
 
+  @Get('check-slot')
+  async checkLessonSlot(@Query() query: CheckTrialLessonSlotQueryDto) {
+    const timezone = query.timezone?.trim() || 'UTC'
+    return this.trialLessonBookingService.checkTutorLessonSlotBookable(
+      query.tutorId,
+      query.startAt,
+      query.durationMinutes,
+      timezone,
+      query.excludeBookingId ? { excludeTrialBookingId: query.excludeBookingId } : undefined
+    )
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('already-booked')
   async getAlreadyBookedStatus(@Req() req: Request, @Query('tutorId') tutorId: string) {
@@ -87,6 +100,13 @@ export class TrialLessonBookingController {
       body,
       getRequestClientIp(req)
     )
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('pending-payments')
+  async getPendingPayments(@Req() req: Request) {
+    const user = req.user as AuthUserPayload
+    return this.trialLessonBookingService.getStudentPendingPaymentBookings(user.sub)
   }
 
   @UseGuards(JwtAuthGuard)

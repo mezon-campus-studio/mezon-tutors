@@ -97,6 +97,10 @@
       "toastSuccessDescription": "Đăng ký đang chờ thanh toán.",
       "toastErrorTitle": "Lỗi",
       "toastErrorFallback": "Không thể gửi.",
+      "toast": {
+        "slotUnavailableTitle": "Khung giờ không còn trống",
+        "slotUnavailableDescription": "Có người khác vừa giữ hoặc đặt khung giờ này. Vui lòng chọn lịch khác."
+      },
       "paymentSummary": {
         "title": "Tóm tắt thanh toán",
         "planLine": "Gói đăng ký ({lessonsPerWeek} buổi/tuần)",

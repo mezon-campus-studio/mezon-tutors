@@ -1,9 +1,13 @@
 import {
   calculatePlatformFeeAmounts,
   instantFitsUtcWeeklyAvailability,
+  isTrialLessonPaymentHoldActive,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
+  LESSON_CANCEL_REASON_SLOT_CONFLICT,
+  TRIAL_LESSON_PAYMENT_HOLD_MS,
+  trialLessonPaymentHoldExpiresAt,
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared'
@@ -224,14 +228,68 @@ export class TrialLessonBookingService {
     }
   }
 
+  private activeTrialBookingWhere(): Prisma.TrialLessonBookingWhereInput {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS)
+    return {
+      status: { not: ETrialLessonStatus.CANCELLED },
+      OR: [
+        { status: { not: ETrialLessonStatus.PENDING } },
+        {
+          status: ETrialLessonStatus.PENDING,
+          paymentStatus: EPaymentStatus.PENDING,
+          createdAt: { gte: holdCutoff },
+        },
+      ],
+    }
+  }
+
+  private slotBlockingTrialBookingWhere(): Prisma.TrialLessonBookingWhereInput {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS)
+    return {
+      OR: [
+        { status: ETrialLessonStatus.CONFIRMED },
+        {
+          status: ETrialLessonStatus.PENDING,
+          paymentStatus: EPaymentStatus.PENDING,
+          createdAt: { gte: holdCutoff },
+        },
+      ],
+    }
+  }
+
+  private slotBlockingSubscriptionEnrollmentWhere(): Prisma.SubscriptionEnrollmentWhereInput {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS)
+    return {
+      OR: [
+        {
+          status: ESubscriptionEnrollmentStatus.ACTIVE,
+          paymentStatus: EPaymentStatus.SUCCEEDED,
+        },
+        {
+          status: ESubscriptionEnrollmentStatus.PENDING_PAYMENT,
+          paymentStatus: EPaymentStatus.PENDING,
+          createdAt: { gte: holdCutoff },
+        },
+      ],
+    }
+  }
+
+  private isSubscriptionEnrollmentPaymentHold(enrollment: {
+    status: ESubscriptionEnrollmentStatus
+    paymentStatus: EPaymentStatus
+  }): boolean {
+    return (
+      enrollment.status === ESubscriptionEnrollmentStatus.PENDING_PAYMENT &&
+      enrollment.paymentStatus === EPaymentStatus.PENDING
+    )
+  }
+
   async hasStudentBookedTutor(studentId: string, tutorId: string) {
     const booking = await this.prisma.trialLessonBooking.findFirst({
       where: {
         studentId,
         tutorId,
-        status: {
-          not: ETrialLessonStatus.CANCELLED,
-        },
+        ...this.activeTrialBookingWhere(),
       },
       select: {
         id: true,
@@ -239,6 +297,7 @@ export class TrialLessonBookingService {
         paymentStatus: true,
         startAt: true,
         durationMinutes: true,
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -250,6 +309,11 @@ export class TrialLessonBookingService {
       paymentStatus: booking?.paymentStatus ?? null,
       startAt: booking?.startAt?.toISOString() ?? null,
       durationMinutes: booking?.durationMinutes ?? null,
+      paymentExpiresAt:
+        booking?.status === ETrialLessonStatus.PENDING &&
+        booking.paymentStatus === EPaymentStatus.PENDING
+          ? trialLessonPaymentHoldExpiresAt(booking.createdAt).toISOString()
+          : null,
     }
   }
 
@@ -258,15 +322,14 @@ export class TrialLessonBookingService {
       where: {
         studentId,
         tutorId,
-        status: {
-          not: ETrialLessonStatus.CANCELLED,
-        },
+        ...this.activeTrialBookingWhere(),
       },
       select: {
         id: true,
         status: true,
         paymentStatus: true,
         paymentUrl: true,
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -277,7 +340,115 @@ export class TrialLessonBookingService {
       status: booking?.status ?? null,
       paymentStatus: booking?.paymentStatus ?? null,
       paymentUrl: booking?.paymentUrl ?? null,
+      paymentExpiresAt:
+        booking?.status === ETrialLessonStatus.PENDING &&
+        booking.paymentStatus === EPaymentStatus.PENDING
+          ? trialLessonPaymentHoldExpiresAt(booking.createdAt).toISOString()
+          : null,
     }
+  }
+
+  async getStudentPendingPaymentBookings(studentId: string) {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS)
+    const rows = await this.prisma.trialLessonBooking.findMany({
+      where: {
+        studentId,
+        status: ETrialLessonStatus.PENDING,
+        paymentStatus: EPaymentStatus.PENDING,
+        createdAt: { gte: holdCutoff },
+      },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return {
+      items: rows.map((row) => {
+        const tutorName = `${row.tutor.firstName} ${row.tutor.lastName}`.trim()
+        return {
+          id: row.id,
+          tutorId: row.tutor.id,
+          tutorName: tutorName || row.tutor.firstName,
+          tutorAvatarUrl: row.tutor.avatar,
+          startAt: row.startAt.toISOString(),
+          durationMinutes: row.durationMinutes,
+          grossAmount: Number(row.grossAmount),
+          currency: row.currency,
+          paymentUrl: row.paymentUrl,
+          createdAt: row.createdAt.toISOString(),
+          expiresAt: trialLessonPaymentHoldExpiresAt(row.createdAt).toISOString(),
+        }
+      }),
+    }
+  }
+
+  async expireStalePendingPaymentBookings(): Promise<number> {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS)
+    const stale = await this.prisma.trialLessonBooking.findMany({
+      where: {
+        status: ETrialLessonStatus.PENDING,
+        paymentStatus: EPaymentStatus.PENDING,
+        createdAt: { lt: holdCutoff },
+      },
+      select: { id: true },
+    })
+
+    let expired = 0
+    for (const row of stale) {
+      const cancelled = await this.cancelExpiredPendingPaymentBooking(row.id)
+      if (cancelled) {
+        expired += 1
+      }
+    }
+    return expired
+  }
+
+  private async cancelExpiredPendingPaymentBooking(bookingId: string): Promise<boolean> {
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        createdAt: true,
+      },
+    })
+
+    if (!booking) {
+      return false
+    }
+    if (booking.status === ETrialLessonStatus.CANCELLED) {
+      return false
+    }
+    if (
+      booking.status !== ETrialLessonStatus.PENDING ||
+      booking.paymentStatus !== EPaymentStatus.PENDING
+    ) {
+      return false
+    }
+    if (isTrialLessonPaymentHoldActive(booking.createdAt)) {
+      return false
+    }
+
+    await this.prisma.trialLessonBooking.update({
+      where: { id: booking.id },
+      data: {
+        status: ETrialLessonStatus.CANCELLED,
+        paymentStatus: EPaymentStatus.FAILED,
+        failedAt: new Date(),
+        cancelReason: 'payment_hold_expired',
+      },
+    })
+
+    return true
   }
 
   async getStudentBookingDetail(studentUserId: string, bookingId: string): Promise<TrialLessonBookingDetailDto> {
@@ -330,6 +501,7 @@ export class TrialLessonBookingService {
       tutorAmount: Number(booking.tutorAmount),
       currency: booking.currency,
       paidAt: booking.paidAt?.toISOString() ?? null,
+      cancelReason: booking.cancelReason,
       createdAt: booking.createdAt.toISOString(),
       tutor: {
         id: booking.tutor.id,
@@ -419,13 +591,13 @@ export class TrialLessonBookingService {
       excludeTrialBookingId?: string
       excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
     }
-  ): Promise<{ id: string; startAt: string; durationMinutes: number }[]> {
+  ): Promise<{ id: string; startAt: string; durationMinutes: number; hold: boolean }[]> {
     const monday = dayjs.tz(weekStartYmd, timezoneName || 'UTC').startOf('day')
     if (!monday.isValid()) {
       throw new BadRequestException('Invalid week start date')
     }
 
-    const all: { id: string; startAt: string; durationMinutes: number }[] = []
+    const all: { id: string; startAt: string; durationMinutes: number; hold: boolean }[] = []
     for (let i = 0; i < 7; i += 1) {
       const ymd = monday.add(i, 'day').format('YYYY-MM-DD')
       const dayStartLocal = dayjs.tz(`${ymd} 00:00`, timezoneName || 'UTC')
@@ -466,6 +638,211 @@ export class TrialLessonBookingService {
     )
   }
 
+  async checkTutorLessonSlotBookable(
+    tutorId: string,
+    startAtIso: string,
+    durationMinutes: number,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+    }
+  ): Promise<
+    | { available: true }
+    | {
+        available: false
+        reason: 'SLOT_OCCUPIED' | 'SUBSCRIPTION_OVERLAP' | 'NOT_IN_AVAILABILITY' | 'INVALID_START_TIME'
+      }
+  > {
+    const startAt = dayjs(startAtIso)
+    if (!startAt.isValid()) {
+      return { available: false, reason: 'INVALID_START_TIME' }
+    }
+
+    try {
+      await this.assertTrialSlotAvailableForTutor(
+        tutorId,
+        startAt,
+        durationMinutes,
+        timezoneName,
+        options
+      )
+      return { available: true }
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        const message = error.message.toLowerCase()
+        if (message.includes('subscription')) {
+          return { available: false, reason: 'SUBSCRIPTION_OVERLAP' }
+        }
+        return { available: false, reason: 'SLOT_OCCUPIED' }
+      }
+      if (error instanceof BadRequestException) {
+        return { available: false, reason: 'NOT_IN_AVAILABILITY' }
+      }
+      throw error
+    }
+  }
+
+  private async assertTutorLessonSlotBookableOrThrow(
+    tutorId: string,
+    startAtIso: string,
+    durationMinutes: number,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+    }
+  ): Promise<void> {
+    const result = await this.checkTutorLessonSlotBookable(
+      tutorId,
+      startAtIso,
+      durationMinutes,
+      timezoneName,
+      options
+    )
+    if (result.available) {
+      return
+    }
+    if (result.reason === 'SLOT_OCCUPIED' || result.reason === 'SUBSCRIPTION_OVERLAP') {
+      throw new ConflictException('Selected time overlaps an existing booking')
+    }
+    if (result.reason === 'INVALID_START_TIME') {
+      throw new BadRequestException('Invalid start time')
+    }
+    throw new BadRequestException('Selected time is not available for this tutor')
+  }
+
+  async checkSubscriptionEnrollmentSlotsBookable(
+    enrollmentId: string,
+    tutorId: string,
+    weeklySlotsJson: Prisma.JsonValue,
+    timezoneName: string,
+  ): Promise<{ available: true } | { available: false }> {
+    const slots = this.parseEnrollmentWeeklySlots(weeklySlotsJson)
+    if (slots.length === 0) {
+      return { available: false }
+    }
+
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      select: { user: { select: { timezone: true } } },
+    })
+    const tutorTimezone = tutor?.user?.timezone ?? timezoneName
+
+    if (!subscriptionSlotsUseConcreteDates(slots)) {
+      return { available: false }
+    }
+
+    const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
+
+    for (const occ of occurrences) {
+      const slot = slots[occ.slotIndex]
+      if (
+        normalizeSubscriptionSlotStatus(slot?.status) !==
+        ESubscriptionLessonSlotStatus.SCHEDULED
+      ) {
+        continue
+      }
+      const durationMinutes = slot?.durationMinutes ?? 60
+      const result = await this.checkTutorLessonSlotBookable(
+        tutorId,
+        occ.startAt.toISOString(),
+        durationMinutes,
+        timezoneName,
+        { excludeSubscriptionSlot: { enrollmentId, slotIndex: occ.slotIndex } },
+      )
+      if (!result.available) {
+        return { available: false }
+      }
+    }
+
+    return { available: true }
+  }
+
+  async refundPaidSubscriptionEnrollmentDueToSlotConflict(
+    enrollmentId: string,
+  ): Promise<boolean> {
+    const enrollment = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollmentId },
+      select: {
+        id: true,
+        studentId: true,
+        grossAmount: true,
+        paymentStatus: true,
+      },
+    })
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found')
+    }
+
+    if (enrollment.paymentStatus === EPaymentStatus.REFUNDED) {
+      return true
+    }
+
+    if (enrollment.grossAmount > 0n) {
+      await this.walletService.creditStudentRefund({
+        studentUserId: enrollment.studentId,
+        subscriptionEnrollmentId: enrollment.id,
+        amount: enrollment.grossAmount,
+        description: 'Refund: lesson slots were no longer available after payment',
+      })
+    }
+
+    await this.prisma.subscriptionEnrollment.update({
+      where: { id: enrollmentId },
+      data: {
+        status: ESubscriptionEnrollmentStatus.CANCELLED,
+        paymentStatus: EPaymentStatus.REFUNDED,
+      },
+    })
+
+    return true
+  }
+
+  async refundPaidBookingDueToSlotConflict(bookingId: string): Promise<boolean> {
+    const booking = await this.prisma.trialLessonBooking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        studentId: true,
+        grossAmount: true,
+        paymentStatus: true,
+      },
+    })
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found')
+    }
+
+    if (booking.paymentStatus === EPaymentStatus.REFUNDED) {
+      return true
+    }
+
+    const now = new Date()
+
+    if (booking.grossAmount > 0n) {
+      await this.walletService.creditStudentRefund({
+        studentUserId: booking.studentId,
+        bookingId: booking.id,
+        amount: booking.grossAmount,
+        description: 'Refund: lesson slot was no longer available after payment',
+      })
+    }
+
+    await this.prisma.trialLessonBooking.update({
+      where: { id: bookingId },
+      data: {
+        status: ETrialLessonStatus.CANCELLED,
+        paymentStatus: EPaymentStatus.REFUNDED,
+        refundedAt: now,
+        cancelReason: LESSON_CANCEL_REASON_SLOT_CONFLICT,
+      },
+    })
+
+    return true
+  }
+
   private parseEnrollmentWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
     if (!Array.isArray(value)) {
       return []
@@ -482,16 +859,14 @@ export class TrialLessonBookingService {
       excludeTrialBookingId?: string
       excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
     }
-  ): Promise<{ id: string; startAt: string; durationMinutes: number }[]> {
+  ): Promise<{ id: string; startAt: string; durationMinutes: number; hold: boolean }[]> {
     const excludeBookingId = options?.excludeTrialBookingId
     const excludeSubscriptionSlot = options?.excludeSubscriptionSlot
     const [bookings, enrollments] = await Promise.all([
       this.prisma.trialLessonBooking.findMany({
         where: {
           tutorId,
-          status: {
-            in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
-          },
+          ...this.slotBlockingTrialBookingWhere(),
           ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
           startAt: {
             gte: dayStart,
@@ -502,17 +877,20 @@ export class TrialLessonBookingService {
           id: true,
           startAt: true,
           durationMinutes: true,
+          status: true,
+          paymentStatus: true,
         },
         orderBy: { startAt: 'asc' },
       }),
       this.prisma.subscriptionEnrollment.findMany({
         where: {
           tutorId,
-          status: ESubscriptionEnrollmentStatus.ACTIVE,
-          paymentStatus: EPaymentStatus.SUCCEEDED,
+          ...this.slotBlockingSubscriptionEnrollmentWhere(),
         },
         select: {
           id: true,
+          status: true,
+          paymentStatus: true,
           weeklySlots: true,
           tutor: {
             select: {
@@ -527,10 +905,18 @@ export class TrialLessonBookingService {
       id: booking.id,
       startAt: booking.startAt.toISOString(),
       durationMinutes: booking.durationMinutes,
+      hold:
+        booking.status === ETrialLessonStatus.PENDING &&
+        booking.paymentStatus === EPaymentStatus.PENDING,
     }))
 
     const weekStartYmd = weekStartMondayYmd(dayjs(dayStart).tz(timezoneName), timezoneName)
-    const subscriptionItems: { id: string; startAt: string; durationMinutes: number }[] = []
+    const subscriptionItems: {
+      id: string
+      startAt: string
+      durationMinutes: number
+      hold: boolean
+    }[] = []
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
@@ -563,6 +949,7 @@ export class TrialLessonBookingService {
             durationMinutes: Math.round(
               (occ.endAt.getTime() - occ.startAt.getTime()) / (60 * 1000)
             ),
+            hold: this.isSubscriptionEnrollmentPaymentHold(enrollment),
           })
         }
       }
@@ -625,9 +1012,7 @@ export class TrialLessonBookingService {
     const existingBookings = await this.prisma.trialLessonBooking.findMany({
       where: {
         tutorId,
-        status: {
-          in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
-        },
+        ...this.slotBlockingTrialBookingWhere(),
         ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
         startAt: {
           gte: queryRangeStart,
@@ -653,8 +1038,7 @@ export class TrialLessonBookingService {
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
         tutorId,
-        status: ESubscriptionEnrollmentStatus.ACTIVE,
-        paymentStatus: EPaymentStatus.SUCCEEDED,
+        ...this.slotBlockingSubscriptionEnrollmentWhere(),
       },
       select: {
         id: true,
@@ -744,6 +1128,8 @@ export class TrialLessonBookingService {
     dto: CreateTrialLessonBookingDto,
     clientIp: string
   ) {
+    await this.expireStalePendingPaymentBookings()
+
     const bookingStatus = await this.hasStudentBookedTutor(studentId, dto.tutorId)
     if (bookingStatus.hasBooked) {
       if (bookingStatus.status === ETrialLessonStatus.PENDING) {
@@ -791,9 +1177,9 @@ export class TrialLessonBookingService {
     }
 
     const viewerTimezone = tutor.user?.timezone ?? 'UTC'
-    await this.assertTrialSlotAvailableForTutor(
+    await this.assertTutorLessonSlotBookableOrThrow(
       tutor.id,
-      startAt,
+      startAt.toISOString(),
       dto.durationMinutes,
       viewerTimezone
     )
@@ -849,8 +1235,16 @@ export class TrialLessonBookingService {
         tutorAmount,
         deductAmount,
         currency: selectedCurrency,
+        timezoneName: viewerTimezone,
       })
     }
+
+    await this.assertTutorLessonSlotBookableOrThrow(
+      tutor.id,
+      startAt.toISOString(),
+      dto.durationMinutes,
+      viewerTimezone
+    )
 
     const booking = await this.prisma.trialLessonBooking.create({
       data: {
@@ -903,6 +1297,7 @@ export class TrialLessonBookingService {
         deductAmount: true,
         paymentRef: true,
         paymentUrl: true,
+        createdAt: true,
       },
     })
 
@@ -920,8 +1315,16 @@ export class TrialLessonBookingService {
     tutorAmount: bigint
     deductAmount: bigint
     currency: ECurrency
+    timezoneName: string
   }) {
     const now = new Date()
+
+    await this.assertTutorLessonSlotBookableOrThrow(
+      params.tutorId,
+      params.startAt.toISOString(),
+      params.durationMinutes,
+      params.timezoneName
+    )
 
     const booking = await this.prisma.$transaction(async (tx) => {
       const created = await tx.trialLessonBooking.create({
@@ -997,8 +1400,16 @@ export class TrialLessonBookingService {
     deductAmount: bigint
     paymentRef: string | null
     paymentUrl: string | null
+    createdAt?: Date
   },
   ) {
+    const paymentExpiresAt =
+      booking.status === ETrialLessonStatus.PENDING &&
+      booking.paymentStatus === EPaymentStatus.PENDING &&
+      booking.createdAt
+        ? trialLessonPaymentHoldExpiresAt(booking.createdAt).toISOString()
+        : null
+
     return {
       id: booking.id,
       tutorId: booking.tutorId,
@@ -1015,6 +1426,7 @@ export class TrialLessonBookingService {
       paymentProvider: 'vnpay',
       paymentUrl: booking.paymentUrl,
       paymentRef: booking.paymentRef,
+      paymentExpiresAt,
     }
   }
 

@@ -73,9 +73,12 @@ export default function MyLessonsEventCard({ lesson }: MyLessonsEventCardProps) 
           </AvatarFallback>
         </Avatar>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-px leading-tight">
-          <p className="line-clamp-2 text-[10px] font-bold leading-snug text-slate-900 sm:text-[11px]">{lesson.subject}</p>
-          <p className="truncate text-[9px] font-semibold text-slate-700 sm:text-[10px]">{lesson.tutor}</p>
-          <p className="truncate text-[9px] font-semibold tabular-nums text-slate-600 sm:text-[10px]">{lesson.timeLabel}</p>
+          <p className="line-clamp-2 text-[10px] font-bold leading-snug text-slate-900 sm:text-[11px]">
+            {lesson.tutor}
+          </p>
+          <p className="truncate text-[9px] font-semibold tabular-nums text-slate-600 sm:text-[10px]">
+            {lesson.timeLabel}
+          </p>
         </div>
       </div>
     </div>

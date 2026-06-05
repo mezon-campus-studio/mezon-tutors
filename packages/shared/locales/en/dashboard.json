@@ -12,6 +12,7 @@
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
+      "pendingBookings": "Pending payment",
       "complaints": "Complaints",
       "lessonComplaints": "Lesson complaints",
       "wallet": "Wallet",
@@ -413,6 +414,26 @@
           "cancel": "Cancel"
         }
       }
+    },
+    "pendingBookings": {
+      "eyebrow": "Student workspace",
+      "title": "Pending payment",
+      "subtitle": "Complete payment before the hold expires, or your reserved slots will be released.",
+      "empty": {
+        "title": "No pending payments",
+        "description": "Trial lessons and subscription plans waiting for payment will appear here until you pay or the 10-minute hold ends.",
+        "browseTutors": "Browse tutors"
+      },
+      "loadError": "Failed to load pending payments.",
+      "expiresIn": "Pay within {time}",
+      "expired": "Hold expired",
+      "payNow": "Pay now",
+      "trialBadge": "Trial lesson",
+      "planBadge": "Subscription plan",
+      "lessonWith": "Trial lesson with {tutor}",
+      "planWith": "Monthly plan with {tutor}",
+      "lessonsPerWeek": "{n} sessions / week",
+      "duration": "{minutes} min"
     },
     "placeholder": {
       "title": "Feature Coming Soon",

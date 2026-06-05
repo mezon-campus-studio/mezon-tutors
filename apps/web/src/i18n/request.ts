@@ -13,6 +13,7 @@ type MessageLoaderConfig = {
     | "Tutors"
     | "GlobalChat"
     | "TrialLessonCheckout"
+    | "LessonCheckout"
     | "SubscriptionCheckout"
     | "BecomeTutorGuide"
     | "BecomeTutor"
@@ -44,6 +45,14 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
     messageKey: "TrialLessonCheckout",
     file: "trial-lesson-checkout",
     pick: (payload) => payload.TrialLessonCheckout,
+  },
+  {
+    messageKey: "LessonCheckout",
+    file: "trial-lesson-checkout",
+    pick: (payload) => {
+      const trial = payload as { TrialLessonCheckout?: { Result?: { cancel?: unknown } } };
+      return { Result: { cancel: trial.TrialLessonCheckout?.Result?.cancel } };
+    },
   },
   {
     messageKey: "SubscriptionCheckout",

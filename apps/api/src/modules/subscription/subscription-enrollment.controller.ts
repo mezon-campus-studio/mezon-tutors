@@ -51,6 +51,13 @@ export class SubscriptionEnrollmentController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('pending-payments')
+  async pendingPayments(@Req() req: Request) {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.getStudentPendingPaymentEnrollments(user.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Req() req: Request,

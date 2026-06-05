@@ -2,6 +2,7 @@
 
 import { AlertCircle, CheckCircle2, Copy, Loader2, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,7 +28,12 @@ import { ApiError } from "@/services/api-client";
 import { useGetSubscriptionEnrollment } from "@/services";
 import { walletQueryKey } from "@/services/wallet/wallet.qkey";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
-import { ECurrency, ROUTES, formatToCurrency } from "@mezon-tutors/shared";
+import {
+  ECurrency,
+  LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+  ROUTES,
+  formatToCurrency,
+} from "@mezon-tutors/shared";
 
 function formatPaidAt(iso: string | null, locale: string): string | null {
   if (!iso) {
@@ -86,6 +92,17 @@ export default function SubscriptionPlanCheckoutSuccessPage({
       void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });
     }
   }, [data?.paymentStatus, queryClient]);
+
+  useEffect(() => {
+    if (
+      data?.paymentStatus === "REFUNDED" &&
+      data?.status === "CANCELLED"
+    ) {
+      router.replace(
+        `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE)}&enrollmentId=${encodeURIComponent(enrollmentId)}`,
+      );
+    }
+  }, [data?.paymentStatus, data?.status, enrollmentId, router]);
 
   const amountLabel = useMemo(() => {
     if (!data) {

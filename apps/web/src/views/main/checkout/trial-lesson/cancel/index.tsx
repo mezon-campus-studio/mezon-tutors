@@ -2,9 +2,9 @@
 
 import { AlertCircle, CircleX } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Badge,
   Card,
@@ -15,19 +15,55 @@ import {
 } from '@/components/ui';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { trialLessonBookingApi } from '@/services';
 import {
-  resolveTrialLessonCancelCodeFromSearchParams,
+  LESSON_CANCEL_REASON_SLOT_CONFLICT,
+  LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+  lessonCheckoutCancelIsSoftTone,
+  resolveLessonCancelCodeFromSearchParams,
   ROUTES,
-  trialLessonCheckoutCancelIsSoftTone,
 } from '@mezon-tutors/shared';
 
 export default function TrialLessonCheckoutCancelPage() {
-  const t = useTranslations('TrialLessonCheckout.Result.cancel');
+  const t = useTranslations('LessonCheckout.Result.cancel');
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  const outcomeCode = useMemo(() => resolveTrialLessonCancelCodeFromSearchParams(searchParams), [searchParams]);
-  const isSoft = trialLessonCheckoutCancelIsSoftTone(outcomeCode);
+  const outcomeCode = useMemo(
+    () => resolveLessonCancelCodeFromSearchParams(searchParams),
+    [searchParams],
+  );
+  const isSoft = lessonCheckoutCancelIsSoftTone(outcomeCode);
   const c = useMemo(() => `codes.${outcomeCode}` as const, [outcomeCode]);
+  const isSlotUnavailableAfterPayment =
+    outcomeCode === LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE;
+
+  useEffect(() => {
+    if (outcomeCode !== 'unknown') {
+      return;
+    }
+    const bookingId = searchParams.get('bookingId')?.trim();
+    if (!bookingId) {
+      return;
+    }
+    let cancelled = false;
+    void trialLessonBookingApi
+      .getBookingDetail(bookingId)
+      .then((detail) => {
+        if (cancelled) {
+          return;
+        }
+        if (detail.cancelReason === LESSON_CANCEL_REASON_SLOT_CONFLICT) {
+          router.replace(
+            `${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE)}&bookingId=${encodeURIComponent(bookingId)}`,
+          );
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [outcomeCode, router, searchParams]);
 
   return (
     <div className="relative min-h-screen bg-linear-to-b from-muted/30 via-background to-muted/15">
@@ -137,6 +173,28 @@ export default function TrialLessonCheckoutCancelPage() {
                 >
                   {t('secondaryCta')}
                 </Link>
+                {isSlotUnavailableAfterPayment ? (
+                  <>
+                    <Link
+                      href={ROUTES.DASHBOARD.PENDING_BOOKINGS}
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'lg' }),
+                        'min-h-11 w-full justify-center sm:w-auto sm:min-w-[180px]'
+                      )}
+                    >
+                      {t(`${c}.ctaPending`)}
+                    </Link>
+                    <Link
+                      href={ROUTES.DASHBOARD.WALLET}
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'lg' }),
+                        'min-h-11 w-full justify-center sm:w-auto sm:min-w-[180px]'
+                      )}
+                    >
+                      {t(`${c}.ctaWallet`)}
+                    </Link>
+                  </>
+                ) : null}
                 <Link
                   href={ROUTES.TUTOR.INDEX}
                   className={cn(

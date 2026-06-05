@@ -99,6 +99,9 @@ export default function MyLessonsCalendarCard({
         onPrevWeek={onPrevWeek}
         onNextWeek={onNextWeek}
         onGoToToday={onGoToToday}
+        timezoneName={timezoneName}
+        weekStartYmd={weekStartYmd}
+        calendarType="myLessons"
         labels={{
           today: t('calendar.today'),
           weekBadge: t('schedule.calendar.week'),

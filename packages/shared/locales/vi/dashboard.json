@@ -12,6 +12,7 @@
       "students": "Học viên",
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
+      "pendingBookings": "Chờ thanh toán",
       "complaints": "Khiếu nại",
       "lessonComplaints": "Khiếu nại buổi học",
       "wallet": "Ví",
@@ -413,6 +414,26 @@
           "cancel": "Hủy"
         }
       }
+    },
+    "pendingBookings": {
+      "eyebrow": "Không gian học viên",
+      "title": "Chờ thanh toán",
+      "subtitle": "Hoàn tất thanh toán trước khi hết thời gian giữ chỗ, nếu không các khung giờ đã chọn sẽ được giải phóng.",
+      "empty": {
+        "title": "Không có khoản chờ thanh toán",
+        "description": "Buổi học thử và gói đăng ký đang chờ thanh toán sẽ hiển thị ở đây cho đến khi bạn thanh toán hoặc hết 10 phút giữ chỗ.",
+        "browseTutors": "Danh sách gia sư"
+      },
+      "loadError": "Không tải được danh sách chờ thanh toán.",
+      "expiresIn": "Thanh toán trong {time}",
+      "expired": "Đã hết thời gian giữ chỗ",
+      "payNow": "Thanh toán ngay",
+      "trialBadge": "Buổi học thử",
+      "planBadge": "Gói đăng ký",
+      "lessonWith": "Buổi học thử với {tutor}",
+      "planWith": "Gói tháng với {tutor}",
+      "lessonsPerWeek": "{n} buổi / tuần",
+      "duration": "{minutes} phút"
     },
     "placeholder": {
       "title": "Tính năng sắp ra mắt",
