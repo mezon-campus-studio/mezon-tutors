@@ -266,10 +266,10 @@ function PastLessonListItem({
   const showComplaintStatus = hasLessonComplaintStatus(lesson);
 
   return (
-    <div className="group flex w-full flex-wrap items-center justify-between gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
-      <div className="flex min-w-[220px] flex-1 items-center gap-3">
+    <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-4 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
-        <div className="flex flex-col gap-0.5">
+        <div className="min-w-0 flex flex-col gap-0.5">
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(lesson.dateLabel, locale)}
           </p>
@@ -279,12 +279,12 @@ function PastLessonListItem({
           <p className="mt-1 text-xs text-slate-600">
             <span className="font-semibold text-violet-700">{lesson.subject}</span>
             <span className="mx-1.5 text-slate-300">·</span>
-            <span>{lesson.tutor}</span>
+            <span className="break-words">{lesson.tutor}</span>
           </p>
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
         {cancelled ? (
           <LessonStatusBadge label={cancelledLabel} tone="neutral" />
         ) : (
@@ -420,7 +420,7 @@ function UpcomingLessonItem({
 
   return (
     <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
-      <div className="flex w-full flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center">
+      <div className="flex w-full flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
           <div className="min-w-0 flex flex-col gap-0.5">
@@ -430,15 +430,15 @@ function UpcomingLessonItem({
             <p className="text-lg font-extrabold leading-none text-slate-900">
               {lesson.timeLabel}
             </p>
-            <p className="mt-1 truncate text-xs text-slate-600">
+            <p className="mt-1 text-xs text-slate-600">
               <span className="font-semibold text-violet-700">{lesson.subject}</span>
               <span className="mx-1.5 text-slate-300">·</span>
-              <span>{lesson.tutor}</span>
+              <span className="break-words">{lesson.tutor}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex shrink-0 gap-2">
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
           {cancelled ? (
             <LessonStatusBadge label={cancelledLabel} tone="neutral" />
           ) : canShowRescheduleOrCancelMenu(lesson) ? (
@@ -447,20 +447,20 @@ function UpcomingLessonItem({
                 trigger={
                   <Button
                     variant="outline"
-                    className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+                    className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
                   >
                     {rescheduleOrCancelLabel}
                   </Button>
                 }
                 items={actionItems}
               />
-              <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+              <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto">
                 <Video className="mr-1.5 size-3.5" />
                 {joinLessonLabel}
               </Button>
             </>
           ) : (
-            <Button className="group/btn h-9 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2877_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50">
+            <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto">
               <Video className="mr-1.5 size-3.5" />
               {joinLessonLabel}
             </Button>
@@ -469,7 +469,7 @@ function UpcomingLessonItem({
       </div>
 
       {showRescheduleNotice && (
-        <div className="flex items-start gap-2.5 rounded-b-2xl border-t border-amber-100 bg-amber-50/70 px-5 py-3">
+        <div className="flex items-start gap-2.5 rounded-b-2xl border-t border-amber-100 bg-amber-50/70 px-4 py-3 sm:px-5">
           <Info className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
           <p className="text-xs leading-relaxed text-amber-700">
             {tUpcoming("rescheduleNotice")}
@@ -494,7 +494,7 @@ function EmptyUpcomingCard({
   onSchedule,
 }: EmptyUpcomingCardProps) {
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-8">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-6 sm:p-8">
       <div className="pointer-events-none absolute -top-12 left-1/2 size-48 -translate-x-1/2 rounded-full bg-violet-300/30 blur-3xl" />
 
       <div className="relative flex flex-col items-center gap-3 text-center">
@@ -1000,7 +1000,7 @@ export default function MyLessonsPanel({
   };
 
   return (
-    <div className="ml-0 flex w-full max-w-[1032px] flex-col gap-7">
+    <div className="ml-0 flex w-full max-w-full flex-col gap-7 lg:max-w-[1032px]">
       <LessonsSection
         title={t("panels.lessons.upcoming.title")}
         lessons={upcomingLessons}

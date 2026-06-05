@@ -121,7 +121,7 @@ function LessonNotice({ message, tone }: { message: string; tone: LessonNoticeTo
   return (
     <div
       className={cn(
-        'flex items-start gap-2.5 rounded-b-2xl border-t px-5 py-3',
+        'flex items-start gap-2.5 rounded-b-2xl border-t px-4 py-3 sm:px-5',
         styles.container,
       )}
     >
@@ -251,7 +251,7 @@ function ScheduleLessonRow({
   return (
     <div
       className={cn(
-        'group flex w-full flex-col gap-0 overflow-hidden rounded-2xl border bg-white transition-all hover:shadow-md',
+        'group relative flex w-full flex-col gap-0 overflow-hidden rounded-2xl border bg-white transition-all hover:shadow-md',
         isCancelled
           ? 'border-rose-100/90 bg-rose-50/20 hover:border-rose-200 hover:shadow-rose-100/40'
           : isCompleted
@@ -259,18 +259,38 @@ function ScheduleLessonRow({
             : 'border-violet-100 hover:border-violet-200 hover:shadow-violet-100/40',
       )}
     >
+      {isUpcomingLesson ? (
+        <div className="absolute right-3 top-3 z-10 sm:hidden">
+          <ActionMenu
+            items={menuItems}
+            trigger={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="size-9 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
+                aria-label={tPanels('upcoming.manageLesson')}
+              >
+                <MoreVertical className="size-4" />
+              </Button>
+            }
+          />
+        </div>
+      ) : null}
+
       <div
         className={cn(
-          'flex w-full flex-wrap items-center justify-between gap-4 px-5 py-4',
+          'flex w-full flex-col gap-4 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5',
+          isUpcomingLesson && 'sm:pr-5',
           hasFooterNotice && 'pb-4',
         )}
       >
-      <div className="flex min-w-[220px] flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <LessonPersonBadge
           name={item.studentName}
           avatar={item.studentAvatarUrl}
         />
-        <div className="flex flex-col gap-0.5">
+        <div className="min-w-0 flex flex-col gap-0.5">
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(start.format('ddd, MMM DD'), locale)}
           </p>
@@ -280,63 +300,70 @@ function ScheduleLessonRow({
           <p className="mt-1 text-xs text-slate-600">
             <span className="font-semibold text-violet-700">{lessonTypeLabel}</span>
             <span className="mx-1.5 text-slate-300">·</span>
-            <span>{item.studentName}</span>
+            <span className="break-words">{item.studentName}</span>
           </p>
         </div>
       </div>
 
-      <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-        {isCancelled ? (
-          <LessonStatusBadge label={tPanels('status.cancelled')} tone="cancelled" />
-        ) : isCompleted ? (
-          <LessonStatusBadge label={t('completedBadge')} tone="completed" />
-        ) : (
-          <>
-            {item.rescheduleRequestSubmitted ? (
-              <LessonStatusBadge
-                label={tPanels('status.reschedulePending')}
-                tone="reschedulePending"
-              />
-            ) : null}
-            {item.cancellationRequestSubmitted ? (
-              <LessonStatusBadge
-                label={tPanels('status.cancellationPending')}
-                tone="cancellationPending"
-              />
-            ) : null}
-            {!isSubscription && item.tutorAmount > 0 ? (
-              <span className="text-sm font-extrabold text-violet-700">
-                {formatToCurrency(ECurrency.VND, item.tutorAmount)}
-              </span>
-            ) : null}
-          </>
-        )}
-        {!isSubscription ? (
-          <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}>
-            <Button
-              variant="outline"
-              className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
-            >
-              {tPanels('upcoming.viewDetail')}
-            </Button>
-          </Link>
-        ) : null}
-        {isUpcomingLesson ? (
-          <ActionMenu
-            items={menuItems}
-            trigger={
+      <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-start">
+          {isCancelled ? (
+            <LessonStatusBadge label={tPanels('status.cancelled')} tone="cancelled" />
+          ) : isCompleted ? (
+            <LessonStatusBadge label={t('completedBadge')} tone="completed" />
+          ) : (
+            <>
+              {item.rescheduleRequestSubmitted ? (
+                <LessonStatusBadge
+                  label={tPanels('status.reschedulePending')}
+                  tone="reschedulePending"
+                />
+              ) : null}
+              {item.cancellationRequestSubmitted ? (
+                <LessonStatusBadge
+                  label={tPanels('status.cancellationPending')}
+                  tone="cancellationPending"
+                />
+              ) : null}
+            </>
+          )}
+        </div>
+
+        <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:justify-end">
+          {!isSubscription && item.tutorAmount > 0 ? (
+            <span className="text-sm font-extrabold text-violet-700">
+              {formatToCurrency(ECurrency.VND, item.tutorAmount)}
+            </span>
+          ) : null}
+          {!isSubscription ? (
+            <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}>
               <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="size-8 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
-                aria-label={tPanels('upcoming.manageLesson')}
+                variant="outline"
+                className="h-11 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50 sm:h-9"
               >
-                <MoreVertical className="size-4" />
+                {tPanels('upcoming.viewDetail')}
               </Button>
-            }
-          />
-        ) : null}
+            </Link>
+          ) : null}
+          {isUpcomingLesson ? (
+            <div className="hidden sm:block">
+              <ActionMenu
+                items={menuItems}
+                trigger={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="size-9 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
+                    aria-label={tPanels('upcoming.manageLesson')}
+                  >
+                    <MoreVertical className="size-4" />
+                  </Button>
+                }
+              />
+            </div>
+          ) : null}
+        </div>
       </div>
       </div>
 
@@ -374,7 +401,7 @@ function EmptyUpcomingCard({ onViewRequests }: EmptyUpcomingCardProps) {
   const tPanels = useTranslations('Dashboard.mySchedule.panels.lessons');
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-8">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#fdf2f8_100%)] p-6 sm:p-8">
       <div className="pointer-events-none absolute -top-12 left-1/2 size-48 -translate-x-1/2 rounded-full bg-violet-300/30 blur-3xl" />
 
       <div className="relative flex flex-col items-center gap-3 text-center">
@@ -416,7 +443,7 @@ export default function MySchedulePanel({
   const router = useRouter();
 
   return (
-    <div className="ml-0 flex w-full max-w-[1032px] flex-col gap-7">
+    <div className="ml-0 flex w-full max-w-full flex-col gap-7 lg:max-w-[1032px]">
       <div className="flex flex-col gap-4">
         <SectionHeader
           icon={CalendarPlus}

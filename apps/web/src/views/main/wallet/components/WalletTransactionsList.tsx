@@ -41,54 +41,62 @@ function TransactionRowContent({
   const iconSize = compact ? 'size-10' : 'size-11';
   const iconClass = compact ? 'size-4' : 'size-5';
 
-  return (
-    <>
-      <div
-        className={`flex ${iconSize} shrink-0 items-center justify-center rounded-xl ${
-          isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+  const amountBlock = (
+    <div className="flex items-center gap-2.5 sm:shrink-0">
+      <p
+        className={`text-base font-extrabold tabular-nums ${
+          isCredit ? 'text-emerald-600' : 'text-rose-600'
         }`}
       >
-        <Icon className={iconClass} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-slate-900">{label}</p>
-          <Badge
-            variant="outline"
-            className={
-              isCredit
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : 'border-rose-200 bg-rose-50 text-rose-700'
-            }
-          >
-            {isCredit ? creditLabel : debitLabel}
-          </Badge>
-        </div>
-        <p className="mt-0.5 truncate text-sm text-slate-500">
-          {item.referenceLabel ?? item.description ?? dateLabel}
-        </p>
-        <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-2.5">
-        <p
-          className={`text-base font-extrabold tabular-nums ${
-            isCredit ? 'text-emerald-600' : 'text-rose-600'
+        {isCredit ? '+' : '−'}
+        {formatToCurrency(ECurrency.VND, item.amount)}
+      </p>
+      {item.lessonDetail && onViewDetail ? (
+        <button
+          type="button"
+          onClick={() => onViewDetail(item)}
+          aria-label={viewDetailLabel}
+          title={viewDetailLabel}
+          className="flex size-11 min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 sm:size-8 sm:min-h-0 sm:min-w-0"
+        >
+          <Eye className="size-4" />
+        </button>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <>
+      <div className="flex items-start gap-3 sm:contents">
+        <div
+          className={`flex ${iconSize} shrink-0 items-center justify-center rounded-xl ${
+            isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
           }`}
         >
-          {isCredit ? '+' : '−'}
-          {formatToCurrency(ECurrency.VND, item.amount)}
-        </p>
-        {item.lessonDetail && onViewDetail ? (
-          <button
-            type="button"
-            onClick={() => onViewDetail(item)}
-            aria-label={viewDetailLabel}
-            title={viewDetailLabel}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
-          >
-            <Eye className="size-4" />
-          </button>
-        ) : null}
+          <Icon className={iconClass} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold text-slate-900">{label}</p>
+            <Badge
+              variant="outline"
+              className={
+                isCredit
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : 'border-rose-200 bg-rose-50 text-rose-700'
+              }
+            >
+              {isCredit ? creditLabel : debitLabel}
+            </Badge>
+          </div>
+          <p className="mt-0.5 text-sm text-slate-500 sm:truncate">
+            {item.referenceLabel ?? item.description ?? dateLabel}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
+        </div>
+      </div>
+      <div className="flex w-full items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:w-auto sm:shrink-0 sm:border-0 sm:pt-0">
+        {amountBlock}
       </div>
     </>
   );
@@ -109,11 +117,13 @@ export default function WalletTransactionsList({
       return (
         <div className="divide-y divide-slate-100">
           {['a', 'b', 'c', 'd'].map((id) => (
-            <div key={id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-              <Skeleton className="size-10 rounded-xl" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-24" />
+            <div key={id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-start gap-3 sm:contents">
+                <Skeleton className="size-10 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
               </div>
               <Skeleton className="h-5 w-24" />
             </div>
@@ -194,7 +204,7 @@ export default function WalletTransactionsList({
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-4 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-slate-50/80"
+                className="flex flex-col gap-3 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-slate-50/80 sm:flex-row sm:items-center sm:gap-4"
               >
                 <TransactionRowContent
                   item={item}
@@ -236,7 +246,7 @@ export default function WalletTransactionsList({
               key={item.id}
               className="border-violet-100 shadow-sm shadow-violet-100/30 transition-shadow hover:shadow-md hover:shadow-violet-100/50"
             >
-              <CardContent className="flex items-center gap-4 p-4">
+              <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
                 <TransactionRowContent
                   item={item}
                   isCredit={isCredit}

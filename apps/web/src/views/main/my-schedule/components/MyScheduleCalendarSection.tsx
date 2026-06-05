@@ -110,8 +110,11 @@ export default function MyScheduleCalendarSection({
         labels={{
           today: t("calendar.today"),
           weekBadge: t("calendar.week"),
+          emptyDay: t("calendar.emptyDay"),
         }}
-        renderEvent={(event) => <MyScheduleEventCard event={event} />}
+        renderEvent={(event, layout) => (
+          <MyScheduleEventCard event={event} variant={layout ?? 'grid'} />
+        )}
         onEventClick={(ev, rect) => {
           setPickedEvent(ev);
           setEventAnchorRect(rect);

@@ -144,27 +144,27 @@ export default function TutorWalletActivitySection({
   const isLoading = tab === 'transactions' ? isTxLoading : isWdLoading;
 
   return (
-    <section className="rounded-[1.75rem] border border-slate-200/80 bg-white p-5 shadow-sm md:p-6">
-      <header className="flex flex-col gap-4 border-b border-slate-100 pb-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:rounded-[1.75rem] sm:p-5 md:p-6">
+      <header className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('title')}</h2>
           <p className="mt-0.5 text-sm text-slate-500">{t('subtitle')}</p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative min-w-[200px] flex-1 sm:max-w-xs">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+          <div className="relative min-w-0 flex-1 lg:max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('searchPlaceholder')}
-              className="h-10 w-full rounded-full border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm outline-none ring-violet-200 focus:border-violet-300 focus:ring-2"
+              className="h-11 min-h-11 w-full rounded-full border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm outline-none ring-violet-200 focus:border-violet-300 focus:ring-2 sm:h-10 sm:min-h-0"
             />
           </div>
           <button
             type="button"
             onClick={handleExport}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex h-11 min-h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:h-10 sm:min-h-0 sm:w-auto"
           >
             <Download className="size-4" />
             {t('export')}
@@ -172,7 +172,7 @@ export default function TutorWalletActivitySection({
         </div>
       </header>
 
-      <div className="mt-4 flex flex-wrap gap-1.5 rounded-full border border-slate-200 bg-slate-50 p-1">
+      <div className="mt-4 grid grid-cols-2 gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 sm:flex sm:flex-wrap">
         {(
           [
             { key: 'transactions' as const, label: tWallet('tabs.transactions') },
@@ -184,7 +184,7 @@ export default function TutorWalletActivitySection({
             type="button"
             onClick={() => setTab(key)}
             className={cn(
-              'rounded-full px-4 py-1.5 text-xs font-semibold transition-colors',
+              'min-h-11 rounded-full px-3 text-xs font-semibold transition-colors sm:min-h-0 sm:px-4 sm:py-1.5',
               tab === key ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900',
             )}
           >
@@ -245,26 +245,28 @@ export default function TutorWalletActivitySection({
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-slate-50/80"
+                          className="flex flex-col gap-3 px-3 py-4 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center sm:gap-4 sm:px-4"
                         >
-                          <div
-                            className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', iconClass)}
-                          >
-                            <Icon className="size-4" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-semibold text-slate-900">{label}</p>
-                              <Badge variant="outline" className="border-slate-200 text-slate-600">
-                                {isCredit ? tWallet('transactions.credit') : tWallet('transactions.debit')}
-                              </Badge>
+                          <div className="flex items-start gap-3 sm:contents">
+                            <div
+                              className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', iconClass)}
+                            >
+                              <Icon className="size-4" />
                             </div>
-                            <p className="mt-0.5 truncate text-sm text-slate-500">
-                              {item.referenceLabel ?? item.description ?? dateLabel}
-                            </p>
-                            <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-semibold text-slate-900">{label}</p>
+                                <Badge variant="outline" className="border-slate-200 text-slate-600">
+                                  {isCredit ? tWallet('transactions.credit') : tWallet('transactions.debit')}
+                                </Badge>
+                              </div>
+                              <p className="mt-0.5 text-sm text-slate-500 sm:truncate">
+                                {item.referenceLabel ?? item.description ?? dateLabel}
+                              </p>
+                              <p className="mt-1 text-xs text-slate-400">{dateLabel}</p>
+                            </div>
                           </div>
-                          <div className="flex shrink-0 items-center gap-2.5">
+                          <div className="flex w-full items-center justify-between gap-2.5 border-t border-slate-100 pt-3 sm:w-auto sm:shrink-0 sm:border-0 sm:pt-0">
                             <p className={cn('text-base font-extrabold tabular-nums', amountClass)}>
                               {isCredit ? '+' : '−'}
                               {formatToCurrency(ECurrency.VND, item.amount)}
@@ -275,7 +277,7 @@ export default function TutorWalletActivitySection({
                                 onClick={() => setDetailEarning(item)}
                                 aria-label={tWallet('transactions.viewDetail')}
                                 title={tWallet('transactions.viewDetail')}
-                                className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                                className="flex size-11 min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 sm:size-8 sm:min-h-0 sm:min-w-0"
                               >
                                 <Eye className="size-4" />
                               </button>
@@ -312,9 +314,9 @@ export default function TutorWalletActivitySection({
                     return (
                       <div
                         key={item.id}
-                        className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 hover:bg-slate-50/80"
+                        className="flex flex-col gap-3 px-3 py-4 hover:bg-slate-50/80 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4"
                       >
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-semibold text-slate-900">
                             −{formatToCurrency(ECurrency.VND, item.amount)}
                           </p>
@@ -322,7 +324,7 @@ export default function TutorWalletActivitySection({
                             {item.bankName} · •••• {item.bankAccountNumber.slice(-4)}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex w-full items-center justify-between gap-2 border-t border-slate-100 pt-3 sm:w-auto sm:border-0 sm:pt-0">
                           <Badge variant="outline" className={statusStyle}>
                             {tWallet(`withdrawals.status.${item.status}`)}
                           </Badge>
@@ -331,7 +333,7 @@ export default function TutorWalletActivitySection({
                             onClick={() => setDetailWithdrawal(item)}
                             aria-label={tWallet('withdrawals.viewDetail')}
                             title={tWallet('withdrawals.viewDetail')}
-                            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                            className="flex size-11 min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 sm:size-8 sm:min-h-0 sm:min-w-0"
                           >
                             <Eye className="size-4" />
                           </button>

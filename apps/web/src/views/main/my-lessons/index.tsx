@@ -47,11 +47,11 @@ export default function MyLessonsPage() {
   };
 
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-7 md:py-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <div className="flex flex-col gap-5 md:gap-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
                 {t("header.title")}
               </h1>
@@ -62,7 +62,7 @@ export default function MyLessonsPage() {
             <button
               type="button"
               onClick={() => router.push("/tutors")}
-              className="group inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+              className="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto"
             >
               <Plus className="size-4" />
               {t("header.scheduleLesson")}
@@ -106,6 +106,6 @@ export default function MyLessonsPage() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

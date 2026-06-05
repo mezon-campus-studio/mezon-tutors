@@ -36,8 +36,8 @@ export default function TutorWalletInsightPanel({
   const bank = details.payoutBankAccount ?? null;
 
   return (
-    <aside className="flex flex-col gap-3 justify-center">
-      <div className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/90 to-white p-4 shadow-sm">
+    <aside className="flex flex-col justify-center gap-3 sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col">
+      <div className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/90 to-white p-4 shadow-sm sm:col-span-2 lg:col-span-1">
         <div className="flex items-start gap-2.5">
           <Clock4 className="mt-0.5 size-4 shrink-0 text-amber-700" />
           <div>
@@ -51,7 +51,9 @@ export default function TutorWalletInsightPanel({
           </div>
         </div>
       </div>
-      <WalletPayoutBankCard bank={bank} onManageBankClick={onManageBankClick} />
+      <div className="sm:col-span-2 lg:col-span-1">
+        <WalletPayoutBankCard bank={bank} onManageBankClick={onManageBankClick} />
+      </div>
     </aside>
   );
 }

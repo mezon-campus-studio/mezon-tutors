@@ -122,7 +122,7 @@ function SectionCard({
   action?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm shadow-violet-100/30 sm:p-6">
+    <section className="min-w-0 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm shadow-violet-100/30 sm:p-5 md:p-6">
       {action ? (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
           <div>
@@ -169,11 +169,11 @@ function TabEditActions({
 }) {
   if (isEditing) {
     return (
-      <div className="flex shrink-0 gap-2">
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:shrink-0">
         <Button
           type="button"
           variant="outline"
-          className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+          className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
           onClick={onCancel}
           disabled={isSaving}
         >
@@ -182,7 +182,7 @@ function TabEditActions({
         <Button
           type="button"
           variant="gradient"
-          className="h-9 rounded-full px-4 text-xs font-semibold"
+          className="h-11 w-full rounded-full px-4 text-xs font-semibold sm:h-9 sm:w-auto"
           onClick={onSave}
           disabled={isSaving}
         >
@@ -197,7 +197,7 @@ function TabEditActions({
       type="button"
       variant="gradient"
       size="lg"
-      className="gap-1.5 rounded-full"
+      className="h-11 w-full gap-1.5 rounded-full sm:h-10 sm:w-auto"
       onClick={onEdit}
     >
       <Pencil className="size-3.5" />
@@ -449,7 +449,7 @@ export default function TutorProfileView() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="flex min-h-[50vh] w-full items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-slate-600">
           <Spinner className="size-8 text-violet-600" />
           <p className="text-sm font-medium">{t('loading')}</p>
@@ -460,18 +460,20 @@ export default function TutorProfileView() {
 
   if (!hasProfile || !profile) {
     return (
-      <div className="mx-auto max-w-lg py-16 text-center">
-        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
-          <User className="size-7" />
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+        <div className="mx-auto w-full max-w-lg px-4 py-12 text-center sm:py-16">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+            <User className="size-7" />
+          </div>
+          <h1 className="text-xl font-extrabold text-slate-900">{t('noProfile.title')}</h1>
+          <p className="mt-2 text-sm text-slate-600">{t('noProfile.description')}</p>
+          <Link
+            href={ROUTES.BECOME_TUTOR.INDEX}
+            className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700 sm:h-10 sm:w-auto"
+          >
+            {t('noProfile.cta')}
+          </Link>
         </div>
-        <h1 className="text-xl font-extrabold text-slate-900">{t('noProfile.title')}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t('noProfile.description')}</p>
-        <Link
-          href={ROUTES.BECOME_TUTOR.INDEX}
-          className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700"
-        >
-          {t('noProfile.cta')}
-        </Link>
       </div>
     );
   }
@@ -519,22 +521,21 @@ export default function TutorProfileView() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6 pb-10 md:space-y-6 md:px-6 md:py-8 lg:px-8">
+        <header className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-600">
             {t('eyebrow')}
           </p>
-          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
             {t('title')}
           </h1>
           <p className="mt-1 text-sm text-slate-600">{t('subtitle')}</p>
-        </div>
-      </div>
+        </header>
 
-      <div className="overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf5ff,#fdf2f8)] p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <Avatar className="size-20 rounded-full border-2 border-white ring-2 ring-violet-100 sm:size-24">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf5ff,#fdf2f8)] p-4 shadow-sm sm:p-5 md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <Avatar className="size-20 shrink-0 rounded-full border-2 border-white ring-2 ring-violet-100 sm:size-24">
             {profile.avatar ? (
               <AvatarImage
                 src={profile.avatar}
@@ -565,39 +566,36 @@ export default function TutorProfileView() {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { icon: BookOpen, label: t('stats.lessons'), value: profile.totalLessonsTaught },
-            { icon: Users, label: t('stats.students'), value: profile.totalStudents },
-            {
-              icon: Star,
-              label: t('stats.rating'),
-              value: Number(profile.ratingAverage).toFixed(1),
-            },
-            { icon: Award, label: t('stats.reviews'), value: profile.ratingCount },
-          ].map(({ icon: Icon, label, value }) => (
-            <div
-              key={label}
-              className="rounded-xl border border-white/80 bg-white/70 px-3 py-2.5 backdrop-blur"
-            >
-              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                <Icon className="size-3.5 text-violet-600" />
-                {label}
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 lg:grid-cols-4">
+            {[
+              { icon: BookOpen, label: t('stats.lessons'), value: profile.totalLessonsTaught },
+              { icon: Users, label: t('stats.students'), value: profile.totalStudents },
+              {
+                icon: Star,
+                label: t('stats.rating'),
+                value: Number(profile.ratingAverage).toFixed(1),
+              },
+              { icon: Award, label: t('stats.reviews'), value: profile.ratingCount },
+            ].map(({ icon: Icon, label, value }) => (
+              <div
+                key={label}
+                className="min-w-0 rounded-xl border border-white/80 bg-white/70 px-2.5 py-2 backdrop-blur sm:px-3 sm:py-2.5"
+              >
+                <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500 sm:gap-1.5 sm:text-[10px]">
+                  <Icon className="size-3 shrink-0 text-violet-600 sm:size-3.5" />
+                  <span className="truncate">{label}</span>
+                </div>
+                <p className="mt-1 text-base font-extrabold text-slate-900 sm:text-lg">{value}</p>
               </div>
-              <p className="mt-1 text-lg font-extrabold text-slate-900">{value}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <ProfileTabs
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
+        <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      <div className="flex justify-end">{tabEditActions(activeTab)}</div>
+        <div className="flex w-full justify-stretch sm:justify-end">{tabEditActions(activeTab)}</div>
 
-      <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
         {activeTab === PROFILE_TAB.GENERAL && editingTab === PROFILE_TAB.GENERAL && (
           <SectionCard
             title={tAbout('title')}
@@ -715,7 +713,7 @@ export default function TutorProfileView() {
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-start"
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-start"
                 >
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700">
@@ -784,9 +782,9 @@ export default function TutorProfileView() {
                     <FieldError message={errors.languageEntries?.[index]?.proficiency?.message} />
                   </div>
                   {fields.length > 1 ? (
-                    <div className="space-y-1.5">
+                    <div className="flex items-end sm:block sm:space-y-1.5">
                       <span
-                        className="block text-xs font-semibold opacity-0"
+                        className="hidden text-xs font-semibold opacity-0 sm:block"
                         aria-hidden="true"
                       >
                         &nbsp;
@@ -795,12 +793,12 @@ export default function TutorProfileView() {
                         type="button"
                         variant="outline"
                         onClick={() => remove(index)}
-                        className="h-11 rounded-xl border-rose-200 px-3 text-rose-600 hover:border-rose-300 hover:bg-rose-50"
+                        className="h-11 w-full rounded-xl border-rose-200 px-3 text-rose-600 hover:border-rose-300 hover:bg-rose-50 sm:w-auto"
                         aria-label={tAbout('removeLanguage')}
                       >
                         <Trash2 className="size-4" />
                       </Button>
-                      <div className="min-h-5" aria-hidden="true" />
+                      <div className="hidden min-h-5 sm:block" aria-hidden="true" />
                     </div>
                   ) : null}
                 </div>
@@ -809,7 +807,7 @@ export default function TutorProfileView() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="rounded-xl"
+                className="h-11 w-full rounded-xl sm:h-9 sm:w-auto"
                 onClick={() => append({ language: '', proficiency: '' })}
               >
                 {tAbout('addAnotherLanguage')}
@@ -927,7 +925,7 @@ export default function TutorProfileView() {
                           void form.trigger(['currency', 'hourlyRate']);
                         }}
                       >
-                        <SelectTrigger className="h-12! min-w-[120px] rounded-xl border-slate-200 bg-slate-50/60 text-sm">
+                        <SelectTrigger className="h-12! w-full rounded-xl border-slate-200 bg-slate-50/60 text-sm sm:min-w-[120px] sm:w-auto">
                           <SelectValue placeholder={tAv('rate.currencyLabel')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -1093,11 +1091,11 @@ export default function TutorProfileView() {
             <DialogTitle>{t('unsavedChanges.title')}</DialogTitle>
             <DialogDescription>{t('unsavedChanges.description')}</DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:flex-row">
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
-              className="h-9 rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
+              className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
               onClick={cancelDiscardLeave}
             >
               {t('unsavedChanges.stay')}
@@ -1105,7 +1103,7 @@ export default function TutorProfileView() {
             <Button
               type="button"
               variant="gradient"
-              className="h-9 rounded-full px-4 text-xs font-semibold"
+              className="h-11 w-full rounded-full px-4 text-xs font-semibold sm:h-9 sm:w-auto"
               onClick={confirmDiscardLeave}
             >
               {t('unsavedChanges.confirm')}
@@ -1113,6 +1111,7 @@ export default function TutorProfileView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

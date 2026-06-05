@@ -38,6 +38,7 @@
   },
   "calendar": {
     "today": "Today",
+    "emptyDay": "No lessons scheduled for this day",
     "switchWeek": "Week",
     "switchMonth": "Month",
     "legendSuffix": "Lessons",
@@ -192,6 +193,8 @@
       "schedule": "Schedule",
       "message": "Message",
       "unscheduled": "Unscheduled",
+      "emptyTitle": "No tutors yet",
+      "emptyDescription": "When you book your first lesson, your tutor list will appear here. You can also find a tutor to get started.",
       "discoverTitle": "Want to expand your learning?",
       "discoverDescription": "Discover top-rated tutors in Physics, Chemistry, Design, and over 100 other subjects.",
       "findTutors": "Find Tutors",

@@ -105,8 +105,11 @@ export default function MyLessonsCalendarCard({
         labels={{
           today: t('calendar.today'),
           weekBadge: t('schedule.calendar.week'),
+          emptyDay: t('calendar.emptyDay'),
         }}
-        renderEvent={(lesson) => <MyLessonsEventCard lesson={lesson} />}
+        renderEvent={(lesson, layout) => (
+          <MyLessonsEventCard lesson={lesson} variant={layout ?? 'grid'} />
+        )}
         onEventClick={(lesson, rect) => {
           setPickedLesson(lesson);
           setEventAnchorRect(rect);

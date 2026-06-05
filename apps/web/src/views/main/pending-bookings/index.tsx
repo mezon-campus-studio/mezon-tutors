@@ -68,7 +68,8 @@ function PendingPaymentActions({
       </div>
       <Button
         size="sm"
-        className="gap-2"
+        variant="gradient"
+        className="gap-2 rounded-full"
         disabled={isExpired || !paymentUrl}
         onClick={handlePay}
       >

@@ -29,7 +29,7 @@ export default function TutorWalletHero({
 
   if (isPending || !details) {
     return (
-      <div className="relative overflow-hidden rounded-[1.75rem] border border-indigo-500/20 bg-slate-900 p-5 md:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-4 sm:rounded-[1.75rem] sm:p-5 md:p-6">
         <Skeleton className="h-4 w-28 bg-white/15" />
         <Skeleton className="mt-4 h-14 w-64 bg-white/15" />
         <Skeleton className="mt-4 h-20 w-full rounded-2xl bg-white/10" />
@@ -45,12 +45,12 @@ export default function TutorWalletHero({
   );
 
   return (
-    <section className="relative overflow-hidden rounded-[1.75rem] border border-indigo-400/25 bg-[linear-gradient(145deg,#0c0a1f_0%,#1e1b4b_42%,#4c1d95_78%,#7c3aed_100%)] p-5 text-white shadow-2xl shadow-indigo-950/30 md:p-6">
+    <section className="relative overflow-hidden rounded-2xl border border-indigo-400/25 bg-[linear-gradient(145deg,#0c0a1f_0%,#1e1b4b_42%,#4c1d95_78%,#7c3aed_100%)] p-4 text-white shadow-2xl shadow-indigo-950/30 sm:rounded-[1.75rem] sm:p-5 md:p-6">
       <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-fuchsia-500/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 left-0 size-72 rounded-full bg-indigo-400/20 blur-3xl" />
 
-      <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_200px] lg:gap-6">
-        <div className="flex min-w-0 flex-col justify-between gap-4">
+      <div className="relative grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
+        <div className="flex min-w-0 flex-col justify-between gap-4 sm:gap-5">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-indigo-100">
@@ -65,10 +65,10 @@ export default function TutorWalletHero({
 
             <div>
               <p className="text-sm font-medium text-indigo-200/90">{tCard('tutorAvailableLabel')}</p>
-              <p className="mt-1 text-4xl font-extrabold tracking-tight tabular-nums md:text-5xl lg:text-[3.25rem]">
+              <p className="mt-1 text-3xl font-extrabold tracking-tight break-words tabular-nums sm:text-4xl md:text-5xl lg:text-[3.25rem]">
                 {formatToCurrency(ECurrency.VND, metrics.available)}
               </p>
-              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-indigo-100/85">
+              <div className="mt-3 flex flex-col gap-1 text-sm text-indigo-100/85 sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-1">
                 <span>
                   {t('withdrawableLabel')}:{' '}
                   <span className="font-semibold text-white">
@@ -89,41 +89,45 @@ export default function TutorWalletHero({
             type="button"
             disabled={!metrics.canWithdraw}
             onClick={onWithdrawClick}
-            className="h-11 w-fit rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-amber-900/30 hover:bg-amber-200 disabled:opacity-60"
+            className="h-11 min-h-11 w-full rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-amber-900/30 hover:bg-amber-200 disabled:opacity-60 sm:w-fit"
           >
             <ArrowDownToLine className="size-4" />
             {t('withdrawCta')}
           </Button>
         </div>
 
-        <div className="flex flex-col justify-end">
-          <div className="rounded-2xl border border-white/12 bg-white/8 p-3.5 backdrop-blur-md">
+        <div className="flex flex-col justify-end sm:max-w-sm lg:max-w-none">
+          <div className="rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-md sm:p-3.5">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-indigo-200/80">
               {t('trendTitle')}
             </p>
-            <div className="mt-3 flex h-20 items-end gap-2">
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <div
-                  className="w-full max-w-[48px] rounded-t-lg bg-emerald-400/90 transition-all"
-                  style={{ height: `${Math.max(10, (receivedPct / 100) * 56)}px` }}
-                />
-                <div className="flex items-center gap-1 text-[10px] text-indigo-100/70">
-                  <TrendingUp className="size-3 text-emerald-300" />
-                  {t('chartEarned')}
+            <div className="mt-3">
+              <div className="flex h-16 items-end gap-3">
+                <div className="flex h-full flex-1 items-end justify-center">
+                  <div
+                    className="w-full max-w-[48px] rounded-t-lg bg-emerald-400/90 transition-all"
+                    style={{ height: `${Math.max(10, (receivedPct / 100) * 52)}px` }}
+                  />
+                </div>
+                <div className="flex h-full flex-1 items-end justify-center">
+                  <div
+                    className="w-full max-w-[48px] rounded-t-lg bg-amber-400/90 transition-all"
+                    style={{ height: `${Math.max(10, (withdrawnPct / 100) * 52)}px` }}
+                  />
                 </div>
               </div>
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <div
-                  className="w-full max-w-[48px] rounded-t-lg bg-amber-400/90 transition-all"
-                  style={{ height: `${Math.max(10, (withdrawnPct / 100) * 56)}px` }}
-                />
-                <div className="flex items-center gap-1 text-[10px] text-indigo-100/70">
-                  <TrendingDown className="size-3 text-amber-300" />
+              <div className="mt-2 flex gap-3">
+                <div className="flex flex-1 items-center justify-center gap-1 text-[10px] text-indigo-100/70">
+                  <TrendingUp className="size-3 shrink-0 text-emerald-300" />
+                  {t('chartEarned')}
+                </div>
+                <div className="flex flex-1 items-center justify-center gap-1 text-[10px] text-indigo-100/70">
+                  <TrendingDown className="size-3 shrink-0 text-amber-300" />
                   {t('chartWithdrawn')}
                 </div>
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-xs">
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3 text-center text-xs">
               <div>
                 <p className="text-indigo-200/70">{t('chartEarned')}</p>
                 <p className="mt-0.5 font-semibold tabular-nums text-emerald-200">
