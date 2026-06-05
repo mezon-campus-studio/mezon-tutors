@@ -516,6 +516,7 @@ export class WalletService {
         select: {
           id: true,
           grossAmount: true,
+          deductAmount: true,
           startAt: true,
           durationMinutes: true,
           paidAt: true,
@@ -530,6 +531,7 @@ export class WalletService {
         select: {
           id: true,
           grossAmount: true,
+          deductAmount: true,
           weeklySlots: true,
           paidAt: true,
           createdAt: true,
@@ -563,28 +565,35 @@ export class WalletService {
         : Promise.resolve([]),
     ]);
 
-    const paymentItems: WalletTransactionApiItem[] = [
-      ...trials.map((b) => ({
+    const paymentItems: WalletTransactionApiItem[] = [];
+
+    for (const b of trials) {
+      const vnpayAmount = b.grossAmount - (b.deductAmount ?? 0n);
+      if (vnpayAmount <= 0n) continue;
+      paymentItems.push({
         id: `pay-trial-${b.id}`,
         type: 'LESSON_PAYMENT' as const,
         direction: EWalletTransactionDirection.DEBIT,
-        amount: Number(b.grossAmount),
+        amount: Number(vnpayAmount),
         description: null,
         createdAt: (b.paidAt ?? b.updatedAt ?? b.createdAt).toISOString(),
         referenceLabel: b.tutor.user.username ? `Trial · ${b.tutor.user.username}` : 'Trial lesson',
-      })),
-      ...subs.map((e) => ({
+      });
+    }
+
+    for (const e of subs) {
+      const vnpayAmount = e.grossAmount - (e.deductAmount ?? 0n);
+      if (vnpayAmount <= 0n) continue;
+      paymentItems.push({
         id: `pay-sub-${e.id}`,
         type: 'SUBSCRIPTION_PAYMENT' as const,
         direction: 'DEBIT' as const,
-        amount: Number(e.grossAmount),
+        amount: Number(vnpayAmount),
         description: null,
         createdAt: (e.paidAt ?? e.updatedAt ?? e.createdAt).toISOString(),
-        referenceLabel: e.tutor.user.username
-          ? `Plan · ${e.tutor.user.username}`
-          : 'Subscription plan',
-      })),
-    ];
+        referenceLabel: e.tutor.user.username ? `Plan · ${e.tutor.user.username}` : 'Subscription plan',
+      });
+    }
 
     const walletItems: WalletTransactionApiItem[] = walletRows.map((row) => {
       const tutorName =
