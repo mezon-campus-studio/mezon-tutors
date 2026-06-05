@@ -2,15 +2,15 @@
 
 import type { IdentityVerification } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
-import { Download } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAtomValue } from "jotai";
 import { Card, CardContent } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
 import SecureImage from "@/components/ui/SecureImage";
 import { cn } from "@/lib/utils";
+import { openSecureProxyInNewTab } from "@/lib/open-secure-proxy-in-new-tab";
 import { accessTokenAtom } from "@/store/token.atom";
-import { BASE_URL } from "@/services/api-client";
 import StatusBadge from "../../components/StatusBadge";
 
 type IdentityVerificationCardProps = {
@@ -35,20 +35,8 @@ export default function IdentityVerificationCard({
   const hasDocument = verification?.hasFile ?? false;
   const proxyPath = `/admin/tutor-profiles/${tutorId}/identity-verification/image`;
 
-  const handleDownload = async () => {
-    if (!token) return;
-    const res = await fetch(`${BASE_URL}${proxyPath}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const ext = blob.type.split("/")[1] ?? "jpg";
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `identity-verification.${ext}`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleOpenInNewTab = () => {
+    void openSecureProxyInNewTab(proxyPath, token);
   };
 
   return (
@@ -81,13 +69,13 @@ export default function IdentityVerificationCard({
             </div>
             <button
               type="button"
-              onClick={handleDownload}
+              onClick={handleOpenInNewTab}
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
                 "inline-flex w-fit",
               )}
             >
-              <Download className="mr-2 h-4 w-4" />
+              <ExternalLink className="mr-2 h-4 w-4" />
               {t("download")}
             </button>
           </div>
