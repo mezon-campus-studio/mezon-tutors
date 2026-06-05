@@ -143,8 +143,8 @@
       "WITHDRAWAL": "Rút tiền",
       "REFUND": "Hoàn tiền",
       "PLATFORM_FEE": "Phí nền tảng",
-      "LESSON_PAYMENT": "Buổi học thử",
-      "SUBSCRIPTION_PAYMENT": "Gói đăng ký"
+      "LESSON_PAYMENT": "Thanh toán VNPay",
+      "SUBSCRIPTION_PAYMENT": "Thanh toán VNPay"
     },
     "student": {
       "hero": {

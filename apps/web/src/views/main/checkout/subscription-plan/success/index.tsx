@@ -73,6 +73,7 @@ export default function SubscriptionPlanCheckoutSuccessPage({
 }) {
   const t = useTranslations("SubscriptionCheckout.Result.subscriptionSuccess");
   const locale = useLocale();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [authHydrated, setAuthHydrated] = useState(false);
