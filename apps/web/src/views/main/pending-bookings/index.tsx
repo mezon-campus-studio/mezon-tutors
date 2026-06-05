@@ -9,9 +9,14 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, CardContent, Skeleton } from "@/components/ui";
-import { useCurrency, useUserTimezone } from "@/hooks";
+import { useUserTimezone } from "@/hooks";
 import { formatInstantRangeLabels } from "@/lib/timezone";
-import { useGetStudentPendingPaymentBookings } from "@/services";
+import {
+  useGetStudentPendingPaymentBookings,
+  useGetStudentPendingPaymentEnrollments,
+  type StudentPendingPaymentBooking,
+  type StudentPendingPaymentEnrollment,
+} from "@/services";
 
 dayjs.extend(duration);
 
@@ -26,38 +31,68 @@ function formatCountdown(expiresAt: string, nowMs: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function PendingBookingCard({
+type PendingTrialItem = StudentPendingPaymentBooking & { kind: "trial" };
+type PendingPlanItem = StudentPendingPaymentEnrollment & { kind: "plan" };
+type PendingItem = PendingTrialItem | PendingPlanItem;
+
+function PendingPaymentActions({
+  expiresAt,
+  paymentUrl,
+  nowMs,
+}: {
+  expiresAt: string;
+  paymentUrl: string | null;
+  nowMs: number;
+}) {
+  const t = useTranslations("Dashboard.pendingBookings");
+  const countdown = formatCountdown(expiresAt, nowMs);
+  const isExpired = !countdown;
+
+  const handlePay = () => {
+    if (paymentUrl && typeof window !== "undefined") {
+      window.location.assign(paymentUrl);
+    }
+  };
+
+  return (
+    <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+      <div
+        className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+          isExpired
+            ? "bg-slate-100 text-slate-600"
+            : "bg-amber-100 text-amber-900"
+        }`}
+      >
+        <Clock className="size-3.5" />
+        {isExpired ? t("expired") : t("expiresIn", { time: countdown })}
+      </div>
+      <Button
+        size="sm"
+        className="gap-2"
+        disabled={isExpired || !paymentUrl}
+        onClick={handlePay}
+      >
+        <CreditCard className="size-4" />
+        {t("payNow")}
+      </Button>
+    </div>
+  );
+}
+
+function PendingTrialCard({
   booking,
   nowMs,
 }: {
-  booking: {
-    id: string;
-    tutorName: string;
-    tutorAvatarUrl: string | null;
-    startAt: string;
-    durationMinutes: number;
-    grossAmount: number;
-    currency: string;
-    paymentUrl: string | null;
-    expiresAt: string;
-  };
+  booking: PendingTrialItem;
   nowMs: number;
 }) {
   const t = useTranslations("Dashboard.pendingBookings");
   const userTimezone = useUserTimezone();
-  const countdown = formatCountdown(booking.expiresAt, nowMs);
-  const isExpired = !countdown;
   const { dateLabel, timeLabel } = formatInstantRangeLabels(
     booking.startAt,
     booking.durationMinutes,
     userTimezone,
   );
-
-  const handlePay = () => {
-    if (booking.paymentUrl && typeof window !== "undefined") {
-      window.location.assign(booking.paymentUrl);
-    }
-  };
 
   return (
     <Card className="overflow-hidden border-violet-100">
@@ -71,6 +106,9 @@ function PendingBookingCard({
             className="size-12 shrink-0 rounded-xl object-cover"
           />
           <div className="min-w-0 space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-violet-500">
+              {t("trialBadge")}
+            </p>
             <p className="font-semibold text-slate-900">
               {t("lessonWith", { tutor: booking.tutorName })}
             </p>
@@ -89,30 +127,59 @@ function PendingBookingCard({
             </p>
           </div>
         </div>
+        <PendingPaymentActions
+          expiresAt={booking.expiresAt}
+          paymentUrl={booking.paymentUrl}
+          nowMs={nowMs}
+        />
+      </CardContent>
+    </Card>
+  );
+}
 
-        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
-          <div
-            className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-              isExpired
-                ? "bg-slate-100 text-slate-600"
-                : "bg-amber-100 text-amber-900"
-            }`}
-          >
-            <Clock className="size-3.5" />
-            {isExpired
-              ? t("expired")
-              : t("expiresIn", { time: countdown })}
+function PendingPlanCard({
+  enrollment,
+  nowMs,
+}: {
+  enrollment: PendingPlanItem;
+  nowMs: number;
+}) {
+  const t = useTranslations("Dashboard.pendingBookings");
+
+  return (
+    <Card className="overflow-hidden border-violet-100">
+      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex min-w-0 items-start gap-3">
+          <Image
+            src={enrollment.tutorAvatarUrl || "/images/default-avatar.png"}
+            alt={enrollment.tutorName}
+            width={48}
+            height={48}
+            className="size-12 shrink-0 rounded-xl object-cover"
+          />
+          <div className="min-w-0 space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-violet-500">
+              {t("planBadge")}
+            </p>
+            <p className="font-semibold text-slate-900">
+              {t("planWith", { tutor: enrollment.tutorName })}
+            </p>
+            <p className="text-sm text-slate-600">
+              {t("lessonsPerWeek", { n: enrollment.lessonsPerWeek })}
+            </p>
+            <p className="text-xs text-slate-500">
+              {formatToCurrency(
+                enrollment.currency as Parameters<typeof formatToCurrency>[0],
+                enrollment.grossAmount,
+              )}
+            </p>
           </div>
-          <Button
-            size="sm"
-            className="gap-2"
-            disabled={isExpired || !booking.paymentUrl}
-            onClick={handlePay}
-          >
-            <CreditCard className="size-4" />
-            {t("payNow")}
-          </Button>
         </div>
+        <PendingPaymentActions
+          expiresAt={enrollment.expiresAt}
+          paymentUrl={enrollment.paymentUrl}
+          nowMs={nowMs}
+        />
       </CardContent>
     </Card>
   );
@@ -120,8 +187,27 @@ function PendingBookingCard({
 
 export default function PendingBookingsPage() {
   const t = useTranslations("Dashboard.pendingBookings");
-  const { data, isPending, isError, refetch } = useGetStudentPendingPaymentBookings();
+  const {
+    data: trialData,
+    isPending: isTrialPending,
+    isError: isTrialError,
+    refetch: refetchTrial,
+  } = useGetStudentPendingPaymentBookings();
+  const {
+    data: planData,
+    isPending: isPlanPending,
+    isError: isPlanError,
+    refetch: refetchPlan,
+  } = useGetStudentPendingPaymentEnrollments();
   const [nowMs, setNowMs] = useState(() => Date.now());
+
+  const isPending = isTrialPending || isPlanPending;
+  const isError = isTrialError || isPlanError;
+
+  const refetch = () => {
+    void refetchTrial();
+    void refetchPlan();
+  };
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -131,19 +217,28 @@ export default function PendingBookingsPage() {
   }, []);
 
   useEffect(() => {
-    const hasExpired = (data?.items ?? []).some(
+    const trialItems = trialData?.items ?? [];
+    const planItems = planData?.items ?? [];
+    const hasExpired = [...trialItems, ...planItems].some(
       (item) => new Date(item.expiresAt).getTime() <= nowMs,
     );
     if (hasExpired) {
-      void refetch();
+      refetch();
     }
-  }, [data?.items, nowMs, refetch]);
+  }, [trialData?.items, planData?.items, nowMs]);
 
-  const activeItems = useMemo(() => {
-    return (data?.items ?? []).filter(
-      (item) => new Date(item.expiresAt).getTime() > nowMs,
+  const activeItems = useMemo((): PendingItem[] => {
+    const trials: PendingTrialItem[] = (trialData?.items ?? [])
+      .filter((item) => new Date(item.expiresAt).getTime() > nowMs)
+      .map((item) => ({ ...item, kind: "trial" as const }));
+    const plans: PendingPlanItem[] = (planData?.items ?? [])
+      .filter((item) => new Date(item.expiresAt).getTime() > nowMs)
+      .map((item) => ({ ...item, kind: "plan" as const }));
+    return [...trials, ...plans].sort(
+      (a, b) =>
+        new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
     );
-  }, [data?.items, nowMs]);
+  }, [trialData?.items, planData?.items, nowMs]);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -163,7 +258,7 @@ export default function PendingBookingsPage() {
       ) : isError ? (
         <Card>
           <CardContent className="p-6 text-sm text-destructive">
-            Failed to load pending bookings.
+            {t("loadError")}
           </CardContent>
         </Card>
       ) : activeItems.length === 0 ? (
@@ -174,19 +269,23 @@ export default function PendingBookingsPage() {
             </p>
             <p className="text-sm text-slate-600">{t("empty.description")}</p>
             <Button variant="outline" className="mt-4">
-              <Link href={ROUTES.TUTOR.INDEX}>Browse tutors</Link>
+              <Link href={ROUTES.TUTOR.INDEX}>{t("empty.browseTutors")}</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          {activeItems.map((booking) => (
-            <PendingBookingCard
-              key={booking.id}
-              booking={booking}
-              nowMs={nowMs}
-            />
-          ))}
+          {activeItems.map((item) =>
+            item.kind === "trial" ? (
+              <PendingTrialCard key={`trial-${item.id}`} booking={item} nowMs={nowMs} />
+            ) : (
+              <PendingPlanCard
+                key={`plan-${item.id}`}
+                enrollment={item}
+                nowMs={nowMs}
+              />
+            ),
+          )}
         </div>
       )}
     </div>

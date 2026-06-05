@@ -7,6 +7,7 @@ import type { BaseCalendarProps, CalendarEvent } from '../types';
 import { CalendarColumn, type CalendarColumnConfig } from './CalendarColumn';
 import { CalendarDayHeader } from './CalendarDayHeader';
 import { CalendarGridLayer } from './CalendarGridLayer';
+import { CalendarNowLine } from './CalendarNowLine';
 import { buildRowModels, CalendarLayoutEngine } from '../utils/calendar-utils';
 
 const formatRangeLabel = (startHour: number, endHour: number): string => 
@@ -187,9 +188,19 @@ export function Calendar<TEvent = unknown>({
           translationNamespace={translationNamespace}
         />
 
-        <div className="absolute top-0 left-0 w-full h-full flex pointer-events-none">
+        {showNowLine &&
+          currentHour !== undefined &&
+          currentDayIndex !== undefined && (
+            <CalendarNowLine
+              top={layoutEngine.getY(currentHour)}
+              timeColumnWidth={timeColumnWidth}
+              showTimeline={showTimeline}
+            />
+          )}
+
+        <div className="absolute top-0 left-0 z-10 flex h-full w-full pointer-events-none">
           {showTimeline && (
-            <div className="pointer-events-none" style={{ width: timeColumnWidth }} />
+            <div className="shrink-0 pointer-events-none" style={{ width: timeColumnWidth }} />
           )}
 
           {weekDays.map((_day, dayIndex) => (

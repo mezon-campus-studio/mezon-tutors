@@ -1,3 +1,4 @@
+import { CALENDAR_DAY_END_HOUR, filterCalendarWeekHourTicks } from '@mezon-tutors/shared';
 import type { CalendarRowModel, CalendarEvent } from '../types';
 
 export type CalendarLayoutConfig = {
@@ -26,6 +27,18 @@ export class CalendarLayoutEngine {
         currentY += config.gapRowHeight;
       }
     });
+
+    const hourRowTicks = rowModels
+      .filter((m): m is Extract<CalendarRowModel, { type: 'hour' }> => m.type === 'hour')
+      .map((m) => m.hour);
+
+    if (hourRowTicks.length > 0) {
+      const lastHour = Math.max(...hourRowTicks);
+      const lastY = this.hourYs.get(lastHour);
+      if (lastY !== undefined) {
+        this.hourYs.set(CALENDAR_DAY_END_HOUR, lastY + config.rowHeight);
+      }
+    }
 
     this.totalHeight = currentY;
   }
@@ -85,16 +98,20 @@ export function buildRowModels(
     return [];
   }
 
+  const displayHours = filterCalendarWeekHourTicks(weekHours);
+
   if (!enableGapCollapse) {
-    return weekHours.map((hour) => ({ type: 'hour', hour }));
+    return displayHours.map((hour) => ({ type: 'hour', hour }));
   }
 
-  const sortedHours = [...weekHours].sort((a, b) => a - b);
+  const sortedHours = [...displayHours].sort((a, b) => a - b);
   const currentHourBucket = currentHour === undefined ? undefined : Math.floor(currentHour);
 
   const occupiedHours = new Set<number>();
   events.forEach((e) => {
-    const end = e.endHour ? Math.max(e.startHour + 1, e.endHour) : e.startHour + 1;
+    const rawEnd = e.endHour ?? e.startHour + 1;
+    const end =
+      rawEnd > e.startHour ? Math.max(e.startHour + 1, rawEnd) : 24;
     for (let h = Math.floor(e.startHour); h < end; h++) {
       occupiedHours.add(h);
     }

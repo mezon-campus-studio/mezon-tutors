@@ -5,9 +5,11 @@ import { NotificationModule } from '../notification/notification.module'
 import { VnpayModule } from '../vnpay/vnpay.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { TrialLessonBookingModule } from '../trial-lesson-booking/trial-lesson-booking.module'
+import { ScheduleModule } from '@nestjs/schedule'
 import { SubscriptionService } from './subscription.service'
 import { SubscriptionPlanController } from './subscription-plan.controller'
 import { SubscriptionEnrollmentController } from './subscription-enrollment.controller'
+import { SubscriptionEnrollmentSchedulerService } from './subscription-enrollment-scheduler.service'
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { SubscriptionEnrollmentController } from './subscription-enrollment.cont
     TrialLessonBookingModule,
     NotificationModule,
     LessonSettlementModule,
+    ScheduleModule,
   ],
   controllers: [SubscriptionPlanController, SubscriptionEnrollmentController],
-  providers: [SubscriptionService],
+  providers: [SubscriptionService, SubscriptionEnrollmentSchedulerService],
   exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

@@ -43,6 +43,9 @@ import {
   type TutorSubscriptionSlotRescheduleRequestResult,
   type TutorSubscriptionWeekOccurrenceDto,
   subscriptionSlotsOccurrencesForWeek,
+  TRIAL_LESSON_PAYMENT_HOLD_MS,
+  isTrialLessonPaymentHoldActive,
+  trialLessonPaymentHoldExpiresAt,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
@@ -1308,5 +1311,108 @@ export class SubscriptionService {
     });
 
     return { success: true };
+  }
+
+  async getStudentPendingPaymentEnrollments(studentId: string) {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS);
+    const rows = await this.prisma.subscriptionEnrollment.findMany({
+      where: {
+        studentId,
+        status: ESubscriptionEnrollmentStatus.PENDING_PAYMENT,
+        paymentStatus: EPaymentStatus.PENDING,
+        createdAt: { gte: holdCutoff },
+      },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      items: rows.map((row) => {
+        const tutorName = `${row.tutor.firstName} ${row.tutor.lastName}`.trim();
+        return {
+          id: row.id,
+          tutorId: row.tutor.id,
+          tutorName: tutorName || row.tutor.firstName,
+          tutorAvatarUrl: row.tutor.avatar || null,
+          lessonsPerWeek: row.lessonsPerWeek,
+          grossAmount: Number(row.grossAmount),
+          currency: row.currency ?? ECurrency.VND,
+          paymentUrl: row.paymentUrl,
+          createdAt: row.createdAt.toISOString(),
+          expiresAt: trialLessonPaymentHoldExpiresAt(row.createdAt).toISOString(),
+        };
+      }),
+    };
+  }
+
+  async expireStalePendingPaymentEnrollments(): Promise<number> {
+    const holdCutoff = new Date(Date.now() - TRIAL_LESSON_PAYMENT_HOLD_MS);
+    const stale = await this.prisma.subscriptionEnrollment.findMany({
+      where: {
+        status: ESubscriptionEnrollmentStatus.PENDING_PAYMENT,
+        paymentStatus: EPaymentStatus.PENDING,
+        createdAt: { lt: holdCutoff },
+      },
+      select: { id: true },
+    });
+
+    let expired = 0;
+    for (const row of stale) {
+      const cancelled = await this.cancelExpiredPendingPaymentEnrollment(row.id);
+      if (cancelled) {
+        expired += 1;
+      }
+    }
+    return expired;
+  }
+
+  private async cancelExpiredPendingPaymentEnrollment(
+    enrollmentId: string,
+  ): Promise<boolean> {
+    const enrollment = await this.prisma.subscriptionEnrollment.findUnique({
+      where: { id: enrollmentId },
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        createdAt: true,
+      },
+    });
+
+    if (!enrollment) {
+      return false;
+    }
+    if (enrollment.status === ESubscriptionEnrollmentStatus.CANCELLED) {
+      return false;
+    }
+    if (
+      enrollment.status !== ESubscriptionEnrollmentStatus.PENDING_PAYMENT ||
+      enrollment.paymentStatus !== EPaymentStatus.PENDING
+    ) {
+      return false;
+    }
+    if (isTrialLessonPaymentHoldActive(enrollment.createdAt)) {
+      return false;
+    }
+
+    await this.prisma.subscriptionEnrollment.update({
+      where: { id: enrollment.id },
+      data: {
+        status: ESubscriptionEnrollmentStatus.CANCELLED,
+        paymentStatus: EPaymentStatus.FAILED,
+        failedAt: new Date(),
+      },
+    });
+
+    return true;
   }
 }

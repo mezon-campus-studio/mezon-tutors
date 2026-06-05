@@ -1,4 +1,5 @@
 export * from "./useCurrency";
 export * from "./useUserTimezone";
+export * from "./useCalendarNow";
 export * from "./useUnsavedChangesGuard";
 export * from "./useOpenAdminSupportChat";

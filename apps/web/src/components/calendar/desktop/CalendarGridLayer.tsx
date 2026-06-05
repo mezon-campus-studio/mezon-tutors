@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 import type { CalendarType, CalendarRowModel } from '../types';
 import type { CalendarLayoutEngine } from '../utils/calendar-utils';
 
@@ -98,6 +99,7 @@ type GridHourItemProps = {
   timeColumnWidth: number;
   rowHeight: number;
   formatHour: (hour: number) => string;
+  showSlotEndLabel?: boolean;
 };
 
 function GridHourItem({
@@ -110,6 +112,7 @@ function GridHourItem({
   timeColumnWidth,
   rowHeight,
   formatHour,
+  showSlotEndLabel = false,
 }: GridHourItemProps) {
   const top = layoutEngine.getY(row.hour);
 
@@ -127,7 +130,7 @@ function GridHourItem({
       )}
       {showTimeline && (
         <div
-          className={`absolute flex items-start justify-center pt-2.5 ${showTimelineGrid ? 'border-r border-t' : ''}`}
+          className={`absolute ${showTimelineGrid ? 'border-r border-t' : ''}`}
           style={{
             top,
             width: timeColumnWidth,
@@ -136,11 +139,19 @@ function GridHourItem({
           }}
         >
           <span
-            className="text-[11px] font-medium"
+            className="absolute left-0 right-0 top-2.5 text-center text-[11px] font-medium"
             style={{ color: `var(--calendar-${type}-time-label)` }}
           >
             {formatHour(row.hour)}
           </span>
+          {showSlotEndLabel ? (
+            <span
+              className="absolute bottom-2.5 left-0 right-0 text-center text-[11px] font-medium"
+              style={{ color: `var(--calendar-${type}-time-label)` }}
+            >
+              {formatHour(row.hour + 1)}
+            </span>
+          ) : null}
         </div>
       )}
     </>
@@ -162,6 +173,13 @@ export function CalendarGridLayer({
   formatRangeLabel,
   translationNamespace,
 }: CalendarGridLayerProps) {
+  const lastHourTick = useMemo(() => {
+    const ticks = rowModels
+      .filter((r): r is Extract<CalendarRowModel, { type: 'hour' }> => r.type === 'hour')
+      .map((r) => r.hour);
+    return ticks.length ? Math.max(...ticks) : undefined;
+  }, [rowModels]);
+
   return (
     <>
       {rowModels.map((row) => {
@@ -194,6 +212,7 @@ export function CalendarGridLayer({
             timeColumnWidth={timeColumnWidth}
             rowHeight={rowHeight}
             formatHour={formatHour}
+            showSlotEndLabel={row.hour === lastHourTick}
           />
         );
       })}

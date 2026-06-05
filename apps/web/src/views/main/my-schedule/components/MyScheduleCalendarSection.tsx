@@ -37,6 +37,8 @@ type MyScheduleCalendarSectionProps = {
   currentDayIndex?: number;
   currentHour?: number;
   isCurrentWeek?: boolean;
+  timezoneName: string;
+  weekStartYmd: string;
   onPrevWeek?: () => void;
   onNextWeek?: () => void;
   onGoToToday?: () => void;
@@ -52,6 +54,8 @@ export default function MyScheduleCalendarSection({
   currentDayIndex,
   currentHour,
   isCurrentWeek,
+  timezoneName,
+  weekStartYmd,
   onPrevWeek,
   onNextWeek,
   onGoToToday,
@@ -101,6 +105,8 @@ export default function MyScheduleCalendarSection({
         onPrevWeek={onPrevWeek}
         onNextWeek={onNextWeek}
         onGoToToday={onGoToToday}
+        timezoneName={timezoneName}
+        weekStartYmd={weekStartYmd}
         labels={{
           today: t("calendar.today"),
           weekBadge: t("calendar.week"),

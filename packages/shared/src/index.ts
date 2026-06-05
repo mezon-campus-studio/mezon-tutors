@@ -64,6 +64,7 @@ export * from './utils/enum';
 export * from './utils/youtube';
 export * from './utils/mapper';
 export * from './utils/date-time';
+export * from './utils/calendar-event-hours';
 export * from './utils/rating';
 export * from './utils/pagination';
 export * from './utils/tutor-availability-time-slots';

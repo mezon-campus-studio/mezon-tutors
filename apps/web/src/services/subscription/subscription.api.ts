@@ -25,6 +25,23 @@ import { walletQueryKey } from "../wallet/wallet.qkey";
 
 const TUTOR_WEEK_OCCURRENCES_STALE_MS = 60_000;
 
+export type StudentPendingPaymentEnrollment = {
+  id: string;
+  tutorId: string;
+  tutorName: string;
+  tutorAvatarUrl: string | null;
+  lessonsPerWeek: number;
+  grossAmount: number;
+  currency: string;
+  paymentUrl: string | null;
+  createdAt: string;
+  expiresAt: string;
+};
+
+export type StudentPendingPaymentEnrollmentsResponse = {
+  items: StudentPendingPaymentEnrollment[];
+};
+
 function tutorWeekOccurrencesQueryOptions(
   weekStartDate: string,
   timezone: string,
@@ -71,6 +88,13 @@ export const subscriptionApi = {
       ApiResponse<SubscriptionEnrollmentDetailDto>,
       SubscriptionEnrollmentDetailDto
     >(`/subscription-enrollments/${id}`);
+  },
+
+  getPendingPaymentEnrollments(): Promise<StudentPendingPaymentEnrollmentsResponse> {
+    return apiClient.get<
+      ApiResponse<StudentPendingPaymentEnrollmentsResponse>,
+      StudentPendingPaymentEnrollmentsResponse
+    >("/subscription-enrollments/pending-payments");
   },
 
   cancelSlot(
@@ -175,6 +199,15 @@ export function useGetSubscriptionEligibility(tutorId: string, enabled = true) {
   });
 }
 
+export function useGetStudentPendingPaymentEnrollments(enabled = true) {
+  return useQuery({
+    queryKey: subscriptionQueryKey.pendingPayments(),
+    queryFn: () => subscriptionApi.getPendingPaymentEnrollments(),
+    enabled,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useCreateSubscriptionEnrollmentMutation() {
   const qc = useQueryClient();
   return useMutation({
@@ -188,6 +221,9 @@ export function useCreateSubscriptionEnrollmentMutation() {
         queryKey: subscriptionQueryKey.enrollment(data.id),
       });
       void qc.invalidateQueries({ queryKey: subscriptionQueryKey.root });
+      void qc.invalidateQueries({
+        queryKey: subscriptionQueryKey.pendingPayments(),
+      });
       if (data.paymentStatus === "SUCCEEDED") {
         void qc.invalidateQueries({ queryKey: walletQueryKey.all });
       }

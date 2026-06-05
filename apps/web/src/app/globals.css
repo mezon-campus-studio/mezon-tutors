@@ -102,6 +102,10 @@
   --calendar-myLessons-event-text: #1f1147;
   --calendar-myLessons-now-line: #6c5ce7;
   --calendar-myLessons-timeline-text: oklch(0.556 0 0);
+  --calendar-myLessons-time-label: oklch(0.556 0 0);
+  --calendar-myLessons-gap-cell-bg: oklch(0.98 0 0);
+  --calendar-myLessons-gap-label: oklch(0.556 0 0);
+  --calendar-myLessons-gap-hint: oklch(0.65 0 0);
 
   --calendar-mySchedule-grid-header-bg: oklch(1 0 0);
   --calendar-mySchedule-grid-body-bg: oklch(1 0 0);
@@ -119,6 +123,10 @@
   --calendar-mySchedule-event-text: #1f1147;
   --calendar-mySchedule-now-line: #6c5ce7;
   --calendar-mySchedule-timeline-text: oklch(0.556 0 0);
+  --calendar-mySchedule-time-label: oklch(0.556 0 0);
+  --calendar-mySchedule-gap-cell-bg: oklch(0.98 0 0);
+  --calendar-mySchedule-gap-label: oklch(0.556 0 0);
+  --calendar-mySchedule-gap-hint: oklch(0.65 0 0);
   --calendar-mySchedule-empty-slot-bg: oklch(0.97 0 0);
   --calendar-mySchedule-empty-slot-border: oklch(0.85 0 0);
   --calendar-mySchedule-empty-slot-text: oklch(0.556 0 0);
