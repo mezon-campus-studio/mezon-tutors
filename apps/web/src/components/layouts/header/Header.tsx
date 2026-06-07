@@ -152,29 +152,29 @@ export default function Header() {
               : "border-b border-slate-100/60 bg-white/75 backdrop-blur-md"
         }`}
       >
-        <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 lg:px-8">
-          <div className="flex items-center gap-2 md:hidden">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-2 px-3 sm:h-[4.5rem] sm:gap-3 sm:px-4 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-0.5 sm:gap-2 md:hidden">
             <Button
               variant="ghost"
               size="icon"
-              className={`-ml-2 size-10 rounded-full ${
+              className={`-ml-1 size-9 shrink-0 rounded-full sm:size-10 ${
                 isEventHeroOverlay
                   ? "text-white/80 hover:bg-white/10 hover:text-white"
                   : "hover:bg-violet-50"
               }`}
               onClick={() => setDashboardMobileDrawer(true)}
             >
-              <Menu className="size-6" />
+              <Menu className="size-5 sm:size-6" />
             </Button>
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex min-w-0 items-center gap-1.5 overflow-hidden sm:gap-2">
               <Image
                 src={MezonlyLogo}
                 alt="Mezonly"
-                width={38}
-                height={38}
-                className="drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
+                width={34}
+                height={34}
+                className="size-[34px] shrink-0 drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)] sm:size-[38px]"
               />
-              <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
+              <span className="truncate bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-lg font-extrabold tracking-tight text-transparent max-[380px]:hidden sm:text-xl">
                 Mezonly
               </span>
             </Link>
@@ -244,7 +244,7 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {mounted ? (
               <>
                 <div className="md:hidden">
@@ -282,7 +282,7 @@ export default function Header() {
             {mounted && isAuthenticated && (
               <Avatar
                 key={`${user?.id ?? ""}-${user?.avatar ?? ""}`}
-                className={`size-9 cursor-pointer border-2 transition-all ${
+                className={`size-8 shrink-0 cursor-pointer border-2 transition-all sm:size-9 ${
                   isEventHeroOverlay
                     ? "border-white/25 ring-2 ring-white/10 hover:border-white/40 hover:ring-white/20"
                     : "border-violet-200 ring-2 ring-violet-100 hover:border-violet-400 hover:ring-violet-200"
@@ -549,15 +549,20 @@ function MobileRegionPopover({
           <Button
             variant="outline"
             aria-label="Region settings"
-            className={`group h-9 gap-1.5 rounded-full px-3 text-xs font-semibold backdrop-blur ${
+            className={`group h-8 shrink-0 rounded-full text-xs font-semibold backdrop-blur max-[420px]:w-8 max-[420px]:p-0 min-[420px]:gap-1 min-[420px]:px-2.5 sm:h-9 sm:gap-1.5 sm:px-3 ${
               dark
                 ? "border-white/15 bg-white/10 text-white/90"
                 : "border-slate-200 bg-white/80 text-slate-700"
             }`}
           >
-            <span className="text-base leading-none">{localeInfo?.flag}</span>
-            {locale.toUpperCase()} · {currency}
-            <ChevronDown className="size-3.5 text-slate-400 transition-transform group-aria-expanded:rotate-180" />
+            <span className="text-sm leading-none sm:text-base">{localeInfo?.flag}</span>
+            <span className="hidden min-[420px]:inline sm:hidden">
+              {locale.toUpperCase()}
+            </span>
+            <span className="hidden sm:inline">
+              {locale.toUpperCase()} · {currency}
+            </span>
+            <ChevronDown className="hidden size-3.5 text-slate-400 transition-transform min-[420px]:inline group-aria-expanded:rotate-180 sm:inline" />
           </Button>
         }
       />

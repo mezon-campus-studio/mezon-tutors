@@ -56,7 +56,7 @@ export type EventStatDto = {
 export type EventCreatorDto = {
   id: string;
   username: string;
-  email: string;
+  email: string | null;
 };
 
 export type EventListItemDto = {

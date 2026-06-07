@@ -84,10 +84,11 @@ export class UserService {
     mezonUserId: string;
     username: string;
     avatar?: string | null;
-    email: string;
+    email?: string | null;
     timezone?: string;
   }): Promise<{ user: User; created: boolean }> {
     const { mezonUserId, username, avatar, email, timezone } = params;
+    const normalizedEmail = email?.trim() || undefined;
 
     const existing = await this.prisma.user.findUnique({
       where: { mezonUserId },
@@ -100,7 +101,7 @@ export class UserService {
         data: {
           username,
           avatar: avatar ?? '',
-          email,
+          ...(normalizedEmail !== undefined ? { email: normalizedEmail } : {}),
           ...((!existing.timezone || existing.timezone === 'UTC') && timezone ? { timezone } : {}),
         },
       });
@@ -113,7 +114,7 @@ export class UserService {
         username,
         avatar: avatar ?? '',
         role: Role.STUDENT,
-        email,
+        ...(normalizedEmail !== undefined ? { email: normalizedEmail } : {}),
         timezone: timezone ?? 'UTC',
       },
     });

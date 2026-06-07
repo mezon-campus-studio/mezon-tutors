@@ -15,6 +15,32 @@ export function pickEventContent(
   return event.content.vi;
 }
 
+/** SEO / share copy — prefers explicit seo* fields, then falls back to display content. */
+export function pickEventShareContent(
+  event: EventListItemDto | EventDetailDto,
+  locale: string,
+): {
+  shareTitle: string;
+  shareDescription: string;
+  displayTitle: string;
+} {
+  const content = pickEventContent(event, locale);
+  const displayTitle = content.title.replace(/\n/g, " ").trim();
+  const shareTitle =
+    content.seoTitle?.trim() ||
+    event.content.vi.seoTitle?.trim() ||
+    event.content.en?.seoTitle?.trim() ||
+    displayTitle;
+  const shareDescription =
+    content.seoDescription?.trim() ||
+    event.content.vi.seoDescription?.trim() ||
+    event.content.en?.seoDescription?.trim() ||
+    content.tagline.replace(/\n/g, " ").trim() ||
+    "Workshop và sự kiện tiếng Anh dành cho người đi làm trên Mezonly.";
+
+  return { shareTitle, shareDescription, displayTitle };
+}
+
 export function hasEventLocationDto(location?: EventLocationDto | null): boolean {
   if (!location) return false;
   return Boolean(location.venue || location.city || location.country);

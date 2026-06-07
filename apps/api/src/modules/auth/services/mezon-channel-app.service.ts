@@ -68,7 +68,6 @@ export class MezonChannelAppService {
       mezonUserId,
       username,
       avatar: authUser.avatar_url ?? null,
-      email: '',
     });
 
     if (created) {

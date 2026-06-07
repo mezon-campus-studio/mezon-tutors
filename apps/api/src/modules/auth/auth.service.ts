@@ -196,7 +196,7 @@ export class AuthService {
       data: {
         username,
         avatar: mezonUser.avatar ?? '',
-        email: mezonUser.email,
+        ...(mezonUser.email?.trim() ? { email: mezonUser.email.trim() } : {}),
         ...((!user.timezone || user.timezone === 'UTC') && timezone ? { timezone } : {}),
       },
     });
