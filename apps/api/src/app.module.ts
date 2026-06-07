@@ -28,6 +28,7 @@ import { LessonSettlementModule } from './modules/lesson-settlement/lesson-settl
 import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complaint.module';
 import { AppSettingsModule } from './modules/app-settings/app-settings.module';
 import { SupportModule } from './modules/support/support.module';
+import { EventModule } from './modules/event/event.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -69,6 +70,7 @@ import { CommonModule } from './common/common.module';
     LessonComplaintModule,
     AppSettingsModule,
     SupportModule,
+    EventModule,
   ],
   controllers: [HealthController],
   providers: [

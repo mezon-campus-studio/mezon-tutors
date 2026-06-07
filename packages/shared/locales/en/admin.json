@@ -6,6 +6,7 @@
       "dashboard": "Dashboard",
       "tutorApplications": "Tutor Applications",
       "lessonComplaints": "Lesson Complaints",
+      "events": "Events",
       "appSettings": "App Settings",
       "students": "Students",
       "payments": "Payments",
@@ -283,6 +284,109 @@
         "minWithdrawalAmountUsdRange": "Must be between {min} and {max} USD.",
         "minWithdrawalAmountPhpRange": "Must be between {min} and {max} PHP.",
         "summary": "Fix the highlighted fields before saving."
+      }
+    },
+    "Events": {
+      "title": "Event review",
+      "description": "Review user-submitted events and publish them for the public site.",
+      "loading": "Loading...",
+      "empty": "No events match this filter.",
+      "searchPlaceholder": "Search by title or slug...",
+      "metrics": {
+        "pending": "Pending",
+        "pendingUpdates": "Updates pending",
+        "published": "Published",
+        "closed": "Closed",
+        "rejected": "Rejected",
+        "total": "Total"
+      },
+      "statusFilter": {
+        "all": "All",
+        "PENDING": "Pending",
+        "PUBLISHED": "Published",
+        "UPDATE_PENDING": "Updates pending",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed"
+      },
+      "publishStatus": {
+        "PENDING": "Pending",
+        "PUBLISHED": "Published",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed",
+        "UPDATE_PENDING": "Update pending"
+      },
+      "list": {
+        "title": "Event list",
+        "description": "Open an item to review and approve.",
+        "review": "Review"
+      },
+      "detail": {
+        "loading": "Loading event...",
+        "back": "Back to list",
+        "submittedBy": "Submitted by",
+        "publish": "Publish",
+        "republish": "Publish again",
+        "reject": "Reject",
+        "close": "Close event",
+        "publishSuccess": "Event published.",
+        "rejectSuccess": "Event rejected.",
+        "closeSuccess": "Event closed. It is no longer shown publicly.",
+        "approveUpdate": "Approve update",
+        "rejectUpdate": "Reject update",
+        "approveUpdateSuccess": "Update applied to the published event.",
+        "rejectUpdateSuccess": "Update rejected.",
+        "actionFailed": "Action failed.",
+        "rejectReasonRequired": "Please enter a rejection reason.",
+        "rejectedReason": "Rejection reason",
+        "online": "Online",
+        "registrationOnly": "Registration only",
+        "sections": {
+          "schedule": "Schedule & registration",
+          "content": "Content",
+          "images": "Images",
+          "organizers": "Organizers",
+          "gallery": "Gallery"
+        },
+        "fields": {
+          "startAt": "Starts",
+          "endAt": "Ends",
+          "doorsOpenAt": "Doors open",
+          "registrationUrl": "Registration URL",
+          "location": "Location",
+          "theme": "Theme",
+          "price": "Price",
+          "coverImage": "Cover",
+          "ogImage": "OGP"
+        },
+        "publishDialog": {
+          "title": "Publish this event?",
+          "description": "It will appear on the homepage and public event detail page."
+        },
+        "rejectDialog": {
+          "title": "Reject this event?",
+          "description": "The submitter will see a rejected status with your reason.",
+          "label": "Reason",
+          "placeholder": "Enter rejection reason..."
+        },
+        "closeDialog": {
+          "title": "Close this event?",
+          "description": "It will be hidden from the homepage and public detail page. Data is kept and you can publish again later."
+        },
+        "pendingUpdate": {
+          "title": "Pending update",
+          "description": "The submitter edited a published event. The public page still shows the current version until you approve.",
+          "submittedAt": "Submitted {date}"
+        },
+        "approveUpdateDialog": {
+          "title": "Apply this update?",
+          "description": "The new content will replace what is currently shown publicly."
+        },
+        "rejectUpdateDialog": {
+          "title": "Reject this update?",
+          "description": "The published event stays unchanged. The submitter will see your reason.",
+          "label": "Reason",
+          "placeholder": "Enter rejection reason..."
+        }
       }
     }
   }

@@ -1,0 +1,380 @@
+{
+  "Events": {
+    "detail": {
+      "meta": {
+        "date": "{date}",
+        "location": "Location",
+        "doorsOpen": "Doors open",
+        "online": "Online",
+        "registrationOnly": "Registration only",
+        "registrationHint": "Fill out the registration form — details will be sent by email after you sign up.",
+        "scrollHint": "Scroll to explore"
+      },
+      "actions": {
+        "register": "Register now",
+        "watchIntro": "Watch intro",
+        "meetFeatured": "Meet the organizers",
+        "registerCta": "Reserve your spot",
+        "registerNote": "Limited seats. Register before they're gone.",
+        "scrollHint": "Scroll",
+        "priceLabel": "per person",
+        "contact": "Contact",
+        "contactNote": "Questions about the session content? The Mezonly team replies within 24 hours."
+      },
+      "sections": {
+        "about": {
+          "badge": "About the event",
+          "quote": "Language opens doors — but only when you're brave enough to walk through."
+        },
+        "nav": {
+          "about": "Details",
+          "featured": "Organizers",
+          "share": "Share",
+          "register": "Register"
+        },
+        "highlights": {
+          "badge": "Experience",
+          "title": "What you'll\nget"
+        },
+        "agenda": {
+          "badge": "Agenda",
+          "title": "How the\nsession flows"
+        },
+        "gallery": {
+          "badge": "Moments",
+          "title": "Event\ngallery",
+          "subtitle": "Sample visuals from Mezonly workshops — ready for marketing and social posts."
+        },
+        "share": {
+          "badge": "Share this event",
+          "hint": "When you send the link to colleagues or post on social, they'll see this event's name, description, and image on the right — no long caption needed.",
+          "copyLink": "Copy event link",
+          "copied": "Copied!",
+          "registerCta": "Register now",
+          "previewLabel": "Share preview"
+        },
+        "speakers": {
+          "badge": "Organizing team",
+          "title": "Meet the\nOrganizers",
+          "speakerLabel": "Member {index}",
+          "viewProfile": "View details",
+          "viewAll": "View all",
+          "previewTitle": "The organizing team",
+          "tapHint": "Tap a card to view their full profile"
+        },
+        "register": {
+          "badge": "Register",
+          "title": "Ready to\njoin?"
+        },
+        "faq": {
+          "badge": "Questions",
+          "title": "Frequently\nasked",
+          "subtitle": "Everything about session content, how to join, and how to prepare.",
+          "contactTitle": "Need more help?",
+          "contactBody": "Email the events team — we reply within 24 hours."
+        }
+      },
+      "countdown": {
+        "days": "Days",
+        "hours": "Hours",
+        "minutes": "Minutes",
+        "seconds": "Seconds",
+        "live": "Happening now",
+        "ended": "Ended"
+      },
+      "status": {
+        "upcoming": "Upcoming",
+        "ongoing": "Live now",
+        "past": "Ended"
+      },
+      "faq": {
+        "what-is": {
+          "question": "How does the session work?",
+          "answer": "Each event is a hands-on English workshop: a short opener, small-group practice, and live tutor feedback. You'll speak and interact more than you listen to theory."
+        },
+        "who-for": {
+          "question": "What level is this for?",
+          "answer": "Working professionals from intermediate level up — you understand basic English but want more confidence at work. No prior 1-on-1 tutoring required."
+        },
+        "prepare": {
+          "question": "What should I prepare beforehand?",
+          "answer": "A laptop or phone with a working mic, stable internet (if online), and a notebook. Bring 1–2 real work situations you'd like to practice for more targeted feedback."
+        },
+        "online": {
+          "question": "How do I join online?",
+          "answer": "After registering, you'll get a confirmation email with a Mezon room link. Log in to Mezonly, join 5 minutes early, and turn on your mic when prompted."
+        },
+        "in-person": {
+          "question": "What should I know for in-person attendance?",
+          "answer": "Arrive 10–15 minutes before doors open for check-in. Bring a notebook and water. Dress comfortably — the session is built around speaking practice."
+        },
+        "certificate": {
+          "question": "Do I get a certificate?",
+          "answer": "Yes. Attendees who complete the session receive a digital certificate from Mezonly via email within 3 business days after the event."
+        }
+      },
+      "speakers": {
+        "maIelts": {
+          "name": "Mai Anh",
+          "role": "IELTS Tutor · 6 years experience",
+          "category": "Education",
+          "bio": "Mai Anh has coached hundreds of working professionals on IELTS Speaking and everyday communication. Her sessions focus on real-world fluency and confidence in front of an audience."
+        },
+        "jamesNative": {
+          "name": "James O'Connor",
+          "role": "Business English Coach · Native",
+          "category": "Business",
+          "bio": "James brings over a decade of corporate English coaching across multinational teams. He specializes in meetings, emails, and presentations with a native speaker's perspective."
+        },
+        "emmaCoach": {
+          "name": "Emma Wilson",
+          "role": "TESOL · Conversation Coach",
+          "category": "Conversation",
+          "bio": "Emma helps learners break speaking barriers through pronunciation drills, role-play, and personalized feedback. Her workshops are built around hands-on practice."
+        },
+        "davidToeic": {
+          "name": "David Brown",
+          "role": "CELTA · TOEIC Speaking",
+          "category": "Exam prep",
+          "bio": "David focuses on speaking technique and natural answer structures. Many of his students see measurable TOEIC Speaking gains after a few targeted sessions."
+        }
+      }
+    },
+    "items": {
+      "business-english-after-work": {
+        "seo": {
+          "title": "Business English After Work | Mezonly Events",
+          "description": "After-work English workshop: emails, online meetings & presentations for professionals. Free registration on Mezonly."
+        },
+        "highlights": {
+          "roleplay": {
+            "title": "Real workplace role-play",
+            "description": "Practice emails, meetings, and pitches with corporate scenarios — guided scripts and live corrections."
+          },
+          "feedback": {
+            "title": "Tutor feedback",
+            "description": "Personal notes on pronunciation, sentence structure, and sounding natural in meetings."
+          },
+          "takeaway": {
+            "title": "Takeaways you can use tomorrow",
+            "description": "Leave with email templates, meeting phrases, and a self-practice checklist."
+          }
+        },
+        "agenda": {
+          "checkin": { "time": "7:00 PM", "title": "Online check-in", "description": "Join the Mezon room and meet your small group of 4–5." },
+          "warmup": { "time": "7:15 PM", "title": "Warm-up & icebreaker", "description": "Short opener to set goals and get comfortable speaking." },
+          "practice": { "time": "7:35 PM", "title": "Core practice", "description": "Role-play emails, meetings, and presentations with rotation and feedback." },
+          "wrapup": { "time": "9:00 PM", "title": "Wrap-up & Q&A", "description": "Recap takeaways, open Q&A, and next-step study tips." }
+        },
+        "gallery": {
+          "0": "Online workshop space on Mezonly",
+          "1": "Tutor support in breakout rooms",
+          "2": "Learners practicing presentation & meeting English",
+          "3": "Mezonly — English for working professionals",
+          "4": "Small-group practice, up to 40 seats",
+          "5": "After-work schedule built for busy professionals"
+        },
+        "theme": "After work",
+        "title": "Business English\nAfter Work",
+        "tagline": "Speak confidently at work — one evening, zero pressure.",
+        "marquee": "✦ Mezonly Events ✦ Business English ✦ After work ✦ Working professionals ✦ One evening that changes how you meet",
+        "aboutTitle": "What is\nBusiness English\nAfter Work?",
+        "aboutBody": "An evening workshop for professionals who want more confidence emailing, meeting online, and presenting in English. Real workplace scenarios — not textbook theory.",
+        "aboutHighlight": "Built for after-6pm schedules: learn, practice, and apply it the very next morning.",
+        "registerTitle": "Seats are\nlimited.",
+        "registerDescription": "Only 40 spots. Register before they're gone — Mezonly learners get priority.",
+        "price": "Free",
+        "cardDescription": "Evening workshop: email, meetings & presentations in English for professionals.",
+        "cardTag": "Register online"
+      },
+      "speaking-confidence-june": {
+        "seo": {
+          "title": "Speaking Confidence Day | Mezonly Events",
+          "description": "Morning speaking practice in Ho Chi Minh City: pronunciation, role-plays & 1-on-1 tutor feedback. Limited to 60 seats."
+        },
+        "highlights": {
+          "icebreaker": {
+            "title": "Friendly icebreakers",
+            "description": "A low-pressure start so you speak your first sentences with confidence."
+          },
+          "drills": {
+            "title": "Guided pronunciation drills",
+            "description": "Short, repeatable exercises for sounds, stress, and rhythm you can practice at home."
+          },
+          "oneOnOne": {
+            "title": "1-on-1 tutor feedback",
+            "description": "Personal time with a tutor on strengths and what to improve next."
+          },
+          "certificate": {
+            "title": "Attendance certificate",
+            "description": "Digital Mezonly certificate by email after the session."
+          }
+        },
+        "agenda": {
+          "checkin": { "time": "8:45 AM", "title": "Venue check-in", "description": "WeWork Saigon Centre — materials and group assignment." },
+          "icebreaker": { "time": "9:00 AM", "title": "Icebreaker & goals", "description": "Meet the group and share your speaking goals." },
+          "drills": { "time": "9:30 AM", "title": "Pronunciation drills", "description": "Step-by-step pronunciation practice in groups." },
+          "roleplay": { "time": "10:15 AM", "title": "Role-play & conversation", "description": "Meetings, small talk, and Q&A in small groups." },
+          "closing": { "time": "11:30 AM", "title": "1-on-1 feedback & close", "description": "Personal feedback, group photo, and practice plan." }
+        },
+        "gallery": {
+          "0": "Speaking Confidence Day — event atmosphere",
+          "1": "Learners practicing in small groups",
+          "2": "Mezonly tutor leading pronunciation work",
+          "3": "Mezonly — built for working professionals",
+          "4": "On-stage mini practice moments",
+          "5": "Networking after the workshop"
+        },
+        "theme": "Speak up",
+        "title": "Speaking\nConfidence Day",
+        "tagline": "One morning to break the speaking barrier — 1-on-1 and small-group practice.",
+        "marquee": "✦ Mezonly Events ✦ Speaking Confidence ✦ Ho Chi Minh City ✦ Working professionals ✦ Stop fearing English",
+        "aboutTitle": "What is\nSpeaking\nConfidence Day?",
+        "aboutBody": "A half-day event with icebreakers, pronunciation drills, meeting role-plays, and personal tutor feedback. You'll speak more in 3 hours than a month of self-study.",
+        "aboutHighlight": "Perfect if you understand English but freeze up in front of colleagues or clients.",
+        "registerTitle": "Register\nearly.",
+        "registerDescription": "Capped at 60 attendees so everyone gets real practice time.",
+        "price": "199,000 ₫",
+        "cardDescription": "Morning speaking practice: pronunciation, role-plays & 1-on-1 feedback.",
+        "cardTag": "In person"
+      }
+    },
+    "stats": {
+      "speakers": { "value": "4", "label": "Organizers" },
+      "sessions": { "value": "1", "label": "Session" },
+      "seats": { "value": "40+", "label": "Seats" },
+      "hours": { "value": "2.5h", "label": "Duration" }
+    },
+    "list": {
+      "meta": {
+        "title": "Workshops & events",
+        "description": "Explore English workshops, speaking practice sessions, and professional events on Mezonly."
+      },
+      "badge": "Events",
+      "title": "All events",
+      "subtitle": "Workshops, speaking practice, and more — register in one click.",
+      "backHome": "Back to home",
+      "count": "{count} events",
+      "loading": "Loading events...",
+      "empty": {
+        "title": "No events yet",
+        "description": "Check back soon — new events appear here once published."
+      },
+      "filters": {
+        "all": "All",
+        "upcoming": "Upcoming",
+        "ongoing": "Live now",
+        "past": "Ended"
+      },
+      "actions": {
+        "viewDetail": "View details",
+        "register": "Register"
+      },
+      "registrationOnly": "Registration only"
+    },
+    "create": {
+      "badge": "Propose an event",
+      "title": "Create a new event",
+      "description": "Fill in all event details. After submission, an admin will review and publish it on the homepage.",
+      "loading": "Checking sign-in...",
+      "pendingNote": "Your event stays pending until an admin publishes it.",
+      "uploadHint": "PNG/JPG, up to {maxMb}MB",
+      "organizerLabel": "Member {index}",
+      "preview": {
+        "homeLabel": "Homepage preview",
+        "homeHint": "The event card updates live as you type.",
+        "datePlaceholder": "Set date & time in Schedule",
+        "titlePlaceholder": "Event name",
+        "taglinePlaceholder": "Short line shown under the title"
+      },
+      "sections": {
+        "basic": "Basic info",
+        "schedule": "Schedule & location",
+        "content": "Detail content",
+        "images": "Event images",
+        "organizers": "Organizing team",
+        "gallery": "Gallery",
+        "stats": "Highlight stats"
+      },
+      "fields": {
+        "title": "Event name",
+        "tagline": "Short description",
+        "theme": "Theme (badge)",
+        "priceLabel": "Price / fee",
+        "priceFree": "Free",
+        "priceCustom": "Paid",
+        "priceCustomPlaceholder": "e.g. 199,000 ₫",
+        "cardTag": "Image label",
+        "cardDescription": "Card description (home)",
+        "startAt": "Starts",
+        "endAt": "Ends",
+        "doorsOpenAt": "Doors open",
+        "registrationUrl": "Registration link",
+        "isOnline": "Online event",
+        "venue": "Venue",
+        "city": "City",
+        "country": "Country",
+        "aboutTitle": "About section title",
+        "aboutBody": "About body",
+        "aboutHighlight": "Highlight",
+        "seoTitle": "SEO / share title",
+        "seoDescription": "SEO / share description",
+        "registerTitle": "Register block title",
+        "registerDescription": "Register block description",
+        "marquee": "Marquee text",
+        "coverImage": "Cover image",
+        "ogImage": "OGP image (social share)",
+        "organizerName": "Name",
+        "organizerRole": "Role",
+        "organizerCategory": "Category",
+        "organizerBio": "Bio",
+        "organizerImage": "Photo",
+        "galleryImage": "Image",
+        "galleryCaption": "Caption",
+        "statValue": "Value",
+        "statLabel": "Label"
+      },
+      "actions": {
+        "upload": "Upload image",
+        "uploading": "Uploading...",
+        "addOrganizer": "Add member",
+        "addImage": "Add image",
+        "addStat": "Add stat",
+        "submit": "Submit for review",
+        "submitting": "Submitting..."
+      },
+      "errors": {
+        "imagesRequired": "Please upload cover and OGP images.",
+        "organizerRequired": "At least one organizer with a photo is required.",
+        "submitFailed": "Failed to submit event. Please try again."
+      },
+      "success": "Event submitted. An admin will review it soon.",
+      "successPage": {
+        "badge": "Submitted",
+        "title": "Thank you!",
+        "description": "Your event is pending admin approval. It will appear on the homepage once published.",
+        "hint": "Track status and edit anytime from Events in your dashboard.",
+        "myEvents": "View my events",
+        "createAnother": "Create another event",
+        "backToEvents": "Back to homepage"
+      },
+      "edit": {
+        "badge": "Edit",
+        "title": "Update event",
+        "description": "Edit details and resubmit for admin review.",
+        "rejectedBanner": "Event was rejected: {reason}",
+        "publishedBanner": "This event is published — editing is disabled here.",
+        "publishedEditBanner": "This event is live. Your changes need admin approval before they go public.",
+        "publishedEditNote": "The public version stays unchanged until admin approves your update.",
+        "updatePendingBanner": "You already submitted an update — waiting for admin review. You can edit and resubmit.",
+        "updateRejectedBanner": "Update rejected: {reason}",
+        "closedBanner": "This event was closed by admin — editing is disabled here.",
+        "submit": "Save & resubmit",
+        "submitUpdate": "Submit update",
+        "success": "Event updated. Admin will review it again.",
+        "updateSubmitted": "Update submitted. Admin will review it before it goes live.",
+        "backToList": "Back to my events"
+      }
+    }
+  }
+}

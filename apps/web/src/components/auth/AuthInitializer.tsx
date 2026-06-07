@@ -12,7 +12,9 @@ export default function AuthInitializer() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("oauth") === "success" || params.get("sync") === "success") {
+    const isOAuthReturn =
+      params.get("oauth") === "success" || params.get("sync") === "success";
+    if (isOAuthReturn && !hasToken) {
       return;
     }
     void initAuth();

@@ -7,6 +7,7 @@ import {
 } from "@mezon-tutors/shared";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
+  CalendarDays,
   CreditCard,
   FileCheck,
   Flag,
@@ -44,6 +45,7 @@ const ICON_MAP: Record<
 > = {
   tutorApplications: FileCheck,
   lessonComplaints: Flag,
+  events: CalendarDays,
   appSettings: Settings,
   students: GraduationCap,
   payments: CreditCard,

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ROUTES } from "@mezon-tutors/shared";
 import { authService } from "@/services";
-import { toAuthUser, userAtom } from "@/store/auth.atom";
+import { isLoadingAtom, toAuthUser, userAtom } from "@/store/auth.atom";
 import { accessTokenAtom } from "@/store/token.atom";
 
 export default function HomeOAuthSuccessHandler() {
@@ -16,6 +16,7 @@ export default function HomeOAuthSuccessHandler() {
   const router = useRouter();
   const setAccessToken = useSetAtom(accessTokenAtom);
   const setUser = useSetAtom(userAtom);
+  const setIsAuthLoading = useSetAtom(isLoadingAtom);
   const inFlightRef = useRef(false);
   const t = useTranslations("Dashboard");
 
@@ -61,6 +62,7 @@ export default function HomeOAuthSuccessHandler() {
           router.replace(pathname || "/");
         }
       } finally {
+        setIsAuthLoading(false);
         inFlightRef.current = false;
       }
     }

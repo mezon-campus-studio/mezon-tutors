@@ -1,0 +1,380 @@
+{
+  "Events": {
+    "detail": {
+      "meta": {
+        "date": "Ngày {date}",
+        "location": "Địa điểm",
+        "doorsOpen": "Giờ mở cửa",
+        "online": "Trực tuyến",
+        "registrationOnly": "Chỉ cần đăng ký",
+        "registrationHint": "Điền form đăng ký — chi tiết sẽ gửi qua email sau khi bạn đăng ký.",
+        "scrollHint": "Cuộn để khám phá"
+      },
+      "actions": {
+        "register": "Đăng ký ngay",
+        "watchIntro": "Xem giới thiệu",
+        "meetFeatured": "Gặp ban tổ chức",
+        "registerCta": "Đặt chỗ ngay",
+        "registerNote": "Số chỗ có hạn. Đăng ký trước khi hết vé.",
+        "scrollHint": "Cuộn",
+        "priceLabel": "mỗi người",
+        "contact": "Liên hệ",
+        "contactNote": "Còn thắc mắc về nội dung buổi học? Đội ngũ Mezonly phản hồi trong 24 giờ."
+      },
+      "sections": {
+        "about": {
+          "badge": "Về sự kiện",
+          "quote": "Ngôn ngữ mở ra cánh cửa — nhưng chỉ khi bạn dám bước qua."
+        },
+        "nav": {
+          "about": "Chi tiết",
+          "featured": "Ban tổ chức",
+          "share": "Lan tỏa",
+          "register": "Đăng ký"
+        },
+        "highlights": {
+          "badge": "Trải nghiệm",
+          "title": "Bạn sẽ\nnhận được gì?"
+        },
+        "agenda": {
+          "badge": "Lịch trình",
+          "title": "Diễn biến\nbuổi học"
+        },
+        "gallery": {
+          "badge": "Khoảnh khắc",
+          "title": "Hình ảnh\nsự kiện",
+          "subtitle": "Ảnh minh họa từ các buổi workshop Mezonly — team marketing có thể dùng khi chia sẻ."
+        },
+        "share": {
+          "badge": "Lan tỏa sự kiện",
+          "hint": "Khi gửi link cho đồng nghiệp hoặc đăng lên mạng xã hội, họ sẽ thấy đúng tên sự kiện, mô tả và ảnh bên phải — không cần viết thêm caption dài.",
+          "copyLink": "Sao chép link sự kiện",
+          "copied": "Đã sao chép!",
+          "registerCta": "Đăng ký tham gia",
+          "previewLabel": "Xem trước khi chia sẻ"
+        },
+        "speakers": {
+          "badge": "Ban tổ chức",
+          "title": "Gặp gỡ\nBan tổ chức",
+          "speakerLabel": "Thành viên {index}",
+          "viewProfile": "Xem chi tiết",
+          "viewAll": "Xem tất cả",
+          "previewTitle": "Đội ngũ đứng ra tổ chức",
+          "tapHint": "Nhấn vào từng thẻ để xem hồ sơ chi tiết"
+        },
+        "register": {
+          "badge": "Đăng ký",
+          "title": "Sẵn sàng\ntham gia?"
+        },
+        "faq": {
+          "badge": "Câu hỏi",
+          "title": "Thường\ngặp",
+          "subtitle": "Mọi thắc mắc về nội dung, hình thức tham gia và chuẩn bị trước buổi học.",
+          "contactTitle": "Cần hỗ trợ thêm?",
+          "contactBody": "Gửi email cho đội ngũ sự kiện — chúng tôi sẽ trả lời trong vòng 24 giờ."
+        }
+      },
+      "countdown": {
+        "days": "Ngày",
+        "hours": "Giờ",
+        "minutes": "Phút",
+        "seconds": "Giây",
+        "live": "Đang diễn ra",
+        "ended": "Đã kết thúc"
+      },
+      "status": {
+        "upcoming": "Sắp diễn ra",
+        "ongoing": "Đang diễn ra",
+        "past": "Đã kết thúc"
+      },
+      "faq": {
+        "what-is": {
+          "question": "Buổi học diễn ra như thế nào?",
+          "answer": "Mỗi sự kiện là một buổi workshop tiếng Anh thực hành: phần mở đầu ngắn, luyện tập theo nhóm nhỏ và nhận góp ý trực tiếp từ gia sư. Bạn sẽ nói và tương tác nhiều hơn là nghe lý thuyết."
+        },
+        "who-for": {
+          "question": "Trình độ nào phù hợp?",
+          "answer": "Dành cho người đi làm từ trung cấp trở lên — đã hiểu tiếng Anh cơ bản nhưng muốn tự tin hơn khi giao tiếp trong công việc. Không cần kinh nghiệm học 1:1 trước đó."
+        },
+        "prepare": {
+          "question": "Cần chuẩn bị gì trước buổi học?",
+          "answer": "Máy tính hoặc điện thoại có micro ổn định, kết nối internet tốt (nếu online) và sổ ghi chú. Nên chuẩn bị sẵn 1–2 tình huống công việc bạn muốn luyện tập để gia sư góp ý cụ thể hơn."
+        },
+        "online": {
+          "question": "Tham gia online ra sao?",
+          "answer": "Sau khi đăng ký, bạn nhận email xác nhận kèm link phòng học trên Mezon. Đăng nhập Mezonly, vào phòng trước giờ bắt đầu 5 phút và bật micro khi được hướng dẫn."
+        },
+        "in-person": {
+          "question": "Tham dự trực tiếp cần lưu ý gì?",
+          "answer": "Đến địa điểm trước giờ mở cửa 10–15 phút để check-in. Mang theo sổ ghi chú và nước uống. Trang phục thoải mái, gọn gàng — buổi học tập trung vào thực hành nói."
+        },
+        "certificate": {
+          "question": "Có nhận chứng nhận tham dự không?",
+          "answer": "Có. Học viên tham dự đủ buổi sẽ nhận chứng nhận số từ Mezonly qua email trong vòng 3 ngày làm việc sau sự kiện."
+        }
+      },
+      "speakers": {
+        "maIelts": {
+          "name": "Mai Anh",
+          "role": "Gia sư IELTS · 6 năm kinh nghiệm",
+          "category": "Giáo dục",
+          "bio": "Mai Anh đồng hành cùng hàng trăm học viên người đi làm luyện IELTS Speaking và giao tiếp. Phong cách dạy thực chiến, tập trung phản xạ và tự tin khi nói trước đám đông."
+        },
+        "jamesNative": {
+          "name": "James O'Connor",
+          "role": "Business English Coach · Bản xứ",
+          "category": "Thương mại",
+          "bio": "James hơn 10 năm coaching tiếng Anh thương mại cho team đa quốc gia. Anh mang đến góc nhìn bản xứ về email, họp và thuyết trình trong môi trường corporate."
+        },
+        "emmaCoach": {
+          "name": "Emma Wilson",
+          "role": "TESOL · Coach giao tiếp",
+          "category": "Giao tiếp",
+          "bio": "Emma chuyên giúp học viên phá rào ngại nói tiếng Anh qua drill phát âm, role-play và feedback cá nhân. Buổi workshop của cô luôn nhiều thời gian luyện tập thực tế."
+        },
+        "davidToeic": {
+          "name": "David Brown",
+          "role": "CELTA · TOEIC Speaking",
+          "category": "Luyện thi",
+          "bio": "David tập trung vào kỹ thuật speaking và cấu trúc câu trả lời tự nhiên. Học viên thường cải thiện điểm TOEIC Speaking sau vài buổi luyện có định hướng."
+        }
+      }
+    },
+    "items": {
+      "business-english-after-work": {
+        "seo": {
+          "title": "Business English After Work | Mezonly Events",
+          "description": "Workshop tiếng Anh sau giờ làm: email, họp online & thuyết trình thực chiến cho người đi làm. Đăng ký miễn phí trên Mezonly."
+        },
+        "highlights": {
+          "roleplay": {
+            "title": "Role-play tình huống công việc",
+            "description": "Luyện email, họp và pitch theo case thật từ môi trường corporate — có script gợi ý và chỉnh sửa trực tiếp."
+          },
+          "feedback": {
+            "title": "Góp ý từ gia sư bản ngữ",
+            "description": "Nhận feedback cá nhân về phát âm, cấu trúc câu và cách diễn đạt tự nhiên hơn trong meeting."
+          },
+          "takeaway": {
+            "title": "Takeaway áp dụng ngay",
+            "description": "Mang về template email, cụm từ họp và checklist tự luyện cho buổi sáng hôm sau."
+          }
+        },
+        "agenda": {
+          "checkin": { "time": "19:00", "title": "Check-in online", "description": "Vào phòng Mezon, làm quen nhóm nhỏ 4–5 người." },
+          "warmup": { "time": "19:15", "title": "Warm-up & icebreaker", "description": "Bài khởi động ngắn — làm quen giọng nói và mục tiêu cá nhân." },
+          "practice": { "time": "19:35", "title": "Thực hành chính", "description": "Role-play email, họp và thuyết trình — luân phiên nói và nhận góp ý." },
+          "wrapup": { "time": "21:00", "title": "Tổng kết & Q&A", "description": "Tóm tắt takeaway, hỏi đáp và gợi ý lộ trình luyện tiếp." }
+        },
+        "gallery": {
+          "0": "Không gian workshop online trên Mezonly",
+          "1": "Gia sư đồng hành 1:1 trong breakout room",
+          "2": "Học viên luyện presentation & meeting English",
+          "3": "Mezonly — nền tảng học tiếng Anh cho người đi làm",
+          "4": "Thực hành nhóm nhỏ, tối đa 40 suất",
+          "5": "Buổi tối sau giờ làm — linh hoạt cho dân văn phòng"
+        },
+        "theme": "Sau giờ làm",
+        "title": "Business English\nAfter Work",
+        "tagline": "Giao tiếp tự tin trong môi trường công việc — buổi tối, không áp lực.",
+        "marquee": "✦ Mezonly Events ✦ Business English ✦ Sau giờ làm ✦ Người đi làm ✦ 1 buổi tối thay đổi cách bạn họp",
+        "aboutTitle": "Business English\nAfter Work\nlà gì?",
+        "aboutBody": "Buổi workshop tối dành cho người đi làm muốn tự tin hơn khi email, họp online và thuyết trình bằng tiếng Anh. Học theo tình huống thật từ công việc — không lý thuyết suông.",
+        "aboutHighlight": "Thiết kế cho lịch sau 18h: vào học, thực hành, về nhà áp dụng ngay sáng hôm sau.",
+        "registerTitle": "Chỗ ngồi\ncó hạn.",
+        "registerDescription": "Chỉ 40 suất. Đăng ký trước khi hết — ưu tiên học viên Mezonly.",
+        "price": "Miễn phí",
+        "cardDescription": "Workshop tối: email, họp & thuyết trình bằng tiếng Anh cho người đi làm.",
+        "cardTag": "Đăng ký online"
+      },
+      "speaking-confidence-june": {
+        "seo": {
+          "title": "Speaking Confidence Day | Mezonly Events",
+          "description": "Buổi sáng thực hành speaking tại TP.HCM: phát âm, role-play & feedback 1:1 từ gia sư Mezonly. Giới hạn 60 chỗ."
+        },
+        "highlights": {
+          "icebreaker": {
+            "title": "Icebreaker thân thiện",
+            "description": "Khởi động nhẹ nhàng giúp bạn nói câu đầu tiên tự tin trước nhóm mới."
+          },
+          "drills": {
+            "title": "Drill phát âm có hướng dẫn",
+            "description": "Luyện âm, stress và nhịp nói với bài tập ngắn, dễ áp dụng khi về nhà."
+          },
+          "oneOnOne": {
+            "title": "Feedback 1:1 từ gia sư",
+            "description": "Mỗi học viên có thời gian nhận góp ý cá nhân về điểm mạnh và điểm cần cải thiện."
+          },
+          "certificate": {
+            "title": "Chứng nhận tham dự",
+            "description": "Nhận chứng nhận số Mezonly qua email sau buổi học — ghi nhận nỗ lực luyện speaking."
+          }
+        },
+        "agenda": {
+          "checkin": { "time": "08:45", "title": "Check-in tại địa điểm", "description": "WeWork Saigon Centre — nhận tài liệu và xếp nhóm." },
+          "icebreaker": { "time": "09:00", "title": "Icebreaker & mục tiêu", "description": "Làm quen, chia sẻ mục tiêu speaking cá nhân." },
+          "drills": { "time": "09:30", "title": "Pronunciation drills", "description": "Luyện phát âm theo nhóm với hướng dẫn từng bước." },
+          "roleplay": { "time": "10:15", "title": "Role-play & hội thoại", "description": "Thực hành meeting, small talk và Q&A trong nhóm nhỏ." },
+          "closing": { "time": "11:30", "title": "Feedback 1:1 & kết thúc", "description": "Góp ý cá nhân, chụp ảnh nhóm và hướng dẫn luyện tiếp." }
+        },
+        "gallery": {
+          "0": "Speaking Confidence Day — không gian sự kiện",
+          "1": "Học viên luyện nói trong nhóm nhỏ",
+          "2": "Gia sư Mezonly hướng dẫn phát âm",
+          "3": "Mezonly — đồng hành người đi làm",
+          "4": "Khoảnh khắc thực hành trên sân khấu mini",
+          "5": "Networking sau buổi workshop"
+        },
+        "theme": "Tự tin nói",
+        "title": "Speaking\nConfidence Day",
+        "tagline": "Một buổi sáng để phá rào ngại nói tiếng Anh — thực hành 1:1 và nhóm nhỏ.",
+        "marquee": "✦ Mezonly Events ✦ Speaking Confidence ✦ TP.HCM ✦ Người đi làm ✦ Nói tiếng Anh không còn ngại",
+        "aboutTitle": "Speaking\nConfidence Day\nlà gì?",
+        "aboutBody": "Sự kiện nửa ngày kết hợp icebreaker, drill phát âm, role-play meeting và feedback cá nhân từ gia sư. Bạn sẽ nói nhiều hơn trong 3 giờ hơn cả một tháng tự học.",
+        "aboutHighlight": "Phù hợp người hiểu tiếng Anh nhưng ngại nói trước đồng nghiệp hoặc khách hàng.",
+        "registerTitle": "Đăng ký\nsớm.",
+        "registerDescription": "Giới hạn 60 người để đảm bảo thời gian luyện tập cho từng học viên.",
+        "price": "199.000 ₫",
+        "cardDescription": "Buổi sáng thực hành speaking: phát âm, role-play & feedback 1:1.",
+        "cardTag": "Trực tiếp"
+      }
+    },
+    "stats": {
+      "speakers": { "value": "4", "label": "Ban tổ chức" },
+      "sessions": { "value": "1", "label": "Buổi" },
+      "seats": { "value": "40+", "label": "Chỗ ngồi" },
+      "hours": { "value": "2.5h", "label": "Thời lượng" }
+    },
+    "list": {
+      "meta": {
+        "title": "Workshop & sự kiện",
+        "description": "Khám phá workshop tiếng Anh, buổi luyện speaking và sự kiện dành cho người đi làm trên Mezonly."
+      },
+      "badge": "Sự kiện",
+      "title": "Tất cả sự kiện",
+      "subtitle": "Workshop, buổi luyện speaking và nhiều hơn — đăng ký nhanh qua link.",
+      "backHome": "Về trang chủ",
+      "count": "{count} sự kiện",
+      "loading": "Đang tải sự kiện...",
+      "empty": {
+        "title": "Chưa có sự kiện nào",
+        "description": "Hãy quay lại sau — sự kiện mới sẽ được cập nhật khi admin duyệt."
+      },
+      "filters": {
+        "all": "Tất cả",
+        "upcoming": "Sắp diễn ra",
+        "ongoing": "Đang diễn ra",
+        "past": "Đã kết thúc"
+      },
+      "actions": {
+        "viewDetail": "Xem chi tiết",
+        "register": "Đăng ký"
+      },
+      "registrationOnly": "Chỉ cần đăng ký"
+    },
+    "create": {
+      "badge": "Đề xuất sự kiện",
+      "title": "Tạo sự kiện mới",
+      "description": "Điền đầy đủ thông tin sự kiện. Sau khi gửi, admin sẽ xem xét và xuất bản để hiển thị trên trang chủ.",
+      "loading": "Đang kiểm tra đăng nhập...",
+      "pendingNote": "Sự kiện sẽ ở trạng thái chờ duyệt cho đến khi admin publish.",
+      "uploadHint": "PNG/JPG, tối đa {maxMb}MB",
+      "organizerLabel": "Thành viên {index}",
+      "preview": {
+        "homeLabel": "Xem trước trên trang chủ",
+        "homeHint": "Thẻ sự kiện cập nhật theo thời gian thực khi bạn nhập.",
+        "datePlaceholder": "Chọn ngày giờ ở mục Thời gian",
+        "titlePlaceholder": "Tên sự kiện",
+        "taglinePlaceholder": "Mô tả ngắn hiển thị dưới tiêu đề"
+      },
+      "sections": {
+        "basic": "Thông tin cơ bản",
+        "schedule": "Thời gian & địa điểm",
+        "content": "Nội dung chi tiết",
+        "images": "Ảnh sự kiện",
+        "organizers": "Ban tổ chức",
+        "gallery": "Thư viện ảnh",
+        "stats": "Số liệu nổi bật"
+      },
+      "fields": {
+        "title": "Tên sự kiện",
+        "tagline": "Mô tả ngắn",
+        "theme": "Chủ đề (badge)",
+        "priceLabel": "Giá / phí tham dự",
+        "priceFree": "Miễn phí",
+        "priceCustom": "Có phí",
+        "priceCustomPlaceholder": "VD: 199.000 ₫",
+        "cardTag": "Nhãn trên ảnh",
+        "cardDescription": "Mô tả trên thẻ (home)",
+        "startAt": "Bắt đầu",
+        "endAt": "Kết thúc",
+        "doorsOpenAt": "Mở cửa",
+        "registrationUrl": "Link đăng ký",
+        "isOnline": "Sự kiện trực tuyến",
+        "venue": "Địa điểm",
+        "city": "Thành phố",
+        "country": "Quốc gia",
+        "aboutTitle": "Tiêu đề phần chi tiết",
+        "aboutBody": "Nội dung giới thiệu",
+        "aboutHighlight": "Điểm nhấn",
+        "seoTitle": "Tiêu đề SEO / chia sẻ",
+        "seoDescription": "Mô tả SEO / chia sẻ",
+        "registerTitle": "Tiêu đề khối đăng ký",
+        "registerDescription": "Mô tả khối đăng ký",
+        "marquee": "Dòng chạy (marquee)",
+        "coverImage": "Ảnh cover",
+        "ogImage": "Ảnh OGP (chia sẻ mạng xã hội)",
+        "organizerName": "Họ tên",
+        "organizerRole": "Vai trò",
+        "organizerCategory": "Lĩnh vực",
+        "organizerBio": "Tiểu sử",
+        "organizerImage": "Ảnh đại diện",
+        "galleryImage": "Ảnh",
+        "galleryCaption": "Chú thích",
+        "statValue": "Giá trị",
+        "statLabel": "Nhãn"
+      },
+      "actions": {
+        "upload": "Tải ảnh lên",
+        "uploading": "Đang tải...",
+        "addOrganizer": "Thêm thành viên",
+        "addImage": "Thêm ảnh",
+        "addStat": "Thêm số liệu",
+        "submit": "Gửi duyệt",
+        "submitting": "Đang gửi..."
+      },
+      "errors": {
+        "imagesRequired": "Vui lòng tải ảnh cover và ảnh OGP.",
+        "organizerRequired": "Cần ít nhất một thành viên ban tổ chức với ảnh.",
+        "submitFailed": "Gửi sự kiện thất bại. Vui lòng thử lại."
+      },
+      "success": "Đã gửi sự kiện. Admin sẽ xem xét trong thời gian sớm nhất.",
+      "successPage": {
+        "badge": "Đã gửi",
+        "title": "Cảm ơn bạn!",
+        "description": "Sự kiện của bạn đang chờ admin duyệt. Bạn sẽ thấy trên trang chủ sau khi được publish.",
+        "hint": "Bạn có thể theo dõi trạng thái và chỉnh sửa trong mục Sự kiện trên dashboard.",
+        "myEvents": "Xem sự kiện của tôi",
+        "createAnother": "Tạo thêm sự kiện",
+        "backToEvents": "Về trang chủ"
+      },
+      "edit": {
+        "badge": "Chỉnh sửa",
+        "title": "Cập nhật sự kiện",
+        "description": "Chỉnh sửa thông tin và gửi lại để admin xem xét.",
+        "rejectedBanner": "Sự kiện bị từ chối: {reason}",
+        "publishedBanner": "Sự kiện đã publish — không thể chỉnh sửa tại đây.",
+        "publishedEditBanner": "Sự kiện đang hiển thị công khai. Thay đổi của bạn cần admin duyệt trước khi áp dụng.",
+        "publishedEditNote": "Bản công khai giữ nguyên cho đến khi admin duyệt cập nhật.",
+        "updatePendingBanner": "Bạn đã gửi bản cập nhật — đang chờ admin duyệt. Có thể chỉnh và gửi lại.",
+        "updateRejectedBanner": "Cập nhật bị từ chối: {reason}",
+        "closedBanner": "Sự kiện đã được admin đóng — không thể chỉnh sửa tại đây.",
+        "submit": "Lưu & gửi lại",
+        "submitUpdate": "Gửi cập nhật",
+        "success": "Đã cập nhật sự kiện. Admin sẽ xem xét lại.",
+        "updateSubmitted": "Đã gửi bản cập nhật. Admin sẽ duyệt trước khi hiển thị công khai.",
+        "backToList": "Về danh sách sự kiện"
+      }
+    }
+  }
+}

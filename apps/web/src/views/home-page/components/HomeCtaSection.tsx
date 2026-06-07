@@ -9,7 +9,7 @@ export default function HomeCtaSection() {
   const t = useTranslations("Home.Cta");
 
   return (
-    <section className="bg-white py-20 sm:py-28">
+    <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="relative overflow-hidden rounded-[2.5rem] border border-violet-200 bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-700 px-8 py-14 text-white shadow-2xl shadow-violet-400/40 sm:px-14 sm:py-20">
           <div className="pointer-events-none absolute -top-32 -left-24 size-[28rem] rounded-full bg-white/10 blur-3xl" />

@@ -19,6 +19,8 @@
       "tutorApplications": "Tutor applications",
       "dashboard": "Dashboard",
       "profile": "My Profile",
+      "events": "Events",
+      "adminPanel": "Admin panel",
       "logout": "Logout",
       "fallbackTitle": "Dashboard",
       "syncMezon": {
@@ -435,6 +437,29 @@
       "planWith": "Monthly plan with {tutor}",
       "lessonsPerWeek": "{n} sessions / week",
       "duration": "{minutes} min"
+    },
+    "events": {
+      "eyebrow": "Community",
+      "title": "My events",
+      "subtitle": "Track review status and edit events you have submitted.",
+      "createCta": "Create event",
+      "loading": "Loading events…",
+      "empty": {
+        "title": "No events yet",
+        "description": "Create your first event to share with the Mezonly community.",
+        "cta": "Create a new event"
+      },
+      "submittedAt": "Submitted {date}",
+      "viewPublic": "View public page",
+      "edit": "Edit",
+      "updatePending": "Update pending",
+      "rejectedReason": "Rejection reason",
+      "publishStatus": {
+        "PENDING": "Pending review",
+        "PUBLISHED": "Published",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed"
+      }
     },
     "placeholder": {
       "title": "Feature Coming Soon",

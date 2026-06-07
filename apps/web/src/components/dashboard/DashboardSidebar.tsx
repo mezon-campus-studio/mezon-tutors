@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
   Calendar,
+  CalendarDays,
   Clock,
   ClipboardList,
   CreditCard,
@@ -16,6 +17,7 @@ import {
   LineChart,
   LogOut,
   MessageSquareWarning,
+  ShieldCheck,
   User,
   Wallet,
 } from 'lucide-react';
@@ -39,6 +41,8 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   reports: LineChart,
   dashboard: LayoutDashboard,
   profile: User,
+  events: CalendarDays,
+  adminPanel: ShieldCheck,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -55,6 +59,8 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
   profile: "from-violet-500 to-indigo-500",
+  events: "from-violet-500 to-fuchsia-500",
+  adminPanel: "from-sky-500 to-indigo-500",
 };
 
 type DashboardSidebarProps = {
@@ -69,6 +75,9 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const user = useAtomValue(userAtom);
 
   const menuItems = getDashboardMenuItemsByRole(userRole);
+  const navItems = menuItems.filter((item) => item.key !== "logout");
+  const logoutItem = menuItems.find((item) => item.key === "logout");
+  const isAdmin = userRole === "ADMIN";
   const dashboardTitle =
     userRole && userRole in DASHBOARD_ROLE_TITLES
       ? DASHBOARD_ROLE_TITLES[userRole as DashboardRole]
@@ -129,8 +138,9 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         <MezonSyncButton className="mt-3" />
       </div>
 
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-5">
-        {menuItems.map((item) => {
+      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-5">
+        <div className="space-y-1.5">
+        {navItems.map((item) => {
           const Icon = ICON_MAP[item.iconKey];
           const accent = ICON_ACCENT_MAP[item.iconKey];
           const active = isActive(item);
@@ -176,6 +186,42 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
 
           return <div key={item.key}>{buttonContent}</div>;
         })}
+        </div>
+
+        <div className="mt-auto space-y-2 pt-4">
+          {isAdmin ? (
+            <Link href={ROUTES.ADMIN.TUTOR_APPLICATIONS} className="block">
+              <Button
+                variant="gradient"
+                className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
+              >
+                <ShieldCheck className="mr-2 size-4" />
+                {t("sidebar.adminPanel")}
+              </Button>
+            </Link>
+          ) : null}
+
+          {logoutItem ? (
+            <div>
+              {(() => {
+                const item = logoutItem;
+                const Icon = ICON_MAP[item.iconKey];
+                return (
+                  <Button
+                    variant="ghost"
+                    className="group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold text-rose-600 transition-all duration-200 hover:bg-rose-50"
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition-all group-hover:bg-rose-200">
+                      <Icon className="size-3.5" />
+                    </span>
+                    <span className="truncate">{t(`sidebar.${item.labelKey}`)}</span>
+                  </Button>
+                );
+              })()}
+            </div>
+          ) : null}
+        </div>
       </nav>
     </aside>
   );
