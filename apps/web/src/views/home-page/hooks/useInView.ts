@@ -8,12 +8,12 @@ type UseInViewOptions = {
   triggerOnce?: boolean;
 };
 
-export function useInView({
+export function useInView<T extends HTMLElement = HTMLElement>({
   threshold = 0.15,
   rootMargin = "0px 0px -6% 0px",
   triggerOnce = true,
 }: UseInViewOptions = {}) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<T>(null);
   const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {

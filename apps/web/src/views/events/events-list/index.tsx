@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { EventListRow } from "@/components/events/EventListRow";
-import { Button, Skeleton } from "@/components/ui";
+import { Button, Skeleton, buttonVariants } from "@/components/ui";
 import { sortPublishedEvents } from "@/lib/event-sort";
 import { cn } from "@/lib/utils";
 import { usePublishedEvents } from "@/services";
@@ -136,13 +136,15 @@ export default function EventsListPage() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
               {t("empty.description")}
             </p>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-6 rounded-full border-violet-200"
+            <Link
+              href={ROUTES.HOME.index}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "mt-6 rounded-full border-violet-200",
+              )}
             >
-              <Link href={ROUTES.HOME.index}>{t("backHome")}</Link>
-            </Button>
+              {t("backHome")}
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">
