@@ -99,6 +99,33 @@
         }
       }
     },
+    "Events": {
+      "badge": "Sự kiện",
+      "title": "Workshop & sự kiện đang diễn ra",
+      "description": "Buổi luyện speaking, workshop Business English và nhiều hơn — thiết kế cho người đi làm, đăng ký nhanh qua link.",
+      "viewAll": "Xem tất cả sự kiện",
+      "register": "Đăng ký tham gia",
+      "priceFree": "Miễn phí",
+      "createEvent": "Tạo sự kiện",
+      "loading": "Đang tải sự kiện...",
+      "empty": "Chưa có sự kiện nào được xuất bản. Hãy tạo sự kiện mới hoặc chờ admin duyệt.",
+      "marqueeFallback": "✦ Mezonly Events ✦ Workshop tiếng Anh cho người đi làm",
+      "registrationOnly": "Chỉ cần đăng ký",
+      "status": {
+        "upcoming": "Sắp diễn ra",
+        "ongoing": "Đang diễn ra",
+        "past": "Đã kết thúc"
+      },
+      "viewDetails": "Xem chi tiết",
+      "card": {
+        "startsIn": "Bắt đầu sau",
+        "days": "Ngày",
+        "hours": "Giờ",
+        "minutes": "Phút",
+        "doorsOpen": "Mở cửa",
+        "online": "Trực tuyến"
+      }
+    },
     "FeaturedTutors": {
       "badge": "Gia sư nổi bật tuần này",
       "title": "Học từ những người thực sự hiểu bạn",

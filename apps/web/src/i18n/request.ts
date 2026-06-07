@@ -9,6 +9,7 @@ type MessageLoaderConfig = {
   messageKey:
     | "Common"
     | "Home"
+    | "Events"
     | "TutorProfile"
     | "Tutors"
     | "GlobalChat"
@@ -33,6 +34,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Notifications", file: "notifications" },
   { messageKey: "GlobalChat", file: "global-chat" },
   { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
+  { messageKey: "Events", file: "events", pick: (payload) => payload.Events },
   { messageKey: "TutorProfile", file: "tutor-profile" },
   { messageKey: "Tutors", file: "tutors" },
   { messageKey: "BecomeTutorGuide", file: "become-tutor-guide" },

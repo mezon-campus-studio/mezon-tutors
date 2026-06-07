@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Page() {
   return (
-    <RoleGuard allowedRoles={['STUDENT', 'TUTOR']}>
+    <RoleGuard allowedRoles={['STUDENT', 'TUTOR', 'ADMIN']}>
       <WalletPage />
     </RoleGuard>
   );

@@ -6,6 +6,14 @@
 export const ROUTES = {
   HOME: {
     index: '/',
+    events: '/#events',
+  },
+  EVENTS: {
+    INDEX: '/events',
+    CREATE: '/events/create',
+    DETAIL: (slug: string) => `/events/${slug}`,
+    CREATE_SUCCESS: '/events/create/success',
+    EDIT: (id: string) => `/dashboard/events/${id}/edit`,
   },
   TUTOR: {
     INDEX: '/tutors',
@@ -26,6 +34,8 @@ export const ROUTES = {
     LESSON_COMPLAINTS: '/admin/lesson-complaints',
     APP_SETTINGS: '/admin/app-settings',
     PAYMENTS: '/admin/payments',
+    EVENTS: '/admin/events',
+    EVENT_DETAIL: (id: string) => `/admin/events/${id}`,
   },
   MY_LESSONS: {
     INDEX: '/my-lessons',
@@ -41,6 +51,7 @@ export const ROUTES = {
     PENDING_BOOKINGS: '/dashboard/pending-bookings',
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
+    MY_EVENTS: '/dashboard/events',
   },
   CHECKOUT: {
     INDEX: '/checkout',

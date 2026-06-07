@@ -20,13 +20,13 @@ export default function HomeHowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="relative scroll-mt-24 bg-violet-50/60 py-20 sm:py-28"
+      className="relative scroll-mt-24 bg-violet-50/60 py-12 sm:py-16"
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 size-96 rounded-full bg-violet-200/40 blur-3xl" />
       </div>
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
-        <div className="mx-auto mb-14 max-w-2xl space-y-3 text-center">
+        <div className="mx-auto mb-8 max-w-2xl space-y-3 text-center sm:mb-10">
           <Badge className="mx-auto h-auto rounded-full border border-violet-200 bg-white px-3 py-1 text-xs font-semibold text-violet-700">
             {t("badge")}
           </Badge>

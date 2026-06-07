@@ -99,6 +99,33 @@
         }
       }
     },
+    "Events": {
+      "badge": "Events",
+      "title": "Workshops & events happening now",
+      "description": "Speaking practice, Business English workshops, and more — designed for busy professionals. Register in one click.",
+      "viewAll": "View all events",
+      "register": "Register now",
+      "priceFree": "Free",
+      "createEvent": "Create event",
+      "loading": "Loading events...",
+      "empty": "No published events yet. Submit a new event or wait for admin approval.",
+      "marqueeFallback": "✦ Mezonly Events ✦ English workshops for working professionals",
+      "registrationOnly": "Registration only",
+      "status": {
+        "upcoming": "Upcoming",
+        "ongoing": "Live now",
+        "past": "Ended"
+      },
+      "viewDetails": "View details",
+      "card": {
+        "startsIn": "Starts in",
+        "days": "Days",
+        "hours": "Hrs",
+        "minutes": "Min",
+        "doorsOpen": "Doors open",
+        "online": "Online"
+      }
+    },
     "FeaturedTutors": {
       "badge": "Top tutors this week",
       "title": "Learn from people who get it",

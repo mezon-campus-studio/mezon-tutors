@@ -42,6 +42,7 @@ export default function Header() {
   );
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [pastEventHero, setPastEventHero] = useState(false);
   const { currency, setCurrency, currencyOptions } = useCurrency();
   const navItems = useMemo(() => {
     const base: Array<{ label: string; href: string; requiresAuth: boolean }> = [
@@ -55,7 +56,7 @@ export default function Header() {
       });
     }
     const roleNav: Array<{ label: string; href: string; requiresAuth: boolean }> = [];
-    if (user?.role === "STUDENT") {
+    if (user?.role === "STUDENT" || user?.role === "ADMIN") {
       roleNav.push({
         label: t("myLessons"),
         href: ROUTES.DASHBOARD.MY_LESSONS,
@@ -82,17 +83,28 @@ export default function Header() {
       .join("") || "U";
 
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
+  const isEventDetailPage = /^\/events\/[^/]+$/.test(pathname ?? "");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 4);
+      setPastEventHero(y > 400);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isEventDetailPage) {
+      setPastEventHero(false);
+    }
+  }, [isEventDetailPage]);
   
   
 
@@ -118,8 +130,8 @@ export default function Header() {
       router.push(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === "TUTOR") {
       router.push(ROUTES.DASHBOARD.TRIAL_BOOKING);
-    } else if (user.role === 'ADMIN') {
-      router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
+    } else if (user.role === "ADMIN") {
+      router.push(ROUTES.DASHBOARD.MY_LESSONS);
     }
   }, [user?.role, router]);
 
@@ -127,13 +139,17 @@ export default function Header() {
     return null;
   }
 
+  const isEventHeroOverlay = isEventDetailPage && !pastEventHero;
+
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-          scrolled
-            ? "border-b border-slate-200/70 bg-white/85 shadow-sm shadow-violet-100/40 backdrop-blur-xl"
-            : "border-b border-slate-100/60 bg-white/70 backdrop-blur-md"
+        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+          isEventHeroOverlay
+            ? "border-transparent bg-transparent shadow-none"
+            : scrolled
+              ? "border-b border-slate-200/70 bg-white/90 shadow-sm shadow-violet-100/40 backdrop-blur-xl"
+              : "border-b border-slate-100/60 bg-white/75 backdrop-blur-md"
         }`}
       >
         <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between px-4 lg:px-8">
@@ -141,7 +157,11 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="-ml-2 size-10 rounded-full hover:bg-violet-50"
+              className={`-ml-2 size-10 rounded-full ${
+                isEventHeroOverlay
+                  ? "text-white/80 hover:bg-white/10 hover:text-white"
+                  : "hover:bg-violet-50"
+              }`}
               onClick={() => setDashboardMobileDrawer(true)}
             >
               <Menu className="size-6" />
@@ -178,7 +198,11 @@ export default function Header() {
               <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
                 Mezonly
               </span>
-              <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <span
+                className={`mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${
+                  isEventHeroOverlay ? "text-white/45" : "text-slate-400"
+                }`}
+              >
                 Tutor Matching
               </span>
             </div>
@@ -194,16 +218,24 @@ export default function Header() {
                   key={item.href}
                   href={item.href}
                   className={`group relative rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                    isActive
-                      ? "text-violet-700"
-                      : "text-slate-600 hover:text-violet-700"
+                    isEventHeroOverlay
+                      ? isActive
+                        ? "text-white"
+                        : "text-white/70 hover:text-white"
+                      : isActive
+                        ? "text-violet-700"
+                        : "text-slate-600 hover:text-violet-700"
                   }`}
                 >
                   <span
-                    className={`pointer-events-none absolute inset-0 -z-10 rounded-full bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] ring-1 ring-inset transition-all duration-300 ${
-                      isActive
-                        ? "scale-100 opacity-100 ring-violet-100"
-                        : "scale-90 opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
+                    className={`pointer-events-none absolute inset-0 -z-10 rounded-full ring-1 ring-inset transition-all duration-300 ${
+                      isEventHeroOverlay
+                        ? isActive
+                          ? "scale-100 bg-white/12 opacity-100 ring-white/15"
+                          : "scale-90 bg-white/8 opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-white/10"
+                        : isActive
+                          ? "scale-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] opacity-100 ring-violet-100"
+                          : "scale-90 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
                     }`}
                   />
                   <span className="relative">{item.label}</span>
@@ -224,6 +256,7 @@ export default function Header() {
                     onCurrencyChange={(value) =>
                       setCurrency(value as typeof currency)
                     }
+                    dark={isEventHeroOverlay}
                   />
                 </div>
 
@@ -232,10 +265,12 @@ export default function Header() {
                     currency={currency}
                     options={currencyOptions}
                     onChange={(value) => setCurrency(value as typeof currency)}
+                    dark={isEventHeroOverlay}
                   />
                   <LocalePopover
                     locale={locale}
                     onChange={handleLocaleChange}
+                    dark={isEventHeroOverlay}
                   />
                 </div>
               </>
@@ -247,7 +282,11 @@ export default function Header() {
             {mounted && isAuthenticated && (
               <Avatar
                 key={`${user?.id ?? ""}-${user?.avatar ?? ""}`}
-                className="size-9 cursor-pointer border-2 border-violet-200 ring-2 ring-violet-100 transition-all hover:border-violet-400 hover:ring-violet-200"
+                className={`size-9 cursor-pointer border-2 transition-all ${
+                  isEventHeroOverlay
+                    ? "border-white/25 ring-2 ring-white/10 hover:border-white/40 hover:ring-white/20"
+                    : "border-violet-200 ring-2 ring-violet-100 hover:border-violet-400 hover:ring-violet-200"
+                }`}
                 onClick={handleAvatarClick}
               >
                 {user?.avatar ? (
@@ -296,10 +335,12 @@ function CurrencyPopover({
   currency,
   options,
   onChange,
+  dark = false,
 }: {
   currency: string;
   options: readonly string[];
   onChange: (value: string) => void;
+  dark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const info = CURRENCY_INFO[currency];
@@ -311,9 +352,19 @@ function CurrencyPopover({
           <Button
             variant="outline"
             aria-label="Select currency"
-            className="group h-9 gap-1.5 rounded-full border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 backdrop-blur transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 aria-expanded:border-violet-300 aria-expanded:bg-violet-50 aria-expanded:text-violet-700"
+            className={`group h-9 gap-1.5 rounded-full px-3 text-xs font-semibold backdrop-blur transition-all ${
+              dark
+                ? "border-white/15 bg-white/10 text-white/90 hover:border-white/25 hover:bg-white/15 aria-expanded:border-white/25 aria-expanded:bg-white/15"
+                : "border-slate-200 bg-white/80 text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 aria-expanded:border-violet-300 aria-expanded:bg-violet-50 aria-expanded:text-violet-700"
+            }`}
           >
-            <span className="flex size-5 items-center justify-center rounded-md bg-violet-100 text-[11px] font-bold text-violet-700 group-hover:bg-violet-200/80 group-aria-expanded:bg-violet-200/80">
+            <span
+              className={`flex size-5 items-center justify-center rounded-md text-[11px] font-bold ${
+                dark
+                  ? "bg-white/15 text-white group-hover:bg-white/20 group-aria-expanded:bg-white/20"
+                  : "bg-violet-100 text-violet-700 group-hover:bg-violet-200/80 group-aria-expanded:bg-violet-200/80"
+              }`}
+            >
               {/*{info?.symbol ?? "$"}*/}
               {info?.symbol ?? "₫"}
             </span>
@@ -385,9 +436,11 @@ function CurrencyPopover({
 function LocalePopover({
   locale,
   onChange,
+  dark = false,
 }: {
   locale: string;
   onChange: (value: string) => void;
+  dark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const info = LOCALE_INFO[locale];
@@ -399,9 +452,15 @@ function LocalePopover({
           <Button
             variant="outline"
             aria-label="Select language"
-            className="group h-9 gap-1.5 rounded-full border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 backdrop-blur transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 aria-expanded:border-violet-300 aria-expanded:bg-violet-50 aria-expanded:text-violet-700"
+            className={`group h-9 gap-1.5 rounded-full px-3 text-xs font-semibold backdrop-blur transition-all ${
+              dark
+                ? "border-white/15 bg-white/10 text-white/90 hover:border-white/25 hover:bg-white/15 aria-expanded:border-white/25 aria-expanded:bg-white/15"
+                : "border-slate-200 bg-white/80 text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 aria-expanded:border-violet-300 aria-expanded:bg-violet-50 aria-expanded:text-violet-700"
+            }`}
           >
-            <Globe className="size-3.5 text-violet-500" />
+            <Globe
+              className={`size-3.5 ${dark ? "text-violet-300" : "text-violet-500"}`}
+            />
             {locale.toUpperCase()}
             <ChevronDown className="size-3.5 text-slate-400 transition-transform group-aria-expanded:rotate-180" />
           </Button>
@@ -470,12 +529,14 @@ function MobileRegionPopover({
   currencyOptions,
   onLocaleChange,
   onCurrencyChange,
+  dark = false,
 }: {
   locale: string;
   currency: string;
   currencyOptions: readonly string[];
   onLocaleChange: (value: string) => void;
   onCurrencyChange: (value: string) => void;
+  dark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const localeInfo = LOCALE_INFO[locale];
@@ -488,7 +549,11 @@ function MobileRegionPopover({
           <Button
             variant="outline"
             aria-label="Region settings"
-            className="group h-9 gap-1.5 rounded-full border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 backdrop-blur"
+            className={`group h-9 gap-1.5 rounded-full px-3 text-xs font-semibold backdrop-blur ${
+              dark
+                ? "border-white/15 bg-white/10 text-white/90"
+                : "border-slate-200 bg-white/80 text-slate-700"
+            }`}
           >
             <span className="text-base leading-none">{localeInfo?.flag}</span>
             {locale.toUpperCase()} · {currency}

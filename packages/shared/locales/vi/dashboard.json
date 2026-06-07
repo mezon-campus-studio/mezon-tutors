@@ -19,6 +19,8 @@
       "tutorApplications": "Hồ sơ gia sư",
       "dashboard": "Bảng điều khiển",
       "profile": "Hồ sơ của tôi",
+      "events": "Sự kiện",
+      "adminPanel": "Trang quản trị",
       "logout": "Đăng xuất",
       "fallbackTitle": "Bảng điều khiển",
       "syncMezon": {
@@ -435,6 +437,29 @@
       "planWith": "Gói tháng với {tutor}",
       "lessonsPerWeek": "{n} buổi / tuần",
       "duration": "{minutes} phút"
+    },
+    "events": {
+      "eyebrow": "Cộng đồng",
+      "title": "Sự kiện của tôi",
+      "subtitle": "Theo dõi trạng thái duyệt và chỉnh sửa các sự kiện bạn đã gửi.",
+      "createCta": "Tạo sự kiện",
+      "loading": "Đang tải sự kiện…",
+      "empty": {
+        "title": "Chưa có sự kiện nào",
+        "description": "Tạo sự kiện đầu tiên để chia sẻ với cộng đồng Mezonly.",
+        "cta": "Tạo sự kiện mới"
+      },
+      "submittedAt": "Gửi lúc {date}",
+      "viewPublic": "Xem trang công khai",
+      "edit": "Chỉnh sửa",
+      "updatePending": "Cập nhật chờ duyệt",
+      "rejectedReason": "Lý do từ chối",
+      "publishStatus": {
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "REJECTED": "Bị từ chối",
+        "CLOSED": "Đã đóng"
+      }
     },
     "placeholder": {
       "title": "Tính năng sắp ra mắt",

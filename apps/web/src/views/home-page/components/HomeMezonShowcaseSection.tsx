@@ -23,7 +23,7 @@ export default function HomeMezonShowcaseSection() {
   const t = useTranslations("Home.MezonShowcase");
 
   return (
-    <section className="relative overflow-hidden bg-slate-950 py-20 text-white sm:py-28">
+    <section className="relative overflow-hidden bg-slate-950 py-12 text-white sm:py-16">
       <div className="pointer-events-none absolute inset-0 -z-0">
         <div className="absolute -top-32 -left-24 size-[28rem] rounded-full bg-violet-600/30 blur-3xl" />
         <div className="absolute top-1/2 right-0 size-[32rem] -translate-y-1/2 rounded-full bg-fuchsia-600/20 blur-3xl" />

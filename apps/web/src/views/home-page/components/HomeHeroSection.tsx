@@ -91,7 +91,7 @@ export default function HomeHeroSection() {
   }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-28 sm:pt-16 lg:pb-32 lg:pt-20">
+    <section className="relative overflow-hidden pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(165deg,#f5f0ff_0%,#faf8ff_35%,#ffffff_72%,#fffdfd_100%)]" />
         <div

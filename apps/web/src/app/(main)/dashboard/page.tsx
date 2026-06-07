@@ -21,7 +21,7 @@ export default function DashboardPage() {
     } else if (user.role === 'TUTOR') {
       router.replace(ROUTES.DASHBOARD.TUTOR_PROFILE);
     } else if (user.role === 'ADMIN') {
-      router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
+      router.replace(ROUTES.DASHBOARD.MY_LESSONS);
     }
   }, [user, router]);
 

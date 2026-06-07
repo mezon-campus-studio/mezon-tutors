@@ -13,7 +13,9 @@ export type DashboardMenuIconKey =
   | 'wallet'
   | 'reports'
   | 'dashboard'
-  | 'profile';
+  | 'profile'
+  | 'events'
+  | 'adminPanel';
 export type DashboardMenuLabelKey =
   | 'myLessons'
   | 'pendingBookings'
@@ -28,7 +30,9 @@ export type DashboardMenuLabelKey =
   | 'wallet'
   | 'reports'
   | 'dashboard'
-  | 'profile';
+  | 'profile'
+  | 'events'
+  | 'adminPanel';
 
 export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
@@ -36,7 +40,7 @@ export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
 export const DASHBOARD_ROLE_TITLES: Record<DashboardRole, string> = {
   STUDENT: 'Student Dashboard',
   TUTOR: 'Tutor Dashboard',
-  ADMIN: 'Admin Dashboard',
+  ADMIN: 'Student Dashboard',
 };
 
 export type DashboardMenuItem = {
@@ -55,7 +59,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'myLessons',
     iconKey: 'document',
     href: ROUTES.DASHBOARD.MY_LESSONS,
-    roles: ['STUDENT'],
+    roles: ['STUDENT', 'ADMIN'],
   },
   {
     key: 'pending-bookings',
@@ -63,7 +67,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'pendingBookings',
     iconKey: 'bookingRequests',
     href: ROUTES.DASHBOARD.PENDING_BOOKINGS,
-    roles: ['STUDENT'],
+    roles: ['STUDENT', 'ADMIN'],
   },
   {
     key: 'complaints',
@@ -71,7 +75,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'complaints',
     iconKey: 'complaints',
     href: ROUTES.DASHBOARD.COMPLAINTS,
-    roles: ['STUDENT'],
+    roles: ['STUDENT', 'ADMIN'],
   },
   {
     key: 'tutor-profile',
@@ -111,23 +115,15 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'wallet',
     iconKey: 'wallet',
     href: ROUTES.DASHBOARD.WALLET,
-    roles: ['STUDENT', 'TUTOR'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
   },
   {
-    key: 'tutor-applications',
+    key: 'my-events',
     type: 'link',
-    labelKey: 'tutorApplications',
-    iconKey: 'tutorApplications',
-    href: ROUTES.ADMIN.TUTOR_APPLICATIONS,
-    roles: ['ADMIN'],
-  },
-  {
-    key: 'payments',
-    type: 'link',
-    labelKey: 'payments',
-    iconKey: 'payments',
-    href: ROUTES.ADMIN.PAYMENTS,
-    roles: ['ADMIN'],
+    labelKey: 'events',
+    iconKey: 'events',
+    href: ROUTES.DASHBOARD.MY_EVENTS,
+    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
   },
   {
     key: 'logout',
@@ -156,7 +152,7 @@ export function getDashboardMenuItemsByRole(role: string | null | undefined): Da
 
 export function getDefaultDashboardHref(role: string | null | undefined): string {
   if (role === 'ADMIN') {
-    return ROUTES.ADMIN.TUTOR_APPLICATIONS;
+    return ROUTES.DASHBOARD.MY_LESSONS;
   }
   if (role === 'TUTOR') {
     return ROUTES.DASHBOARD.TUTOR_PROFILE;
@@ -180,12 +176,6 @@ export function isDashboardSidebarLinkActive(
   if (item.key === 'tutor-profile') {
     return pathname.startsWith(ROUTES.DASHBOARD.TUTOR_PROFILE);
   }
-  if (item.key === 'tutor-applications') {
-    return pathname.startsWith(ROUTES.ADMIN.TUTOR_APPLICATIONS);
-  }
-  if (item.key === 'payments') {
-    return pathname.startsWith(ROUTES.ADMIN.PAYMENTS);
-  }
   if (item.key === 'trial-bookings') {
     return pathname.startsWith(ROUTES.DASHBOARD.TRIAL_BOOKING);
   }
@@ -206,6 +196,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'wallet') {
     return pathname.startsWith(ROUTES.DASHBOARD.WALLET);
+  }
+  if (item.key === 'my-events') {
+    return pathname.startsWith(ROUTES.DASHBOARD.MY_EVENTS);
   }
   return false;
 }

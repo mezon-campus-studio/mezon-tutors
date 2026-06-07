@@ -6,6 +6,7 @@
       "dashboard": "Bảng điều khiển",
       "tutorApplications": "Hồ sơ gia sư",
       "lessonComplaints": "Khiếu nại buổi học",
+      "events": "Sự kiện",
       "appSettings": "Cấu hình ứng dụng",
       "students": "Học viên",
       "payments": "Thanh toán",
@@ -283,6 +284,109 @@
         "minWithdrawalAmountUsdRange": "Phải từ {min} đến {max} USD.",
         "minWithdrawalAmountPhpRange": "Phải từ {min} đến {max} PHP.",
         "summary": "Vui lòng sửa các trường được đánh dấu trước khi lưu."
+      }
+    },
+    "Events": {
+      "title": "Duyệt sự kiện",
+      "description": "Xem xét các sự kiện do người dùng gửi và publish để hiển thị công khai.",
+      "loading": "Đang tải...",
+      "empty": "Không có sự kiện nào trong bộ lọc này.",
+      "searchPlaceholder": "Tìm theo tên hoặc slug...",
+      "metrics": {
+        "pending": "Chờ duyệt",
+        "pendingUpdates": "Cập nhật chờ duyệt",
+        "published": "Đã publish",
+        "closed": "Đã đóng",
+        "rejected": "Đã từ chối",
+        "total": "Tổng"
+      },
+      "statusFilter": {
+        "all": "Tất cả",
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "UPDATE_PENDING": "Cập nhật chờ duyệt",
+        "REJECTED": "Đã từ chối",
+        "CLOSED": "Đã đóng"
+      },
+      "publishStatus": {
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "REJECTED": "Đã từ chối",
+        "CLOSED": "Đã đóng",
+        "UPDATE_PENDING": "Cập nhật chờ duyệt"
+      },
+      "list": {
+        "title": "Danh sách sự kiện",
+        "description": "Nhấn vào từng mục để xem chi tiết và duyệt.",
+        "review": "Xem & duyệt"
+      },
+      "detail": {
+        "loading": "Đang tải sự kiện...",
+        "back": "Quay lại danh sách",
+        "submittedBy": "Gửi bởi",
+        "publish": "Publish",
+        "republish": "Publish lại",
+        "reject": "Từ chối",
+        "close": "Đóng sự kiện",
+        "publishSuccess": "Đã publish sự kiện.",
+        "rejectSuccess": "Đã từ chối sự kiện.",
+        "closeSuccess": "Đã đóng sự kiện. Sự kiện không còn hiển thị công khai.",
+        "approveUpdate": "Duyệt cập nhật",
+        "rejectUpdate": "Từ chối cập nhật",
+        "approveUpdateSuccess": "Đã áp dụng cập nhật lên sự kiện publish.",
+        "rejectUpdateSuccess": "Đã từ chối bản cập nhật.",
+        "actionFailed": "Thao tác thất bại.",
+        "rejectReasonRequired": "Vui lòng nhập lý do từ chối.",
+        "rejectedReason": "Lý do từ chối",
+        "online": "Trực tuyến",
+        "registrationOnly": "Chỉ cần đăng ký",
+        "sections": {
+          "schedule": "Thời gian & đăng ký",
+          "content": "Nội dung",
+          "images": "Ảnh",
+          "organizers": "Ban tổ chức",
+          "gallery": "Thư viện ảnh"
+        },
+        "fields": {
+          "startAt": "Bắt đầu",
+          "endAt": "Kết thúc",
+          "doorsOpenAt": "Mở cửa",
+          "registrationUrl": "Link đăng ký",
+          "location": "Địa điểm",
+          "theme": "Chủ đề",
+          "price": "Giá",
+          "coverImage": "Cover",
+          "ogImage": "OGP"
+        },
+        "publishDialog": {
+          "title": "Publish sự kiện?",
+          "description": "Sự kiện sẽ hiển thị trên trang chủ và trang chi tiết công khai."
+        },
+        "rejectDialog": {
+          "title": "Từ chối sự kiện?",
+          "description": "Người gửi sẽ thấy trạng thái bị từ chối kèm lý do.",
+          "label": "Lý do",
+          "placeholder": "Nhập lý do từ chối..."
+        },
+        "closeDialog": {
+          "title": "Đóng sự kiện?",
+          "description": "Sự kiện sẽ ẩn khỏi trang chủ và trang chi tiết công khai. Dữ liệu vẫn được lưu và có thể publish lại sau."
+        },
+        "pendingUpdate": {
+          "title": "Bản cập nhật đang chờ duyệt",
+          "description": "Người gửi đã chỉnh sửa sự kiện đã publish. Trang công khai vẫn hiển thị bản cũ cho đến khi bạn duyệt.",
+          "submittedAt": "Gửi lúc {date}"
+        },
+        "approveUpdateDialog": {
+          "title": "Áp dụng bản cập nhật?",
+          "description": "Nội dung mới sẽ thay thế phiên bản đang hiển thị công khai."
+        },
+        "rejectUpdateDialog": {
+          "title": "Từ chối bản cập nhật?",
+          "description": "Sự kiện publish giữ nguyên. Người gửi sẽ thấy lý do từ chối.",
+          "label": "Lý do",
+          "placeholder": "Nhập lý do từ chối cập nhật..."
+        }
       }
     }
   }

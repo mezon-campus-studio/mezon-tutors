@@ -24,7 +24,7 @@ export default function HomeBecomeTutorSection() {
   const t = useTranslations("Home.BecomeTutor");
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 py-12 sm:py-16">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 right-1/4 size-96 rounded-full bg-violet-300/30 blur-3xl" />
         <div className="absolute -bottom-32 left-1/4 size-96 rounded-full bg-fuchsia-300/30 blur-3xl" />

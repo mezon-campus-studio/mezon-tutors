@@ -31,3 +31,7 @@ export * from "./app-settings/app-settings.qkey";
 export * from "./support/support.api";
 export * from "./user/user.api";
 export * from "./wallet/wallet.api";
+export * from "./event/event.api";
+export * from "./event/event.qkey";
+export * from "./admin-event/admin-event.api";
+export * from "./admin-event/admin-event.qkey";

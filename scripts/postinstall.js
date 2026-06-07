@@ -6,5 +6,6 @@ if (process.env.VERCEL === '1') {
 }
 
 const root = path.join(__dirname, '..');
+execSync('node scripts/ensure-next-swc.js', { stdio: 'inherit', cwd: root });
 execSync('yarn workspace @mezon-tutors/db build', { stdio: 'inherit', cwd: root });
 execSync('yarn build', { stdio: 'inherit', cwd: root });

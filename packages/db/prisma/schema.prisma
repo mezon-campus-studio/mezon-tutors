@@ -171,6 +171,8 @@ model User {
   lessonComplaintsAsStudent        LessonComplaint[]        @relation("LessonComplaintStudent")
   lessonComplaintsReviewed         LessonComplaint[]        @relation("LessonComplaintReviewer")
   appSettingsUpdates               AppSettings[]            @relation("AppSettingsUpdatedBy")
+  createdEvents                    Event[]                  @relation("EventCreatedBy")
+  reviewedEvents                   Event[]                  @relation("EventReviewedBy")
 
   @@map("users")
 }
@@ -648,4 +650,99 @@ model AppSettings {
   updatedBy User? @relation("AppSettingsUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
 
   @@map("app_settings")
+}
+
+enum EventPublishStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+  CLOSED
+}
+
+enum EventUpdateReviewStatus {
+  PENDING
+  REJECTED
+}
+
+model Event {
+  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug            String             @unique @db.VarChar(120)
+  publishStatus   EventPublishStatus @default(PENDING) @map("publish_status")
+  startAt         DateTime           @map("start_at")
+  endAt           DateTime?          @map("end_at")
+  doorsOpenAt     DateTime?          @map("doors_open_at")
+  isOnline        Boolean            @default(true) @map("is_online")
+  city            String?            @db.VarChar(120)
+  country         String?            @db.VarChar(120)
+  venue           String?            @db.VarChar(255)
+  registrationUrl String             @map("registration_url") @db.Text
+  coverImageUrl   String             @map("cover_image_url") @db.Text
+  ogImageUrl      String             @map("og_image_url") @db.Text
+  contentVi       Json               @map("content_vi")
+  contentEn       Json?              @map("content_en")
+  rejectedReason       String?                  @map("rejected_reason") @db.Text
+  publishedAt          DateTime?                @map("published_at")
+  updateReviewStatus   EventUpdateReviewStatus? @map("update_review_status")
+  pendingUpdate        Json?                    @map("pending_update")
+  updateRejectedReason String?                  @map("update_rejected_reason") @db.Text
+  updateSubmittedAt    DateTime?                @map("update_submitted_at")
+  createdById          String                   @map("created_by_id") @db.Uuid
+  reviewedById    String?            @map("reviewed_by_id") @db.Uuid
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  createdBy  User                @relation("EventCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  reviewedBy User?               @relation("EventReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  organizers EventOrganizer[]
+  gallery    EventGalleryImage[]
+  stats      EventStat[]
+
+  @@index([publishStatus, startAt])
+  @@index([createdById])
+  @@map("events")
+}
+
+model EventOrganizer {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String  @map("event_id") @db.Uuid
+  sortOrder Int     @default(0) @map("sort_order")
+  name      String  @db.VarChar(255)
+  role      String  @db.VarChar(255)
+  category  String  @db.VarChar(120)
+  bio       String? @db.Text
+  imageUrl  String  @map("image_url") @db.Text
+  gradient  String  @default("from-violet-600 to-fuchsia-500") @db.VarChar(80)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("event_organizers")
+}
+
+model EventGalleryImage {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String  @map("event_id") @db.Uuid
+  sortOrder Int     @default(0) @map("sort_order")
+  imageUrl  String  @map("image_url") @db.Text
+  captionVi String? @map("caption_vi") @db.VarChar(500)
+  captionEn String? @map("caption_en") @db.VarChar(500)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("event_gallery_images")
+}
+
+model EventStat {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String  @map("event_id") @db.Uuid
+  sortOrder Int     @default(0) @map("sort_order")
+  value     String  @db.VarChar(50)
+  labelVi   String  @map("label_vi") @db.VarChar(120)
+  labelEn   String? @map("label_en") @db.VarChar(120)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("event_stats")
 }
