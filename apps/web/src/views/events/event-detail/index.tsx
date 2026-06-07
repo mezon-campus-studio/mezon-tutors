@@ -92,7 +92,7 @@ function EventHero({
   const lifecycleStatus = useEventLifecycleStatus(event.startAt, event.endAt);
 
   return (
-    <section className="relative -mt-[4.5rem] min-h-[min(92vh,880px)] overflow-hidden bg-[#0c0a14] pt-[4.5rem] text-white">
+    <section className="relative -mt-14 min-h-[min(88vh,820px)] overflow-hidden bg-[#0c0a14] pt-14 text-white sm:-mt-[4.5rem] sm:min-h-[min(92vh,880px)] sm:pt-[4.5rem]">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_-8%,rgba(124,58,237,0.38),transparent_65%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_45%_at_100%_60%,rgba(219,39,119,0.18),transparent_55%)]" />
@@ -104,21 +104,21 @@ function EventHero({
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0c0a14] to-transparent" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[inherit] max-w-7xl flex-col px-6 pb-16 pt-6 lg:px-10 lg:pb-20 lg:pt-8">
+      <div className="relative mx-auto flex min-h-[inherit] max-w-7xl flex-col px-4 pb-12 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:px-10 lg:pb-20 lg:pt-8">
         <HeroEnter delay={0}>
           <Link
             href={ROUTES.HOME.events}
-            className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-white/50 transition-colors hover:text-white"
+            className="mb-5 inline-flex items-center gap-1.5 text-xs font-medium text-white/50 transition-colors hover:text-white sm:mb-8 sm:gap-2 sm:text-sm"
           >
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
             Events
           </Link>
         </HeroEnter>
 
-        <div className="grid flex-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
-          <div className="space-y-6 lg:space-y-7">
+        <div className="grid flex-1 items-center gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
+          <div className="space-y-5 sm:space-y-6 lg:space-y-7">
             <HeroEnter delay={80}>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <Badge className="h-auto rounded-full border border-violet-400/35 bg-violet-500/20 px-3 py-1 text-[11px] font-semibold text-violet-100 shadow-sm shadow-violet-900/30">
                   {content.theme}
                 </Badge>
@@ -137,19 +137,19 @@ function EventHero({
 
             <HeroEnter delay={160}>
               <div className="space-y-4">
-                <h1 className="whitespace-pre-line text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-[2.85rem] lg:leading-[1.08]">
+                <h1 className="whitespace-pre-line text-[1.65rem] font-bold leading-[1.12] tracking-tight sm:text-4xl lg:text-[2.85rem] lg:leading-[1.08]">
                   <span className="bg-gradient-to-br from-white via-white to-white/75 bg-clip-text text-transparent">
                     {content.title}
                   </span>
                 </h1>
-                <p className="max-w-xl text-base leading-7 text-white/60 sm:text-lg">
+                <p className="max-w-xl text-sm leading-6 text-white/60 sm:text-base sm:leading-7 lg:text-lg">
                   {content.tagline}
                 </p>
               </div>
             </HeroEnter>
 
             <HeroEnter delay={240}>
-              <div className="flex flex-wrap gap-2 text-sm text-white/70">
+              <div className="flex flex-wrap gap-1.5 text-sm text-white/70 sm:gap-2">
                 <HeroMetaPill icon={Calendar}>{dateLabel}</HeroMetaPill>
                 {showLocation && locationLabel ? (
                   <HeroMetaPill icon={MapPin}>{locationLabel}</HeroMetaPill>
@@ -167,28 +167,28 @@ function EventHero({
             </HeroEnter>
 
             <HeroEnter delay={320}>
-              <div className="flex flex-wrap gap-3 pt-1">
+              <div className="flex flex-col gap-2.5 pt-1 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:gap-3">
                 <a
                   href={event.registrationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative inline-flex overflow-hidden rounded-full"
+                  className="group relative inline-flex w-full rounded-full min-[420px]:w-fit min-[420px]:max-w-full"
                 >
-                  <Button className="relative z-10 h-12 rounded-full bg-white px-7 text-sm font-semibold text-slate-900 shadow-xl shadow-violet-900/25 transition-all hover:bg-violet-50 hover:shadow-violet-500/20">
+                  <Button className="relative z-10 h-11 w-full rounded-full bg-white px-6 text-sm font-semibold text-slate-900 shadow-xl shadow-violet-900/25 transition-all hover:bg-violet-50 hover:shadow-violet-500/20 min-[420px]:h-12 min-[420px]:w-auto min-[420px]:px-7">
                     {tDetail("actions.register")}
                     <ArrowRight className="ml-1.5 size-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                   <span
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 z-20 motion-safe:[animation:event-cta-shine_3s_ease-in-out_infinite]"
+                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
                   >
-                    <span className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                    <span className="absolute inset-y-0 -left-1/2 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:[animation:event-cta-shine_3s_ease-in-out_infinite]" />
                   </span>
                 </a>
-                <Link href="#about" className="inline-flex">
+                <Link href="#about" className="inline-flex w-full min-[420px]:w-auto">
                   <Button
                     variant="outline"
-                    className="h-12 rounded-full border-white/20 bg-white/5 px-7 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/35 hover:bg-white/12"
+                    className="h-11 w-full rounded-full border-white/20 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/35 hover:bg-white/12 min-[420px]:h-12 min-[420px]:w-auto min-[420px]:px-7"
                   >
                     {tDetail("actions.watchIntro")}
                   </Button>
@@ -263,9 +263,9 @@ function HeroMetaPill({
   children: ReactNode;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm">
-      <Icon className="size-3.5 shrink-0 text-violet-300" />
-      {children}
+    <span className="inline-flex max-w-full items-start gap-1.5 rounded-full border border-white/10 bg-white/8 px-2.5 py-1.5 text-[11px] font-medium text-white/80 backdrop-blur-sm sm:items-center sm:px-3 sm:text-xs">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-violet-300 sm:mt-0" />
+      <span className="min-w-0 leading-snug">{children}</span>
     </span>
   );
 }
@@ -354,12 +354,12 @@ function EventAbout({ event }: { event: EventDetailDto }) {
   return (
     <section
       id="about"
-      className="relative scroll-mt-32 overflow-hidden py-12 sm:py-16"
+        className="relative scroll-mt-28 overflow-hidden py-10 sm:scroll-mt-32 sm:py-16"
     >
       <div className="pointer-events-none absolute -top-32 right-0 size-80 rounded-full bg-violet-100/50 blur-[80px]" />
       <div className="pointer-events-none absolute bottom-0 left-0 size-64 rounded-full bg-fuchsia-100/40 blur-[70px]" />
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <EventReveal direction="left">
             <div className="space-y-5">
@@ -455,8 +455,8 @@ function EventRegister({ event }: { event: EventDetailDto }) {
   });
 
   return (
-    <section id="register" className="scroll-mt-32 py-12 sm:py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+    <section id="register" className="scroll-mt-28 py-10 sm:scroll-mt-32 sm:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <EventReveal>
           <div className="relative overflow-hidden rounded-3xl p-[1.5px]">
             <div
@@ -468,11 +468,11 @@ function EventRegister({ event }: { event: EventDetailDto }) {
               <div className="pointer-events-none absolute bottom-0 left-0 size-56 rounded-full bg-fuchsia-600/20 blur-[70px]" />
 
               <div className="relative grid lg:grid-cols-2">
-                <div className="space-y-4 p-6 sm:p-10">
+                <div className="space-y-4 p-5 sm:p-6 lg:p-10">
                   <p className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">
                     {tDetail("sections.register.badge")}
                   </p>
-                  <h2 className="whitespace-pre-line text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl">
+                  <h2 className="whitespace-pre-line text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
                     {content.registerTitle ?? tDetail("sections.register.title")}
                   </h2>
                   <p className="max-w-md text-sm leading-7 text-white/60">
@@ -483,7 +483,7 @@ function EventRegister({ event }: { event: EventDetailDto }) {
                   </p>
                 </div>
 
-                <div className="flex flex-col justify-between border-t border-white/8 bg-white/4 p-6 backdrop-blur-sm sm:p-10 lg:border-t-0 lg:border-l">
+                <div className="flex flex-col justify-between border-t border-white/8 bg-white/4 p-5 backdrop-blur-sm sm:p-6 lg:border-t-0 lg:border-l lg:p-10">
                   <div className="space-y-5">
                     <div className="flex items-baseline gap-2">
                       <span className="bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-4xl font-bold text-transparent">
@@ -524,7 +524,7 @@ function EventRegister({ event }: { event: EventDetailDto }) {
                     href={event.registrationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative mt-8 inline-flex overflow-hidden rounded-full"
+                    className="group relative mt-8 inline-flex w-fit max-w-full rounded-full"
                   >
                     <Button className="relative z-10 h-12 w-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-sm font-semibold text-white shadow-lg shadow-violet-900/40 transition-all hover:from-violet-400 hover:to-fuchsia-400 hover:shadow-violet-500/30 sm:w-auto sm:px-10">
                       {tDetail("actions.registerCta")}
@@ -532,9 +532,9 @@ function EventRegister({ event }: { event: EventDetailDto }) {
                     </Button>
                     <span
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 z-20 motion-safe:[animation:event-cta-shine_2.5s_ease-in-out_infinite]"
+                      className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
                     >
-                      <span className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                      <span className="absolute inset-y-0 -left-1/2 w-1/2 bg-gradient-to-r from-transparent via-white/35 to-transparent motion-safe:[animation:event-cta-shine_2.5s_ease-in-out_infinite]" />
                     </span>
                   </a>
                 </div>

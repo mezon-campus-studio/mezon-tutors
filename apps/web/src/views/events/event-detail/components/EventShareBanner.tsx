@@ -10,6 +10,7 @@ import {
   formatEventLocationLabel,
   isRegistrationOnlyEventDto,
   pickEventContent,
+  pickEventShareContent,
 } from "@/lib/event-view";
 import { EventReveal } from "@/views/events/event-detail/components/EventReveal";
 
@@ -22,12 +23,8 @@ export function EventShareBanner({ event, dateLabel }: EventShareBannerProps) {
   const t = useTranslations("Events.detail");
   const locale = useLocale();
   const content = pickEventContent(event, locale);
+  const { shareTitle, shareDescription } = pickEventShareContent(event, locale);
   const [copied, setCopied] = useState(false);
-
-  const shareDescription =
-    content.seoDescription?.trim() || content.tagline;
-  const ogTitle =
-    content.seoTitle?.trim() || content.title.replace(/\n/g, " ");
 
   const locationLabel = formatEventLocationLabel(event.location, locale, {
     online: t("meta.online"),
@@ -45,8 +42,8 @@ export function EventShareBanner({ event, dateLabel }: EventShareBannerProps) {
   };
 
   return (
-    <section id="share" className="scroll-mt-32 py-10 sm:py-12">
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+    <section id="share" className="scroll-mt-28 py-8 sm:scroll-mt-32 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
         <EventReveal>
           <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-lg shadow-violet-100/50">
             <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
@@ -111,7 +108,7 @@ export function EventShareBanner({ event, dateLabel }: EventShareBannerProps) {
                   </div>
                   <div className="space-y-1 border-t border-violet-100 bg-white px-4 py-3">
                     <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900">
-                      {ogTitle}
+                      {shareTitle}
                     </p>
                     <p className="line-clamp-2 text-xs leading-5 text-slate-600">
                       {shareDescription}

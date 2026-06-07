@@ -24,15 +24,15 @@ export function EventSectionNav({ hasSpeakers }: EventSectionNavProps) {
   return (
     <nav
       aria-label="Event sections"
-      className="sticky top-[4.5rem] z-40 border-b border-violet-100/90 bg-white/90 shadow-sm shadow-violet-100/30 backdrop-blur-md"
+      className="sticky top-14 z-40 border-b border-violet-100/90 bg-white/90 shadow-sm shadow-violet-100/30 backdrop-blur-md sm:top-[4.5rem]"
     >
-      <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6 py-2.5 lg:px-10">
+      <div className="mx-auto flex max-w-7xl snap-x snap-mandatory gap-1 overflow-x-auto px-4 py-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 sm:py-2.5 lg:px-10 [&::-webkit-scrollbar]:hidden">
         {items.map((item) => (
           <a
             key={item.href}
             href={item.href}
             className={cn(
-              "shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold text-slate-600 transition-colors",
+              "shrink-0 snap-start rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-slate-600 transition-colors sm:px-4 sm:text-xs",
               "hover:bg-violet-50 hover:text-violet-700",
             )}
           >

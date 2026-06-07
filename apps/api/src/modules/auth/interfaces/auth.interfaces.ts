@@ -10,7 +10,7 @@ export interface MezonUserInfo {
   avatar: string | null
   display_name: string
   user_id: string
-  email: string
+  email?: string | null
   username: string
 }
 

@@ -34,7 +34,7 @@ export function EventSpeakersSection({ organizers }: EventSpeakersSectionProps) 
     <>
       <section
         id="speakers"
-        className="relative scroll-mt-32 overflow-hidden bg-[#08070f] py-14 sm:py-20"
+        className="relative scroll-mt-28 overflow-hidden bg-[#08070f] py-10 sm:scroll-mt-32 sm:py-20"
       >
         <div
           aria-hidden
@@ -42,12 +42,12 @@ export function EventSpeakersSection({ organizers }: EventSpeakersSectionProps) 
         />
         <div className="pointer-events-none absolute -top-24 left-1/2 size-[32rem] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[120px]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="mb-10 space-y-3 sm:mb-12">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
+          <div className="mb-8 space-y-2.5 sm:mb-12 sm:space-y-3">
             <p className="text-xs font-bold tracking-[0.25em] text-violet-400 uppercase">
               {t("sections.speakers.badge")}
             </p>
-            <h2 className="font-serif whitespace-pre-line text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">
+            <h2 className="font-serif whitespace-pre-line text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl lg:text-5xl">
               {t("sections.speakers.title")}
             </h2>
             <p className="max-w-lg text-sm text-white/50 sm:text-base">
@@ -118,11 +118,11 @@ function SpeakerCard({
 
       <span
         aria-hidden
-        className="absolute top-3 left-3 size-2.5 rounded-full bg-red-500 opacity-80 ring-4 ring-red-500/20 transition group-hover:opacity-100"
+        className="absolute top-3 left-3 size-2.5 rounded-full bg-violet-500 opacity-80 ring-4 ring-violet-500/20 transition group-hover:opacity-100"
       />
 
       <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-        <span className="mb-2 inline-block rounded-sm bg-red-600/90 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
+        <span className="mb-2 inline-block rounded-sm bg-violet-600/90 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
           {organizer.category}
         </span>
         <h3 className="font-serif text-xl font-semibold text-white sm:text-2xl">
@@ -182,7 +182,7 @@ function SpeakerDetailDialog({
               <X className="size-4" />
             </DialogClose>
 
-            <span className="mb-4 inline-flex w-fit rounded-sm bg-red-600/90 px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase">
+            <span className="mb-4 inline-flex w-fit rounded-sm bg-violet-600/90 px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase">
               {organizer.category}
             </span>
 

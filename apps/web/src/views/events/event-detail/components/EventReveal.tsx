@@ -19,7 +19,7 @@ export function EventReveal({
   direction = "up",
   threshold = 0.12,
 }: EventRevealProps) {
-  const { ref, isInView } = useInView({ threshold });
+  const { ref, isInView } = useInView<HTMLDivElement>({ threshold });
 
   const hiddenOffset =
     direction === "left"

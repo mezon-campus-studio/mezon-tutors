@@ -8,7 +8,7 @@ export type AdminLessonChangeHistoryItem = {
   id: string;
   studentId: string;
   studentName: string;
-  studentEmail: string;
+  studentEmail: string | null;
   action: AdminLessonChangeAction;
   lessonType: AdminLessonChangeLessonType;
   initiatedByRole: AdminLessonChangeInitiatorRole;

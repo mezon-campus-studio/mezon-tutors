@@ -61,7 +61,7 @@ export type AdminLessonComplaintListItem = {
   student: {
     id: string;
     username: string;
-    email: string;
+    email: string | null;
     avatar: string;
   };
   tutor: {

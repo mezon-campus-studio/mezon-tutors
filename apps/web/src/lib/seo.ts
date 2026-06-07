@@ -58,7 +58,9 @@ function truncate(text: string, maxLength: number): string {
 
 type PageMetadataInput = {
   title: string;
+  openGraphTitle?: string;
   description: string;
+  openGraphDescription?: string;
   path?: string;
   image?: string | null;
   index?: boolean;
@@ -73,15 +75,17 @@ export function buildPageMetadata(
   const indexable = input.index !== false;
   const ogImageUrl = resolveOgImageUrl(input.image, siteUrl);
   const isDefaultOgImage = ogImageUrl === getDefaultOgImageUrl(siteUrl);
+  const ogTitle = input.openGraphTitle?.trim() || input.title;
+  const ogDescription = input.openGraphDescription?.trim() || input.description;
   const images = [
     isDefaultOgImage
       ? {
           url: ogImageUrl,
           width: DEFAULT_OG_IMAGE_WIDTH,
           height: DEFAULT_OG_IMAGE_HEIGHT,
-          alt: input.title,
+          alt: ogTitle,
         }
-      : { url: ogImageUrl, alt: input.title },
+      : { url: ogImageUrl, alt: ogTitle },
   ];
 
   return {
@@ -93,16 +97,16 @@ export function buildPageMetadata(
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
-      title: input.title,
-      description: input.description,
+      title: ogTitle,
+      description: ogDescription,
       url,
       locale: "vi_VN",
       images,
     },
     twitter: {
       card: "summary_large_image",
-      title: input.title,
-      description: input.description,
+      title: ogTitle,
+      description: ogDescription,
       images: [ogImageUrl],
     },
     robots: indexable
