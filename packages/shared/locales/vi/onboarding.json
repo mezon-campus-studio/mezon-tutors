@@ -1,0 +1,134 @@
+{
+  "badge": "Hướng dẫn sử dụng",
+  "title": "Bắt đầu với",
+  "titleHighlight": "Mezonly",
+  "subtitle": "Làm quen nền tảng theo từng bước — chọn vai trò của bạn và khám phá cách học hoặc dạy hiệu quả nhất.",
+  "roleLabel": "Bạn là",
+  "roles": {
+    "student": "Học viên",
+    "tutor": "Gia sư"
+  },
+  "stepBadge": "Bước {step}",
+  "progress": "{current} / {total}",
+  "prev": "Quay lại",
+  "next": "Tiếp theo",
+  "finish": "Hoàn tất",
+  "goToAction": "Thử ngay",
+  "goToDashboard": "Mở ngay",
+  "goToMezon": "Mở Mezon",
+  "goToBotInvite": "Mở link mời bot",
+  "contactSupport": "Liên hệ hỗ trợ",
+  "completion": {
+    "title": "Bạn đã sẵn sàng!",
+    "description": "Bạn đã nắm được quy trình cơ bản. Bắt đầu hành trình học tập hoặc dạy học ngay hôm nay.",
+    "studentCta": "Vào bảng điều khiển",
+    "findTutorCta": "Tìm gia sư",
+    "tutorCta": "Mở Mezon",
+    "dashboardCta": "Vào bảng điều khiển"
+  },
+  "student": {
+    "intro": "Làm quen các tính năng trong Dashboard — lịch học, thanh toán, ví, khiếu nại và đổi lịch/hủy buổi học.",
+    "steps": {
+      "myLessons": {
+        "title": "Buổi học của tôi",
+        "description": "Xem lịch tuần, buổi học sắp tới và danh sách gia sư bạn đang theo học.",
+        "tips": {
+          "tip1": "Tab Lịch hiển thị buổi học theo tuần — chuyển tuần hoặc về Hôm nay.",
+          "tip2": "Tab Buổi học liệt kê buổi sắp diễn ra và đã hoàn thành.",
+          "tip3": "Nhấn Vào lớp khi đến giờ — mở phòng học trên Mezon trực tiếp."
+        }
+      },
+      "pendingBookings": {
+        "title": "Chờ thanh toán",
+        "description": "Các buổi học thử hoặc gói học chưa thanh toán hiển thị tại đây — hoàn tất trong thời hạn để giữ slot.",
+        "tips": {
+          "tip1": "Mỗi mục có đếm ngược thời gian thanh toán còn lại.",
+          "tip2": "Nhấn Thanh toán ngay để dùng cổng thanh toán hoặc số dư ví.",
+          "tip3": "Sau khi thanh toán, buổi học tự chuyển sang Buổi học của tôi."
+        }
+      },
+      "wallet": {
+        "title": "Ví học viên",
+        "description": "Nạp tiền, kiểm tra số dư và xem lịch sử giao dịch — thanh toán buổi học nhanh hơn.",
+        "tips": {
+          "tip1": "Số dư khả dụng hiển thị ở đầu trang Ví.",
+          "tip2": "Nạp tiền qua cổng thanh toán — tiền vào ví ngay sau khi thành công.",
+          "tip3": "Mục Giao dịch ghi nạp tiền, thanh toán buổi học và hoàn tiền."
+        }
+      },
+      "complaints": {
+        "title": "Khiếu nại buổi học",
+        "description": "Nếu buổi học có vấn đề, gửi khiếu nại từ Dashboard để đội ngũ hỗ trợ xem xét.",
+        "tips": {
+          "tip1": "Vào mục Khiếu nại trong sidebar dashboard.",
+          "tip2": "Chọn buổi học và mô tả chi tiết vấn đề gặp phải.",
+          "tip3": "Theo dõi trạng thái xử lý — hoặc dùng Liên hệ hỗ trợ trên trang này nếu cần thêm."
+        }
+      },
+      "cancelAndSchedule": {
+        "title": "Đổi lịch & hủy buổi học",
+        "description": "Cần đổi giờ hoặc hủy buổi? Quản lý trực tiếp từ tab Buổi học trong Buổi học của tôi.",
+        "tips": {
+          "tip1": "Nhấn Đổi lịch/Hủy trên buổi học sắp tới để xem các lựa chọn.",
+          "tip2": "Đổi lịch chỉ khả dụng khi còn hơn 12 tiếng trước giờ học — chọn khung giờ trống mới.",
+          "tip3": "Hủy buổi thử trước 12 tiếng được hoàn tiền vào ví; trong vòng 12 tiếng thì không hoàn."
+        }
+      }
+    }
+  },
+  "tutor": {
+    "intro": "Thiết lập Clan trên Mezon sau khi trở thành gia sư — làm theo từng bước bên dưới.",
+    "steps": {
+      "createClan": {
+        "title": "Tạo Clan trên Mezon",
+        "description": "Mở Mezon và tạo Clan mới — đây sẽ là không gian dạy học chính thức của bạn trên nền tảng.",
+        "imageAlt": "Minh họa màn hình tạo Clan mới trên Mezon",
+        "tips": {
+          "tip1": "Vào Mezon và bấm nút Tạo Clan ở sidebar bên trái.",
+          "tip2": "Chọn một template bạn thích hoặc có thể bỏ qua (gợi ý chọn Study Group template).",
+          "tip3": "Nhập tên Clan của bạn và tải lên ảnh avatar (avatar là tùy chọn)."
+        }
+      },
+      "voiceChannels": {
+        "title": "Tạo Voice Channel giảng dạy",
+        "description": "Tạo kênh voice trong Clan để dùng cho buổi học trực tuyến — hoặc dùng các kênh Mezon đã tạo sẵn nếu bạn chọn template.",
+        "imageAlt": "Minh họa tạo voice channel trong Clan",
+        "tips": {
+          "tip1": "Ấn vào icon <plus>+</plus> ở trên các category để tạo channel mới.",
+          "tip2": "Chọn Voice type, sau đó nhập tên channel.",
+          "tip3": "Nếu bạn đã chọn template khi tạo Clan, Mezon sẽ tạo sẵn một số channel (hình bên là Study Group template)."
+        }
+      },
+      "inviteBot": {
+        "title": "Mời bot Mezonly vào Clan",
+        "description": "Dùng link mời bot chính thức để thêm Mezonly Bot vào Clan — bước bắt buộc trước khi chạy lệnh setup.",
+        "imageAlt": "Minh họa mời Mezonly Bot vào Clan",
+        "tips": {
+          "tip1": "Dùng <link>link này</link>, mở trong trình duyệt đã đăng nhập Mezon, chọn Clan của bạn và mời bot vào Clan.",
+          "tip2": "Khi thấy dòng welcome như hình bên là đã mời bot thành công.",
+          "tip3": "Kiểm tra bot có đang online như hình bên không — nếu không mời được hoặc bot không online, hãy liên hệ support."
+        }
+      },
+      "setupCommand": {
+        "title": "Gõ lệnh setup Mezonly",
+        "description": "Trong text channel bất kỳ, gõ lệnh setup để bot liên kết Clan với tài khoản gia sư trên Mezonly.",
+        "imageAlt": "Minh họa gõ lệnh /setup mezonly trong chat",
+        "tips": {
+          "tip1": "Mở text channel (ví dụ #general) trong Clan.",
+          "tip2": "Gõ <command>*mezonly setup</command> rồi gửi.",
+          "tip3": "Làm theo hướng dẫn bot trả về — thường chỉ mất vài giây."
+        }
+      },
+      "customizeClan": {
+        "title": "Tùy chỉnh Clan — gần như hoàn tất!",
+        "description": "Clan đã được liên kết. Bạn có thể tùy chỉnh theme, emoji, role và kênh theo ý muốn trước khi nhận học viên.",
+        "imageAlt": "Minh họa tùy chỉnh Clan sau khi setup xong",
+        "tips": {
+          "tip1": "Đổi theme, emoji và role cho Clan nếu muốn cá nhân hóa.",
+          "tip2": "Thêm hoặc sắp xếp lại kênh text/voice theo cách dạy của bạn.",
+          "tip3": "Clan đã sẵn sàng — học viên có thể vào buổi học qua Mezonly."
+        }
+      }
+    }
+  }
+}

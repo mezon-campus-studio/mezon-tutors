@@ -1,0 +1,41 @@
+import {
+  Banknote,
+  Bot,
+  CalendarCheck,
+  CalendarDays,
+  GraduationCap,
+  Mic,
+  Palette,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  UserCircle,
+  UserPen,
+  Users,
+  Video,
+  Wallet,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { OnboardingStepIconKey } from '@mezon-tutors/shared';
+
+export const ONBOARDING_ICON_BY_KEY: Record<OnboardingStepIconKey, LucideIcon> = {
+  userCircle: UserCircle,
+  search: Search,
+  calendarCheck: CalendarCheck,
+  video: Video,
+  wallet: Wallet,
+  graduationCap: GraduationCap,
+  sparkles: Sparkles,
+  shieldCheck: ShieldCheck,
+  calendarDays: CalendarDays,
+  banknote: Banknote,
+  refreshCw: RefreshCw,
+  userPen: UserPen,
+  users: Users,
+  mic: Mic,
+  bot: Bot,
+  terminal: Terminal,
+  palette: Palette,
+};

@@ -95,7 +95,7 @@ export default function Footer() {
       key: "support",
       title: t("support.title"),
       links: [
-        { label: t("support.helpCenter"), href: "/" },
+        { label: t("support.onboarding"), href: "/support/onboarding" },
         { label: t("support.contact"), href: "/" },
         { label: t("support.privacyPolicy"), href: "/" },
       ],

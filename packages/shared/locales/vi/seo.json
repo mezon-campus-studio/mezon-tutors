@@ -61,5 +61,9 @@
   "authCallback": {
     "title": "Đăng nhập | Mezonly",
     "description": "Đang xử lý đăng nhập Mezonly."
+  },
+  "onboarding": {
+    "title": "Hướng dẫn sử dụng Mezonly",
+    "description": "Khám phá Mezonly theo từng bước — hướng dẫn chi tiết cho học viên và gia sư."
   }
 }
