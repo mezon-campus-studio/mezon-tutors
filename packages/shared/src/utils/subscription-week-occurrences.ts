@@ -63,7 +63,7 @@ export function buildMonthlySubscriptionSlotJson(
   return out
 }
 
-/** `slotStorageTimezone`: timezone used when `date` + `startTime` were persisted (tutor TZ). */
+/** `slotStorageTimezone`: timezone used when `date` + `startTime` were persisted (API default: UTC). */
 export function subscriptionConcreteOccurrencesSorted(
   slots: SubscriptionWeeklySlotLike[],
   slotStorageTimezone: string

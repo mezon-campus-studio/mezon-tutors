@@ -103,21 +103,23 @@
       "cancellation": {
         "within12Hours": "You can only request cancellation more than 12 hours before the lesson starts.",
         "alreadyRequested": "A cancellation request was already submitted for this lesson.",
-        "success": "Cancellation request recorded. The student has been notified.",
-        "failed": "Could not submit cancellation request.",
+        "alreadyCancelled": "This lesson has already been cancelled.",
+        "success": "Lesson cancelled. The student has been refunded and notified.",
+        "successNoRefund": "Lesson cancelled. The student has been notified.",
+        "failed": "Could not cancel the lesson.",
         "messageSent": "Message sent to the student.",
-        "messageFailed": "Request saved but the message could not be sent.",
+        "messageFailed": "Lesson was cancelled but the message could not be sent.",
         "messageMissingUser": "Missing user information to send message.",
         "dialog": {
-          "title": "Request to cancel trial lesson",
-          "titleSubscription": "Request to cancel subscription lesson",
-          "confirm": "Send cancellation request",
+          "title": "Cancel trial lesson",
+          "titleSubscription": "Cancel subscription lesson",
+          "confirm": "Cancel lesson",
           "dismiss": "Keep lesson",
-          "reasonLabel": "Reason for cancellation request",
+          "reasonLabel": "Reason for cancellation",
           "reasonPlaceholder": "Select a reason",
           "messageLabel": "Message for {student} (optional)",
-          "messagePlaceholder": "Explain why you are requesting to cancel...",
-          "policyHint": "Please select a reason and add an optional message to send a cancellation request to the student."
+          "messagePlaceholder": "Explain why you are cancelling this lesson...",
+          "policyHint": "The lesson will be cancelled immediately. The student will be refunded to their wallet and notified by message."
         }
       },
       "reschedule": {
@@ -260,21 +262,24 @@
             "emptyDescription": "When students confirm bookings, they will appear here.",
             "viewRequests": "Trial bookings",
             "manageLesson": "Manage lesson",
+            "rescheduleOrCancel": "Reschedule/Cancel",
             "viewDetail": "Details",
+            "statusCancelled": "Cancelled",
             "reschedule": "Request reschedule",
             "cancel": "Cancel lesson",
             "rescheduleNotice": "This lesson starts in less than {hours} hours and can no longer be rescheduled. You can still cancel if needed.",
             "reschedulePendingNotice": "Your reschedule request has been submitted and is awaiting review.",
-            "cancellationPendingNotice": "Your cancellation request has been submitted and is awaiting review."
+            "cancellationPendingNotice": "This lesson was cancelled."
           },
           "past": {
             "eyebrow": "Past lessons",
-            "title": "Past lessons"
+            "title": "Past lessons",
+            "statusCancelled": "Cancelled"
           },
           "status": {
             "cancelled": "Cancelled",
             "reschedulePending": "Reschedule requested",
-            "cancellationPending": "Cancellation requested"
+            "cancellationPending": "Cancelled"
           }
         },
         "students": {

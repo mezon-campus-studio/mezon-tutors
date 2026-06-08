@@ -109,7 +109,7 @@ function buildActionMenuItems(
       lessonChangePeriodHours != null &&
       isTrialLessonRescheduleEligible(item.startAt, new Date(), lessonChangePeriodHours);
     const canReschedule = canModify && !item.rescheduleRequestSubmitted;
-    const canCancel = canModify && !item.cancellationRequestSubmitted;
+    const canCancel = true;
     items.push({
       label: t('reschedule'),
       icon: <CalendarClock className="size-4" />,

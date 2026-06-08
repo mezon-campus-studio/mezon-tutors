@@ -8,6 +8,7 @@ import type {
   SubscriptionSlotRescheduleOptionsResponse,
   SubscriptionSlotRescheduleResult,
   RescheduleSubscriptionSlotPayload,
+  TutorLessonCancelResult,
   TutorSubscriptionPlanDto,
   TutorSubscriptionSlotRescheduleRequestResult,
   TutorSubscriptionWeekOccurrenceDto,
@@ -157,11 +158,8 @@ export const subscriptionApi = {
     enrollmentId: string,
     slotIndex: number,
     payload: { reason: string; message?: string; occurrenceStartAt: string },
-  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
-    return apiClient.post<
-      TutorSubscriptionSlotRescheduleRequestResult,
-      TutorSubscriptionSlotRescheduleRequestResult
-    >(
+  ): Promise<TutorLessonCancelResult> {
+    return apiClient.post<TutorLessonCancelResult, TutorLessonCancelResult>(
       `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/tutor-cancel`,
       payload,
     );
@@ -177,6 +175,13 @@ export const subscriptionApi = {
     >("/subscription-enrollments/tutor/week-occurrences", {
       params: { week_start_date: weekStartDate, timezone },
     });
+  },
+
+  getTutorCancelledLessons(): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
+    return apiClient.get<
+      ApiResponse<TutorSubscriptionWeekOccurrenceDto[]>,
+      TutorSubscriptionWeekOccurrenceDto[]
+    >("/subscription-enrollments/tutor/cancelled-lessons");
   },
 };
 
@@ -223,6 +228,12 @@ export function useCreateSubscriptionEnrollmentMutation() {
       void qc.invalidateQueries({ queryKey: subscriptionQueryKey.root });
       void qc.invalidateQueries({
         queryKey: subscriptionQueryKey.pendingPayments(),
+      });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
       });
       if (data.paymentStatus === "SUCCEEDED") {
         void qc.invalidateQueries({ queryKey: walletQueryKey.all });
@@ -309,6 +320,12 @@ export function useRescheduleSubscriptionSlotMutation() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-lessons"] });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
+      });
     },
   });
 }
@@ -378,6 +395,14 @@ function mergeTutorSubscriptionWeekOccurrences(
     }
   }
   return merged;
+}
+
+export function useGetTutorCancelledSubscriptionLessons(enabled = true) {
+  return useQuery({
+    queryKey: subscriptionQueryKey.tutorCancelledLessons(),
+    queryFn: () => subscriptionApi.getTutorCancelledLessons(),
+    enabled,
+  });
 }
 
 export function useGetTutorSubscriptionWeekOccurrencesBatch(

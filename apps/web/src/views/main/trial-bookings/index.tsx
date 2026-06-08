@@ -40,6 +40,7 @@ import {
   buildTutorLessonRescheduleRequestDmContent,
   ECurrency,
   formatLessonRangeInTimezone,
+  formatToCurrency,
   isTrialLessonRescheduleEligible,
   ROUTES,
 } from '@mezon-tutors/shared'
@@ -214,15 +215,6 @@ export default function BookingRequestsView() {
   }
 
   const handleCancel = (item: TrialLessonBookingRequestItem) => {
-    if (item.cancellationRequestSubmitted) {
-      toast.error(tCancel('alreadyRequested'))
-      return
-    }
-    
-    if (!canModifyLessonStart(item.startAt)) {
-      toast.error(tCancel('within12Hours'))
-      return
-    }
     setCancelBooking(item)
     setCancelTarget(bookingToCancelTarget(item, locale, userTimezone))
     setIsCancelDialogOpen(true)
@@ -235,7 +227,7 @@ export default function BookingRequestsView() {
 
     try {
       setIsCancelSubmitting(true)
-      await tutorCancelMutation.mutateAsync({
+      const cancelResult = await tutorCancelMutation.mutateAsync({
         bookingId: cancelBooking.id,
         payload: { reason, message: message?.trim() },
       })
@@ -243,6 +235,18 @@ export default function BookingRequestsView() {
       await queryClient.invalidateQueries({
         queryKey: ['trial-lesson-booking-my-requests'],
       })
+
+      const refundAmountLabel =
+        cancelResult.refunded && cancelResult.refundAmount > 0
+          ? formatToCurrency(
+              cancelResult.currency === ECurrency.USD ||
+                cancelResult.currency === ECurrency.PHP ||
+                cancelResult.currency === ECurrency.VND
+                ? cancelResult.currency
+                : ECurrency.VND,
+              cancelResult.refundAmount,
+            )
+          : null
 
       if (lessonForDm.startAt && recipientMezonUserId) {
         try {
@@ -268,6 +272,7 @@ export default function BookingRequestsView() {
               ),
               reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
               message,
+              refundAmountLabel,
               locale,
               senderAvatarUrl: currentUser?.avatar,
             }),
@@ -278,7 +283,9 @@ export default function BookingRequestsView() {
         }
       }
 
-      toast.success(tCancel('success'))
+      toast.success(
+        cancelResult.refunded ? tCancel('success') : tCancel('successNoRefund'),
+      )
       setIsCancelDialogOpen(false)
       setCancelTarget(null)
       setCancelBooking(null)

@@ -40,8 +40,10 @@ import {
   type SubscriptionSlotRescheduleResult,
   type SubscriptionWeeklySlotDto,
   type TutorSubscriptionPlanDto,
+  type TutorLessonCancelResult,
   type TutorSubscriptionSlotRescheduleRequestResult,
   type TutorSubscriptionWeekOccurrenceDto,
+  subscriptionSlotGrossAmount,
   subscriptionSlotsOccurrencesForWeek,
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   isTrialLessonPaymentHoldActive,
@@ -53,6 +55,7 @@ import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.
 import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
+import { WalletService } from '../wallet/wallet.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import type { CreateSubscriptionEnrollmentBodyDto } from './dto/create-subscription-enrollment.dto';
@@ -139,6 +142,7 @@ export class SubscriptionService {
     private readonly trialLessonBookingService: TrialLessonBookingService,
     private readonly appSettingsService: AppSettingsService,
     private readonly walletCheckoutService: WalletCheckoutService,
+    private readonly walletService: WalletService,
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
   ) {}
@@ -570,6 +574,12 @@ export class SubscriptionService {
         durationMinutes,
         DEFAULT_TIMEZONE,
       );
+      await this.trialLessonBookingService.assertStudentSlotAvailable(
+        studentUserId,
+        slotStart.utc().toISOString(),
+        durationMinutes,
+        DEFAULT_TIMEZONE,
+      );
       const dbDay = jsDayToDbDayOfWeek(slotStart.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
@@ -786,9 +796,10 @@ export class SubscriptionService {
         if (!slot) {
           continue;
         }
+        const slotStatus = normalizeSubscriptionSlotStatus(slot.status);
         if (
-          normalizeSubscriptionSlotStatus(slot.status) ===
-          ESubscriptionLessonSlotStatus.CANCELLED
+          slotStatus === ESubscriptionLessonSlotStatus.CANCELLED ||
+          slotStatus === ESubscriptionLessonSlotStatus.REFUNDED
         ) {
           continue;
         }
@@ -863,6 +874,111 @@ export class SubscriptionService {
     });
   }
 
+  async listTutorCancelledSubscriptionOccurrences(
+    tutorUserId: string,
+  ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { userId: tutorUserId },
+      select: { id: true },
+    });
+    if (!tutor) {
+      return [];
+    }
+
+    const cancelRows = await this.prisma.findCancelRescheduleReasons({
+      tutorId: tutor.id,
+      action: ELessonChangeAction.CANCEL,
+      lessonType: ELessonChangeLessonType.SUBSCRIPTION,
+      subscriptionEnrollmentId: { not: null },
+      subscriptionSlotIndex: { not: null },
+    });
+
+    if (cancelRows.length === 0) {
+      return [];
+    }
+
+    const occurrenceKey = (
+      enrollmentId: string,
+      slotIndex: number,
+      startAt: Date | string,
+    ) => `${enrollmentId}:${slotIndex}:${dayjs(startAt).utc().toISOString()}`;
+
+    const uniqueByOccurrence = new Map<string, (typeof cancelRows)[number]>();
+    for (const row of cancelRows) {
+      if (
+        row.subscriptionEnrollmentId == null ||
+        row.subscriptionSlotIndex == null ||
+        !row.originalStartAt
+      ) {
+        continue;
+      }
+      const key = occurrenceKey(
+        row.subscriptionEnrollmentId,
+        row.subscriptionSlotIndex,
+        row.originalStartAt,
+      );
+      const existing = uniqueByOccurrence.get(key);
+      if (!existing || row.createdAt > existing.createdAt) {
+        uniqueByOccurrence.set(key, row);
+      }
+    }
+
+    const enrollmentIds = [
+      ...new Set(
+        [...uniqueByOccurrence.values()]
+          .map((row) => row.subscriptionEnrollmentId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    const enrollments = await this.prisma.subscriptionEnrollment.findMany({
+      where: { id: { in: enrollmentIds } },
+      include: {
+        student: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+            mezonUserId: true,
+          },
+        },
+      },
+    });
+    const enrollmentById = new Map(enrollments.map((e) => [e.id, e]));
+
+    const out: TutorSubscriptionWeekOccurrenceDto[] = [];
+    for (const row of uniqueByOccurrence.values()) {
+      const enrollmentId = row.subscriptionEnrollmentId!;
+      const enrollment = enrollmentById.get(enrollmentId);
+      if (!enrollment) {
+        continue;
+      }
+      const slotIndex = row.subscriptionSlotIndex!;
+      const startAt = row.originalStartAt!;
+      out.push({
+        scheduleKind: 'subscription',
+        id: `sub-cancelled-${enrollmentId}-${slotIndex}-${dayjs(startAt).utc().toISOString()}`,
+        enrollmentId,
+        slotIndex,
+        studentId: enrollment.student.id,
+        studentMezonUserId: enrollment.student.mezonUserId,
+        studentName: enrollment.student.username,
+        studentAvatarUrl: enrollment.student.avatar?.trim()
+          ? enrollment.student.avatar
+          : null,
+        tutorProfileId: tutor.id,
+        startAt: startAt.toISOString(),
+        durationMinutes: row.originalDurationMinutes ?? SUBSCRIPTION_SLOT_DURATION_MINUTES,
+      });
+    }
+
+    out.sort(
+      (a, b) => dayjs(b.startAt).valueOf() - dayjs(a.startAt).valueOf(),
+    );
+
+    return out;
+  }
+
   async requestTutorSubscriptionSlotReschedule(
     tutorUserId: string,
     enrollmentId: string,
@@ -915,14 +1031,19 @@ export class SubscriptionService {
   }
 
   /**
-   * Tutor requests to cancel a subscription lesson occurrence: audit log only (no slot/enrollment update, no refund).
+   * Tutor cancels a subscription lesson occurrence: refunds the student, updates tutor pending balance, marks slot refunded.
    */
   async requestTutorSubscriptionSlotCancel(
     tutorUserId: string,
     enrollmentId: string,
     slotIndex: number,
     payload: { reason: string; message?: string; occurrenceStartAt: string }
-  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+  ): Promise<TutorLessonCancelResult> {
+    const reason = payload.reason?.trim();
+    if (!reason) {
+      throw new BadRequestException('Cancellation reason is required');
+    }
+
     const { enrollment, slot, occurrence } = await this.loadTutorSubscriptionSlotContext(
       tutorUserId,
       enrollmentId,
@@ -930,42 +1051,67 @@ export class SubscriptionService {
       payload.occurrenceStartAt
     );
 
-    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings();
-    const hoursUntilStart = dayjs(occurrence.startAt).utc().diff(dayjs().utc(), 'hour', true);
-    if (hoursUntilStart <= lessonChangePeriodHours) {
-      throw new BadRequestException(
-        `Cannot request cancellation within ${lessonChangePeriodHours} hours of the lesson start time`
-      );
+    const slots = this.parseWeeklySlots(enrollment.weeklySlots);
+    const slotCount = slots.length;
+    const refundAmountBigInt = subscriptionSlotGrossAmount(
+      enrollment.grossAmount,
+      slotCount,
+      slotIndex
+    );
+    const currency = (enrollment.currency as ECurrency | null) ?? ECurrency.VND;
+    const tutorLabel = enrollment.tutor.user.username ?? 'tutor';
+
+    let refunded = false;
+    if (refundAmountBigInt > 0n) {
+      refunded = await this.walletService.refundSubscriptionLessonSlot({
+        enrollmentId: enrollment.id,
+        slotIndex,
+        studentUserId: enrollment.studentId,
+        tutorUserId: enrollment.tutor.userId,
+        grossAmount: enrollment.grossAmount,
+        tutorAmount: enrollment.tutorAmount,
+        slotCount,
+        description: `Refund for subscription lesson cancelled by tutor ${tutorLabel}`,
+      });
     }
 
-    const existingRequest = await this.prisma.findCancelRescheduleReasons({
-      subscriptionEnrollmentId: enrollmentId,
-      subscriptionSlotIndex: slotIndex,
-      originalStartAt: occurrence.startAt,
-      action: ELessonChangeAction.CANCEL,
-    });
-    if (existingRequest.length > 0) {
-      throw new BadRequestException('A cancellation request was already submitted for this lesson');
-    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cancelRescheduleReason.create({
+        data: {
+          studentId: enrollment.studentId,
+          tutorId: enrollment.tutorId,
+          initiatedByUserId: tutorUserId,
+          initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
+          action: ELessonChangeAction.CANCEL,
+          lessonType: ELessonChangeLessonType.SUBSCRIPTION,
+          reason,
+          message: payload.message?.trim() || null,
+          subscriptionEnrollmentId: enrollmentId,
+          subscriptionSlotIndex: slotIndex,
+          originalStartAt: occurrence.startAt,
+          originalDurationMinutes: slot.durationMinutes,
+        },
+      });
 
-    const log = await this.prisma.createCancelRescheduleReason({
-      data: {
-        studentId: enrollment.studentId,
-        tutorId: enrollment.tutorId,
-        initiatedByUserId: tutorUserId,
-        initiatedByRole: ELessonChangeInitiatorRole.TUTOR,
-        action: ELessonChangeAction.CANCEL,
-        lessonType: ELessonChangeLessonType.SUBSCRIPTION,
-        reason: payload.reason.trim(),
-        message: payload.message?.trim() || null,
-        subscriptionEnrollmentId: enrollmentId,
-        subscriptionSlotIndex: slotIndex,
-        originalStartAt: occurrence.startAt,
-        originalDurationMinutes: slot.durationMinutes,
-      },
+      await tx.lessonSettlementJob.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          slotIndex,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          status: ELessonSettlementJobStatus.CANCELLED,
+          processedAt: new Date(),
+        },
+      });
     });
 
-    return { success: true, logId: log.id };
+    return {
+      success: true,
+      refunded,
+      refundAmount: refunded ? Number(refundAmountBigInt) : 0,
+      currency,
+    };
   }
 
   async cancelStudentSubscriptionSlot(
@@ -1126,14 +1272,24 @@ export class SubscriptionService {
         )
       );
 
-    const occupied = await this.trialLessonBookingService.collectOccupiedSlotsForTutorWeek(
-      enrollment.tutorId,
-      weekStartYmd,
-      viewerTimezone || DEFAULT_TIMEZONE,
-      {
-        excludeSubscriptionSlot: { enrollmentId, slotIndex },
-      }
-    );
+    const occupiedOptions = {
+      excludeSubscriptionSlot: { enrollmentId, slotIndex },
+    };
+    const [tutorOccupied, studentOccupied] = await Promise.all([
+      this.trialLessonBookingService.collectOccupiedSlotsForTutorWeek(
+        enrollment.tutorId,
+        weekStartYmd,
+        viewerTimezone || DEFAULT_TIMEZONE,
+        occupiedOptions
+      ),
+      this.trialLessonBookingService.collectOccupiedSlotsForStudentWeek(
+        studentUserId,
+        weekStartYmd,
+        viewerTimezone || DEFAULT_TIMEZONE,
+        occupiedOptions
+      ),
+    ]);
+    const occupied = [...tutorOccupied, ...studentOccupied];
 
     // Return full availability grid (including earlier times today) so the client
     // can render past cells and 12h-blocked cells like trial reschedule.
@@ -1247,6 +1403,13 @@ export class SubscriptionService {
 
     await this.trialLessonBookingService.assertTutorSlotAvailable(
       enrollment.tutorId,
+      newStartUtc.utc().toISOString(),
+      durationMinutes,
+      DEFAULT_TIMEZONE,
+      { excludeSubscriptionSlot: { enrollmentId, slotIndex } }
+    );
+    await this.trialLessonBookingService.assertStudentSlotAvailable(
+      studentUserId,
       newStartUtc.utc().toISOString(),
       durationMinutes,
       DEFAULT_TIMEZONE,

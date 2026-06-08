@@ -447,13 +447,12 @@ export class WebhookService {
 
     let slotConflictOnSuccess = false;
     if (isSucceeded && enrollmentSlots) {
-      const timezoneName = enrollmentSlots.tutor.user?.timezone ?? 'UTC';
       const slotsCheck =
         await this.trialLessonBookingService.checkSubscriptionEnrollmentSlotsBookable(
           enrollment.id,
           enrollment.tutorId,
+          enrollment.studentId,
           enrollmentSlots.weeklySlots,
-          timezoneName,
         );
       slotConflictOnSuccess = !slotsCheck.available;
     }
