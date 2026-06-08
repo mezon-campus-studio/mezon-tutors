@@ -104,7 +104,9 @@ export default function TutorsPage() {
 
   const subjectParam = subject === ESubject.ANY_SUBJECT ? undefined : subject;
   const countryParam = country === ECountry.ANY_COUNTRY ? undefined : country;
+  const isMinInfinity = minPrice === MIN_PRICE[currency];
   const isMaxInfinity = maxPrice === MAX_PRICE[currency];
+  const effectiveMinPrice = isMinInfinity ? undefined : minPrice;
   const effectiveMaxPrice = isMaxInfinity ? undefined : maxPrice;
 
   const { data, isLoading, isFetching } = useGetVerifiedTutors(
@@ -115,7 +117,7 @@ export default function TutorsPage() {
       subject: subjectParam,
       country: countryParam,
       currency,
-      minPrice,
+      minPrice: effectiveMinPrice,
       maxPrice: effectiveMaxPrice,
     },
   );
@@ -175,6 +177,8 @@ export default function TutorsPage() {
   useEffect(() => {
     const nextMinPrice = MIN_PRICE[currency];
     const nextMaxPrice = MAX_PRICE[currency];
+    const nextEffectiveMinPrice =
+      nextMinPrice === MIN_PRICE[currency] ? null : nextMinPrice;
     const nextEffectiveMaxPrice =
       nextMaxPrice === MAX_PRICE[currency] ? null : nextMaxPrice;
 
@@ -183,7 +187,7 @@ export default function TutorsPage() {
     setPage(DEFAULT_PAGE);
 
     replaceQuery({
-      minPrice: nextMinPrice,
+      minPrice: nextEffectiveMinPrice,
       maxPrice: nextEffectiveMaxPrice,
       page: DEFAULT_PAGE,
     });
@@ -287,7 +291,8 @@ export default function TutorsPage() {
       setMaxPrice(value.maxPrice);
       setPage(DEFAULT_PAGE);
       replaceQuery({
-        minPrice: value.minPrice,
+        minPrice:
+          value.minPrice === MIN_PRICE[currency] ? null : value.minPrice,
         maxPrice:
           value.maxPrice === MAX_PRICE[currency] ? null : value.maxPrice,
         page: DEFAULT_PAGE,

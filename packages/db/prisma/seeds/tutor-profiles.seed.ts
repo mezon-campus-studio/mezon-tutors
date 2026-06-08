@@ -150,6 +150,7 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
         avatar: AVATAR_URL,
         role: Role.TUTOR,
         email,
+        timezone,
       },
       create: {
         mezonUserId,
@@ -157,6 +158,7 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
         avatar: AVATAR_URL,
         role: Role.TUTOR,
         email,
+        timezone,
       },
     });
 
@@ -185,7 +187,6 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
       totalStudents: 10 + (i % 30),
       ratingCount: 5 + (i % 45),
       ratingAverage: '4.80',
-      timezone,
     };
 
     const tutorProfile = await prisma.tutorProfile.upsert({

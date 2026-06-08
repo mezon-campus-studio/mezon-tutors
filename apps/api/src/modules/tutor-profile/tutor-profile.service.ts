@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  CountryLabel,
   ECountry,
   ECurrency,
   ESubject,
   ETutorSortBy,
-  SubjectLabel,
+  MAX_PRICE,
+  MIN_PRICE,
   PaginatedResponse,
   SubmitTutorProfileDto,
   TutorAvailabilitySlotDto,
@@ -813,11 +813,11 @@ export class TutorProfileService {
     }
 
     if (subject && subject !== ESubject.ANY_SUBJECT) {
-      where.subject = SubjectLabel[subject]
+      where.subject = subject;
     }
 
     if (country && country !== ECountry.ANY_COUNTRY) {
-      where.country = CountryLabel[country];
+      where.country = country;
     }
 
     type TutorWithComputedPrice = Prisma.TutorProfileGetPayload<{
@@ -881,8 +881,16 @@ export class TutorProfileService {
       }
     })
 
-    const hasMin = typeof minPrice === 'number' && !Number.isNaN(minPrice)
-    const hasMax = typeof maxPrice === 'number' && !Number.isNaN(maxPrice)
+    const priceFloor = MIN_PRICE[currency]
+    const priceCeiling = MAX_PRICE[currency]
+    const hasMin =
+      typeof minPrice === 'number' &&
+      !Number.isNaN(minPrice) &&
+      minPrice > priceFloor
+    const hasMax =
+      typeof maxPrice === 'number' &&
+      !Number.isNaN(maxPrice) &&
+      maxPrice < priceCeiling
 
     const filtered = tutorsWithComputedPrices.filter((x) => {
       if (x.priceInQueryCurrency == null) return true
