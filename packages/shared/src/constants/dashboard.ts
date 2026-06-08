@@ -15,7 +15,8 @@ export type DashboardMenuIconKey =
   | 'dashboard'
   | 'profile'
   | 'events'
-  | 'adminPanel';
+  | 'adminPanel'
+  | 'onboarding';
 export type DashboardMenuLabelKey =
   | 'myLessons'
   | 'pendingBookings'
@@ -32,7 +33,8 @@ export type DashboardMenuLabelKey =
   | 'dashboard'
   | 'profile'
   | 'events'
-  | 'adminPanel';
+  | 'adminPanel'
+  | 'onboarding';
 
 export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
@@ -126,6 +128,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     roles: ['STUDENT', 'TUTOR', 'ADMIN'],
   },
   {
+    key: 'onboarding',
+    type: 'link',
+    labelKey: 'onboarding',
+    iconKey: 'onboarding',
+    href: ROUTES.SUPPORT.ONBOARDING,
+    roles: ['STUDENT', 'TUTOR'],
+  },
+  {
     key: 'logout',
     type: 'action',
     labelKey: 'logout',
@@ -199,6 +209,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-events') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_EVENTS);
+  }
+  if (item.key === 'onboarding') {
+    return pathname.startsWith(ROUTES.SUPPORT.ONBOARDING);
   }
   return false;
 }

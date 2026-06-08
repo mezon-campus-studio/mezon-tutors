@@ -18,6 +18,7 @@ import {
   LogOut,
   MessageSquareWarning,
   ShieldCheck,
+  Sparkles,
   User,
   Wallet,
 } from 'lucide-react';
@@ -43,6 +44,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   profile: User,
   events: CalendarDays,
   adminPanel: ShieldCheck,
+  onboarding: Sparkles,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -61,6 +63,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   profile: "from-violet-500 to-indigo-500",
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
+  onboarding: "from-violet-500 to-fuchsia-500",
 };
 
 type DashboardSidebarProps = {
@@ -75,7 +78,10 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const user = useAtomValue(userAtom);
 
   const menuItems = getDashboardMenuItemsByRole(userRole);
-  const navItems = menuItems.filter((item) => item.key !== "logout");
+  const navItems = menuItems.filter(
+    (item) => item.key !== "logout" && item.key !== "onboarding",
+  );
+  const onboardingItem = menuItems.find((item) => item.key === "onboarding");
   const logoutItem = menuItems.find((item) => item.key === "logout");
   const isAdmin = userRole === "ADMIN";
   const dashboardTitle =
@@ -189,6 +195,18 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         </div>
 
         <div className="mt-auto space-y-2 pt-4">
+          {onboardingItem?.href ? (
+            <Link href={onboardingItem.href} className="block">
+              <Button
+                variant="gradient"
+                className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
+              >
+                <Sparkles className="mr-2 size-4" />
+                {t(`sidebar.${onboardingItem.labelKey}`)}
+              </Button>
+            </Link>
+          ) : null}
+
           {isAdmin ? (
             <Link href={ROUTES.ADMIN.TUTOR_APPLICATIONS} className="block">
               <Button
