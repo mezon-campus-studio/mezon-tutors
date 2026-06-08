@@ -61,5 +61,9 @@
   "authCallback": {
     "title": "Sign in | Mezonly",
     "description": "Completing Mezonly sign-in."
+  },
+  "onboarding": {
+    "title": "Getting started with Mezonly",
+    "description": "Explore Mezonly step by step — a guided walkthrough for students and tutors."
   }
 }

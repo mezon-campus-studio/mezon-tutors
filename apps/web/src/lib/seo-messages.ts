@@ -23,6 +23,7 @@ export type SeoMessages = {
   checkoutSubscription: { title: string; description: string };
   admin: { title: string; description: string };
   authCallback: { title: string; description: string };
+  onboarding: { title: string; description: string };
 };
 
 const SUPPORTED_LOCALES = ["vi", "en"] as const;
