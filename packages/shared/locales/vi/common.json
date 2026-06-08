@@ -43,7 +43,11 @@
     "support": {
       "title": "Hỗ trợ",
       "onboarding": "Hướng dẫn",
-      "privacyPolicy": "Chính sách bảo mật",
+      "legalCenter": "Trung tâm pháp lý",
+      "termsOfService": "Điều khoản dịch vụ",
+      "privacyPolicy": "Chính sách quyền riêng tư",
+      "refundPolicy": "Chính sách hoàn tiền",
+      "tutorPolicy": "Chính sách gia sư",
       "contact": "Liên hệ"
     },
     "social": {
@@ -53,9 +57,9 @@
     "copyright": "© 2026 Mezonly. Bảo lưu mọi quyền.",
     "madeWith": "Powered by Mezon",
     "bottom": {
-      "terms": "Điều khoản",
-      "privacy": "Bảo mật",
-      "cookies": "Cookies"
+      "terms": "Điều khoản dịch vụ",
+      "privacy": "Chính sách quyền riêng tư",
+      "refund": "Chính sách hoàn tiền"
     }
   },
   "PaymentMethodSelection": {

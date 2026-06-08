@@ -19,5 +19,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.9,
     },
+    {
+      url: new URL(ROUTES.SUPPORT.LEGAL_CENTER, siteUrl).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: new URL(ROUTES.SUPPORT.TERMS_OF_SERVICE, siteUrl).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: new URL(ROUTES.SUPPORT.PRIVACY_POLICY, siteUrl).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: new URL(ROUTES.SUPPORT.REFUND_POLICY, siteUrl).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: new URL(ROUTES.SUPPORT.TUTOR_POLICY, siteUrl).toString(),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
   ];
 }

@@ -43,7 +43,11 @@
     "support": {
       "title": "Support",
       "onboarding": "Onboarding",
-      "privacyPolicy": "Privacy policy",
+      "legalCenter": "Legal center",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy",
+      "refundPolicy": "Refund Policy",
+      "tutorPolicy": "Tutor Policy",
       "contact": "Contact"
     },
     "social": {
@@ -53,9 +57,9 @@
     "copyright": "© 2026 Mezonly. All rights reserved.",
     "madeWith": "Powered by Mezon",
     "bottom": {
-      "terms": "Terms",
-      "privacy": "Privacy",
-      "cookies": "Cookies"
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refund": "Refund Policy"
     }
   },
   "PaymentMethodSelection": {

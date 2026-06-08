@@ -55,6 +55,11 @@ export const ROUTES = {
   },
   SUPPORT: {
     ONBOARDING: '/support/onboarding',
+    LEGAL_CENTER: '/support/legal-center',
+    TERMS_OF_SERVICE: '/support/terms-of-service',
+    PRIVACY_POLICY: '/support/privacy-policy',
+    REFUND_POLICY: '/support/refund-policy',
+    TUTOR_POLICY: '/support/tutor-policy',
   },
   CHECKOUT: {
     INDEX: '/checkout',
