@@ -22,6 +22,7 @@ import { MezonChannelAppService } from './services/mezon-channel-app.service';
 const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const OAUTH_STATE_COOKIE = 'oauth_state';
 const OAUTH_ACTION_COOKIE = 'mezon_oauth_action';
+const OAUTH_TIMEZONE_COOKIE = 'mezon_oauth_timezone';
 const OAUTH_STATE_MAX_AGE = 1000 * 60 * 5;
 
 @Controller('auth')
@@ -85,11 +86,25 @@ export class AuthController {
     });
   }
 
+  private clearOAuthTimezoneCookie(res: Response) {
+    const opts = this.getOAuthStateCookieOptions();
+    res.clearCookie(OAUTH_TIMEZONE_COOKIE, {
+      path: opts.path ?? '/',
+      httpOnly: opts.httpOnly,
+      secure: opts.secure,
+      sameSite: opts.sameSite,
+    });
+  }
+
   @Get('mezon-oauth/start')
   @Throttle({ default: { ttl: 60000, limit: 10 } })
-  mezonOAuthStart(@Res() res: Response) {
+  mezonOAuthStart(@Query('timezone') timezone: string | undefined, @Res() res: Response) {
     const { url, state } = this.authService.buildMezonAuthorizeUrl();
-    res.cookie(OAUTH_STATE_COOKIE, state, this.getOAuthStateCookieOptions());
+    const cookieOptions = this.getOAuthStateCookieOptions();
+    res.cookie(OAUTH_STATE_COOKIE, state, cookieOptions);
+    if (timezone?.trim()) {
+      res.cookie(OAUTH_TIMEZONE_COOKIE, timezone.trim(), cookieOptions);
+    }
     return res.redirect(302, url);
   }
 
@@ -97,8 +112,9 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   mezonOAuthSyncStart(@Res() res: Response) {
     const { url, state } = this.authService.buildMezonAuthorizeUrl();
-    res.cookie(OAUTH_STATE_COOKIE, state, this.getOAuthStateCookieOptions());
-    res.cookie(OAUTH_ACTION_COOKIE, 'sync', this.getOAuthStateCookieOptions());
+    const cookieOptions = this.getOAuthStateCookieOptions();
+    res.cookie(OAUTH_STATE_COOKIE, state, cookieOptions);
+    res.cookie(OAUTH_ACTION_COOKIE, 'sync', cookieOptions);
     return res.redirect(302, url);
   }
 
@@ -128,8 +144,10 @@ export class AuthController {
   ) {
     const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
     const oauthAction = req.cookies?.[OAUTH_ACTION_COOKIE] as string | undefined;
+    const oauthTimezone = req.cookies?.[OAUTH_TIMEZONE_COOKIE] as string | undefined;
     this.clearOAuthStateCookie(res);
     this.clearOAuthActionCookie(res);
+    this.clearOAuthTimezoneCookie(res);
 
     const { code, state } = query;
     if (!code?.trim() || !state?.trim()) {
@@ -169,7 +187,11 @@ export class AuthController {
       );
     }
 
-    const result = await this.authService.handleMezonCallback(code, state);
+    const result = await this.authService.handleMezonCallback(
+      code,
+      state,
+      oauthTimezone?.trim() || undefined
+    );
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
     return res.redirect(
       302,
