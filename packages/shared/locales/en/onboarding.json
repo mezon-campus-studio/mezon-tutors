@@ -1,0 +1,134 @@
+{
+  "badge": "Getting started",
+  "title": "Get started with",
+  "titleHighlight": "Mezonly",
+  "subtitle": "Learn the platform step by step — pick your role and discover how to learn or teach effectively.",
+  "roleLabel": "I am a",
+  "roles": {
+    "student": "Student",
+    "tutor": "Tutor"
+  },
+  "stepBadge": "Step {step}",
+  "progress": "{current} / {total}",
+  "prev": "Back",
+  "next": "Next",
+  "finish": "Finish",
+  "goToAction": "Try it now",
+  "goToDashboard": "Open now",
+  "goToMezon": "Open Mezon",
+  "goToBotInvite": "Open bot invite link",
+  "contactSupport": "Contact support",
+  "completion": {
+    "title": "You're all set!",
+    "description": "You now know the basics. Start your learning or teaching journey today.",
+    "studentCta": "Go to dashboard",
+    "findTutorCta": "Find tutors",
+    "tutorCta": "Open Mezon",
+    "dashboardCta": "Go to dashboard"
+  },
+  "student": {
+    "intro": "Get to know dashboard features — lessons, payments, wallet, complaints, and rescheduling or cancelling.",
+    "steps": {
+      "myLessons": {
+        "title": "My lessons",
+        "description": "View your weekly calendar, upcoming lessons, and the tutors you are learning with.",
+        "tips": {
+          "tip1": "The Calendar tab shows lessons by week — switch weeks or jump to Today.",
+          "tip2": "The Lessons tab lists upcoming and completed sessions.",
+          "tip3": "Tap Join class when it's time — opens your live room on Mezon."
+        }
+      },
+      "pendingBookings": {
+        "title": "Pending payment",
+        "description": "Trial lessons or plans awaiting payment appear here — complete payment in time to keep your slot.",
+        "tips": {
+          "tip1": "Each item shows a countdown until payment expires.",
+          "tip2": "Tap Pay now to use the payment gateway or your wallet balance.",
+          "tip3": "After payment, the lesson moves to My lessons automatically."
+        }
+      },
+      "wallet": {
+        "title": "Student wallet",
+        "description": "Top up, check your balance, and review transaction history — pay for lessons faster.",
+        "tips": {
+          "tip1": "Your available balance is shown at the top of the Wallet page.",
+          "tip2": "Top up via the payment gateway — funds arrive right after success.",
+          "tip3": "Transactions log top-ups, lesson payments, and refunds."
+        }
+      },
+      "complaints": {
+        "title": "Lesson complaints",
+        "description": "If something went wrong in a lesson, submit a complaint from Dashboard for our team to review.",
+        "tips": {
+          "tip1": "Go to Complaints in the dashboard sidebar.",
+          "tip2": "Select the lesson and describe the issue in detail.",
+          "tip3": "Track resolution status — or use Contact support on this page if you need more help."
+        }
+      },
+      "cancelAndSchedule": {
+        "title": "Reschedule & cancel lessons",
+        "description": "Need a new time or want to cancel? Manage it from the Lessons tab under My lessons.",
+        "tips": {
+          "tip1": "Tap Reschedule/Cancel on an upcoming lesson to see your options.",
+          "tip2": "Rescheduling is only available more than 12 hours before the lesson — pick a new open slot.",
+          "tip3": "Cancelling a trial more than 12 hours ahead refunds to your wallet; within 12 hours there is no refund."
+        }
+      }
+    }
+  },
+  "tutor": {
+    "intro": "Set up your Mezon Clan after becoming a tutor — follow the steps below.",
+    "steps": {
+      "createClan": {
+        "title": "Create your Clan on Mezon",
+        "description": "Open Mezon and create a new Clan — this will be your official teaching space on the platform.",
+        "imageAlt": "Illustration of creating a new Clan on Mezon",
+        "tips": {
+          "tip1": "Open Mezon and click the Create Clan button in the left sidebar.",
+          "tip2": "Pick a template you like or skip this step (we suggest the Study Group template).",
+          "tip3": "Enter your Clan name and upload a Clan avatar (avatar is optional)."
+        }
+      },
+      "voiceChannels": {
+        "title": "Create teaching voice channels",
+        "description": "Create voice channels in your Clan for live lessons — or use channels Mezon already set up if you picked a template.",
+        "imageAlt": "Illustration of creating voice channels in a Clan",
+        "tips": {
+          "tip1": "Click the <plus>+</plus> icon above the channel categories to create a new channel.",
+          "tip2": "Select Voice type, then enter the channel name.",
+          "tip3": "If you chose a template when creating your Clan, Mezon may have already created some channels (the image shows the Study Group template)."
+        }
+      },
+      "inviteBot": {
+        "title": "Invite Mezonly bot to your Clan",
+        "description": "Use the official bot invite link to add Mezonly Bot to your Clan — required before running the setup command.",
+        "imageAlt": "Illustration of inviting Mezonly Bot to a Clan",
+        "tips": {
+          "tip1": "Use <link>this link</link>, open it in a browser where you are logged into Mezon, select your Clan, and invite the bot.",
+          "tip2": "When you see a welcome message like the one shown, the bot was invited successfully.",
+          "tip3": "Check whether the bot is online as shown — if you cannot invite the bot or it is offline, please contact support."
+        }
+      },
+      "setupCommand": {
+        "title": "Run the Mezonly setup command",
+        "description": "In any text channel, run the setup command so the bot links your Clan to your tutor account on Mezonly.",
+        "imageAlt": "Illustration of typing /setup mezonly in chat",
+        "tips": {
+          "tip1": "Open a text channel (e.g. #general) in your Clan.",
+          "tip2": "Type <command>*mezonly setup</command> and send.",
+          "tip3": "Follow the bot's reply — linking usually takes just a few seconds."
+        }
+      },
+      "customizeClan": {
+        "title": "Customize your Clan — almost done!",
+        "description": "Your Clan is linked. Customize theme, emoji, roles, and channels however you like before welcoming students.",
+        "imageAlt": "Illustration of customizing a Clan after setup",
+        "tips": {
+          "tip1": "Change theme, emoji, and roles to personalize your Clan.",
+          "tip2": "Add or rearrange text/voice channels to match how you teach.",
+          "tip3": "You're ready — students can join lessons through Mezonly."
+        }
+      }
+    }
+  }
+}

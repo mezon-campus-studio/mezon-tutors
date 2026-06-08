@@ -53,6 +53,9 @@ export const ROUTES = {
     WALLET: '/dashboard/wallet',
     MY_EVENTS: '/dashboard/events',
   },
+  SUPPORT: {
+    ONBOARDING: '/support/onboarding',
+  },
   CHECKOUT: {
     INDEX: '/checkout',
     TRIAL_LESSON: '/checkout/trial-lesson',
