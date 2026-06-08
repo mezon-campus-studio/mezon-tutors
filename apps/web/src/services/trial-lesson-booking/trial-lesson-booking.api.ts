@@ -201,6 +201,35 @@ export const trialLessonBookingApi = {
     });
   },
 
+  getStudentOccupiedByWeek(
+    weekStartDate: string,
+    timezone: string,
+    options?: {
+      excludeBookingId?: string;
+      excludeEnrollmentId?: string;
+      excludeSlotIndex?: number;
+    },
+  ): Promise<OccupiedTrialLessonSlotsResponse> {
+    return apiClient.get<
+      ApiResponse<OccupiedTrialLessonSlotsResponse>,
+      OccupiedTrialLessonSlotsResponse
+    >("/trial-lesson-bookings/student-occupied", {
+      params: {
+        week_start_date: weekStartDate,
+        timezone,
+        ...(options?.excludeBookingId
+          ? { excludeBookingId: options.excludeBookingId }
+          : {}),
+        ...(options?.excludeEnrollmentId
+          ? { excludeEnrollmentId: options.excludeEnrollmentId }
+          : {}),
+        ...(options?.excludeSlotIndex != null
+          ? { excludeSlotIndex: options.excludeSlotIndex }
+          : {}),
+      },
+    });
+  },
+
   rescheduleTrialLessonBooking(
     bookingId: string,
     payload: { startAt: string; durationMinutes: number },
@@ -400,7 +429,38 @@ export function useGetOccupiedTrialLessonSlotsForWeek(
   });
 }
 
+export function useGetStudentOccupiedSlotsForWeek(
+  weekStartDate: string,
+  timezone: string,
+  enabled = true,
+  options?: {
+    excludeBookingId?: string;
+    excludeEnrollmentId?: string;
+    excludeSlotIndex?: number;
+  },
+) {
+  return useQuery({
+    queryKey: trialLessonBookingQueryKey.studentOccupiedWeek(
+      weekStartDate,
+      timezone,
+      options?.excludeBookingId,
+      options?.excludeEnrollmentId,
+      options?.excludeSlotIndex,
+    ),
+    queryFn: () =>
+      trialLessonBookingApi.getStudentOccupiedByWeek(
+        weekStartDate,
+        timezone,
+        options,
+      ),
+    enabled: Boolean(weekStartDate) && Boolean(timezone) && enabled,
+    staleTime: 15 * 1000,
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useRescheduleTrialLessonBookingMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (args: {
       bookingId: string;
@@ -412,6 +472,17 @@ export function useRescheduleTrialLessonBookingMutation() {
         args.payload,
         args.timezone,
       ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
+      });
+    },
   });
 }
 
@@ -466,6 +537,9 @@ export function useCreateTrialLessonBookingMutation() {
       });
       void queryClient.invalidateQueries({
         queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
       });
       if (data.paymentStatus === "SUCCEEDED") {
         void queryClient.invalidateQueries({ queryKey: walletQueryKey.all });

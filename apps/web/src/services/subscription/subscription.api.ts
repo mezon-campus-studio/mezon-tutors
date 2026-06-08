@@ -229,6 +229,12 @@ export function useCreateSubscriptionEnrollmentMutation() {
       void qc.invalidateQueries({
         queryKey: subscriptionQueryKey.pendingPayments(),
       });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
+      });
       if (data.paymentStatus === "SUCCEEDED") {
         void qc.invalidateQueries({ queryKey: walletQueryKey.all });
       }
@@ -314,6 +320,12 @@ export function useRescheduleSubscriptionSlotMutation() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-lessons"] });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-occupied-week"],
+      });
+      void qc.invalidateQueries({
+        queryKey: ["trial-lesson-booking-student-occupied-week"],
+      });
     },
   });
 }

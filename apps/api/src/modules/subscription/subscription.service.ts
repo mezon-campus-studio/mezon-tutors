@@ -574,6 +574,12 @@ export class SubscriptionService {
         durationMinutes,
         DEFAULT_TIMEZONE,
       );
+      await this.trialLessonBookingService.assertStudentSlotAvailable(
+        studentUserId,
+        slotStart.utc().toISOString(),
+        durationMinutes,
+        DEFAULT_TIMEZONE,
+      );
       const dbDay = jsDayToDbDayOfWeek(slotStart.day());
       const key = `${dbDay}|${s.startTime}|${durationMinutes}`;
       if (seen.has(key)) {
@@ -1266,14 +1272,24 @@ export class SubscriptionService {
         )
       );
 
-    const occupied = await this.trialLessonBookingService.collectOccupiedSlotsForTutorWeek(
-      enrollment.tutorId,
-      weekStartYmd,
-      viewerTimezone || DEFAULT_TIMEZONE,
-      {
-        excludeSubscriptionSlot: { enrollmentId, slotIndex },
-      }
-    );
+    const occupiedOptions = {
+      excludeSubscriptionSlot: { enrollmentId, slotIndex },
+    };
+    const [tutorOccupied, studentOccupied] = await Promise.all([
+      this.trialLessonBookingService.collectOccupiedSlotsForTutorWeek(
+        enrollment.tutorId,
+        weekStartYmd,
+        viewerTimezone || DEFAULT_TIMEZONE,
+        occupiedOptions
+      ),
+      this.trialLessonBookingService.collectOccupiedSlotsForStudentWeek(
+        studentUserId,
+        weekStartYmd,
+        viewerTimezone || DEFAULT_TIMEZONE,
+        occupiedOptions
+      ),
+    ]);
+    const occupied = [...tutorOccupied, ...studentOccupied];
 
     // Return full availability grid (including earlier times today) so the client
     // can render past cells and 12h-blocked cells like trial reschedule.
@@ -1387,6 +1403,13 @@ export class SubscriptionService {
 
     await this.trialLessonBookingService.assertTutorSlotAvailable(
       enrollment.tutorId,
+      newStartUtc.utc().toISOString(),
+      durationMinutes,
+      DEFAULT_TIMEZONE,
+      { excludeSubscriptionSlot: { enrollmentId, slotIndex } }
+    );
+    await this.trialLessonBookingService.assertStudentSlotAvailable(
+      studentUserId,
       newStartUtc.utc().toISOString(),
       durationMinutes,
       DEFAULT_TIMEZONE,

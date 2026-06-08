@@ -45,6 +45,7 @@ import {
 import {
   useGetAlreadyBookedTrialLesson,
   useGetOccupiedTrialLessonSlotsForWeek,
+  useGetStudentOccupiedSlotsForWeek,
   useGetTutorAvailability,
   usePublicAppSettings,
 } from "@/services";
@@ -220,7 +221,22 @@ export function TrialBookingSheet({
     isReschedule ? rescheduleBookingId : undefined,
   );
 
+  const {
+    data: studentOccupiedWeekResponse,
+    isFetching: isStudentOccupiedWeekFetching,
+    isSuccess: isStudentOccupiedWeekReady,
+    isError: isStudentOccupiedWeekError,
+  } = useGetStudentOccupiedSlotsForWeek(
+    weekStartYmd,
+    userTimezone,
+    open && isAuthenticated,
+    isReschedule && rescheduleBookingId
+      ? { excludeBookingId: rescheduleBookingId }
+      : undefined,
+  );
+
   const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
+  const studentOccupiedWeekItems = studentOccupiedWeekResponse?.items ?? [];
 
   const ownLessonOccupied = useMemo(() => {
     if (!isReschedule || !rescheduleOriginalStartAt) {
@@ -239,13 +255,30 @@ export function TrialBookingSheet({
     [occupiedWeekItems],
   );
 
-  const occupiedForBlocking = useMemo(
-    () => [...occupiedConfirmed, ...ownLessonOccupied],
-    [occupiedConfirmed, ownLessonOccupied],
+  const {
+    confirmed: studentOccupiedConfirmed,
+    held: studentOccupiedHeld,
+  } = useMemo(
+    () => partitionOccupiedSlotsByHold(studentOccupiedWeekItems),
+    [studentOccupiedWeekItems],
   );
 
+  const occupiedForBlocking = useMemo(
+    () => [...occupiedConfirmed, ...studentOccupiedConfirmed, ...ownLessonOccupied],
+    [occupiedConfirmed, studentOccupiedConfirmed, ownLessonOccupied],
+  );
+
+  const occupiedHeldForBlocking = useMemo(
+    () => [...occupiedHeld, ...studentOccupiedHeld],
+    [occupiedHeld, studentOccupiedHeld],
+  );
+
+  const occupiedDataReady =
+    (isOccupiedWeekReady || isOccupiedWeekError) &&
+    (!isAuthenticated || isStudentOccupiedWeekReady || isStudentOccupiedWeekError);
+
   const scheduleBlockedSlots = useMemo(() => {
-    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+    if (!occupiedDataReady) {
       return [];
     }
     return computeBlockedWallClockSlots(
@@ -263,28 +296,26 @@ export function TrialBookingSheet({
     userTimezone,
     occupiedForBlocking,
     isReschedule,
-    isOccupiedWeekReady,
-    isOccupiedWeekError,
+    occupiedDataReady,
     lessonChangePeriodHours,
   ]);
 
   const scheduleHeldSlots = useMemo(() => {
-    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+    if (!occupiedDataReady) {
       return [];
     }
     return computeBlockedWallClockSlots(
       scheduleAvailableSlots,
       duration,
       userTimezone,
-      { occupied: occupiedHeld },
+      { occupied: occupiedHeldForBlocking },
     );
   }, [
     scheduleAvailableSlots,
     duration,
     userTimezone,
-    occupiedHeld,
-    isOccupiedWeekReady,
-    isOccupiedWeekError,
+    occupiedHeldForBlocking,
+    occupiedDataReady,
   ]);
 
   const scheduleSelectableSlots = useMemo(() => {
@@ -480,7 +511,17 @@ export function TrialBookingSheet({
     isAvailabilityPending ||
     isBookingLocked ||
     !selectedTime ||
-    (isOccupiedWeekFetching && !isOccupiedWeekReady && !isOccupiedWeekError);
+    (isOccupiedWeekFetching && !isOccupiedWeekReady && !isOccupiedWeekError) ||
+    (isAuthenticated &&
+      isStudentOccupiedWeekFetching &&
+      !isStudentOccupiedWeekReady &&
+      !isStudentOccupiedWeekError);
+
+  const isOccupiedDataLoading =
+    (!isOccupiedWeekReady && isOccupiedWeekFetching) ||
+    (isAuthenticated &&
+      !isStudentOccupiedWeekReady &&
+      isStudentOccupiedWeekFetching);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -517,7 +558,7 @@ export function TrialBookingSheet({
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
           <div className="relative flex min-h-0 min-w-0 flex-1 flex-col px-3 pt-4 sm:px-6">
-            {!isOccupiedWeekReady && isOccupiedWeekFetching ? (
+            {isOccupiedDataLoading ? (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-[1px]">
                 <Spinner className="size-8 text-violet-600" />
               </div>

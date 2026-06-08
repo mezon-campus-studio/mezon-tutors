@@ -5,6 +5,7 @@ import {
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
+  DEFAULT_TIMEZONE,
   LESSON_CANCEL_REASON_SLOT_CONFLICT,
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   trialLessonPaymentHoldExpiresAt,
@@ -295,6 +296,31 @@ export class TrialLessonBookingService {
         },
       ],
     }
+  }
+
+  private isSubscriptionOccurrenceExcluded(
+    enrollmentId: string,
+    slotIndex: number,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+      excludeSubscriptionEnrollmentId?: string
+    }
+  ): boolean {
+    if (
+      options?.excludeSubscriptionEnrollmentId &&
+      enrollmentId === options.excludeSubscriptionEnrollmentId
+    ) {
+      return true
+    }
+    if (
+      options?.excludeSubscriptionSlot &&
+      enrollmentId === options.excludeSubscriptionSlot.enrollmentId &&
+      slotIndex === options.excludeSubscriptionSlot.slotIndex
+    ) {
+      return true
+    }
+    return false
   }
 
   private isSubscriptionEnrollmentPaymentHold(enrollment: {
@@ -638,6 +664,299 @@ export class TrialLessonBookingService {
     return all
   }
 
+  async getStudentOccupiedByWeek(
+    studentUserId: string,
+    weekStartYmd: string,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+    }
+  ) {
+    const weekStart = dayjs.tz(weekStartYmd, timezoneName || 'UTC').startOf('day')
+    if (!weekStart.isValid()) {
+      throw new BadRequestException('Invalid week start date')
+    }
+
+    const items = await this.collectOccupiedSlotsForStudentWeek(
+      studentUserId,
+      weekStart.format('YYYY-MM-DD'),
+      timezoneName,
+      options
+    )
+
+    return { items }
+  }
+
+  async collectOccupiedSlotsForStudentWeek(
+    studentUserId: string,
+    weekStartYmd: string,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+    }
+  ): Promise<{ id: string; startAt: string; durationMinutes: number; hold: boolean }[]> {
+    const monday = dayjs.tz(weekStartYmd, timezoneName || 'UTC').startOf('day')
+    if (!monday.isValid()) {
+      throw new BadRequestException('Invalid week start date')
+    }
+
+    const all: { id: string; startAt: string; durationMinutes: number; hold: boolean }[] = []
+    for (let i = 0; i < 7; i += 1) {
+      const ymd = monday.add(i, 'day').format('YYYY-MM-DD')
+      const dayStartLocal = dayjs.tz(`${ymd} 00:00`, timezoneName || 'UTC')
+      const dayStart = dayStartLocal.utc().toDate()
+      const dayEnd = dayStartLocal.add(1, 'day').utc().toDate()
+      const items = await this.collectOccupiedSlotsForStudentDay(
+        studentUserId,
+        dayStart,
+        dayEnd,
+        timezoneName,
+        options
+      )
+      all.push(...items)
+    }
+    return all
+  }
+
+  private async collectOccupiedSlotsForStudentDay(
+    studentUserId: string,
+    dayStart: Date,
+    dayEnd: Date,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+    }
+  ): Promise<{ id: string; startAt: string; durationMinutes: number; hold: boolean }[]> {
+    const excludeBookingId = options?.excludeTrialBookingId
+    const excludeSubscriptionSlot = options?.excludeSubscriptionSlot
+    const [bookings, enrollments] = await Promise.all([
+      this.prisma.trialLessonBooking.findMany({
+        where: {
+          studentId: studentUserId,
+          ...this.slotBlockingTrialBookingWhere(),
+          ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+          startAt: {
+            gte: dayStart,
+            lt: dayEnd,
+          },
+        },
+        select: {
+          id: true,
+          startAt: true,
+          durationMinutes: true,
+          status: true,
+          paymentStatus: true,
+        },
+        orderBy: { startAt: 'asc' },
+      }),
+      this.prisma.subscriptionEnrollment.findMany({
+        where: {
+          studentId: studentUserId,
+          ...this.slotBlockingSubscriptionEnrollmentWhere(),
+        },
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          weeklySlots: true,
+          tutor: {
+            select: {
+              user: { select: { timezone: true } },
+            },
+          },
+        },
+      }),
+    ])
+
+    const trialItems = bookings.map((booking) => ({
+      id: booking.id,
+      startAt: booking.startAt.toISOString(),
+      durationMinutes: booking.durationMinutes,
+      hold:
+        booking.status === ETrialLessonStatus.PENDING &&
+        booking.paymentStatus === EPaymentStatus.PENDING,
+    }))
+
+    const weekStartYmd = weekStartMondayYmd(dayjs(dayStart).tz(timezoneName), timezoneName)
+    const subscriptionItems: {
+      id: string
+      startAt: string
+      durationMinutes: number
+      hold: boolean
+    }[] = []
+
+    for (const enrollment of enrollments) {
+      const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
+      const occurrences = subscriptionSlotsOccurrencesForWeek(
+        weekStartYmd,
+        slots,
+        timezoneName,
+        DEFAULT_TIMEZONE
+      )
+      for (const occ of occurrences) {
+        const slot = slots[occ.slotIndex]
+        if (
+          normalizeSubscriptionSlotStatus(slot?.status) !==
+          ESubscriptionLessonSlotStatus.SCHEDULED
+        ) {
+          continue
+        }
+        if (
+          excludeSubscriptionSlot &&
+          enrollment.id === excludeSubscriptionSlot.enrollmentId &&
+          occ.slotIndex === excludeSubscriptionSlot.slotIndex
+        ) {
+          continue
+        }
+        if (occ.startAt >= dayStart && occ.startAt < dayEnd) {
+          subscriptionItems.push({
+            id: `sub-${enrollment.id}-${occ.slotIndex}`,
+            startAt: occ.startAt.toISOString(),
+            durationMinutes: Math.round(
+              (occ.endAt.getTime() - occ.startAt.getTime()) / (60 * 1000)
+            ),
+            hold: this.isSubscriptionEnrollmentPaymentHold(enrollment),
+          })
+        }
+      }
+    }
+
+    return [...trialItems, ...subscriptionItems].sort(
+      (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+    )
+  }
+
+  async assertStudentSlotAvailable(
+    studentUserId: string,
+    startAtIso: string,
+    durationMinutes: number,
+    timezoneName: string,
+    options?: {
+      excludeTrialBookingId?: string
+      excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+      excludeSubscriptionEnrollmentId?: string
+    }
+  ): Promise<void> {
+    const startAt = dayjs(startAtIso)
+    if (!startAt.isValid()) {
+      throw new BadRequestException('Invalid start time')
+    }
+
+    const excludeBookingId = options?.excludeTrialBookingId
+    const newStart = startAt.toDate()
+    const newEnd = startAt.add(durationMinutes, 'minute').toDate()
+    const queryRangeStart = startAt.subtract(1, 'day').toDate()
+    const queryRangeEnd = startAt.add(1, 'day').toDate()
+
+    const existingBookings = await this.prisma.trialLessonBooking.findMany({
+      where: {
+        studentId: studentUserId,
+        ...this.slotBlockingTrialBookingWhere(),
+        ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
+        startAt: {
+          gte: queryRangeStart,
+          lt: queryRangeEnd,
+        },
+      },
+      select: {
+        startAt: true,
+        durationMinutes: true,
+      },
+    })
+
+    const hasTrialOverlap = existingBookings.some((booking) => {
+      const bookedStart = booking.startAt
+      const bookedEnd = new Date(bookedStart.getTime() + booking.durationMinutes * 60 * 1000)
+      return this.rangesOverlap(newStart, newEnd, bookedStart, bookedEnd)
+    })
+
+    if (hasTrialOverlap) {
+      throw new ConflictException('You already have a lesson scheduled at this time')
+    }
+
+    const enrollments = await this.prisma.subscriptionEnrollment.findMany({
+      where: {
+        studentId: studentUserId,
+        ...this.slotBlockingSubscriptionEnrollmentWhere(),
+      },
+      select: {
+        id: true,
+        weeklySlots: true,
+        tutor: { select: { user: { select: { timezone: true } } } },
+      },
+    })
+
+    const weekStartYmd = weekStartMondayYmd(startAt, timezoneName)
+
+    for (const enrollment of enrollments) {
+      const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
+      const slotStorageTimezone = DEFAULT_TIMEZONE
+
+      const occurrences = subscriptionSlotsUseConcreteDates(slots)
+        ? subscriptionConcreteOccurrencesSorted(slots, slotStorageTimezone)
+        : subscriptionSlotsOccurrencesForWeek(
+            weekStartYmd,
+            slots,
+            timezoneName,
+            slotStorageTimezone
+          )
+
+      const hasSubscriptionOverlap = occurrences.some((occ) => {
+        const slot = slots[occ.slotIndex]
+        if (
+          normalizeSubscriptionSlotStatus(slot?.status) !==
+          ESubscriptionLessonSlotStatus.SCHEDULED
+        ) {
+          return false
+        }
+        if (this.isSubscriptionOccurrenceExcluded(enrollment.id, occ.slotIndex, options)) {
+          return false
+        }
+        return this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
+      })
+
+      if (hasSubscriptionOverlap) {
+        throw new ConflictException('You already have a lesson scheduled at this time')
+      }
+
+      if (!subscriptionSlotsUseConcreteDates(slots)) {
+        const prevWeek = dayjs
+          .tz(weekStartYmd, timezoneName)
+          .subtract(7, 'day')
+          .format('YYYY-MM-DD')
+        const nextWeek = dayjs.tz(weekStartYmd, timezoneName).add(7, 'day').format('YYYY-MM-DD')
+        for (const ymd of [prevWeek, nextWeek]) {
+          const adjacent = subscriptionSlotsOccurrencesForWeek(
+            ymd,
+            slots,
+            timezoneName,
+            slotStorageTimezone
+          )
+          if (
+            adjacent.some((occ) => {
+              const slot = slots[occ.slotIndex]
+              if (
+                normalizeSubscriptionSlotStatus(slot?.status) !==
+                ESubscriptionLessonSlotStatus.SCHEDULED
+              ) {
+                return false
+              }
+              if (this.isSubscriptionOccurrenceExcluded(enrollment.id, occ.slotIndex, options)) {
+                return false
+              }
+              return this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
+            })
+          ) {
+            throw new ConflictException('You already have a lesson scheduled at this time')
+          }
+        }
+      }
+    }
+  }
+
   async assertTutorSlotAvailable(
     tutorId: string,
     startAtIso: string,
@@ -646,6 +965,7 @@ export class TrialLessonBookingService {
     options?: {
       excludeTrialBookingId?: string
       excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+      excludeSubscriptionEnrollmentId?: string
     }
   ): Promise<void> {
     const startAt = dayjs(startAtIso)
@@ -669,6 +989,7 @@ export class TrialLessonBookingService {
     options?: {
       excludeTrialBookingId?: string
       excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+      excludeSubscriptionEnrollmentId?: string
     }
   ): Promise<
     | { available: true }
@@ -738,25 +1059,21 @@ export class TrialLessonBookingService {
   async checkSubscriptionEnrollmentSlotsBookable(
     enrollmentId: string,
     tutorId: string,
+    studentUserId: string,
     weeklySlotsJson: Prisma.JsonValue,
-    timezoneName: string,
   ): Promise<{ available: true } | { available: false }> {
     const slots = this.parseEnrollmentWeeklySlots(weeklySlotsJson)
     if (slots.length === 0) {
       return { available: false }
     }
 
-    const tutor = await this.prisma.tutorProfile.findUnique({
-      where: { id: tutorId },
-      select: { user: { select: { timezone: true } } },
-    })
-    const tutorTimezone = tutor?.user?.timezone ?? timezoneName
-
     if (!subscriptionSlotsUseConcreteDates(slots)) {
       return { available: false }
     }
 
-    const occurrences = subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
+    const slotStorageTimezone = DEFAULT_TIMEZONE
+    const occurrences = subscriptionConcreteOccurrencesSorted(slots, slotStorageTimezone)
+    const bookableOptions = { excludeSubscriptionEnrollmentId: enrollmentId }
 
     for (const occ of occurrences) {
       const slot = slots[occ.slotIndex]
@@ -771,11 +1088,26 @@ export class TrialLessonBookingService {
         tutorId,
         occ.startAt.toISOString(),
         durationMinutes,
-        timezoneName,
-        { excludeSubscriptionSlot: { enrollmentId, slotIndex: occ.slotIndex } },
+        slotStorageTimezone,
+        bookableOptions,
       )
       if (!result.available) {
         return { available: false }
+      }
+
+      try {
+        await this.assertStudentSlotAvailable(
+          studentUserId,
+          occ.startAt.toISOString(),
+          durationMinutes,
+          slotStorageTimezone,
+          bookableOptions,
+        )
+      } catch (error) {
+        if (error instanceof ConflictException) {
+          return { available: false }
+        }
+        throw error
       }
     }
 
@@ -943,12 +1275,11 @@ export class TrialLessonBookingService {
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
-      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC'
       const occurrences = subscriptionSlotsOccurrencesForWeek(
         weekStartYmd,
         slots,
         timezoneName,
-        tutorTimezone
+        DEFAULT_TIMEZONE
       )
       for (const occ of occurrences) {
         const slot = slots[occ.slotIndex]
@@ -1000,10 +1331,10 @@ export class TrialLessonBookingService {
     options?: {
       excludeTrialBookingId?: string
       excludeSubscriptionSlot?: { enrollmentId: string; slotIndex: number }
+      excludeSubscriptionEnrollmentId?: string
     }
   ): Promise<void> {
     const excludeBookingId = options?.excludeTrialBookingId
-    const excludeSubscriptionSlot = options?.excludeSubscriptionSlot
     const availability = await this.prisma.tutorAvailability.findMany({
       where: {
         tutorId,
@@ -1074,15 +1405,15 @@ export class TrialLessonBookingService {
 
     for (const enrollment of enrollments) {
       const slots = this.parseEnrollmentWeeklySlots(enrollment.weeklySlots)
-      const tutorTimezone = enrollment.tutor.user?.timezone ?? 'UTC'
+      const slotStorageTimezone = DEFAULT_TIMEZONE
 
       const occurrences = subscriptionSlotsUseConcreteDates(slots)
-        ? subscriptionConcreteOccurrencesSorted(slots, tutorTimezone)
+        ? subscriptionConcreteOccurrencesSorted(slots, slotStorageTimezone)
         : subscriptionSlotsOccurrencesForWeek(
             weekStartYmd,
             slots,
             timezoneName,
-            tutorTimezone
+            slotStorageTimezone
           )
 
       const hasSubscriptionOverlap = occurrences.some((occ) => {
@@ -1093,11 +1424,7 @@ export class TrialLessonBookingService {
         ) {
           return false
         }
-        if (
-          excludeSubscriptionSlot &&
-          enrollment.id === excludeSubscriptionSlot.enrollmentId &&
-          occ.slotIndex === excludeSubscriptionSlot.slotIndex
-        ) {
+        if (this.isSubscriptionOccurrenceExcluded(enrollment.id, occ.slotIndex, options)) {
           return false
         }
         return this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
@@ -1118,7 +1445,7 @@ export class TrialLessonBookingService {
             ymd,
             slots,
             timezoneName,
-            tutorTimezone
+            slotStorageTimezone
           )
           if (
             adjacent.some((occ) => {
@@ -1129,11 +1456,7 @@ export class TrialLessonBookingService {
               ) {
                 return false
               }
-              if (
-                excludeSubscriptionSlot &&
-                enrollment.id === excludeSubscriptionSlot.enrollmentId &&
-                occ.slotIndex === excludeSubscriptionSlot.slotIndex
-              ) {
+              if (this.isSubscriptionOccurrenceExcluded(enrollment.id, occ.slotIndex, options)) {
                 return false
               }
               return this.rangesOverlap(newStart, newEnd, occ.startAt, occ.endAt)
@@ -1202,6 +1525,12 @@ export class TrialLessonBookingService {
     const viewerTimezone = tutor.user?.timezone ?? 'UTC'
     await this.assertTutorLessonSlotBookableOrThrow(
       tutor.id,
+      startAt.toISOString(),
+      dto.durationMinutes,
+      viewerTimezone
+    )
+    await this.assertStudentSlotAvailable(
+      studentId,
       startAt.toISOString(),
       dto.durationMinutes,
       viewerTimezone
@@ -1533,6 +1862,13 @@ export class TrialLessonBookingService {
     await this.assertTrialSlotAvailableForTutor(
       booking.tutorId,
       startAt,
+      dto.durationMinutes,
+      tz,
+      { excludeTrialBookingId: booking.id }
+    )
+    await this.assertStudentSlotAvailable(
+      studentUserId,
+      startAt.toISOString(),
       dto.durationMinutes,
       tz,
       { excludeTrialBookingId: booking.id }

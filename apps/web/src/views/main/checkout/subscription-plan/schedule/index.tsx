@@ -57,6 +57,7 @@ import {
   useCreateSubscriptionEnrollmentMutation,
   useGetSubscriptionEligibility,
   useGetOccupiedTrialLessonSlotsForWeek,
+  useGetStudentOccupiedSlotsForWeek,
   useGetSubscriptionPlansByTutor,
   useGetTutorAvailability,
   useWalletDetails,
@@ -143,7 +144,17 @@ export default function SubscriptionPlanSchedulePage() {
     userTimezone,
     Boolean(tutorId),
   );
+  const {
+    data: studentOccupiedWeekResponse,
+    isSuccess: isStudentOccupiedWeekReady,
+    isError: isStudentOccupiedWeekError,
+  } = useGetStudentOccupiedSlotsForWeek(
+    weekBounds.start,
+    userTimezone,
+    Boolean(tutorId) && isAuth,
+  );
   const occupiedWeekItems = occupiedWeekResponse?.items ?? [];
+  const studentOccupiedWeekItems = studentOccupiedWeekResponse?.items ?? [];
 
   useEffect(() => {
     setWeekBounds(getInitialWeekBounds(userTimezone));
@@ -249,40 +260,60 @@ export default function SubscriptionPlanSchedulePage() {
     [occupiedWeekItems],
   );
 
+  const {
+    confirmed: studentOccupiedConfirmed,
+    held: studentOccupiedHeld,
+  } = useMemo(
+    () => partitionOccupiedSlotsByHold(studentOccupiedWeekItems),
+    [studentOccupiedWeekItems],
+  );
+
+  const occupiedConfirmedMerged = useMemo(
+    () => [...occupiedConfirmed, ...studentOccupiedConfirmed],
+    [occupiedConfirmed, studentOccupiedConfirmed],
+  );
+
+  const occupiedHeldMerged = useMemo(
+    () => [...occupiedHeld, ...studentOccupiedHeld],
+    [occupiedHeld, studentOccupiedHeld],
+  );
+
+  const occupiedDataReady =
+    (isOccupiedWeekReady || isOccupiedWeekError) &&
+    (!isAuth || isStudentOccupiedWeekReady || isStudentOccupiedWeekError);
+
   const scheduleBlockedSlots = useMemo(() => {
-    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+    if (!occupiedDataReady) {
       return [];
     }
     return computeBlockedWallClockSlots(
       scheduleAvailableSlots,
       SUBSCRIPTION_LESSON_MINUTES,
       userTimezone,
-      { occupied: occupiedConfirmed },
+      { occupied: occupiedConfirmedMerged },
     );
   }, [
     scheduleAvailableSlots,
     userTimezone,
-    occupiedConfirmed,
-    isOccupiedWeekReady,
-    isOccupiedWeekError,
+    occupiedConfirmedMerged,
+    occupiedDataReady,
   ]);
 
   const scheduleHeldSlots = useMemo(() => {
-    if (!isOccupiedWeekReady && !isOccupiedWeekError) {
+    if (!occupiedDataReady) {
       return [];
     }
     return computeBlockedWallClockSlots(
       scheduleAvailableSlots,
       SUBSCRIPTION_LESSON_MINUTES,
       userTimezone,
-      { occupied: occupiedHeld },
+      { occupied: occupiedHeldMerged },
     );
   }, [
     scheduleAvailableSlots,
     userTimezone,
-    occupiedHeld,
-    isOccupiedWeekReady,
-    isOccupiedWeekError,
+    occupiedHeldMerged,
+    occupiedDataReady,
   ]);
 
   const scheduleSelectableSlots = useMemo(() => {

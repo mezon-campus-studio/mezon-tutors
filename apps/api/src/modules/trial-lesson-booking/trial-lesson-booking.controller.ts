@@ -78,6 +78,48 @@ export class TrialLessonBookingController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('student-occupied')
+  async getStudentOccupiedSlots(
+    @Req() req: Request,
+    @Query('timezone') timezone: string,
+    @Query('week_start_date') weekStartDate: string,
+    @Query('excludeBookingId') excludeBookingId?: string,
+    @Query('excludeEnrollmentId') excludeEnrollmentId?: string,
+    @Query('excludeSlotIndex') excludeSlotIndex?: string
+  ) {
+    const week = weekStartDate?.trim() ?? ''
+    if (!week || !/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+      throw new BadRequestException('Invalid week_start_date')
+    }
+
+    const user = req.user as AuthUserPayload
+    const excludeSubscriptionSlot =
+      excludeEnrollmentId?.trim() && excludeSlotIndex?.trim()
+        ? {
+            enrollmentId: excludeEnrollmentId.trim(),
+            slotIndex: Number.parseInt(excludeSlotIndex.trim(), 10),
+          }
+        : undefined
+
+    if (
+      excludeSubscriptionSlot &&
+      !Number.isFinite(excludeSubscriptionSlot.slotIndex)
+    ) {
+      throw new BadRequestException('Invalid excludeSlotIndex')
+    }
+
+    return this.trialLessonBookingService.getStudentOccupiedByWeek(
+      user.sub,
+      week,
+      timezone,
+      {
+        excludeTrialBookingId: excludeBookingId,
+        excludeSubscriptionSlot,
+      }
+    )
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('already-booked')
   async getAlreadyBookedStatus(@Req() req: Request, @Query('tutorId') tutorId: string) {
     const user = req.user as AuthUserPayload
