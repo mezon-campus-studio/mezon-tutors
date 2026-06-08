@@ -13,7 +13,7 @@ import {
 } from "@mezon-tutors/shared";
 import { Badge, Button } from "@/components/ui";
 import { useOpenAdminSupportChat } from "@/hooks/useOpenAdminSupportChat";
-import { isAuthenticatedAtom, isLoadingAtom } from "@/store";
+import { isAuthenticatedAtom, isLoadingAtom, userAtom } from "@/store";
 import { CompletionPanel } from "./components/CompletionPanel";
 import { OnboardingBackground } from "./components/OnboardingBackground";
 import { StepDetailPanel } from "./components/StepDetailPanel";
@@ -21,12 +21,17 @@ import { StepNavRail } from "./components/StepNavRail";
 
 export default function OnboardingView() {
   const t = useTranslations("Onboarding");
+  const user = useAtomValue(userAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const { openAdminSupportChat, isOpening } = useOpenAdminSupportChat();
 
   const [role, setRole] = useState<OnboardingRole>("student");
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setRole(user?.role === "TUTOR" ? "tutor" : "student");
+  }, [user?.role]);
 
   const steps = ONBOARDING_STEPS_BY_ROLE[role];
   const activeStep = steps[activeIndex];

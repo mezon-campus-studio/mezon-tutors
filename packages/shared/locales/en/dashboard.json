@@ -21,6 +21,7 @@
       "profile": "My Profile",
       "events": "Events",
       "adminPanel": "Admin panel",
+      "onboarding": "Onboarding",
       "logout": "Logout",
       "fallbackTitle": "Dashboard",
       "syncMezon": {

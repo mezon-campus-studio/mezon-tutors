@@ -10,6 +10,7 @@ import { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { HeaderNotificationItem } from '@/components/common/header-notification/HeaderNotificationItem';
 import { Button, Spinner } from '@/components/ui';
 import { useUserTimezone } from '@/hooks';
+import { cn } from '@/lib/utils';
 import { formatInstantForLocale } from '@/lib/timezone';
 import type { NotificationItem } from '@/services/notification/notification.api';
 import {
@@ -193,9 +194,17 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [open]);
 
@@ -258,9 +267,11 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
         type="button"
         variant="outline"
         size="sm"
+        aria-expanded={open}
+        aria-haspopup="dialog"
         aria-label={getLabel('openAria', 'Open notifications')}
         onClick={() => setOpen((v) => !v)}
-        className="relative h-9 rounded-full border-slate-200 bg-white px-3 text-slate-800 shadow-none transition-all duration-200 ease-out hover:-translate-y-px hover:border-violet-400 hover:bg-violet-50"
+        className="relative h-11 min-h-11 min-w-11 rounded-full border-slate-200 bg-white px-3 text-slate-800 shadow-none transition-all duration-200 ease-out hover:-translate-y-px hover:border-violet-400 hover:bg-violet-50 md:h-9 md:min-h-0 md:min-w-0"
       >
         <span className="relative inline-flex items-center justify-center">
           <Bell
@@ -276,13 +287,28 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
       </Button>
 
       {open ? (
-        <div
-          className="absolute top-11 right-0 z-999 flex w-[440px] max-w-[96vw] flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-lg font-bold text-slate-900">{getLabel('title', 'Notifications')}</p>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className="text-[13px] text-slate-500">
+          <section
+            aria-label={getLabel('title', 'Notifications')}
+            className={cn(
+              'z-999 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white shadow-xl',
+              'fixed top-14 right-4 left-4 max-h-[calc(100dvh-4rem)] p-3 sm:top-16 sm:p-4',
+              'md:absolute md:top-11 md:right-0 md:left-auto md:w-[min(24rem,calc(100vw-2rem))] md:max-h-none md:p-4',
+              'lg:w-[440px]',
+            )}
+          >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-base font-bold text-slate-900 sm:text-lg">
+                {getLabel('title', 'Notifications')}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500 sm:hidden">
+                {getLabel('unreadCount', `${unreadCount} unread`, {
+                  count: unreadCount,
+                })}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 sm:justify-end">
+              <span className="hidden text-[13px] text-slate-500 sm:inline">
                 {getLabel('unreadCount', `${unreadCount} unread`, {
                   count: unreadCount,
                 })}
@@ -297,6 +323,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
                     markAllAsReadMutation.mutate();
                   }
                 }}
+                className="h-11 min-h-11 w-full rounded-full px-4 text-xs font-semibold sm:h-auto sm:min-h-0 sm:w-auto"
               >
                 {getLabel('markAllAsRead', 'Mark all read')}
               </Button>
@@ -304,7 +331,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
           </div>
 
           <div
-            className="max-h-[420px] overflow-y-auto rounded-xl border border-slate-200"
+            className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 max-h-[calc(100dvh-12rem)] md:max-h-[420px]"
             ref={listRef}
             onScroll={handleListScroll}
           >
@@ -356,7 +383,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
             ) : null}
 
             {notificationsQuery.isFetchingNextPage ? (
-              <div className="flex justify-center px-3 py-3">
+              <div className="flex flex-col items-center justify-center gap-2 px-3 py-4">
                 <Spinner />
                 <p className="text-sm text-slate-500">
                   {getLabel('loadingMore', 'Loading more...')}
@@ -365,7 +392,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
             ) : null}
 
             {notificationsQuery.isLoading ? (
-              <div className="flex justify-center px-4 py-6">
+              <div className="flex flex-col items-center justify-center gap-2 px-4 py-8">
                 <Spinner />
                 <p className="text-sm text-slate-500">
                   {getLabel('loading', 'Loading notifications...')}
@@ -374,14 +401,14 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
             ) : null}
 
             {notificationsQuery.isError ? (
-              <div className="flex justify-center px-4 py-6">
-                <p className="text-sm text-red-600">
+              <div className="flex justify-center px-4 py-8">
+                <p className="text-center text-sm text-red-600">
                   {getLabel('loadError', 'Cannot load notifications. Please try again.')}
                 </p>
               </div>
             ) : null}
           </div>
-        </div>
+        </section>
       ) : null}
     </div>
   );
