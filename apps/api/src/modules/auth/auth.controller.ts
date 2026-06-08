@@ -23,6 +23,7 @@ const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const OAUTH_STATE_COOKIE = 'oauth_state';
 const OAUTH_ACTION_COOKIE = 'mezon_oauth_action';
 const OAUTH_TIMEZONE_COOKIE = 'mezon_oauth_timezone';
+const OAUTH_RETURN_TO_COOKIE = 'mezon_oauth_return_to';
 const OAUTH_STATE_MAX_AGE = 1000 * 60 * 5;
 
 @Controller('auth')
@@ -36,7 +37,6 @@ export class AuthController {
   ) {}
 
   private getCrossSiteCookieOptions(maxAge: number): CookieOptions {
-
     return {
       httpOnly: true,
       secure: true,
@@ -47,17 +47,6 @@ export class AuthController {
     };
   }
 
-  private buildFrontendReturnUrl(
-    frontendBase: string,
-    params: Record<string, string>
-  ): string {
-    const url = new URL(frontendBase);
-    for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value);
-    }
-    return url.toString();
-  }
-
   private getRefreshCookieOptions(): CookieOptions {
     return this.getCrossSiteCookieOptions(REFRESH_TOKEN_MAX_AGE);
   }
@@ -66,56 +55,72 @@ export class AuthController {
     return this.getCrossSiteCookieOptions(OAUTH_STATE_MAX_AGE);
   }
 
-  private clearOAuthStateCookie(res: Response) {
+  private buildFrontendReturnUrl(path: string, params: Record<string, string>): string {
+    const frontendBase = this.appConfig.frontendUrl.replace(/\/+$/, '');
+    const url = new URL(`${frontendBase}${path}`);
+    for (const [key, value] of Object.entries(params)) {
+      url.searchParams.set(key, value);
+    }
+    return url.toString();
+  }
+
+  private clearOAuthCookies(res: Response) {
     const opts = this.getOAuthStateCookieOptions();
-    res.clearCookie(OAUTH_STATE_COOKIE, {
+    const clearOpts = {
       path: opts.path ?? '/',
       httpOnly: opts.httpOnly,
       secure: opts.secure,
       sameSite: opts.sameSite,
-    });
+    };
+    for (const name of [
+      OAUTH_STATE_COOKIE,
+      OAUTH_ACTION_COOKIE,
+      OAUTH_TIMEZONE_COOKIE,
+      OAUTH_RETURN_TO_COOKIE,
+    ]) {
+      res.clearCookie(name, clearOpts);
+    }
   }
 
-  private clearOAuthActionCookie(res: Response) {
-    const opts = this.getOAuthStateCookieOptions();
-    res.clearCookie(OAUTH_ACTION_COOKIE, {
-      path: opts.path ?? '/',
-      httpOnly: opts.httpOnly,
-      secure: opts.secure,
-      sameSite: opts.sameSite,
-    });
-  }
-
-  private clearOAuthTimezoneCookie(res: Response) {
-    const opts = this.getOAuthStateCookieOptions();
-    res.clearCookie(OAUTH_TIMEZONE_COOKIE, {
-      path: opts.path ?? '/',
-      httpOnly: opts.httpOnly,
-      secure: opts.secure,
-      sameSite: opts.sameSite,
-    });
-  }
-
-  @Get('mezon-oauth/start')
-  @Throttle({ default: { ttl: 60000, limit: 10 } })
-  mezonOAuthStart(@Query('timezone') timezone: string | undefined, @Res() res: Response) {
+  private startMezonOAuth(
+    res: Response,
+    options: { sync?: boolean; returnTo?: string; timezone?: string }
+  ) {
     const { url, state } = this.authService.buildMezonAuthorizeUrl();
     const cookieOptions = this.getOAuthStateCookieOptions();
     res.cookie(OAUTH_STATE_COOKIE, state, cookieOptions);
-    if (timezone?.trim()) {
-      res.cookie(OAUTH_TIMEZONE_COOKIE, timezone.trim(), cookieOptions);
+    if (options.sync) {
+      res.cookie(OAUTH_ACTION_COOKIE, 'sync', cookieOptions);
+    }
+    if (options.returnTo) {
+      res.cookie(OAUTH_RETURN_TO_COOKIE, options.returnTo, cookieOptions);
+    }
+    if (options.timezone) {
+      res.cookie(OAUTH_TIMEZONE_COOKIE, options.timezone, cookieOptions);
     }
     return res.redirect(302, url);
   }
 
+  @Get('mezon-oauth/start')
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  mezonOAuthStart(
+    @Query('returnTo') returnTo: string | undefined,
+    @Query('timezone') timezone: string | undefined,
+    @Res() res: Response
+  ) {
+    return this.startMezonOAuth(res, {
+      returnTo: returnTo?.trim() || undefined,
+      timezone: timezone?.trim() || undefined,
+    });
+  }
+
   @Get('mezon-oauth/sync/start')
   @Throttle({ default: { ttl: 60000, limit: 10 } })
-  mezonOAuthSyncStart(@Res() res: Response) {
-    const { url, state } = this.authService.buildMezonAuthorizeUrl();
-    const cookieOptions = this.getOAuthStateCookieOptions();
-    res.cookie(OAUTH_STATE_COOKIE, state, cookieOptions);
-    res.cookie(OAUTH_ACTION_COOKIE, 'sync', cookieOptions);
-    return res.redirect(302, url);
+  mezonOAuthSyncStart(@Query('returnTo') returnTo: string | undefined, @Res() res: Response) {
+    return this.startMezonOAuth(res, {
+      sync: true,
+      returnTo: returnTo?.trim() || undefined,
+    });
   }
 
   @Post('channel-app/login')
@@ -145,9 +150,8 @@ export class AuthController {
     const cookieState = req.cookies?.[OAUTH_STATE_COOKIE] as string | undefined;
     const oauthAction = req.cookies?.[OAUTH_ACTION_COOKIE] as string | undefined;
     const oauthTimezone = req.cookies?.[OAUTH_TIMEZONE_COOKIE] as string | undefined;
-    this.clearOAuthStateCookie(res);
-    this.clearOAuthActionCookie(res);
-    this.clearOAuthTimezoneCookie(res);
+    const oauthReturnTo = (req.cookies?.[OAUTH_RETURN_TO_COOKIE] as string | undefined) || '/';
+    this.clearOAuthCookies(res);
 
     const { code, state } = query;
     if (!code?.trim() || !state?.trim()) {
@@ -159,8 +163,6 @@ export class AuthController {
     if (!this.authService.consumePendingOAuthState(state)) {
       throw new UnauthorizedException('Invalid or expired OAuth state');
     }
-
-    const frontendBase = this.appConfig.frontendUrl.replace(/\/+$/, '');
 
     if (oauthAction === 'sync') {
       const refreshToken = req.cookies.refresh_token as string | undefined;
@@ -180,7 +182,7 @@ export class AuthController {
       res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
       return res.redirect(
         302,
-        this.buildFrontendReturnUrl(`${frontendBase}/dashboard`, {
+        this.buildFrontendReturnUrl(oauthReturnTo, {
           sync: 'success',
           accessToken: result.tokens.accessToken,
         })
@@ -195,7 +197,7 @@ export class AuthController {
     res.cookie('refresh_token', result.tokens.refreshToken, this.getRefreshCookieOptions());
     return res.redirect(
       302,
-      this.buildFrontendReturnUrl(frontendBase, {
+      this.buildFrontendReturnUrl(oauthReturnTo, {
         oauth: 'success',
         accessToken: result.tokens.accessToken,
       })

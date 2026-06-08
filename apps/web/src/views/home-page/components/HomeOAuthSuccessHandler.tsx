@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSetAtom } from "jotai";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ROUTES } from "@mezon-tutors/shared";
 import { authService } from "@/services";
 import { isLoadingAtom, toAuthUser, userAtom } from "@/store/auth.atom";
 import { accessTokenAtom } from "@/store/token.atom";
@@ -45,8 +44,6 @@ export default function HomeOAuthSuccessHandler() {
           toast.success(t("sidebar.syncMezon.successTitle"), {
             description: t("sidebar.syncMezon.successDescription"),
           });
-          router.replace(ROUTES.DASHBOARD.INDEX);
-          return;
         }
 
         router.replace(pathname || "/");
@@ -57,10 +54,8 @@ export default function HomeOAuthSuccessHandler() {
           toast.error(t("sidebar.syncMezon.errorTitle"), {
             description: t("sidebar.syncMezon.errorDescription"),
           });
-          router.replace(ROUTES.DASHBOARD.INDEX);
-        } else {
-          router.replace(pathname || "/");
         }
+        router.replace(pathname || "/");
       } finally {
         setIsAuthLoading(false);
         inFlightRef.current = false;
