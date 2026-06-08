@@ -65,5 +65,25 @@
   "onboarding": {
     "title": "Hướng dẫn sử dụng Mezonly",
     "description": "Khám phá Mezonly theo từng bước — hướng dẫn chi tiết cho học viên và gia sư."
+  },
+  "legalCenter": {
+    "title": "Trung tâm pháp lý | Mezonly",
+    "description": "Xem các tài liệu pháp lý của Mezonly — Điều khoản dịch vụ, Chính sách quyền riêng tư, Chính sách hoàn tiền và Chính sách gia sư."
+  },
+  "termsOfService": {
+    "title": "Điều khoản dịch vụ | Mezonly",
+    "description": "Đọc Điều khoản dịch vụ khi sử dụng Mezonly, gồm đặt lịch, thanh toán và quy tắc nền tảng."
+  },
+  "privacyPolicy": {
+    "title": "Chính sách quyền riêng tư | Mezonly",
+    "description": "Tìm hiểu cách Mezonly thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn."
+  },
+  "refundPolicy": {
+    "title": "Chính sách hoàn tiền | Mezonly",
+    "description": "Nắm rõ điều kiện hoàn tiền cho buổi học thử, gói đăng ký và giao dịch ví trên Mezonly."
+  },
+  "tutorPolicy": {
+    "title": "Chính sách gia sư | Mezonly",
+    "description": "Hướng dẫn dành cho gia sư trên Mezonly — hồ sơ, thiết lập Mezon, lịch dạy, chất lượng buổi học và chi trả."
   }
 }

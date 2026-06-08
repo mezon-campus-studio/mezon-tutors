@@ -24,6 +24,11 @@ export type SeoMessages = {
   admin: { title: string; description: string };
   authCallback: { title: string; description: string };
   onboarding: { title: string; description: string };
+  legalCenter: { title: string; description: string };
+  termsOfService: { title: string; description: string };
+  privacyPolicy: { title: string; description: string };
+  refundPolicy: { title: string; description: string };
+  tutorPolicy: { title: string; description: string };
 };
 
 const SUPPORTED_LOCALES = ["vi", "en"] as const;

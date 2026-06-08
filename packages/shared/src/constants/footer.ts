@@ -35,9 +35,8 @@ export const FOOTER_COLUMNS: FooterColumnConfig[] = [
   {
     titleKey: 'support.title',
     links: [
-      { labelKey: 'support.helpCenter', href: ROUTES.HOME.index },
-      { labelKey: 'support.privacyPolicy', href: ROUTES.HOME.index },
-      { labelKey: 'support.contact', href: ROUTES.HOME.index },
+      { labelKey: 'support.onboarding', href: ROUTES.SUPPORT.ONBOARDING },
+      { labelKey: 'support.legalCenter', href: ROUTES.SUPPORT.LEGAL_CENTER },
     ],
   },
 ];

@@ -1,0 +1,532 @@
+{
+  "TermsOfService": {
+    "badge": "Legal",
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: June 8, 2026",
+    "intro": "These Terms of Service govern your use of Mezonly, the platform that connects learners with tutors on Mezon. By creating an account, booking a lesson, or using any part of the service, you agree to the terms below.",
+    "sections": [
+      {
+        "title": "1. About Mezonly",
+        "paragraphs": [
+          "Mezonly connects learners with independent tutors for one-on-one lessons, trial bookings, and monthly subscription plans. Lessons are delivered through messaging, voice, and related tools on Mezon.",
+          "Mezonly is a marketplace platform. Tutors are independent service providers and are not employees of Mezonly."
+        ]
+      },
+      {
+        "title": "2. Accounts",
+        "paragraphs": [
+          "You are responsible for keeping your Mezon account secure and for all activity that occurs under your account."
+        ],
+        "list": [
+          "You must provide accurate and complete profile and contact information.",
+          "You must not share your login credentials with anyone else.",
+          "You must notify us immediately if you suspect unauthorized access to your account."
+        ]
+      },
+      {
+        "title": "3. Bookings and payments",
+        "paragraphs": [
+          "When you book a trial lesson or subscription plan, you agree to pay the displayed price, applicable fees, and any taxes shown at checkout.",
+          "Payments are processed through supported payment methods and may be held in your Mezonly wallet until the lesson is completed or settled according to platform rules.",
+          "When booking a trial lesson or subscription plan, the time slot is held for 10 minutes from when you start checkout. If payment is not completed within 10 minutes, the hold expires automatically.",
+          "Prices shown on tutor profiles are set by tutors within platform guidelines. Mezonly may update pricing rules, fees, or payment methods and will provide reasonable notice before changes take effect."
+        ]
+      },
+      {
+        "title": "4. Tutor and student responsibilities",
+        "list": [
+          "Both tutors and students must attend scheduled lessons on time. Cancellation and rescheduling rules depend on booking type and how much time remains before the lesson start time; see sections below and our [[refundPolicy|Refund Policy]].",
+          "All communication on Mezon must be respectful and comply with community standards.",
+          "You must not share lesson access, materials, or personal contact details in order to bypass the platform.",
+          "Tutors must provide services that match their published profile, qualifications, and availability.",
+          "Students must provide accurate learning goals and feedback so that lessons can be effective."
+        ]
+      },
+      {
+        "title": "5. Cancellations, complaints, and refunds",
+        "paragraphs": [
+          "The 12-hour window is measured as time remaining before the lesson start time. When more than 12 hours remain, additional actions such as rescheduling may be available. When 12 hours or less remain, only cancellation may be available.",
+          "See our [[refundPolicy|Refund Policy]] for refund processing details. Students may submit lesson complaints within 72 hours (3 days) after the lesson ends. If a complaint is approved, funds may be credited to the wallet according to the processing times in our refund policy."
+        ],
+        "groups": [
+          {
+            "label": "Students — Trial lessons",
+            "items": [
+              "Cancel when more than 12 hours remain: full refund to your Mezonly wallet.",
+              "Cancel when 12 hours or less remain: no refund.",
+              "Reschedule only when more than 12 hours remain. When 12 hours or less remain, you may only cancel."
+            ]
+          },
+          {
+            "label": "Students — Subscription plans",
+            "items": [
+              "Cancel a lesson within your plan: no refund, regardless of timing.",
+              "Reschedule only when more than 12 hours remain. When 12 hours or less remain, you may only cancel (without a refund)."
+            ]
+          },
+          {
+            "label": "Tutors",
+            "items": [
+              "Cancel a confirmed lesson: the student receives a refund.",
+              "Request a reschedule only when more than 12 hours remain. The platform notifies the student, and the student performs the reschedule.",
+              "When 12 hours or less remain: you may only cancel (the student receives a refund). Reschedule requests are not available."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6. Prohibited conduct",
+        "list": [
+          "Harassment, discrimination, fraud, or other abusive behavior.",
+          "Posting false credentials, reviews, or misleading lesson information.",
+          "Attempting to circumvent payments, fees, or platform safety controls.",
+          "Uploading content that is unlawful, infringing, or harmful to others.",
+          "Using automated tools to scrape data or disrupt the service."
+        ]
+      },
+      {
+        "title": "7. Intellectual property",
+        "paragraphs": [
+          "Mezonly branding, software, and platform content are owned by Mezonly or its licensors. You may not copy, modify, or redistribute these materials without permission.",
+          "Tutors retain ownership of their original teaching materials unless otherwise agreed in writing with the student."
+        ]
+      },
+      {
+        "title": "8. Disclaimers and limitation of liability",
+        "paragraphs": [
+          "Mezonly provides the platform on an \"as is\" basis. We do not guarantee specific learning outcomes, tutor availability, or uninterrupted service.",
+          "To the fullest extent permitted by law, Mezonly is not liable for indirect, incidental, or consequential damages arising from use of the platform or lessons delivered by tutors."
+        ]
+      },
+      {
+        "title": "9. Suspension and termination",
+        "paragraphs": [
+          "We may suspend or terminate accounts that violate these terms, create safety risks, or harm other users. You may stop using Mezonly at any time, provided that you have fulfilled outstanding bookings and payment obligations."
+        ]
+      },
+      {
+        "title": "10. Changes and contact",
+        "paragraphs": [
+          "We may update these Terms of Service from time to time. Material changes will be posted on this page with an updated effective date.",
+          "If you have questions about these Terms, please contact our support team."
+        ]
+      }
+    ],
+    "contactLabel": "Support email",
+    "relatedTitle": "Related policies"
+  },
+  "PrivacyPolicy": {
+    "badge": "Legal",
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: June 8, 2026",
+    "intro": "This Privacy Policy explains how Mezonly collects, uses, stores, and protects personal information when you use our tutor matching platform on Mezon.",
+    "sections": [
+      {
+        "title": "1. Information we collect",
+        "paragraphs": [
+          "We collect information needed to operate bookings, payments, tutor verification, and customer support."
+        ],
+        "list": [
+          "Account details when you sign in with Mezon, such as your display name, avatar, and user identifiers.",
+          "Profile information you provide, including subjects, bio, certificates, photos, and availability.",
+          "Your booking, payment, wallet, complaint, and lesson history.",
+          "Messages and support interactions related to lessons and platform use.",
+          "Technical data such as device type, browser, IP address, and usage logs for security and service improvement."
+        ]
+      },
+      {
+        "title": "2. How we use information",
+        "list": [
+          "We use information to match students with tutors, manage schedules, process payments, and coordinate lessons.",
+          "We use information to verify tutor profiles and maintain a safe, trustworthy platform.",
+          "We use information to process payments, refunds, tutor payouts, and wallet transactions.",
+          "We send service notifications about bookings, schedule changes, and account activity.",
+          "We analyze usage data to improve the product, detect fraud, and resolve disputes.",
+          "We process information when needed to comply with legal obligations and enforce our [[termsOfService|Terms of Service]]."
+        ]
+      },
+      {
+        "title": "3. How we share information",
+        "paragraphs": [
+          "We do not sell your personal information. Data is shared only when necessary to operate the service."
+        ],
+        "list": [
+          "We share necessary information between students and tutors for confirmed bookings.",
+          "We share information with payment processors and infrastructure providers that help us run the platform.",
+          "We share information with Mezon systems when needed for authentication, messaging, and lesson workflows.",
+          "We may disclose information when required by law, regulation, or court order, or when needed to protect users and platform integrity."
+        ]
+      },
+      {
+        "title": "4. Data retention",
+        "paragraphs": [
+          "We retain account, booking, and payment records for as long as needed to provide the service, resolve disputes, meet legal requirements, and maintain financial records.",
+          "You may request deletion of certain profile content, but this may be limited if there are active bookings, pending payouts, or legal retention obligations."
+        ]
+      },
+      {
+        "title": "5. Security",
+        "paragraphs": [
+          "We apply administrative, technical, and organizational safeguards to protect personal data, including access controls and encrypted payment flows.",
+          "No online service can guarantee absolute security. Please protect your Mezon account and report suspicious activity promptly."
+        ]
+      },
+      {
+        "title": "6. Your choices and rights",
+        "list": [
+          "You may update your profile and account information from your dashboard where this feature is available.",
+          "You may manage your preferences for service-related notifications.",
+          "You may contact support to request access, correction, or deletion of personal data where applicable under law.",
+          "You may withdraw consent for optional promotional communications at any time."
+        ]
+      },
+      {
+        "title": "7. Cookies and similar technologies",
+        "paragraphs": [
+          "Mezonly uses cookies and local storage to remember language preferences, maintain sessions, and improve site performance.",
+          "You can control cookies through your browser settings, but some features may not work correctly if essential cookies are disabled."
+        ]
+      },
+      {
+        "title": "8. International users",
+        "paragraphs": [
+          "Mezonly primarily serves users in Vietnam. If you access the service from other regions, your information may be processed in countries where our service providers operate, subject to appropriate safeguards."
+        ]
+      },
+      {
+        "title": "9. Updates and contact",
+        "paragraphs": [
+          "We may update this Privacy Policy from time to time. The latest version will always be available on this page.",
+          "If you have privacy questions or requests, please contact our support team."
+        ]
+      }
+    ],
+    "contactLabel": "Support email",
+    "relatedTitle": "Related policies"
+  },
+  "RefundPolicy": {
+    "badge": "Legal",
+    "title": "Refund Policy",
+    "lastUpdated": "Last updated: June 8, 2026",
+    "intro": "This Refund Policy explains when refunds, wallet credits, or payment reversals may apply for trial lessons, subscription plans, and related transactions on Mezonly.",
+    "sections": [
+      {
+        "title": "1. General principles",
+        "paragraphs": [
+          "Refunds are handled based on booking type, payment status, cancellation timing, and whether the lesson was delivered as agreed.",
+          "Default time thresholds on the platform: the 12-hour window is measured as time remaining before the lesson start time; file a complaint within 72 hours after the lesson ends; tutor earnings are settled 72 hours after lesson completion; tutors may only submit withdrawal requests during the last 10 calendar days of each month.",
+          "Refund eligibility depends on booking type, who initiates the cancellation, and how much time remains before the lesson start time. Tutor-initiated cancellations generally result in a refund to the student. Student-initiated cancellations follow the trial and subscription rules in sections 2 and 3 below.",
+          "When a refund request is approved, funds are typically returned to your Mezonly wallet unless otherwise stated at checkout or required by the original payment method."
+        ]
+      },
+      {
+        "title": "2. Trial lesson bookings",
+        "groups": [
+          {
+            "label": "Student — Cancel",
+            "items": [
+              "More than 12 hours remain before the start time: full refund to your Mezonly wallet.",
+              "12 hours or less remain before the start time: no refund."
+            ]
+          },
+          {
+            "label": "Student — Reschedule",
+            "items": [
+              "More than 12 hours remain before the start time: rescheduling is available.",
+              "12 hours or less remain before the start time: you may only cancel."
+            ]
+          },
+          {
+            "label": "Tutor — Cancel or no-show",
+            "items": [
+              "If a tutor cancels or does not attend a confirmed trial lesson, you are generally eligible for a full wallet refund or a free reschedule."
+            ]
+          },
+          {
+            "label": "Other cases",
+            "items": [
+              "If you miss a lesson without valid notice, the booking may be marked as completed and may not be refundable.",
+              "The time slot is held for 10 minutes from when you start checkout. If payment is not completed within 10 minutes, the hold expires automatically."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3. Subscription plans",
+        "paragraphs": [
+          "Monthly subscription fees cover the lesson time slots selected for the billing period shown at checkout."
+        ],
+        "groups": [
+          {
+            "label": "Student — Cancel",
+            "items": [
+              "Cancel a lesson within your plan: no refund, regardless of how much time remains before the lesson start time."
+            ]
+          },
+          {
+            "label": "Student — Reschedule",
+            "items": [
+              "More than 12 hours remain before the start time: rescheduling is available.",
+              "12 hours or less remain before the start time: you may only cancel (without a refund)."
+            ]
+          },
+          {
+            "label": "Tutor — Cancel",
+            "items": [
+              "If a tutor cancels a confirmed subscription lesson, the student receives a refund for that lesson."
+            ]
+          },
+          {
+            "label": "Tutor — Reschedule request",
+            "items": [
+              "More than 12 hours remain before the start time: the tutor may request a reschedule. The platform notifies the student, and the student performs the reschedule.",
+              "12 hours or less remain before the start time: the tutor may only cancel."
+            ]
+          },
+          {
+            "label": "Other cases",
+            "items": [
+              "The time slot is held for 10 minutes from when you start checkout for a subscription plan. If payment is not completed within 10 minutes, the hold expires automatically.",
+              "If Mezonly or a tutor cancels a confirmed time slot because the platform or tutor is unavailable, the corresponding amount may be credited or refunded."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "4. Lesson complaints",
+        "paragraphs": [
+          "If you believe a lesson did not meet the agreed quality, you may submit a complaint through the platform within 72 hours (3 days) after the lesson ends.",
+          "Mezonly support will review complaint evidence, attendance records, and communication history. If the complaint is approved, you may receive a partial or full refund to your wallet immediately after the decision is issued."
+        ]
+      },
+      {
+        "title": "5. Tutor payouts",
+        "paragraphs": [
+          "Tutor earnings are settled and moved to withdrawable balance 72 hours after lesson completion. If a student payment is refunded or reversed during this period, the tutor's payout for that lesson may be adjusted accordingly.",
+          "Tutors may only submit withdrawal requests during the last 10 calendar days of each month. Requests submitted outside this window will not be processed.",
+          "Tutors should not request off-platform refunds or bank chargebacks that bypass Mezonly payment records."
+        ]
+      },
+      {
+        "title": "6. Chargebacks and duplicate payments",
+        "paragraphs": [
+          "If your bank or payment provider initiates a chargeback, Mezonly may suspend related bookings and accounts while the case is reviewed.",
+          "If you encounter duplicate or failed payments, please contact support with your booking reference so we can verify and correct the transaction."
+        ]
+      },
+      {
+        "title": "7. Processing time",
+        "paragraphs": [
+          "Credits to your Mezonly wallet are usually applied immediately after a refund request is approved.",
+          "Refunds to external payment methods (bank transfer, e-wallet) typically take 3 to 7 business days, depending on the payment provider.",
+          "You can review your refund history in your wallet transaction list."
+        ]
+      },
+      {
+        "title": "8. Non-refundable cases",
+        "list": [
+          "Lessons marked as completed according to attendance and service delivery records.",
+          "A student cancelling a trial lesson when 12 hours or less remain before the lesson start time.",
+          "A student cancelling any lesson within a subscription plan, regardless of timing.",
+          "Fees explicitly marked as non-refundable at checkout.",
+          "Violations of the [[termsOfService|Terms of Service]] that result in account termination for cause."
+        ]
+      },
+      {
+        "title": "9. How to contact support",
+        "paragraphs": [
+          "If you have questions about refunds, please contact support with your booking ID, payment reference, and a brief description of the issue.",
+          "Our team will review your request and respond with the outcome under this policy."
+        ]
+      }
+    ],
+    "contactLabel": "Support email",
+    "relatedTitle": "Related policies"
+  },
+  "relatedLinks": {
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "refundPolicy": "Refund Policy",
+    "tutorPolicy": "Tutor Policy"
+  },
+  "TutorPolicy": {
+    "badge": "For tutors",
+    "title": "Tutor Policy",
+    "lastUpdated": "Last updated: June 8, 2026",
+    "intro": "This Tutor Policy sets out the standards, responsibilities, and principles you must follow when teaching on Mezonly. By becoming an approved tutor, you agree to follow these guidelines in addition to our [[termsOfService|Terms of Service]].",
+    "sections": [
+      {
+        "title": "1. Profile and verification",
+        "paragraphs": [
+          "Your tutor profile must honestly reflect your qualifications, teaching experience, and the subjects you offer."
+        ],
+        "list": [
+          "You must complete all steps in the become-a-tutor process, including your photo, certificates, intro video, and availability.",
+          "You must upload genuine certificates and identity documents. Misrepresentation may lead to rejection or account removal.",
+          "New tutor profiles are typically reviewed and responded to within 48 business hours after you submit a complete application.",
+          "You should keep your headline, bio, subjects, languages, and intro video up to date.",
+          "You must not publish contact details intended to bypass Mezonly bookings or payments."
+        ]
+      },
+      {
+        "title": "2. Mezon Clan setup",
+        "paragraphs": [
+          "Every approved tutor must set up a Mezon Clan as the official space for live lessons with students."
+        ],
+        "list": [
+          "You must create a Clan on Mezon and add voice channels suitable for teaching.",
+          "You must invite the Mezonly bot using the official link and run the setup command to link your Clan to your tutor account.",
+          "You must keep the bot online and connected, as lessons depend on a properly linked Clan.",
+          "If you change your Clan or channels, update the setup promptly and contact support if the bot cannot connect."
+        ]
+      },
+      {
+        "title": "3. Availability and scheduling",
+        "list": [
+          "You must maintain accurate weekly availability so students can book the correct time slots.",
+          "You must update your schedule promptly when your teaching hours change.",
+          "You must confirm or respond to trial booking requests promptly in your dashboard so students are not left waiting.",
+          "You must not double-book the same time slot for multiple students.",
+          "Before each lesson, remember that the start time is displayed in the student's local timezone on their side."
+        ]
+      },
+      {
+        "title": "4. Conducting lessons",
+        "list": [
+          "You must join lessons on time through the Mezon voice channels linked to the booking.",
+          "You must deliver lessons that match your published profile, subject expertise, and the format agreed with the student.",
+          "You must use professional, respectful language and maintain a safe learning environment.",
+          "You must not record or share lessons without explicit consent where required by law or platform rules.",
+          "If technical issues occur, you must notify the student promptly and contact support."
+        ]
+      },
+      {
+        "title": "5. Communication with students",
+        "list": [
+          "You should use Mezon messaging and platform tools to coordinate lessons whenever possible.",
+          "You must respond to booking-related messages within a reasonable time before scheduled lessons.",
+          "You must not request off-platform payments, personal transfers, or external agreements that bypass Mezonly.",
+          "You must not share inappropriate, harassing, or discriminatory content."
+        ]
+      },
+      {
+        "title": "6. Pricing, payments, and payouts",
+        "paragraphs": [
+          "You set your trial lesson price and subscription rates within platform guidelines. Mezonly currently applies a 20% platform fee per lesson; fees and settlement rules are shown at checkout or in your wallet."
+        ],
+        "list": [
+          "Your earnings are settled and moved to withdrawable balance 72 hours after lesson completion.",
+          "If a student receives a refund or a complaint is approved, your payout for that lesson may be adjusted.",
+          "You may withdraw wallet earnings through the payout methods supported in your dashboard, but withdrawal requests can only be submitted during the last 10 calendar days of each month.",
+          "You must not encourage students to file bank chargebacks or request off-platform refunds."
+        ]
+      },
+      {
+        "title": "7. Cancellations, rescheduling, and no-shows",
+        "paragraphs": [
+          "If you cannot attend a confirmed lesson, cancel or request a reschedule as early as possible through the platform. The 12-hour window is measured as time remaining before the lesson start time."
+        ],
+        "groups": [
+          {
+            "label": "Cancellation",
+            "items": [
+              "If you cancel a confirmed lesson, the student receives a refund.",
+              "Tutor-initiated cancellations may affect your reliability rating."
+            ]
+          },
+          {
+            "label": "Reschedule request",
+            "items": [
+              "More than 12 hours remain before the start time: you may submit a reschedule request on the platform.",
+              "The student is notified and performs the reschedule. You cannot directly change the lesson time on behalf of the student."
+            ]
+          },
+          {
+            "label": "Within 12 hours of the lesson",
+            "items": [
+              "You may only cancel. The student receives a refund.",
+              "Reschedule requests are not available in this window."
+            ]
+          },
+          {
+            "label": "Reliability",
+            "items": [
+              "Repeated late cancellations or no-shows may lead to reduced profile visibility, suspension, or removal from the platform."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "8. Complaints and quality standards",
+        "paragraphs": [
+          "Students may submit complaints within 72 hours (3 days) after the lesson ends if it did not meet agreed quality. Mezonly will review attendance records, messages, and evidence from both sides."
+        ],
+        "list": [
+          "You must cooperate honestly during complaint reviews.",
+          "If a complaint is approved, the student may receive a partial or full refund and your earnings may be adjusted accordingly.",
+          "You should maintain consistent lesson quality to protect your ratings and long-term visibility on the platform."
+        ]
+      },
+      {
+        "title": "9. Reviews and professional reputation",
+        "list": [
+          "You must not request fake reviews or offer incentives in exchange for positive ratings.",
+          "You must not retaliate against students who leave honest feedback.",
+          "You should address constructive feedback professionally and continuously improve your teaching quality."
+        ]
+      },
+      {
+        "title": "10. Prohibited behavior",
+        "list": [
+          "Fraud, plagiarism, or falsifying credentials and certificates.",
+          "Harassment, discrimination, or abusive conduct toward students or staff.",
+          "Circumventing platform fees, bookings, or safety controls.",
+          "Teaching subjects or content that violate applicable law or Mezonly community standards.",
+          "Operating multiple tutor accounts to manipulate rankings or reviews."
+        ]
+      },
+      {
+        "title": "11. Enforcement and account status",
+        "paragraphs": [
+          "Mezonly may warn, suspend, or permanently remove tutors who violate this policy, the [[termsOfService|Terms of Service]], or create trust and safety risks.",
+          "If your application is rejected or your account is suspended, you may contact support for clarification and next steps where applicable."
+        ]
+      }
+    ],
+    "contactLabel": "Support email",
+    "relatedTitle": "Related policies"
+  },
+  "LegalCenter": {
+    "badge": "Legal",
+    "title": "Legal center",
+    "intro": "Find Mezonly policies and legal documents in one place. Read how we handle accounts, privacy, refunds, and tutor standards.",
+    "readMore": "Read document",
+    "backToCenter": "Back to legal center",
+    "documents": [
+      {
+        "id": "termsOfService",
+        "title": "Terms of Service",
+        "description": "Rules for using Mezonly, including bookings, payments, cancellations, and account responsibilities.",
+        "updated": "June 8, 2026"
+      },
+      {
+        "id": "privacyPolicy",
+        "title": "Privacy Policy",
+        "description": "How we collect, use, store, and protect your personal information on Mezonly and Mezon.",
+        "updated": "June 8, 2026"
+      },
+      {
+        "id": "refundPolicy",
+        "title": "Refund Policy",
+        "description": "When refunds apply, how wallet credits work, and processing times for trial lessons and subscription plans.",
+        "updated": "June 8, 2026"
+      },
+      {
+        "id": "tutorPolicy",
+        "title": "Tutor Policy",
+        "description": "Standards and responsibilities for tutors, including Mezon setup, scheduling, payouts, and quality requirements.",
+        "updated": "June 8, 2026"
+      }
+    ]
+  }
+}

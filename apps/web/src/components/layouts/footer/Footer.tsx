@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { ROUTES, SUPPORT_EMAIL } from "@mezon-tutors/shared";
 import { Button, Input, Separator } from "@/components/ui";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 
@@ -95,9 +96,9 @@ export default function Footer() {
       key: "support",
       title: t("support.title"),
       links: [
-        { label: t("support.onboarding"), href: "/support/onboarding" },
-        { label: t("support.contact"), href: "/" },
-        { label: t("support.privacyPolicy"), href: "/" },
+        { label: t("support.onboarding"), href: ROUTES.SUPPORT.ONBOARDING },
+        { label: t("support.legalCenter"), href: ROUTES.SUPPORT.LEGAL_CENTER },
+        { label: t("support.contact"), href: `mailto:${SUPPORT_EMAIL}` },
       ],
     },
   ];
@@ -239,22 +240,22 @@ export default function Footer() {
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <Link
-              href="/"
+              href={ROUTES.SUPPORT.TERMS_OF_SERVICE}
               className="font-medium text-slate-500 transition-colors hover:text-violet-700"
             >
               {t("bottom.terms")}
             </Link>
             <Link
-              href="/"
+              href={ROUTES.SUPPORT.PRIVACY_POLICY}
               className="font-medium text-slate-500 transition-colors hover:text-violet-700"
             >
               {t("bottom.privacy")}
             </Link>
             <Link
-              href="/"
+              href={ROUTES.SUPPORT.REFUND_POLICY}
               className="font-medium text-slate-500 transition-colors hover:text-violet-700"
             >
-              {t("bottom.cookies")}
+              {t("bottom.refund")}
             </Link>
           </div>
         </div>

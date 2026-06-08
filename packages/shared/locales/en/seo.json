@@ -65,5 +65,25 @@
   "onboarding": {
     "title": "Getting started with Mezonly",
     "description": "Explore Mezonly step by step — a guided walkthrough for students and tutors."
+  },
+  "legalCenter": {
+    "title": "Legal center | Mezonly",
+    "description": "Browse Mezonly legal documents — Terms of Service, Privacy Policy, Refund Policy, and Tutor Policy."
+  },
+  "termsOfService": {
+    "title": "Terms of Service | Mezonly",
+    "description": "Read the Terms of Service for using Mezonly, including bookings, payments, and platform rules."
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy | Mezonly",
+    "description": "Learn how Mezonly collects, uses, and protects your personal information."
+  },
+  "refundPolicy": {
+    "title": "Refund Policy | Mezonly",
+    "description": "Understand refund eligibility for trial lessons, subscription plans, and wallet transactions on Mezonly."
+  },
+  "tutorPolicy": {
+    "title": "Tutor Policy | Mezonly",
+    "description": "Guidelines for tutors on Mezonly — profile standards, Mezon setup, scheduling, lesson quality, and payouts."
   }
 }

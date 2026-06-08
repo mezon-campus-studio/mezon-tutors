@@ -1,0 +1,532 @@
+{
+  "TermsOfService": {
+    "badge": "Pháp lý",
+    "title": "Điều khoản dịch vụ",
+    "lastUpdated": "Cập nhật lần cuối: 8 tháng 6, 2026",
+    "intro": "Điều khoản dịch vụ này quy định việc bạn sử dụng Mezonly — nền tảng kết nối học viên với gia sư trên Mezon. Khi tạo tài khoản, đặt buổi học hoặc sử dụng bất kỳ phần nào của dịch vụ, bạn đồng ý tuân thủ các điều khoản dưới đây.",
+    "sections": [
+      {
+        "title": "1. Giới thiệu về Mezonly",
+        "paragraphs": [
+          "Mezonly kết nối học viên với các gia sư độc lập để học riêng một-một, đặt buổi học thử và đăng ký gói học theo tháng. Các buổi học được tổ chức thông qua tin nhắn, thoại và các công cụ liên quan trên Mezon.",
+          "Mezonly là nền tảng trung gian kết nối. Gia sư là đối tác cung cấp dịch vụ độc lập, không phải nhân viên của Mezonly."
+        ]
+      },
+      {
+        "title": "2. Tài khoản",
+        "paragraphs": [
+          "Bạn chịu trách nhiệm bảo mật tài khoản Mezon của mình và mọi hoạt động phát sinh từ tài khoản đó."
+        ],
+        "list": [
+          "Bạn cần cung cấp thông tin hồ sơ và liên hệ chính xác, đầy đủ.",
+          "Bạn không được chia sẻ thông tin đăng nhập cho bất kỳ ai khác.",
+          "Bạn cần thông báo ngay cho chúng tôi khi nghi ngờ tài khoản bị truy cập trái phép."
+        ]
+      },
+      {
+        "title": "3. Đặt lịch và thanh toán",
+        "paragraphs": [
+          "Khi đặt buổi học thử hoặc đăng ký gói học, bạn đồng ý thanh toán đúng mức giá hiển thị, các khoản phí áp dụng và thuế (nếu có) tại bước thanh toán.",
+          "Thanh toán được xử lý qua các phương thức được hỗ trợ và có thể được giữ trong ví Mezonly cho đến khi buổi học hoàn tất hoặc được quyết toán theo quy định của nền tảng.",
+          "Khi đặt buổi học thử hoặc gói học, khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn.",
+          "Mức giá trên hồ sơ gia sư do gia sư tự đặt trong khung hướng dẫn của nền tảng. Mezonly có thể điều chỉnh quy tắc về giá, phí hoặc phương thức thanh toán và sẽ thông báo trước khi thay đổi có hiệu lực."
+        ]
+      },
+      {
+        "title": "4. Trách nhiệm của gia sư và học viên",
+        "list": [
+          "Cả gia sư và học viên đều cần tham gia buổi học đúng giờ. Quy định hủy và đổi lịch phụ thuộc vào loại đặt lịch và thời gian còn lại trước giờ bắt đầu buổi học; xem các mục dưới đây và [[refundPolicy|Chính sách hoàn tiền]].",
+          "Mọi trao đổi trên Mezon cần được thực hiện một cách tôn trọng và tuân thủ tiêu chuẩn cộng đồng.",
+          "Bạn không được chia sẻ quyền truy cập buổi học, tài liệu hoặc thông tin liên hệ cá nhân nhằm tránh sử dụng nền tảng.",
+          "Gia sư cần cung cấp dịch vụ phù hợp với hồ sơ, trình độ và lịch trống đã công bố.",
+          "Học viên cần cung cấp mục tiêu học tập và phản hồi chính xác để buổi học diễn ra hiệu quả."
+        ]
+      },
+      {
+        "title": "5. Hủy buổi học, khiếu nại và hoàn tiền",
+        "paragraphs": [
+          "Mốc 12 giờ được tính theo thời gian còn lại trước giờ bắt đầu buổi học. Khi còn hơn 12 giờ, bạn có thể thực hiện thêm các thao tác như đổi lịch. Khi còn 12 giờ trở xuống, chỉ có thể hủy buổi học.",
+          "Chi tiết xử lý hoàn tiền tại [[refundPolicy|Chính sách hoàn tiền]]. Học viên có thể gửi khiếu nại về buổi học trong vòng 72 giờ (3 ngày) kể từ khi buổi học kết thúc. Nếu khiếu nại được chấp thuận, số tiền có thể được cộng vào ví trong thời gian xử lý nêu tại chính sách hoàn tiền."
+        ],
+        "groups": [
+          {
+            "label": "Học viên — Buổi học thử",
+            "items": [
+              "Hủy khi còn hơn 12 giờ: hoàn toàn bộ số tiền vào ví Mezonly.",
+              "Hủy khi còn 12 giờ trở xuống: không được hoàn tiền.",
+              "Đổi lịch chỉ khi còn hơn 12 giờ. Khi còn 12 giờ trở xuống, chỉ có thể hủy."
+            ]
+          },
+          {
+            "label": "Học viên — Gói đăng ký",
+            "items": [
+              "Hủy buổi học trong gói: không được hoàn tiền, bất kể thời điểm hủy.",
+              "Đổi lịch chỉ khi còn hơn 12 giờ. Khi còn 12 giờ trở xuống, chỉ có thể hủy (không hoàn tiền)."
+            ]
+          },
+          {
+            "label": "Gia sư",
+            "items": [
+              "Hủy buổi học đã xác nhận: học viên được hoàn tiền.",
+              "Yêu cầu đổi lịch chỉ khi còn hơn 12 giờ. Nền tảng thông báo cho học viên và học viên thực hiện đổi lịch.",
+              "Khi còn 12 giờ trở xuống: chỉ có thể hủy (học viên được hoàn tiền). Không thể gửi yêu cầu đổi lịch."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6. Hành vi bị cấm",
+        "list": [
+          "Quấy rối, phân biệt đối xử, gian lận hoặc các hành vi lạm dụng khác.",
+          "Khai báo sai bằng cấp, đánh giá hoặc thông tin buổi học.",
+          "Cố ý tránh thanh toán, phí dịch vụ hoặc các biện pháp an toàn của nền tảng.",
+          "Đăng tải nội dung trái pháp luật, vi phạm bản quyền hoặc gây hại cho người khác.",
+          "Sử dụng công cụ tự động để thu thập dữ liệu hoặc làm gián đoạn dịch vụ."
+        ]
+      },
+      {
+        "title": "7. Quyền sở hữu trí tuệ",
+        "paragraphs": [
+          "Thương hiệu, phần mềm và nội dung trên nền tảng Mezonly thuộc quyền sở hữu của Mezonly hoặc các bên được cấp phép. Bạn không được sao chép, chỉnh sửa hoặc phân phối lại các tài liệu này khi chưa có sự cho phép.",
+          "Gia sư vẫn giữ quyền sở hữu đối với tài liệu giảng dạy gốc của mình, trừ khi có thỏa thuận khác bằng văn bản với học viên."
+        ]
+      },
+      {
+        "title": "8. Tuyên bố miễn trừ và giới hạn trách nhiệm",
+        "paragraphs": [
+          "Mezonly cung cấp nền tảng trên cơ sở \"nguyên trạng\". Chúng tôi không cam kết về kết quả học tập cụ thể, lịch trống của gia sư hay việc dịch vụ luôn hoạt động liên tục.",
+          "Trong phạm vi pháp luật cho phép, Mezonly không chịu trách nhiệm về các thiệt hại gián tiếp, ngẫu nhiên hoặc hệ quả phát sinh từ việc sử dụng nền tảng hoặc buổi học do gia sư cung cấp."
+        ]
+      },
+      {
+        "title": "9. Tạm ngưng và chấm dứt",
+        "paragraphs": [
+          "Chúng tôi có thể tạm ngưng hoặc chấm dứt tài khoản vi phạm điều khoản, gây rủi ro an toàn hoặc ảnh hưởng tiêu cực đến người dùng khác. Bạn có thể ngừng sử dụng Mezonly bất cứ lúc nào, với điều kiện đã hoàn tất các buổi học và nghĩa vụ thanh toán còn lại."
+        ]
+      },
+      {
+        "title": "10. Thay đổi và liên hệ",
+        "paragraphs": [
+          "Chúng tôi có thể cập nhật Điều khoản dịch vụ theo thời gian. Các thay đổi quan trọng sẽ được đăng trên trang này kèm ngày hiệu lực mới.",
+          "Nếu bạn có thắc mắc về Điều khoản dịch vụ, vui lòng liên hệ đội hỗ trợ của chúng tôi."
+        ]
+      }
+    ],
+    "contactLabel": "Email hỗ trợ",
+    "relatedTitle": "Chính sách liên quan"
+  },
+  "PrivacyPolicy": {
+    "badge": "Pháp lý",
+    "title": "Chính sách quyền riêng tư",
+    "lastUpdated": "Cập nhật lần cuối: 8 tháng 6, 2026",
+    "intro": "Chính sách quyền riêng tư này giải thích cách Mezonly thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân khi bạn sử dụng nền tảng kết nối gia sư trên Mezon.",
+    "sections": [
+      {
+        "title": "1. Thông tin chúng tôi thu thập",
+        "paragraphs": [
+          "Chúng tôi thu thập các thông tin cần thiết để vận hành đặt lịch, thanh toán, xác minh gia sư và hỗ trợ khách hàng."
+        ],
+        "list": [
+          "Thông tin tài khoản khi bạn đăng nhập bằng Mezon, bao gồm tên hiển thị, ảnh đại diện và mã định danh người dùng.",
+          "Thông tin hồ sơ bạn cung cấp, gồm môn học, lời giới thiệu, chứng chỉ, ảnh và lịch trống.",
+          "Lịch sử đặt lịch, thanh toán, ví, khiếu nại và buổi học.",
+          "Tin nhắn và các tương tác hỗ trợ liên quan đến buổi học và việc sử dụng nền tảng.",
+          "Dữ liệu kỹ thuật như loại thiết bị, trình duyệt, địa chỉ IP và nhật ký sử dụng nhằm mục đích bảo mật và cải thiện dịch vụ."
+        ]
+      },
+      {
+        "title": "2. Cách chúng tôi sử dụng thông tin",
+        "list": [
+          "Chúng tôi sử dụng thông tin để kết nối học viên với gia sư, quản lý lịch học, xử lý thanh toán và điều phối buổi học.",
+          "Chúng tôi sử dụng thông tin để xác minh hồ sơ gia sư và duy trì môi trường an toàn, đáng tin cậy trên nền tảng.",
+          "Chúng tôi sử dụng thông tin để xử lý thanh toán, hoàn tiền, chi trả cho gia sư và các giao dịch trong ví.",
+          "Chúng tôi gửi thông báo về đặt lịch, thay đổi lịch học và hoạt động liên quan đến tài khoản của bạn.",
+          "Chúng tôi phân tích dữ liệu sử dụng để cải thiện sản phẩm, phát hiện gian lận và giải quyết tranh chấp.",
+          "Chúng tôi xử lý thông tin khi cần tuân thủ nghĩa vụ pháp lý và thực thi [[termsOfService|Điều khoản dịch vụ]]."
+        ]
+      },
+      {
+        "title": "3. Cách chúng tôi chia sẻ thông tin",
+        "paragraphs": [
+          "Chúng tôi không bán thông tin cá nhân của bạn. Dữ liệu chỉ được chia sẻ khi thực sự cần thiết để vận hành dịch vụ."
+        ],
+        "list": [
+          "Chúng tôi chia sẻ thông tin cần thiết giữa học viên và gia sư cho các buổi học đã xác nhận.",
+          "Chúng tôi chia sẻ thông tin với đơn vị xử lý thanh toán và nhà cung cấp hạ tầng giúp vận hành nền tảng.",
+          "Chúng tôi chia sẻ thông tin với hệ thống Mezon khi cần cho xác thực, nhắn tin và quy trình buổi học.",
+          "Chúng tôi có thể tiết lộ thông tin khi pháp luật, quy định hoặc lệnh của cơ quan có thẩm quyền yêu cầu, hoặc khi cần bảo vệ người dùng và tính toàn vẹn của nền tảng."
+        ]
+      },
+      {
+        "title": "4. Lưu trữ dữ liệu",
+        "paragraphs": [
+          "Chúng tôi lưu trữ hồ sơ tài khoản, lịch sử đặt lịch và thanh toán trong thời gian cần thiết để cung cấp dịch vụ, giải quyết tranh chấp, đáp ứng yêu cầu pháp lý và lưu trữ hồ sơ tài chính.",
+          "Bạn có thể yêu cầu xóa một số nội dung trong hồ sơ, tuy nhiên yêu cầu này có thể bị giới hạn nếu còn buổi học đang diễn ra, khoản chi trả chưa hoàn tất hoặc nghĩa vụ lưu trữ theo quy định pháp luật."
+        ]
+      },
+      {
+        "title": "5. Bảo mật",
+        "paragraphs": [
+          "Chúng tôi áp dụng các biện pháp quản trị, kỹ thuật và tổ chức nhằm bảo vệ dữ liệu cá nhân, bao gồm kiểm soát truy cập và mã hóa luồng thanh toán.",
+          "Không dịch vụ trực tuyến nào có thể đảm bảo an ninh tuyệt đối. Bạn nên bảo vệ tài khoản Mezon của mình và thông báo ngay khi phát hiện hoạt động bất thường."
+        ]
+      },
+      {
+        "title": "6. Lựa chọn và quyền của bạn",
+        "list": [
+          "Bạn có thể cập nhật thông tin hồ sơ và tài khoản trên bảng điều khiển khi tính năng này được cung cấp.",
+          "Bạn có thể quản lý tùy chọn nhận thông báo liên quan đến dịch vụ.",
+          "Bạn có thể liên hệ hỗ trợ để yêu cầu truy cập, chỉnh sửa hoặc xóa dữ liệu cá nhân trong phạm vi pháp luật cho phép.",
+          "Bạn có thể rút lại sự đồng ý nhận thông tin quảng bá bất cứ lúc nào."
+        ]
+      },
+      {
+        "title": "7. Tệp cookie và công nghệ tương tự",
+        "paragraphs": [
+          "Mezonly sử dụng tệp cookie và bộ nhớ cục bộ để ghi nhớ ngôn ngữ, duy trì phiên đăng nhập và cải thiện hiệu năng trang web.",
+          "Bạn có thể điều chỉnh cookie thông qua cài đặt trình duyệt, tuy nhiên một số tính năng có thể không hoạt động đúng nếu cookie thiết yếu bị tắt."
+        ]
+      },
+      {
+        "title": "8. Người dùng tại các quốc gia khác",
+        "paragraphs": [
+          "Mezonly chủ yếu phục vụ người dùng tại Việt Nam. Nếu bạn truy cập từ khu vực khác, thông tin của bạn có thể được xử lý tại quốc gia nơi các nhà cung cấp dịch vụ của chúng tôi hoạt động, với các biện pháp bảo vệ phù hợp."
+        ]
+      },
+      {
+        "title": "9. Cập nhật và liên hệ",
+        "paragraphs": [
+          "Chúng tôi có thể cập nhật Chính sách quyền riêng tư theo thời gian. Phiên bản mới nhất luôn được đăng tại trang này.",
+          "Nếu bạn có câu hỏi hoặc yêu cầu liên quan đến quyền riêng tư, vui lòng liên hệ đội hỗ trợ của chúng tôi."
+        ]
+      }
+    ],
+    "contactLabel": "Email hỗ trợ",
+    "relatedTitle": "Chính sách liên quan"
+  },
+  "RefundPolicy": {
+    "badge": "Pháp lý",
+    "title": "Chính sách hoàn tiền",
+    "lastUpdated": "Cập nhật lần cuối: 8 tháng 6, 2026",
+    "intro": "Chính sách hoàn tiền này giải thích các trường hợp được hoàn tiền, cộng tiền vào ví hoặc hoàn trả giao dịch đối với buổi học thử, gói đăng ký và các giao dịch liên quan trên Mezonly.",
+    "sections": [
+      {
+        "title": "1. Nguyên tắc chung",
+        "paragraphs": [
+          "Việc hoàn tiền được xử lý dựa trên loại đặt lịch, trạng thái thanh toán, thời điểm hủy và việc buổi học có được thực hiện đúng như đã thỏa thuận hay không.",
+          "Các mốc thời gian áp dụng mặc định trên nền tảng: mốc 12 giờ được tính theo thời gian còn lại trước giờ bắt đầu buổi học; gửi khiếu nại trong 72 giờ sau khi buổi học kết thúc; quyết toán thu nhập gia sư sau 72 giờ kể từ khi buổi học hoàn tất; gia sư chỉ được gửi yêu cầu rút tiền trong 10 ngày cuối cùng của mỗi tháng.",
+          "Điều kiện hoàn tiền phụ thuộc vào loại đặt lịch, bên chủ động hủy và thời gian còn lại trước giờ bắt đầu buổi học. Gia sư hủy buổi học thường dẫn đến hoàn tiền cho học viên. Học viên hủy buổi học theo quy định riêng cho buổi học thử và gói đăng ký tại mục 2 và 3 dưới đây.",
+          "Khi yêu cầu hoàn tiền được chấp thuận, số tiền thường được trả về ví Mezonly, trừ khi có quy định khác tại bước thanh toán hoặc theo yêu cầu của phương thức thanh toán ban đầu."
+        ]
+      },
+      {
+        "title": "2. Buổi học thử",
+        "groups": [
+          {
+            "label": "Học viên — Hủy buổi học",
+            "items": [
+              "Còn hơn 12 giờ trước giờ bắt đầu: hoàn toàn bộ số tiền vào ví Mezonly.",
+              "Còn 12 giờ trở xuống trước giờ bắt đầu: không được hoàn tiền."
+            ]
+          },
+          {
+            "label": "Học viên — Đổi lịch",
+            "items": [
+              "Còn hơn 12 giờ trước giờ bắt đầu: được đổi lịch.",
+              "Còn 12 giờ trở xuống trước giờ bắt đầu: chỉ có thể hủy."
+            ]
+          },
+          {
+            "label": "Gia sư — Hủy hoặc vắng mặt",
+            "items": [
+              "Nếu gia sư hủy hoặc không tham dự buổi học thử đã xác nhận, bạn thường được hoàn toàn bộ số tiền vào ví hoặc đổi sang buổi học khác miễn phí."
+            ]
+          },
+          {
+            "label": "Các trường hợp khác",
+            "items": [
+              "Nếu bạn vắng mặt mà không thông báo hợp lệ, buổi học có thể được đánh dấu là đã hoàn tất và không được hoàn tiền.",
+              "Khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3. Gói học theo tháng",
+        "paragraphs": [
+          "Phí đăng ký theo tháng bao gồm các khung giờ học đã chọn trong kỳ thanh toán, theo thông tin hiển thị tại bước thanh toán."
+        ],
+        "groups": [
+          {
+            "label": "Học viên — Hủy buổi học",
+            "items": [
+              "Hủy buổi học trong gói: không được hoàn tiền, bất kể còn bao nhiêu thời gian trước giờ bắt đầu."
+            ]
+          },
+          {
+            "label": "Học viên — Đổi lịch",
+            "items": [
+              "Còn hơn 12 giờ trước giờ bắt đầu: được đổi lịch.",
+              "Còn 12 giờ trở xuống trước giờ bắt đầu: chỉ có thể hủy (không hoàn tiền)."
+            ]
+          },
+          {
+            "label": "Gia sư — Hủy buổi học",
+            "items": [
+              "Nếu gia sư hủy buổi học thuộc gói đăng ký đã xác nhận, học viên được hoàn tiền cho buổi học đó."
+            ]
+          },
+          {
+            "label": "Gia sư — Yêu cầu đổi lịch",
+            "items": [
+              "Còn hơn 12 giờ trước giờ bắt đầu: gia sư có thể gửi yêu cầu đổi lịch. Nền tảng thông báo cho học viên và học viên thực hiện đổi lịch.",
+              "Còn 12 giờ trở xuống trước giờ bắt đầu: gia sư chỉ có thể hủy."
+            ]
+          },
+          {
+            "label": "Các trường hợp khác",
+            "items": [
+              "Khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán gói học. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn.",
+              "Nếu Mezonly hoặc gia sư hủy một khung giờ đã xác nhận do nền tảng hoặc gia sư không thể dạy, số tiền tương ứng có thể được cộng vào ví hoặc hoàn lại."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "4. Khiếu nại về buổi học",
+        "paragraphs": [
+          "Nếu bạn cho rằng buổi học không đạt chất lượng đã thỏa thuận, bạn có thể gửi khiếu nại qua nền tảng trong vòng 72 giờ (3 ngày) kể từ khi buổi học kết thúc.",
+          "Đội hỗ trợ Mezonly sẽ xem xét bằng chứng khiếu nại, lịch tham dự và lịch sử trao đổi. Nếu khiếu nại được chấp thuận, bạn có thể được hoàn một phần hoặc toàn bộ số tiền vào ví ngay sau khi quyết định được ban hành."
+        ]
+      },
+      {
+        "title": "5. Chi trả cho gia sư",
+        "paragraphs": [
+          "Thu nhập của gia sư được quyết toán và chuyển sang số dư có thể rút sau 72 giờ kể từ khi buổi học hoàn tất. Nếu khoản thanh toán của học viên bị hoàn hoặc bị thu hồi trong thời gian này, khoản chi trả của gia sư cho buổi học đó có thể bị điều chỉnh tương ứng.",
+          "Gia sư chỉ được gửi yêu cầu rút tiền trong 10 ngày cuối cùng của mỗi tháng dương lịch. Các yêu cầu gửi ngoài khung thời gian này sẽ không được xử lý.",
+          "Gia sư không nên yêu cầu hoàn tiền ngoài nền tảng hoặc khiếu nại hoàn trả qua ngân hàng nhằm bỏ qua hồ sơ thanh toán trên Mezonly."
+        ]
+      },
+      {
+        "title": "6. Khiếu nại hoàn trả qua ngân hàng và thanh toán trùng lặp",
+        "paragraphs": [
+          "Nếu ngân hàng hoặc đơn vị thanh toán khởi tạo yêu cầu hoàn trả, Mezonly có thể tạm ngưng các buổi học và tài khoản liên quan trong thời gian xem xét.",
+          "Nếu bạn gặp lỗi thanh toán trùng lặp hoặc thanh toán thất bại, vui lòng liên hệ hỗ trợ kèm mã đặt lịch để chúng tôi xác minh và điều chỉnh giao dịch."
+        ]
+      },
+      {
+        "title": "7. Thời gian xử lý",
+        "paragraphs": [
+          "Số tiền cộng vào ví Mezonly thường được ghi nhận ngay sau khi yêu cầu hoàn tiền được chấp thuận.",
+          "Việc hoàn tiền về phương thức thanh toán bên ngoài (ngân hàng, ví điện tử) thường mất từ 3 đến 7 ngày làm việc, tùy theo đơn vị xử lý thanh toán.",
+          "Bạn có thể xem lịch sử hoàn tiền trong danh sách giao dịch của ví."
+        ]
+      },
+      {
+        "title": "8. Các trường hợp không được hoàn tiền",
+        "list": [
+          "Buổi học đã được đánh dấu hoàn tất theo hồ sơ tham dự và cung cấp dịch vụ.",
+          "Học viên hủy buổi học thử khi còn 12 giờ trở xuống trước giờ bắt đầu buổi học.",
+          "Học viên hủy buổi học thuộc gói đăng ký, bất kể thời điểm hủy.",
+          "Các khoản phí được ghi rõ là không hoàn tại bước thanh toán.",
+          "Vi phạm [[termsOfService|Điều khoản dịch vụ]] dẫn đến việc chấm dứt tài khoản có căn cứ."
+        ]
+      },
+      {
+        "title": "9. Cách liên hệ hỗ trợ",
+        "paragraphs": [
+          "Nếu bạn có thắc mắc về hoàn tiền, vui lòng liên hệ hỗ trợ và cung cấp mã đặt lịch, mã thanh toán cùng mô tả ngắn gọn về vấn đề.",
+          "Đội ngũ của chúng tôi sẽ xem xét yêu cầu và phản hồi kết quả theo chính sách này."
+        ]
+      }
+    ],
+    "contactLabel": "Email hỗ trợ",
+    "relatedTitle": "Chính sách liên quan"
+  },
+  "relatedLinks": {
+    "termsOfService": "Điều khoản dịch vụ",
+    "privacyPolicy": "Chính sách quyền riêng tư",
+    "refundPolicy": "Chính sách hoàn tiền",
+    "tutorPolicy": "Chính sách gia sư"
+  },
+  "TutorPolicy": {
+    "badge": "Dành cho gia sư",
+    "title": "Chính sách gia sư",
+    "lastUpdated": "Cập nhật lần cuối: 8 tháng 6, 2026",
+    "intro": "Chính sách gia sư này quy định các tiêu chuẩn, trách nhiệm và nguyên tắc cần tuân thủ khi giảng dạy trên Mezonly. Khi trở thành gia sư được duyệt, bạn đồng ý tuân thủ các hướng dẫn này cùng với [[termsOfService|Điều khoản dịch vụ]].",
+    "sections": [
+      {
+        "title": "1. Hồ sơ và xác minh",
+        "paragraphs": [
+          "Hồ sơ gia sư phải phản ánh trung thực trình độ, kinh nghiệm giảng dạy và các môn học bạn cung cấp."
+        ],
+        "list": [
+          "Bạn cần hoàn tất đầy đủ các bước trong quy trình trở thành gia sư, bao gồm ảnh đại diện, chứng chỉ, video giới thiệu và lịch trống.",
+          "Bạn cần tải lên chứng chỉ và giấy tờ định danh thật. Việc khai báo sai có thể dẫn đến từ chối hồ sơ hoặc gỡ tài khoản.",
+          "Hồ sơ gia sư mới thường được xem xét và phản hồi trong vòng 48 giờ làm việc kể từ khi bạn gửi đầy đủ hồ sơ.",
+          "Bạn nên thường xuyên cập nhật dòng tiêu đề, lời giới thiệu, môn học, ngôn ngữ và video giới thiệu trên hồ sơ.",
+          "Bạn không được đăng thông tin liên hệ nhằm mục đích tránh đặt lịch hoặc thanh toán qua nền tảng."
+        ]
+      },
+      {
+        "title": "2. Thiết lập Clan trên Mezon",
+        "paragraphs": [
+          "Mỗi gia sư được duyệt cần thiết lập một Clan trên Mezon làm không gian chính thức để tổ chức buổi học trực tiếp với học viên."
+        ],
+        "list": [
+          "Bạn cần tạo Clan trên Mezon và thêm các kênh thoại phù hợp cho việc giảng dạy.",
+          "Bạn cần mời bot Mezonly bằng liên kết chính thức và thực hiện lệnh thiết lập để liên kết Clan với tài khoản gia sư của mình.",
+          "Bạn cần đảm bảo bot luôn hoạt động và kết nối ổn định, vì buổi học phụ thuộc vào Clan được liên kết đúng cách.",
+          "Nếu bạn thay đổi Clan hoặc kênh, hãy cập nhật thiết lập kịp thời và liên hệ hỗ trợ nếu bot không thể kết nối."
+        ]
+      },
+      {
+        "title": "3. Lịch trống và đặt lịch",
+        "list": [
+          "Bạn cần duy trì lịch trống hàng tuần chính xác để học viên có thể đặt đúng khung giờ.",
+          "Bạn cần cập nhật lịch dạy ngay khi thời gian giảng dạy của mình thay đổi.",
+          "Bạn cần xác nhận hoặc phản hồi yêu cầu buổi học thử kịp thời trên bảng điều khiển để học viên không bị gián đoạn lịch học.",
+          "Bạn không được đặt trùng một khung giờ cho nhiều học viên khác nhau.",
+          "Trước mỗi buổi học, bạn nên lưu ý rằng giờ bắt đầu hiển thị theo múi giờ địa phương của học viên."
+        ]
+      },
+      {
+        "title": "4. Tổ chức buổi học",
+        "list": [
+          "Bạn cần tham gia buổi học đúng giờ thông qua kênh thoại Mezon đã liên kết với buổi học đã đặt.",
+          "Bạn cần giảng dạy phù hợp với hồ sơ công bố, chuyên môn và hình thức buổi học đã thỏa thuận với học viên.",
+          "Bạn cần sử dụng ngôn ngữ chuyên nghiệp, tôn trọng và duy trì môi trường học tập an toàn.",
+          "Bạn không được ghi âm hoặc chia sẻ buổi học khi chưa có sự đồng ý rõ ràng theo quy định pháp luật hoặc quy định của nền tảng.",
+          "Nếu gặp sự cố kỹ thuật, bạn cần thông báo kịp thời cho học viên và liên hệ hỗ trợ."
+        ]
+      },
+      {
+        "title": "5. Giao tiếp với học viên",
+        "list": [
+          "Bạn nên ưu tiên sử dụng tin nhắn trên Mezon và các công cụ của nền tảng để phối hợp buổi học.",
+          "Bạn cần phản hồi các tin nhắn liên quan đến đặt lịch trong thời gian hợp lý trước buổi học.",
+          "Bạn không được yêu cầu thanh toán ngoài nền tảng, chuyển khoản cá nhân hoặc ký kết thỏa thuận bên ngoài nhằm tránh Mezonly.",
+          "Bạn không được chia sẻ nội dung không phù hợp, quấy rối hoặc mang tính phân biệt đối xử."
+        ]
+      },
+      {
+        "title": "6. Giá cả, thanh toán và chi trả",
+        "paragraphs": [
+          "Bạn tự đặt giá buổi học thử và gói đăng ký trong khung hướng dẫn của nền tảng. Mezonly hiện áp dụng phí nền tảng 20% trên mỗi buổi học; mức phí và quy tắc quyết toán được hiển thị tại bước thanh toán hoặc trong ví của bạn."
+        ],
+        "list": [
+          "Thu nhập của bạn được quyết toán và chuyển sang số dư có thể rút sau 72 giờ kể từ khi buổi học hoàn tất.",
+          "Nếu học viên được hoàn tiền hoặc khiếu nại được chấp thuận, khoản chi trả liên quan đến buổi học đó có thể bị điều chỉnh.",
+          "Bạn có thể rút thu nhập trong ví thông qua các phương thức chi trả được hỗ trợ trên bảng điều khiển, nhưng chỉ được gửi yêu cầu rút trong 10 ngày cuối cùng của mỗi tháng dương lịch.",
+          "Bạn không được khuyến khích học viên khiếu nại hoàn trả qua ngân hàng hoặc hoàn tiền ngoài nền tảng."
+        ]
+      },
+      {
+        "title": "7. Hủy buổi học, đổi lịch và vắng mặt",
+        "paragraphs": [
+          "Nếu bạn không thể tham dự buổi học đã xác nhận, hãy hủy hoặc yêu cầu đổi lịch sớm nhất có thể thông qua nền tảng. Mốc 12 giờ được tính theo thời gian còn lại trước giờ bắt đầu buổi học."
+        ],
+        "groups": [
+          {
+            "label": "Hủy buổi học",
+            "items": [
+              "Nếu bạn hủy buổi học đã xác nhận, học viên được hoàn tiền.",
+              "Việc gia sư hủy buổi học có thể ảnh hưởng đến mức độ tin cậy của bạn."
+            ]
+          },
+          {
+            "label": "Yêu cầu đổi lịch",
+            "items": [
+              "Còn hơn 12 giờ trước giờ bắt đầu: bạn có thể gửi yêu cầu đổi lịch trên nền tảng.",
+              "Học viên được thông báo và thực hiện đổi lịch. Bạn không thể tự thay đổi giờ học thay cho học viên."
+            ]
+          },
+          {
+            "label": "Trong vòng 12 giờ trước buổi học",
+            "items": [
+              "Bạn chỉ có thể hủy. Học viên được hoàn tiền.",
+              "Không thể gửi yêu cầu đổi lịch trong khung thời gian này."
+            ]
+          },
+          {
+            "label": "Độ tin cậy",
+            "items": [
+              "Việc hủy muộn hoặc vắng mặt lặp lại có thể dẫn đến giảm hiển thị hồ sơ, tạm ngưng hoặc gỡ khỏi nền tảng."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "8. Khiếu nại và tiêu chuẩn chất lượng",
+        "paragraphs": [
+          "Học viên có thể gửi khiếu nại trong vòng 72 giờ (3 ngày) kể từ khi buổi học kết thúc nếu buổi học không đạt chất lượng đã thỏa thuận. Mezonly sẽ xem xét lịch tham dự, tin nhắn và bằng chứng từ cả hai bên."
+        ],
+        "list": [
+          "Bạn cần hợp tác trung thực trong quá trình xem xét khiếu nại.",
+          "Nếu khiếu nại được chấp thuận, học viên có thể được hoàn một phần hoặc toàn bộ số tiền, và thu nhập của bạn có thể bị điều chỉnh tương ứng.",
+          "Bạn nên duy trì chất lượng buổi học ổn định để bảo vệ đánh giá và mức độ hiển thị hồ sơ lâu dài trên nền tảng."
+        ]
+      },
+      {
+        "title": "9. Đánh giá và uy tín chuyên nghiệp",
+        "list": [
+          "Bạn không được yêu cầu đánh giá giả hoặc đổi ưu đãi lấy đánh giá tích cực.",
+          "Bạn không được có hành vi trả đũa học viên vì phản hồi trung thực.",
+          "Bạn nên tiếp nhận phản hồi mang tính xây dựng một cách chuyên nghiệp và không ngừng cải thiện chất lượng giảng dạy."
+        ]
+      },
+      {
+        "title": "10. Hành vi bị cấm",
+        "list": [
+          "Gian lận, đạo văn hoặc làm giả bằng cấp, chứng chỉ.",
+          "Quấy rối, phân biệt đối xử hoặc hành vi lạm dụng đối với học viên hoặc nhân viên.",
+          "Cố ý tránh phí dịch vụ, đặt lịch hoặc các biện pháp an toàn của nền tảng.",
+          "Giảng dạy các môn hoặc nội dung vi phạm pháp luật hoặc tiêu chuẩn cộng đồng của Mezonly.",
+          "Vận hành nhiều tài khoản gia sư nhằm thao túng thứ hạng hoặc đánh giá."
+        ]
+      },
+      {
+        "title": "11. Xử lý vi phạm và trạng thái tài khoản",
+        "paragraphs": [
+          "Mezonly có thể cảnh cáo, tạm ngưng hoặc gỡ vĩnh viễn tài khoản gia sư vi phạm chính sách này, [[termsOfService|Điều khoản dịch vụ]] hoặc gây rủi ro về an toàn và tin cậy.",
+          "Nếu hồ sơ bị từ chối hoặc tài khoản bị tạm ngưng, bạn có thể liên hệ hỗ trợ để được giải thích và hướng dẫn các bước tiếp theo, nếu áp dụng."
+        ]
+      }
+    ],
+    "contactLabel": "Email hỗ trợ",
+    "relatedTitle": "Chính sách liên quan"
+  },
+  "LegalCenter": {
+    "badge": "Pháp lý",
+    "title": "Trung tâm pháp lý",
+    "intro": "Tìm các chính sách và tài liệu pháp lý của Mezonly tại một nơi. Xem quy định về tài khoản, quyền riêng tư, hoàn tiền và tiêu chuẩn dành cho gia sư.",
+    "readMore": "Xem tài liệu",
+    "backToCenter": "Quay lại trung tâm pháp lý",
+    "documents": [
+      {
+        "id": "termsOfService",
+        "title": "Điều khoản dịch vụ",
+        "description": "Quy định sử dụng Mezonly, gồm đặt lịch, thanh toán, hủy buổi học và trách nhiệm tài khoản.",
+        "updated": "8 tháng 6, 2026"
+      },
+      {
+        "id": "privacyPolicy",
+        "title": "Chính sách quyền riêng tư",
+        "description": "Cách chúng tôi thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân trên Mezonly và Mezon.",
+        "updated": "8 tháng 6, 2026"
+      },
+      {
+        "id": "refundPolicy",
+        "title": "Chính sách hoàn tiền",
+        "description": "Điều kiện hoàn tiền, quy tắc cộng tiền vào ví và thời gian xử lý cho buổi học thử cùng gói đăng ký.",
+        "updated": "8 tháng 6, 2026"
+      },
+      {
+        "id": "tutorPolicy",
+        "title": "Chính sách gia sư",
+        "description": "Tiêu chuẩn và trách nhiệm dành cho gia sư, gồm thiết lập Mezon, lịch dạy, chi trả và chất lượng buổi học.",
+        "updated": "8 tháng 6, 2026"
+      }
+    ]
+  }
+}
