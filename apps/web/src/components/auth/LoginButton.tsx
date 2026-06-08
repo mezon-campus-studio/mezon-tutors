@@ -4,6 +4,7 @@ import { LogIn } from "lucide-react";
 import { Button } from "../ui";
 import { isLoadingAtom, isAuthenticatedAtom } from "@/store/auth.atom";
 import { useAtomValue } from "jotai";
+import { redirectToMezonOAuthLogin } from "@/lib/mezon-oauth-redirect";
 import { detectBrowserTimezone } from "@/lib/timezone";
 
 type LoginButtonProps = {
@@ -16,8 +17,7 @@ export function LoginButton({ label }: LoginButtonProps) {
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
 
   const handleLoginClick = () => {
-    const timezone = encodeURIComponent(detectBrowserTimezone());
-    window.location.href = `${process.env.NEXT_PUBLIC_API_ENDPOINT}/auth/mezon-oauth/start?timezone=${timezone}`;
+    redirectToMezonOAuthLogin(detectBrowserTimezone());
   };
 
   if (isAuthLoading || isAuthenticated) return null;
