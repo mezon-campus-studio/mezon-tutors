@@ -6,7 +6,7 @@ import type {
 } from './student-lesson-dm';
 
 const EMBED_COLORS = {
-  warning: '#d97706',
+  error: '#dc2626',
 } as const;
 
 const MEZONLY_BRAND = 'Mezonly';
@@ -15,29 +15,31 @@ const MEZONLY_LOGO_URL =
 
 const copy = {
   vi: {
-    cancelTitle: 'Yêu cầu hủy buổi học',
-    cancelDescription:
-      'Tôi là gia sư. Tôi nhờ bạn hỗ trợ hủy buổi học này — vui lòng kiểm tra thông tin bên dưới.',
+    cancelTitle: 'Gia sư đã hủy buổi học',
+    cancelDescription: 'Tôi đã hủy buổi học này. Vui lòng xem chi tiết bên dưới.',
     rescheduleRequestTitle: 'Yêu cầu đổi lịch',
     rescheduleRequestDescription:
       'Tôi là gia sư và gửi yêu cầu đổi lịch, vui lòng xem chi tiết.',
     trial: 'Buổi học thử',
     subscription: 'Buổi Subscription',
-    original: 'Lịch cũ',
+    schedule: 'Thời gian buổi học',
+    refund: 'Số tiền hoàn về ví',
+    refundNone: 'Không có khoản hoàn tiền',
     reason: 'Lý do',
     message: 'Tin nhắn',
     messageEmpty: '—',
   },
   en: {
-    cancelTitle: 'Lesson cancellation request',
-    cancelDescription:
-      'I am your tutor. I am asking for your help to cancel this lesson — please review the details below.',
+    cancelTitle: 'Tutor cancelled the lesson',
+    cancelDescription: 'I cancelled this lesson. Please review the details below.',
     rescheduleRequestTitle: 'Reschedule request',
     rescheduleRequestDescription:
       'I am your tutor and submitted a reschedule request. Please review the details below.',
     trial: 'Trial lesson',
     subscription: 'Subscription lesson',
-    original: 'Original',
+    schedule: 'Lesson time',
+    refund: 'Refund to wallet',
+    refundNone: 'No refund issued',
     reason: 'Reason',
     message: 'Message',
     messageEmpty: '—',
@@ -73,26 +75,32 @@ function buildEmbed(
   };
 }
 
-/** Tutor cancel is a request only (lesson stays on calendar until the student acts). */
+/** Tutor cancelled a lesson; student receives refund details when applicable. */
 export function buildTutorLessonCancelledDmContent(params: {
   lessonKind: StudentLessonDmKind;
   originalLabel: string;
   reasonLabel: string;
   message?: string | null;
+  refundAmountLabel?: string | null;
   locale?: string;
   senderAvatarUrl?: string | null;
 }): MezonDirectMessageContent {
   const loc = resolveLocale(params.locale);
   const t = copy[loc];
   const messageValue = params.message?.trim() ? params.message.trim() : t.messageEmpty;
+  const refundValue =
+    params.refundAmountLabel?.trim() != null && params.refundAmountLabel.trim() !== ''
+      ? params.refundAmountLabel.trim()
+      : t.refundNone;
 
   return buildEmbed(
     {
-      color: EMBED_COLORS.warning,
+      color: EMBED_COLORS.error,
       title: t.cancelTitle,
       description: `${t.cancelDescription}\n${lessonKindLabel(params.lessonKind, loc)}`,
       fields: [
-        { name: t.original, value: params.originalLabel, inline: false },
+        { name: t.schedule, value: params.originalLabel, inline: false },
+        { name: t.refund, value: refundValue, inline: false },
         { name: t.reason, value: params.reasonLabel, inline: false },
         { name: t.message, value: messageValue, inline: false },
       ],
@@ -116,11 +124,11 @@ export function buildTutorLessonRescheduleRequestDmContent(params: {
 
   return buildEmbed(
     {
-      color: EMBED_COLORS.warning,
+      color: '#d97706',
       title: t.rescheduleRequestTitle,
       description: `${t.rescheduleRequestDescription}\n${lessonKindLabel(params.lessonKind, loc)}`,
       fields: [
-        { name: t.original, value: params.originalLabel, inline: false },
+        { name: copy[loc].schedule, value: params.originalLabel, inline: false },
         { name: t.reason, value: params.reasonLabel, inline: false },
         { name: t.message, value: messageValue, inline: false },
       ],

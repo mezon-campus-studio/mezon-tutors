@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ECurrency,
-  ROUTES,
-  formatToCurrency,
-  isTrialLessonRescheduleEligible,
-} from '@mezon-tutors/shared';
+import { ROUTES, isTrialLessonRescheduleEligible } from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -15,7 +10,6 @@ import {
   CalendarX,
   History,
   Info,
-  MoreVertical,
   Sparkles,
   Trash2,
 } from 'lucide-react';
@@ -75,59 +69,32 @@ function SectionHeader({ icon: Icon, accent, eyebrow, title, count }: SectionHea
   );
 }
 
-type LessonStatusTone = 'completed' | 'cancelled' | 'reschedulePending' | 'cancellationPending';
+type LessonStatusBadgeTone = 'neutral' | 'pending' | 'approved' | 'rejected';
 
-const LESSON_STATUS_BADGE_STYLES: Record<LessonStatusTone, string> = {
-  completed: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 ring-rose-200',
-  reschedulePending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  cancellationPending: 'bg-orange-50 text-orange-700 ring-orange-200',
+const LESSON_STATUS_BADGE_STYLES: Record<LessonStatusBadgeTone, string> = {
+  neutral: 'bg-slate-100 text-slate-600 ring-slate-200',
+  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
+  approved: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  rejected: 'bg-rose-50 text-rose-700 ring-rose-200',
 };
 
-function LessonStatusBadge({ label, tone }: { label: string; tone: LessonStatusTone }) {
+function LessonStatusBadge({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: LessonStatusBadgeTone;
+}) {
   return (
     <Badge
       variant="secondary"
       className={cn(
-        'h-9 shrink-0 rounded-full border-0 px-4 text-xs font-bold ring-1',
+        'h-9 rounded-full border-0 px-4 text-xs font-bold ring-1',
         LESSON_STATUS_BADGE_STYLES[tone],
       )}
     >
       {label}
     </Badge>
-  );
-}
-
-type LessonNoticeTone = 'warning' | 'info';
-
-const LESSON_NOTICE_STYLES: Record<
-  LessonNoticeTone,
-  { container: string; icon: string; text: string }
-> = {
-  warning: {
-    container: 'border-amber-100 bg-amber-50/70',
-    icon: 'text-amber-500',
-    text: 'text-amber-700',
-  },
-  info: {
-    container: 'border-sky-100 bg-sky-50/70',
-    icon: 'text-sky-500',
-    text: 'text-sky-700',
-  },
-};
-
-function LessonNotice({ message, tone }: { message: string; tone: LessonNoticeTone }) {
-  const styles = LESSON_NOTICE_STYLES[tone];
-  return (
-    <div
-      className={cn(
-        'flex items-start gap-2.5 rounded-b-2xl border-t px-4 py-3 sm:px-5',
-        styles.container,
-      )}
-    >
-      <Info className={cn('mt-0.5 size-3.5 shrink-0', styles.icon)} />
-      <p className={cn('text-xs leading-relaxed', styles.text)}>{message}</p>
-    </div>
   );
 }
 
@@ -164,23 +131,31 @@ function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
   );
 }
 
-type ScheduleLessonRowProps = {
+function isTrialLessonItem(item: TrialLessonBookingRequestItem): boolean {
+  return item.scheduleKind !== 'subscription';
+}
+
+type UpcomingScheduleLessonItemProps = {
   item: TrialLessonBookingRequestItem;
   timezoneName: string;
   lessonChangePeriodHours?: number;
-  isPast?: boolean;
+  rescheduleOrCancelLabel: string;
+  viewDetailLabel: string;
+  cancelledLabel: string;
   onRescheduleLesson?: (item: TrialLessonBookingRequestItem) => void;
   onCancelLesson?: (item: TrialLessonBookingRequestItem) => void;
 };
 
-function ScheduleLessonRow({
+function UpcomingScheduleLessonItem({
   item,
   timezoneName,
   lessonChangePeriodHours,
-  isPast = false,
+  rescheduleOrCancelLabel,
+  viewDetailLabel,
+  cancelledLabel,
   onRescheduleLesson,
   onCancelLesson,
-}: ScheduleLessonRowProps) {
+}: UpcomingScheduleLessonItemProps) {
   const t = useTranslations('Dashboard.mySchedule');
   const tPanels = useTranslations('Dashboard.mySchedule.panels.lessons');
   const locale = useLocale();
@@ -191,11 +166,9 @@ function ScheduleLessonRow({
   const end = start.add(item.durationMinutes, 'minute');
   const uiStatus = mapTutorBookingStatusToUi(item.status);
   const isCancelled = uiStatus === 'cancelled';
-  const isCompleted =
-    !isCancelled &&
-    (isPast ||
-      end.isBefore(nowInTimezone) ||
-      uiStatus === 'completed');
+  const lessonTypeLabel = isSubscription ? t('lessonTypePlan') : t('lessonTypeTrial');
+  const timeLabel = `${start.format('HH:mm')} - ${end.format('HH:mm')}`;
+  const canManageLesson = !isCancelled && onRescheduleLesson != null && onCancelLesson != null;
 
   const withinChangePeriod =
     lessonChangePeriodHours != null &&
@@ -207,96 +180,127 @@ function ScheduleLessonRow({
     );
 
   const canReschedule =
-    !isCancelled && !isCompleted && !withinChangePeriod && !item.rescheduleRequestSubmitted;
-  const canCancel =
-    !isCancelled && !isCompleted && !item.cancellationRequestSubmitted;
-
-  const isUpcomingLesson = !isPast && !isCancelled && !isCompleted;
+    canManageLesson && !withinChangePeriod && !item.rescheduleRequestSubmitted;
 
   const showRescheduleNotice =
-    isUpcomingLesson &&
-    !item.rescheduleRequestSubmitted &&
-    !item.cancellationRequestSubmitted &&
-    withinChangePeriod;
+    canManageLesson && !item.rescheduleRequestSubmitted && withinChangePeriod;
 
-  const showReschedulePendingNotice =
-    isUpcomingLesson &&
-    item.rescheduleRequestSubmitted &&
-    !item.cancellationRequestSubmitted;
-
-  const showCancellationPendingNotice =
-    isUpcomingLesson && item.cancellationRequestSubmitted;
-
-  const lessonTypeLabel = isSubscription ? t('lessonTypePlan') : t('lessonTypeTrial');
-
-  const menuItems = [
+  const actionItems = [
     {
       label: tPanels('upcoming.reschedule'),
       icon: <CalendarClock className="size-4" />,
       onClick: () => onRescheduleLesson?.(item),
-      disabled: !canReschedule || !onRescheduleLesson,
+      disabled: !canReschedule,
     },
     {
       label: tPanels('upcoming.cancel'),
       icon: <Trash2 className="size-4 text-destructive" />,
       onClick: () => onCancelLesson?.(item),
-      disabled: !canCancel || !onCancelLesson,
       variant: 'destructive' as const,
     },
   ];
 
-  const hasFooterNotice =
-    showRescheduleNotice || showReschedulePendingNotice || showCancellationPendingNotice;
-
   return (
-    <div
-      className={cn(
-        'group relative flex w-full flex-col gap-0 overflow-hidden rounded-2xl border bg-white transition-all hover:shadow-md',
-        isCancelled
-          ? 'border-rose-100/90 bg-rose-50/20 hover:border-rose-200 hover:shadow-rose-100/40'
-          : isCompleted
-            ? 'border-emerald-100/80 bg-emerald-50/15 hover:border-emerald-200 hover:shadow-emerald-100/30'
-            : 'border-violet-100 hover:border-violet-200 hover:shadow-violet-100/40',
-      )}
-    >
-      {isUpcomingLesson ? (
-        <div className="absolute right-3 top-3 z-10 sm:hidden">
-          <ActionMenu
-            items={menuItems}
-            trigger={
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="size-9 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
-                aria-label={tPanels('upcoming.manageLesson')}
-              >
-                <MoreVertical className="size-4" />
-              </Button>
-            }
-          />
+    <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
+      <div className="flex w-full flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <LessonPersonBadge name={item.studentName} avatar={item.studentAvatarUrl} />
+          <div className="min-w-0 flex flex-col gap-0.5">
+            <p className="text-xs font-semibold text-violet-600">
+              {formatLessonDateLabel(start.format('ddd, MMM DD'), locale)}
+            </p>
+            <p className="text-lg font-extrabold leading-none text-slate-900">{timeLabel}</p>
+            <p className="mt-1 text-xs text-slate-600">
+              <span className="font-semibold text-violet-700">{lessonTypeLabel}</span>
+              <span className="mx-1.5 text-slate-300">·</span>
+              <span className="break-words">{item.studentName}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
+          {isCancelled ? (
+            <LessonStatusBadge label={cancelledLabel} tone="neutral" />
+          ) : canManageLesson ? (
+            <>
+              <ActionMenu
+                trigger={
+                  <Button
+                    variant="outline"
+                    className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
+                  >
+                    {rescheduleOrCancelLabel}
+                  </Button>
+                }
+                items={actionItems}
+              />
+              {isTrialLessonItem(item) ? (
+                <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)} className="w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    className="h-11 w-full rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50 sm:h-9 sm:w-auto"
+                  >
+                    {viewDetailLabel}
+                  </Button>
+                </Link>
+              ) : null}
+            </>
+          ) : item.rescheduleRequestSubmitted ? (
+            <LessonStatusBadge
+              label={tPanels('status.reschedulePending')}
+              tone="pending"
+            />
+          ) : null}
+        </div>
+      </div>
+
+      {showRescheduleNotice ? (
+        <div className="flex items-start gap-2.5 rounded-b-2xl border-t border-amber-100 bg-amber-50/70 px-4 py-3 sm:px-5">
+          <Info className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
+          <p className="text-xs leading-relaxed text-amber-700">
+            {tPanels('upcoming.rescheduleNotice', {
+              hours: lessonChangePeriodHours ?? 12,
+            })}
+          </p>
         </div>
       ) : null}
+    </div>
+  );
+}
 
-      <div
-        className={cn(
-          'flex w-full flex-col gap-4 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5',
-          isUpcomingLesson && 'sm:pr-5',
-          hasFooterNotice && 'pb-4',
-        )}
-      >
+type PastScheduleLessonItemProps = {
+  item: TrialLessonBookingRequestItem;
+  timezoneName: string;
+  cancelledLabel: string;
+  viewDetailLabel: string;
+};
+
+function PastScheduleLessonItem({
+  item,
+  timezoneName,
+  cancelledLabel,
+  viewDetailLabel,
+}: PastScheduleLessonItemProps) {
+  const t = useTranslations('Dashboard.mySchedule');
+  const locale = useLocale();
+
+  const isSubscription = item.scheduleKind === 'subscription';
+  const start = dayjs.utc(item.startAt).tz(timezoneName).locale(locale);
+  const end = start.add(item.durationMinutes, 'minute');
+  const uiStatus = mapTutorBookingStatusToUi(item.status);
+  const isCancelled = uiStatus === 'cancelled';
+  const lessonTypeLabel = isSubscription ? t('lessonTypePlan') : t('lessonTypeTrial');
+  const timeLabel = `${start.format('HH:mm')} - ${end.format('HH:mm')}`;
+
+  return (
+    <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-4 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <LessonPersonBadge
-          name={item.studentName}
-          avatar={item.studentAvatarUrl}
-        />
+        <LessonPersonBadge name={item.studentName} avatar={item.studentAvatarUrl} />
         <div className="min-w-0 flex flex-col gap-0.5">
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(start.format('ddd, MMM DD'), locale)}
           </p>
-          <p className="text-lg font-extrabold leading-none text-slate-900">
-            {start.format('HH:mm')} – {end.format('HH:mm')}
-          </p>
+          <p className="text-lg font-extrabold leading-none text-slate-900">{timeLabel}</p>
           <p className="mt-1 text-xs text-slate-600">
             <span className="font-semibold text-violet-700">{lessonTypeLabel}</span>
             <span className="mx-1.5 text-slate-300">·</span>
@@ -305,90 +309,20 @@ function ScheduleLessonRow({
         </div>
       </div>
 
-      <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-start">
-          {isCancelled ? (
-            <LessonStatusBadge label={tPanels('status.cancelled')} tone="cancelled" />
-          ) : isCompleted ? (
-            <LessonStatusBadge label={t('completedBadge')} tone="completed" />
-          ) : (
-            <>
-              {item.rescheduleRequestSubmitted ? (
-                <LessonStatusBadge
-                  label={tPanels('status.reschedulePending')}
-                  tone="reschedulePending"
-                />
-              ) : null}
-              {item.cancellationRequestSubmitted ? (
-                <LessonStatusBadge
-                  label={tPanels('status.cancellationPending')}
-                  tone="cancellationPending"
-                />
-              ) : null}
-            </>
-          )}
-        </div>
-
-        <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:justify-end">
-          {!isSubscription && item.tutorAmount > 0 ? (
-            <span className="text-sm font-extrabold text-violet-700">
-              {formatToCurrency(ECurrency.VND, item.tutorAmount)}
-            </span>
-          ) : null}
-          {!isSubscription ? (
-            <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}>
-              <Button
-                variant="outline"
-                className="h-11 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50 sm:h-9"
-              >
-                {tPanels('upcoming.viewDetail')}
-              </Button>
-            </Link>
-          ) : null}
-          {isUpcomingLesson ? (
-            <div className="hidden sm:block">
-              <ActionMenu
-                items={menuItems}
-                trigger={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="size-9 shrink-0 rounded-full text-slate-500 hover:bg-violet-50 hover:text-violet-700"
-                    aria-label={tPanels('upcoming.manageLesson')}
-                  >
-                    <MoreVertical className="size-4" />
-                  </Button>
-                }
-              />
-            </div>
-          ) : null}
-        </div>
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
+        {isCancelled ? (
+          <LessonStatusBadge label={cancelledLabel} tone="neutral" />
+        ) : isTrialLessonItem(item) ? (
+          <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)}>
+            <Button
+              variant="outline"
+              className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
+            >
+              {viewDetailLabel}
+            </Button>
+          </Link>
+        ) : null}
       </div>
-      </div>
-
-      {showRescheduleNotice ? (
-        <LessonNotice
-          tone="warning"
-          message={tPanels('upcoming.rescheduleNotice', {
-            hours: lessonChangePeriodHours ?? 12,
-          })}
-        />
-      ) : null}
-
-      {showReschedulePendingNotice ? (
-        <LessonNotice
-          tone="info"
-          message={tPanels('upcoming.reschedulePendingNotice')}
-        />
-      ) : null}
-
-      {showCancellationPendingNotice ? (
-        <LessonNotice
-          tone="info"
-          message={tPanels('upcoming.cancellationPendingNotice')}
-        />
-      ) : null}
     </div>
   );
 }
@@ -456,11 +390,14 @@ export default function MySchedulePanel({
         <div className="flex flex-col gap-2.5">
           {upcomingItems.length > 0 ? (
             upcomingItems.map((item) => (
-              <ScheduleLessonRow
+              <UpcomingScheduleLessonItem
                 key={`${item.id}-${item.startAt}`}
                 item={item}
                 timezoneName={timezoneName}
                 lessonChangePeriodHours={lessonChangePeriodHours}
+                rescheduleOrCancelLabel={tPanels('upcoming.rescheduleOrCancel')}
+                viewDetailLabel={tPanels('upcoming.viewDetail')}
+                cancelledLabel={tPanels('upcoming.statusCancelled')}
                 onRescheduleLesson={onRescheduleLesson}
                 onCancelLesson={onCancelLesson}
               />
@@ -483,11 +420,12 @@ export default function MySchedulePanel({
 
           <div className="flex flex-col gap-2.5">
             {pastItems.map((item) => (
-              <ScheduleLessonRow
+              <PastScheduleLessonItem
                 key={`past-${item.id}-${item.startAt}`}
                 item={item}
                 timezoneName={timezoneName}
-                isPast
+                cancelledLabel={tPanels('past.statusCancelled')}
+                viewDetailLabel={tPanels('upcoming.viewDetail')}
               />
             ))}
           </div>

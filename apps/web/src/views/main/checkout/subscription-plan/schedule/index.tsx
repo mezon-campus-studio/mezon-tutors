@@ -476,7 +476,7 @@ export default function SubscriptionPlanSchedulePage() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
       </div>
 
-      <div className="mx-auto max-w-3/4 px-4 py-8 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
         <div className="mb-6 space-y-1">
           <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
             {t("title")}
@@ -495,8 +495,8 @@ export default function SubscriptionPlanSchedulePage() {
           </Card>
         ) : null}
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-          <div className="flex min-w-0 flex-1 flex-col gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-8">
+          <div className="flex min-w-0 flex-col gap-6">
             <div className="flex min-h-[min(70vh,720px)] flex-col">
               <ScheduleSelection
                 availableSlots={scheduleAvailableSlots}
@@ -516,47 +516,21 @@ export default function SubscriptionPlanSchedulePage() {
             </div>
 
             {plan && totalDisplay ? (
-              <div className="flex flex-col items-stretch gap-5 lg:flex-row">
-                <div className="w-full flex-1 lg:basis-2/3">
-                  <SubscriptionPaymentSummaryCard
-                    lessonsPerWeek={plan.lessonsPerWeek}
-                    totalDisplay={totalDisplay}
-                    lessonPrice={planPrice}
-                    walletBalance={walletBalance}
-                    showWalletRow={showWalletRow}
-                    useWalletBalance={useWalletBalance}
-                    onUseWalletBalanceChange={setUseWalletBalance}
-                    deductFromWallet={walletPayment.deductFromWallet}
-                    vnpayAmount={walletPayment.vnpayAmount}
-                  />
-                </div>
-                <div className="w-full lg:sticky lg:top-24 lg:max-w-[460px] lg:basis-1/3">
-                  <PaymentMethodSelection
-                    totalDisplay={paymentButtonAmountDisplay}
-                    onPayAction={handlePay}
-                    onWalletPayAction={handleWalletPay}
-                    payWithWalletOnly={payWithWalletOnly}
-                    payDisabled={!canSubmit}
-                    isPayLoading={createEnrollment.isPending}
-                    bookAndPayLabel={
-                      paymentButtonAmountDisplay
-                        ? t("submitAndPay", {
-                            amount: paymentButtonAmountDisplay,
-                          })
-                        : t("submit")
-                    }
-                    walletPayLabel={
-                      totalDisplay
-                        ? t("submitWithWallet", { amount: totalDisplay })
-                        : t("submit")
-                    }
-                  />
-                </div>
-              </div>
+              <SubscriptionPaymentSummaryCard
+                lessonsPerWeek={plan.lessonsPerWeek}
+                totalDisplay={totalDisplay}
+                lessonPrice={planPrice}
+                walletBalance={walletBalance}
+                showWalletRow={showWalletRow}
+                useWalletBalance={useWalletBalance}
+                onUseWalletBalanceChange={setUseWalletBalance}
+                deductFromWallet={walletPayment.deductFromWallet}
+                vnpayAmount={walletPayment.vnpayAmount}
+              />
             ) : null}
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-24 lg:max-w-[360px] lg:basis-[360px]">
+          <div className="flex w-full min-w-0 flex-col gap-4 lg:sticky lg:top-24">
             <Card className="flex flex-col overflow-hidden rounded-2xl border-violet-200/70 bg-card/95 shadow-md shadow-violet-200/20 ring-1 ring-violet-500/10 backdrop-blur-sm">
               <CardHeader className="border-b border-violet-100/80 bg-linear-to-br from-violet-50/80 to-fuchsia-50/40 pb-3">
                 <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-violet-100">
@@ -635,6 +609,29 @@ export default function SubscriptionPlanSchedulePage() {
                 )}
               </CardContent>
             </Card>
+
+            {plan && totalDisplay ? (
+              <PaymentMethodSelection
+                totalDisplay={paymentButtonAmountDisplay}
+                onPayAction={handlePay}
+                onWalletPayAction={handleWalletPay}
+                payWithWalletOnly={payWithWalletOnly}
+                payDisabled={!canSubmit}
+                isPayLoading={createEnrollment.isPending}
+                bookAndPayLabel={
+                  paymentButtonAmountDisplay
+                    ? t("submitAndPay", {
+                        amount: paymentButtonAmountDisplay,
+                      })
+                    : t("submit")
+                }
+                walletPayLabel={
+                  totalDisplay
+                    ? t("submitWithWallet", { amount: totalDisplay })
+                    : t("submit")
+                }
+              />
+            ) : null}
 
             <Link
               className={cn(

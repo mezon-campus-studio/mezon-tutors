@@ -5,6 +5,7 @@ import type {
   ETrialLessonBookingStatus,
   PaginatedData,
   PaginatedResponse,
+  TutorLessonCancelResult,
 } from "@mezon-tutors/shared";
 import {
   keepPreviousData,
@@ -303,11 +304,11 @@ export const trialLessonBookingApi = {
   tutorCancelBooking(
     bookingId: string,
     payload: { reason: string; message?: string },
-  ): Promise<{ success: boolean; logId: string }> {
-    return apiClient.post<
-      { success: boolean; logId: string },
-      { success: boolean; logId: string }
-    >(`/trial-lesson-bookings/${bookingId}/tutor-cancel`, payload);
+  ): Promise<TutorLessonCancelResult> {
+    return apiClient.post<TutorLessonCancelResult, TutorLessonCancelResult>(
+      `/trial-lesson-bookings/${bookingId}/tutor-cancel`,
+      payload,
+    );
   },
 
   async getMyTrialLessonBookingRequests(params?: {

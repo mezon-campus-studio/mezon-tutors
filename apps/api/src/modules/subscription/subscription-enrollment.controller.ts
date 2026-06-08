@@ -22,6 +22,7 @@ import type {
   SubscriptionSlotCancelResult,
   SubscriptionSlotRescheduleOptionsResponse,
   SubscriptionSlotRescheduleResult,
+  TutorLessonCancelResult,
   TutorSubscriptionWeekOccurrenceDto,
 } from '@mezon-tutors/shared';
 import { SubscriptionService } from './subscription.service';
@@ -65,6 +66,15 @@ export class SubscriptionEnrollmentController {
   ): Promise<SubscriptionEnrollmentDto> {
     const user = req.user as AuthUserPayload;
     return this.subscriptionService.createEnrollment(user.sub, body, getRequestClientIp(req));
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('tutor/cancelled-lessons')
+  async tutorCancelledLessons(
+    @Req() req: Request,
+  ): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
+    const user = req.user as AuthUserPayload;
+    return this.subscriptionService.listTutorCancelledSubscriptionOccurrences(user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -148,7 +158,7 @@ export class SubscriptionEnrollmentController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('slotIndex', ParseIntPipe) slotIndex: number,
     @Body() body: TutorSubscriptionSlotCancelRequestDto
-  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
+  ): Promise<TutorLessonCancelResult> {
     const user = req.user as AuthUserPayload;
     return this.subscriptionService.requestTutorSubscriptionSlotCancel(
       user.sub,

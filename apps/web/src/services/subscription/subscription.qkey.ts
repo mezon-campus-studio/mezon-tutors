@@ -17,6 +17,8 @@ export const subscriptionQueryKey = {
       weekStart,
       timezone,
     ] as const,
+  tutorCancelledLessons: () =>
+    [...SUBSCRIPTION_QK_ROOT, "tutor-cancelled-lessons"] as const,
   rescheduleOptions: (
     enrollmentId: string,
     slotIndex: number,

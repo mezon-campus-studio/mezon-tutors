@@ -4,8 +4,9 @@ import {
   buildTutorLessonCancelledDmContent,
   buildTutorLessonRescheduleRequestDmContent,
   ECurrency,
-  type ETrialLessonBookingStatus,
+  ETrialLessonBookingStatus,
   formatLessonRangeInTimezone,
+  formatToCurrency,
   calendarEventHoursFromDayjs,
   isTrialLessonRescheduleEligible,
   ROUTES,
@@ -32,6 +33,7 @@ import { getWeekStartMondayInTimezone } from '@/lib/timezone';
 import {
   type TrialLessonBookingRequestItem,
   useGetMyTrialLessonBookingRequests,
+  useGetTutorCancelledSubscriptionLessons,
   useGetTutorSubscriptionWeekOccurrences,
   useGetTutorSubscriptionWeekOccurrencesBatch,
   useTutorCancelSubscriptionSlotMutation,
@@ -110,6 +112,7 @@ const toScheduleEvent = (
 
 function subscriptionOccurrenceToRequestItem(
   o: TutorSubscriptionWeekOccurrenceDto,
+  status: ETrialLessonBookingStatus = ETrialLessonBookingStatus.CONFIRMED,
 ): TrialLessonBookingRequestItem {
   return {
     id: o.id,
@@ -123,7 +126,7 @@ function subscriptionOccurrenceToRequestItem(
     grossAmount: 0,
     platformFee: 0,
     tutorAmount: 0,
-    status: 'CONFIRMED' as ETrialLessonBookingStatus,
+    status,
     createdAt: o.startAt,
     scheduleKind: 'subscription',
     subscriptionEnrollmentId: o.enrollmentId,
@@ -243,10 +246,15 @@ export default function MyScheduleView() {
   const weekStartYmd = monday.format('YYYY-MM-DD');
 
   const { data: trialData, isLoading: isTrialLoading } = useGetMyTrialLessonBookingRequests({
-    statusIn: ['CONFIRMED', 'COMPLETED'],
+    statusIn: ['CONFIRMED', 'COMPLETED', 'CANCELLED'],
     page: 1,
     limit: 100,
   });
+
+  const {
+    data: cancelledSubscriptionRows = [],
+    isLoading: isCancelledSubLoading,
+  } = useGetTutorCancelledSubscriptionLessons();
 
   const anchorMonday = useMemo(
     () => getWeekStartMondayInTimezone(userTimezone),
@@ -273,19 +281,37 @@ export default function MyScheduleView() {
   );
 
   const calendarItems = useMemo(() => {
-    const trialItems = trialData?.items ?? [];
-    const subItems = subscriptionRowsCalendar.map(subscriptionOccurrenceToRequestItem);
+    const trialItems = (trialData?.items ?? []).filter(
+      (item) => mapTutorBookingStatusToUi(item.status) !== 'cancelled',
+    );
+    const subItems = subscriptionRowsCalendar.map((o) =>
+      subscriptionOccurrenceToRequestItem(o),
+    );
     return [...trialItems, ...subItems];
   }, [trialData?.items, subscriptionRowsCalendar]);
 
   const lessonsListItems = useMemo(() => {
     const trialItems = trialData?.items ?? [];
-    const subItems = subscriptionRowsForLessons.map(subscriptionOccurrenceToRequestItem);
-    return [...trialItems, ...subItems];
-  }, [trialData?.items, subscriptionRowsForLessons]);
+    const subItems = subscriptionRowsForLessons.map((o) =>
+      subscriptionOccurrenceToRequestItem(o),
+    );
+    const cancelledSubItems = cancelledSubscriptionRows.map((o) =>
+      subscriptionOccurrenceToRequestItem(o, ETrialLessonBookingStatus.CANCELLED),
+    );
+    const seen = new Set<string>();
+    return [...trialItems, ...subItems, ...cancelledSubItems].filter((item) => {
+      const key = `${item.scheduleKind ?? 'trial'}-${item.id}-${item.startAt}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  }, [trialData?.items, subscriptionRowsForLessons, cancelledSubscriptionRows]);
 
   const isLoading = isTrialLoading || isSubCalendarLoading;
-  const isLessonsListLoading = isTrialLoading || isSubLessonsLoading;
+  const isLessonsListLoading =
+    isTrialLoading || isSubLessonsLoading || isCancelledSubLoading;
 
   const weekDays = useMemo(
     () =>
@@ -308,15 +334,18 @@ export default function MyScheduleView() {
   }, [calendarItems, monday, weekEnd, locale, userTimezone]);
 
   const { upcomingItems, pastItems } = useMemo(() => {
-    const confirmed = lessonsListItems.filter((item) => {
-      const ui = mapTutorBookingStatusToUi(item.status);
-      return ui === 'confirmed' || ui === 'completed';
-    });
-
     const upcoming: TrialLessonBookingRequestItem[] = [];
     const past: TrialLessonBookingRequestItem[] = [];
 
-    for (const item of confirmed) {
+    for (const item of lessonsListItems) {
+      const ui = mapTutorBookingStatusToUi(item.status);
+      if (ui === 'cancelled') {
+        past.push(item);
+        continue;
+      }
+      if (ui !== 'confirmed' && ui !== 'completed') {
+        continue;
+      }
       if (isLessonCompleted(item, userTimezone)) {
         past.push(item);
       } else {
@@ -364,11 +393,6 @@ export default function MyScheduleView() {
   );
 
   const handleCancelLesson = (item: TrialLessonBookingRequestItem) => {
-    if (item.cancellationRequestSubmitted) {
-      toast.error(tCancel('alreadyRequested'));
-      return;
-    }
-
     setCancelItem(item);
     setCancelTarget(
       itemToCancelTarget(item, locale, userTimezone, t('lessonTypeTrial'), t('lessonTypePlan')),
@@ -384,6 +408,8 @@ export default function MyScheduleView() {
     try {
       setIsCancelSubmitting(true);
 
+      let cancelResult: { refunded: boolean; refundAmount: number; currency: string };
+
       if (cancelItem.scheduleKind === 'subscription') {
         if (
           cancelItem.subscriptionEnrollmentId == null ||
@@ -391,7 +417,7 @@ export default function MyScheduleView() {
         ) {
           throw new Error('Missing subscription lesson reference');
         }
-        await tutorCancelSubscriptionMutation.mutateAsync({
+        cancelResult = await tutorCancelSubscriptionMutation.mutateAsync({
           enrollmentId: cancelItem.subscriptionEnrollmentId,
           slotIndex: cancelItem.subscriptionSlotIndex,
           payload: {
@@ -400,11 +426,16 @@ export default function MyScheduleView() {
             occurrenceStartAt: cancelItem.startAt,
           },
         });
-        await queryClient.invalidateQueries({
-          queryKey: [...subscriptionQueryKey.root, 'tutor-week-occurrences'],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [...subscriptionQueryKey.root, 'tutor-week-occurrences'],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: subscriptionQueryKey.tutorCancelledLessons(),
+          }),
+        ]);
       } else {
-        await tutorCancelTrialMutation.mutateAsync({
+        cancelResult = await tutorCancelTrialMutation.mutateAsync({
           bookingId: cancelItem.id,
           payload: { reason, message: message?.trim() },
         });
@@ -412,6 +443,18 @@ export default function MyScheduleView() {
           queryKey: ['trial-lesson-booking-my-requests'],
         });
       }
+
+      const refundAmountLabel =
+        cancelResult.refunded && cancelResult.refundAmount > 0
+          ? formatToCurrency(
+              cancelResult.currency === ECurrency.USD ||
+                cancelResult.currency === ECurrency.PHP ||
+                cancelResult.currency === ECurrency.VND
+                ? cancelResult.currency
+                : ECurrency.VND,
+              cancelResult.refundAmount,
+            )
+          : null;
 
       if (lessonForDm.startAt && recipientMezonUserId) {
         try {
@@ -438,6 +481,7 @@ export default function MyScheduleView() {
               ),
               reasonLabel: getTutorRescheduleReasonLabel(tReschedule, reason),
               message,
+              refundAmountLabel,
               locale,
               senderAvatarUrl: user?.avatar,
             }),
@@ -448,7 +492,9 @@ export default function MyScheduleView() {
         }
       }
 
-      toast.success(tCancel('success'));
+      toast.success(
+        cancelResult.refunded ? tCancel('success') : tCancel('successNoRefund'),
+      );
       setIsCancelDialogOpen(false);
       setCancelTarget(null);
       setCancelItem(null);

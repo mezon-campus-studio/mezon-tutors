@@ -103,21 +103,23 @@
       "cancellation": {
         "within12Hours": "Bạn chỉ có thể yêu cầu hủy khi còn hơn 12 tiếng trước giờ bắt đầu buổi học.",
         "alreadyRequested": "Buổi học này đã có yêu cầu hủy.",
-        "success": "Đã ghi nhận yêu cầu hủy. Học sinh đã được thông báo.",
-        "failed": "Không thể gửi yêu cầu hủy.",
+        "alreadyCancelled": "Buổi học này đã được hủy.",
+        "success": "Đã hủy buổi học. Học sinh đã được hoàn tiền và nhận thông báo.",
+        "successNoRefund": "Đã hủy buổi học. Học sinh đã được thông báo.",
+        "failed": "Không thể hủy buổi học.",
         "messageSent": "Đã gửi tin nhắn cho học sinh.",
-        "messageFailed": "Đã lưu yêu cầu nhưng không gửi được tin nhắn.",
+        "messageFailed": "Đã hủy buổi học nhưng không gửi được tin nhắn.",
         "messageMissingUser": "Thiếu thông tin người dùng để gửi tin nhắn.",
         "dialog": {
-          "title": "Yêu cầu hủy buổi học thử",
-          "titleSubscription": "Yêu cầu hủy buổi học gói đăng ký",
-          "confirm": "Gửi yêu cầu hủy",
+          "title": "Hủy buổi học thử",
+          "titleSubscription": "Hủy buổi học gói đăng ký",
+          "confirm": "Hủy buổi học",
           "dismiss": "Giữ buổi học",
-          "reasonLabel": "Lý do yêu cầu hủy",
+          "reasonLabel": "Lý do hủy",
           "reasonPlaceholder": "Chọn lý do",
           "messageLabel": "Tin nhắn cho {student} (tùy chọn)",
-          "messagePlaceholder": "Giải thích lý do bạn muốn hủy buổi học...",
-          "policyHint": "Vui lòng chọn lý do và nhập tin nhắn nếu cần để gửi yêu cầu hủy lịch đến học sinh."
+          "messagePlaceholder": "Giải thích lý do bạn hủy buổi học...",
+          "policyHint": "Buổi học sẽ được hủy ngay. Học sinh sẽ được hoàn tiền về ví và nhận tin nhắn thông báo."
         }
       },
       "reschedule": {
@@ -260,21 +262,24 @@
             "emptyDescription": "Khi học viên xác nhận đặt lịch, buổi học sẽ hiển thị tại đây.",
             "viewRequests": "Buổi học thử",
             "manageLesson": "Quản lý buổi học",
+            "rescheduleOrCancel": "Đổi lịch/Hủy",
             "viewDetail": "Chi tiết",
+            "statusCancelled": "Đã hủy",
             "reschedule": "Yêu cầu đổi lịch",
             "cancel": "Hủy buổi học",
             "rescheduleNotice": "Buổi học sắp diễn ra trong vòng {hours} tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần.",
             "reschedulePendingNotice": "Yêu cầu đổi lịch đã được gửi và đang chờ xử lý.",
-            "cancellationPendingNotice": "Yêu cầu hủy buổi học đã được gửi và đang chờ xử lý."
+            "cancellationPendingNotice": "Buổi học này đã được hủy."
           },
           "past": {
             "eyebrow": "Đã qua",
-            "title": "Buổi học đã qua"
+            "title": "Buổi học đã qua",
+            "statusCancelled": "Đã hủy"
           },
           "status": {
             "cancelled": "Đã hủy",
             "reschedulePending": "Đã yêu cầu đổi lịch",
-            "cancellationPending": "Đã yêu cầu hủy"
+            "cancellationPending": "Đã hủy"
           }
         },
         "students": {

@@ -8,6 +8,7 @@ import type {
   SubscriptionSlotRescheduleOptionsResponse,
   SubscriptionSlotRescheduleResult,
   RescheduleSubscriptionSlotPayload,
+  TutorLessonCancelResult,
   TutorSubscriptionPlanDto,
   TutorSubscriptionSlotRescheduleRequestResult,
   TutorSubscriptionWeekOccurrenceDto,
@@ -157,11 +158,8 @@ export const subscriptionApi = {
     enrollmentId: string,
     slotIndex: number,
     payload: { reason: string; message?: string; occurrenceStartAt: string },
-  ): Promise<TutorSubscriptionSlotRescheduleRequestResult> {
-    return apiClient.post<
-      TutorSubscriptionSlotRescheduleRequestResult,
-      TutorSubscriptionSlotRescheduleRequestResult
-    >(
+  ): Promise<TutorLessonCancelResult> {
+    return apiClient.post<TutorLessonCancelResult, TutorLessonCancelResult>(
       `/subscription-enrollments/${enrollmentId}/slots/${slotIndex}/tutor-cancel`,
       payload,
     );
@@ -177,6 +175,13 @@ export const subscriptionApi = {
     >("/subscription-enrollments/tutor/week-occurrences", {
       params: { week_start_date: weekStartDate, timezone },
     });
+  },
+
+  getTutorCancelledLessons(): Promise<TutorSubscriptionWeekOccurrenceDto[]> {
+    return apiClient.get<
+      ApiResponse<TutorSubscriptionWeekOccurrenceDto[]>,
+      TutorSubscriptionWeekOccurrenceDto[]
+    >("/subscription-enrollments/tutor/cancelled-lessons");
   },
 };
 
@@ -378,6 +383,14 @@ function mergeTutorSubscriptionWeekOccurrences(
     }
   }
   return merged;
+}
+
+export function useGetTutorCancelledSubscriptionLessons(enabled = true) {
+  return useQuery({
+    queryKey: subscriptionQueryKey.tutorCancelledLessons(),
+    queryFn: () => subscriptionApi.getTutorCancelledLessons(),
+    enabled,
+  });
 }
 
 export function useGetTutorSubscriptionWeekOccurrencesBatch(
