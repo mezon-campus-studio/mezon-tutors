@@ -87,5 +87,14 @@
     "galleryThumbnails": "Tất cả ảnh",
     "galleryPrevious": "Ảnh trước",
     "galleryNext": "Ảnh sau"
+  },
+  "NotFound": {
+    "pageTitle": "404 — Không tìm thấy trang này | Mezonly",
+    "badge": "Lạc đường rồi",
+    "title": "Không tìm thấy trang này",
+    "description": "Trang bạn đang tìm có thể đã bị di chuyển, xóa hoặc chưa bao giờ tồn tại. Hãy thử quay về trang chủ hoặc tìm gia sư phù hợp với bạn.",
+    "goHome": "Về trang chủ",
+    "findTutors": "Tìm gia sư",
+    "goBack": "Quay lại trang trước"
   }
 }

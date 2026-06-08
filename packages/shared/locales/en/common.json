@@ -87,5 +87,14 @@
     "galleryThumbnails": "All images",
     "galleryPrevious": "Previous image",
     "galleryNext": "Next image"
+  },
+  "NotFound": {
+    "pageTitle": "404 — Page not found | Mezonly",
+    "badge": "Off the map",
+    "title": "This page could not be found",
+    "description": "The page you're looking for may have moved, been removed, or never existed. Try going back home or browsing our tutors.",
+    "goHome": "Back to home",
+    "findTutors": "Find tutors",
+    "goBack": "Go back"
   }
 }
