@@ -122,9 +122,9 @@
             "uploadedAt": "Uploaded",
             "file": "File"
           },
-          "openFile": "Open",
-          "openFileLoading": "Loading...",
-          "openFileWithFormat": "Open ({format})"
+          "viewFile": "View",
+          "viewFileLoading": "Loading...",
+          "previewError": "Could not load document preview."
         }
       }
     },

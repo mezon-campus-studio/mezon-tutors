@@ -122,9 +122,9 @@
             "uploadedAt": "Ngày tải",
             "file": "Tệp"
           },
-          "openFile": "Mở",
-          "openFileLoading": "Đang tải...",
-          "openFileWithFormat": "Mở ({format})"
+          "viewFile": "Xem",
+          "viewFileLoading": "Đang tải...",
+          "previewError": "Không thể tải bản xem trước tài liệu."
         }
       }
     },

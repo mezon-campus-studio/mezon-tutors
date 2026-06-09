@@ -149,6 +149,12 @@ export function isInlineViewableFormat(format: string): boolean {
   return ['pdf', 'jpg', 'png'].includes(normalized);
 }
 
+export function isDialogPreviewableFormat(format: string): boolean {
+  const normalized = format.toLowerCase().replace(/^jpeg$/, 'jpg');
+  // Legacy .doc cannot be rendered client-side; use Open to download instead.
+  return ['pdf', 'docx', 'jpg', 'png'].includes(normalized);
+}
+
 export function buildContentDispositionHeader(
   fileName: string,
   disposition: 'inline' | 'attachment' = 'inline'

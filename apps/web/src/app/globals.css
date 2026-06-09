@@ -482,3 +482,36 @@
     transform: rotate(12deg);
   }
 }
+
+/* Admin DOCX in-app preview — fit content to narrow viewports */
+.docx-preview-container {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.docx-preview-container .docx-wrapper {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.docx-preview-container .docx-wrapper > section.docx {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.docx-preview-container table {
+  max-width: 100% !important;
+  table-layout: fixed;
+}
+
+.docx-preview-container td,
+.docx-preview-container th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
