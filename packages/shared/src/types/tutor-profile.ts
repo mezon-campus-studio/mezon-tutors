@@ -48,6 +48,9 @@ export interface SubmitTutorProfileDto {
   specialization: string
   educationPublicId?: string
 
+  cvPublicId?: string
+  cvFileName?: string
+
   videoUrl: string
 
   pricePerHour: number
@@ -325,6 +328,7 @@ export type TutorProfileAboutState = {
   subject: string
   languages: string
   proficiencies: string
+  cv: TutorProfileFile
 }
 
 export type TutorProfileFile = {

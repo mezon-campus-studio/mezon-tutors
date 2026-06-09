@@ -171,6 +171,8 @@ export const ACCEPT_IMAGE_TYPES = 'image/jpeg,image/png,image/jpg';
 
 export const ACCEPT_FILE_TYPES = '.pdf,.jpg,.jpeg,.png';
 
+export const ACCEPT_CV_TYPES = '.pdf,.jpg,.jpeg,.png,.docx';
+
 export function parseYouTubeId(url: string): string | null {
   const trimmed = url.trim();
   const match = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(trimmed);
@@ -186,5 +188,6 @@ export function parseVimeoId(url: string): string | null {
 export const PROFESSIONAL_DOCUMENT_TYPE = {
   DEGREE: 'DEGREE',
   CERTIFICATE: 'CERTIFICATE',
+  CV: 'CV',
   OTHER: 'OTHER',
 } as const;

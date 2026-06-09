@@ -498,6 +498,15 @@ export class TutorProfileService {
         specialization: dto.specialization,
       });
     }
+
+    const cvPublicId = this.normalizeCloudinaryPublicId(dto.cvPublicId);
+    if (cvPublicId && profile) {
+      await this.createTutorCertificateByUserId(profile.id, {
+        name: dto.cvFileName?.trim() || 'CV',
+        fileUrl: cvPublicId,
+        type: ProfessionalDocumentType.CV,
+      });
+    }
   }
 
   async updateByUserId(userId: string, dto: SubmitTutorProfileDto): Promise<void> {
@@ -593,6 +602,15 @@ export class TutorProfileService {
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
         specialization: dto.specialization,
+      });
+    }
+
+    const cvPublicId = this.normalizeCloudinaryPublicId(dto.cvPublicId);
+    if (cvPublicId && profile) {
+      await this.upsertTutorCertificateByUserId(profile.id, {
+        name: dto.cvFileName?.trim() || 'CV',
+        fileUrl: cvPublicId,
+        type: ProfessionalDocumentType.CV,
       });
     }
   }

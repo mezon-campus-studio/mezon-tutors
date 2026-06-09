@@ -20,7 +20,14 @@
       "subjectHelper": "Bạn có thể thêm nhiều môn khác sau trong phần cài đặt hồ sơ.",
       "languagesLabel": "Ngôn ngữ sử dụng",
       "languageLabel": "Ngôn ngữ",
-      "proficiencyLabel": "Trình độ"
+      "proficiencyLabel": "Trình độ",
+      "cvLabel": "Sơ yếu lý lịch (CV)",
+      "cvHelper": "Tải lên CV để chúng tôi xem xét nền tảng chuyên môn của bạn.",
+      "cvUploadButton": "Tải CV lên",
+      "cvUploading": "Đang tải lên...",
+      "cvEmptyState": "Chưa có CV",
+      "cvDropHere": "Thả tệp vào đây",
+      "cvHint": "Định dạng hỗ trợ: JPG, PNG, PDF, DOCX. Dung lượng tối đa: {max}MB."
     },
     "placeholders": {
       "firstName": "VD: Minh",
@@ -50,7 +57,11 @@
       "languagesRequired": "Vui lòng chọn ngôn ngữ",
       "languagesFromList": "Vui lòng chọn ngôn ngữ từ danh sách",
       "proficiencyRequired": "Vui lòng chọn trình độ",
-      "proficiencyFromList": "Vui lòng chọn trình độ từ danh sách"
+      "proficiencyFromList": "Vui lòng chọn trình độ từ danh sách",
+      "cvRequired": "Vui lòng tải lên CV",
+      "cvInvalidType": "CV phải là JPG, PNG, PDF hoặc DOCX",
+      "cvTooLarge": "CV không được vượt quá {max}MB",
+      "cvUploadFailed": "Tải CV thất bại. Vui lòng thử lại."
     }
   },
   "shell": {

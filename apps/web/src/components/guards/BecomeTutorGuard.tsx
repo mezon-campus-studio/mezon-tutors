@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { startTransition, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { Spinner } from '@/components/ui';
@@ -41,7 +41,9 @@ export function BecomeTutorGuard({ children }: BecomeTutorGuardProps) {
     const hasProfile = data.hasProfile;
 
     if (hasProfile && !isEditingRejected) {
-      router.replace('/become-tutor/final');
+      startTransition(() => {
+        router.replace('/become-tutor/final');
+      });
       return;
     }
 
@@ -75,7 +77,7 @@ export function BecomeTutorGuard({ children }: BecomeTutorGuardProps) {
     );
   }
 
-  if (user && isProfileLoading) {
+  if (user && isProfileLoading && !data) {
     return (
       <div className="min-h-screen bg-background">
         <div className="min-h-[70vh] flex items-center justify-center px-4 md:px-6">

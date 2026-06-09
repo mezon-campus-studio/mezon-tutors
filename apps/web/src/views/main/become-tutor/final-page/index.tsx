@@ -112,6 +112,8 @@ export default function FinalPage() {
     const languages = profile.languages.map((l: any) => l.languageCode).join(', ');
     const proficiencies = profile.languages.map((l: any) => l.proficiency).join(', ');
 
+    const cvDoc = profile.professionalDocuments?.find((d: any) => d.type === PROFESSIONAL_DOCUMENT_TYPE.CV);
+
     setAbout({
       firstName: profile.firstName,
       lastName: profile.lastName,
@@ -121,6 +123,12 @@ export default function FinalPage() {
       subject: profile.subject,
       languages,
       proficiencies,
+      cv: {
+        uploadedUrl: null,
+        publicId: cvDoc?.hasFile ? EXISTING_SECURE_FILE : null,
+        dataUrl: '',
+        fileName: cvDoc?.hasFile ? cvDoc.name || 'CV' : '',
+      },
     });
 
     const teachingCertDoc = profile.professionalDocuments?.find((d: any) => d.type === PROFESSIONAL_DOCUMENT_TYPE.CERTIFICATE);

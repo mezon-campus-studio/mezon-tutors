@@ -20,7 +20,14 @@
       "subjectHelper": "You can add more subjects later in your profile settings.",
       "languagesLabel": "Languages spoken",
       "languageLabel": "Language",
-      "proficiencyLabel": "Proficiency"
+      "proficiencyLabel": "Proficiency",
+      "cvLabel": "Curriculum Vitae (CV)",
+      "cvHelper": "Upload your CV so we can review your professional background.",
+      "cvUploadButton": "Upload CV",
+      "cvUploading": "Uploading...",
+      "cvEmptyState": "No CV uploaded",
+      "cvDropHere": "Drop file here",
+      "cvHint": "Supported formats: JPG, PNG, PDF, DOCX. Max size: {max}MB."
     },
     "placeholders": {
       "firstName": "e.g. Michael",
@@ -50,7 +57,11 @@
       "languagesRequired": "Languages are required",
       "languagesFromList": "Please select a language from the list",
       "proficiencyRequired": "Proficiency is required",
-      "proficiencyFromList": "Please select a proficiency level from the list"
+      "proficiencyFromList": "Please select a proficiency level from the list",
+      "cvRequired": "CV is required",
+      "cvInvalidType": "CV must be JPG, PNG, PDF, or DOCX",
+      "cvTooLarge": "CV must be {max}MB or smaller",
+      "cvUploadFailed": "Failed to upload CV. Please try again."
     }
   },
   "shell": {

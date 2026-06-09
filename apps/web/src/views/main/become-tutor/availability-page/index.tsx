@@ -327,6 +327,8 @@ export default function AvailabilityPage() {
       degree: certification.higherEducation.degree,
       specialization: certification.higherEducation.specialization,
       educationPublicId: resolvePublicIdForSubmit(certification.higherEducation.file?.publicId),
+      cvPublicId: resolvePublicIdForSubmit(about.cv?.publicId),
+      cvFileName: about.cv?.fileName || 'CV',
       videoUrl: video.videoLink,
       pricePerHour: Number.parseFloat(hourlyRate) || 0,
       currency,
