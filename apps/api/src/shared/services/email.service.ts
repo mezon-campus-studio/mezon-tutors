@@ -44,10 +44,10 @@ const TEMPLATE_EMAIL = {
                 <tr>
                   <td align="center">
                     <h1 style="margin:0 0 8px;color:#1f1147;font-size:28px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;">
-                      You're Approved! &#127881;
+                      Your profile is approved
                     </h1>
                     <p style="margin:0;font-size:15px;color:#6c5ce7;font-weight:600;letter-spacing:0.3px;">
-                      Welcome to the Mezonly Tutor Community
+                      You can now complete your tutor setup on Mezonly
                     </p>
                   </td>
                 </tr>
@@ -67,33 +67,10 @@ const TEMPLATE_EMAIL = {
                 Hi <strong style="color:#6c5ce7;">${tutorName}</strong>,
               </p>
               <p style="margin:0 0 20px;font-size:16px;color:#374151;line-height:1.7;">
-                Great news! Your tutor profile has been reviewed and
-                <strong style="color:#6c5ce7;">approved</strong>. You're now officially part of
-                our growing community of educators.
+                Your tutor profile has been reviewed and
+                <strong style="color:#6c5ce7;">approved</strong>. You can set up your profile,
+                availability, and start accepting students from your dashboard.
               </p>
-              <!-- Feature Cards -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;">
-                <tr>
-                  <td width="33%" style="padding:8px 6px 8px 0;vertical-align:top;">
-                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
-                      <div style="font-size:28px;margin-bottom:8px;">&#128218;</div>
-                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Set Up<br />Your Profile</p>
-                    </div>
-                  </td>
-                  <td width="33%" style="padding:8px 3px;vertical-align:top;">
-                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
-                      <div style="font-size:28px;margin-bottom:8px;">&#128197;</div>
-                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Set Your<br />Availability</p>
-                    </div>
-                  </td>
-                  <td width="33%" style="padding:8px 0 8px 6px;vertical-align:top;">
-                    <div style="background:#f3f0ff;border-radius:12px;padding:20px 14px;text-align:center;border:1px solid #ede9fe;">
-                      <div style="font-size:28px;margin-bottom:8px;">&#127891;</div>
-                      <p style="margin:0;font-size:13px;color:#1f1147;font-weight:600;line-height:1.4;">Start<br />Teaching</p>
-                    </div>
-                  </td>
-                </tr>
-              </table>
               ${noteHtml}
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
@@ -267,6 +244,8 @@ const TEMPLATE_EMAIL = {
 </html>`,
 } as const;
 
+const EMAIL_SENDER_NAME = 'Mezonly';
+
 @Injectable()
 export class EmailService {
   private readonly resend: Resend;
@@ -276,15 +255,20 @@ export class EmailService {
     this.resend = new Resend(this.config.resendApiKey);
   }
 
+  private get fromAddress(): string {
+    return `${EMAIL_SENDER_NAME} <${this.config.resendFromEmail}>`;
+  }
+
   async sendApprovalEmail(
     to: string,
     tutorName: string,
     emailNote?: string,
   ): Promise<void> {
     const { error } = await this.resend.emails.send({
-      from: this.config.resendFromEmail,
+      from: this.fromAddress,
       to,
-      subject: 'Your Tutor Application Has Been Approved!',
+      subject: 'Your Mezonly tutor profile has been approved',
+      text: this.buildApprovalText(tutorName, emailNote),
       html: this.buildApprovalHtml(tutorName, emailNote),
     });
 
@@ -303,9 +287,10 @@ export class EmailService {
     emailNote?: string,
   ): Promise<void> {
     const { error } = await this.resend.emails.send({
-      from: this.config.resendFromEmail,
+      from: this.fromAddress,
       to,
-      subject: 'Update on Your Tutor Profile',
+      subject: 'Update on your Mezonly tutor profile',
+      text: this.buildRejectionText(tutorName, emailNote),
       html: this.buildRejectionHtml(tutorName, reviewerNotes, checklist, emailNote),
     });
 
@@ -323,6 +308,30 @@ export class EmailService {
       frontendUrl: this.config.frontendUrl,
       year: new Date().getFullYear(),
     });
+  }
+
+  private buildApprovalText(tutorName: string, emailNote?: string): string {
+    const frontendUrl = this.config.frontendUrl;
+    const note = emailNote?.trim();
+    const noteBlock = note
+      ? `\n\nMessage from our team:\n${note}\n`
+      : '';
+
+    return [
+      `Hi ${tutorName},`,
+      '',
+      'Your tutor profile on Mezonly has been reviewed and approved.',
+      'You can set up your profile, availability, and start accepting students.',
+      noteBlock,
+      `Go to your dashboard: ${frontendUrl}/become-tutor/final`,
+      '',
+      `Need help? Contact support: ${frontendUrl}/support`,
+      '',
+      `© ${new Date().getFullYear()} Mezonly. All rights reserved.`,
+      'You received this email because you applied to become a tutor on Mezonly.',
+    ]
+      .filter((line) => line !== undefined)
+      .join('\n');
   }
 
   private buildApprovalNoteHtml(emailNote?: string): string {
@@ -420,5 +429,29 @@ export class EmailService {
       frontendUrl: this.config.frontendUrl,
       year: new Date().getFullYear(),
     });
+  }
+
+  private buildRejectionText(tutorName: string, emailNote?: string): string {
+    const frontendUrl = this.config.frontendUrl;
+    const note = emailNote?.trim();
+    const noteBlock = note
+      ? `\n\nMessage from our team:\n${note}\n`
+      : '';
+
+    return [
+      `Hi ${tutorName},`,
+      '',
+      'Thank you for applying to become a tutor on Mezonly.',
+      'After reviewing your application, we found a few areas that need improvement before we can approve it.',
+      noteBlock,
+      `Update your application: ${frontendUrl}/become-tutor/final`,
+      '',
+      `Have questions? Contact support: ${frontendUrl}/support`,
+      '',
+      `© ${new Date().getFullYear()} Mezonly. All rights reserved.`,
+      'You received this email because you applied to become a tutor on Mezonly.',
+    ]
+      .filter((line) => line !== undefined)
+      .join('\n');
   }
 }
