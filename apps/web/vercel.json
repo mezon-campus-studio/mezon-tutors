@@ -4,7 +4,9 @@
   "buildCommand": "cd ../.. && yarn workspace @mezon-tutors/db build && yarn workspace @mezon-tutors/shared build && yarn workspace @mezon-tutors/web build",
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_ENDPOINT": "https://api.mezonly.site/api"
+      "NEXT_PUBLIC_API_ENDPOINT": "https://api.mezonly.com/api",
+      "NEXT_PUBLIC_MEZON_GATEWAY_URL": "https://gw.mezonly.com",
+      "NEXT_PUBLIC_SITE_URL": "https://www.mezonly.com"
     }
   }
 }

@@ -114,7 +114,7 @@ export function EventShareBanner({ event, dateLabel }: EventShareBannerProps) {
                       {shareDescription}
                     </p>
                     <p className="truncate pt-1 text-[11px] font-medium text-violet-700">
-                      mezonly.site/events/{event.slug}
+                      mezonly.com/events/{event.slug}
                     </p>
                     <p className="text-[10px] font-medium tracking-wide text-slate-400 uppercase">
                       {t("sections.share.previewLabel")}

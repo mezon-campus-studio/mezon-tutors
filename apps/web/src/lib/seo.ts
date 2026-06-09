@@ -9,7 +9,7 @@ export const DEFAULT_OG_IMAGE_PATH = "/images/home-ogp.png";
 export const DEFAULT_OG_IMAGE_WIDTH = 1536;
 export const DEFAULT_OG_IMAGE_HEIGHT = 1024;
 
-const DEFAULT_SITE_URL = "https://mezonly.site";
+const DEFAULT_SITE_URL = "https://www.mezonly.com";
 
 export function getSiteUrl(): string {
   const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();
