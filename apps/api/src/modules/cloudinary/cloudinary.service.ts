@@ -5,6 +5,15 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import {
+  buildGoogleDocsViewerUrl,
+  extensionFromFileName,
+  mimeTypeFromCloudinaryFormat,
+  parsePrivateFileKey,
+  resolveEffectiveFormat,
+  resolvePrivateDownloadFileName,
+  type SecurePrivateViewLink,
+} from '@mezon-tutors/shared';
 import { v2 as cloudinary } from 'cloudinary';
 import { AppConfigService } from '../../shared/services/app-config.service';
 
@@ -18,7 +27,7 @@ type UploadOptions = {
 type ResolvedCloudinaryAsset = {
   publicId: string;
   format: string;
-  resourceType: 'image' | 'video' | 'raw';
+  resourceType: 'image' | 'raw';
 };
 
 @Injectable()
@@ -105,14 +114,18 @@ export class CloudinaryService {
     };
   }
 
-  async deleteFile(publicId: string, resourceType: 'image' | 'video' | 'raw' = 'image') {
+  async deleteFile(fileKeyOrPublicId: string, resourceType: 'image' | 'video' | 'raw' = 'image') {
     this.ensureConfigured();
-    if (!publicId?.trim()) {
+    if (!fileKeyOrPublicId?.trim()) {
       throw new BadRequestException('publicId is required');
     }
 
+    const parsed = parsePrivateFileKey(fileKeyOrPublicId);
+    const publicId = parsed?.publicId ?? fileKeyOrPublicId.trim();
+    const effectiveResourceType = parsed?.resourceType ?? resourceType;
+
     const result = await cloudinary.uploader.destroy(publicId, {
-      resource_type: resourceType,
+      resource_type: effectiveResourceType === 'raw' ? 'raw' : 'image',
     });
 
     return {
@@ -141,7 +154,7 @@ export class CloudinaryService {
           resourceType: 'image',
         };
       }
-      return { publicId: trimmed, format: 'jpg', resourceType: 'image' };
+      return { publicId: trimmed, format: 'pdf', resourceType: 'raw' };
     }
 
     const url = new URL(trimmed);
@@ -151,7 +164,7 @@ export class CloudinaryService {
       throw new BadRequestException('Invalid Cloudinary URL');
     }
 
-    const resourceType = pathParts[uploadIdx - 1] as ResolvedCloudinaryAsset['resourceType'];
+    const resourceType = pathParts[uploadIdx - 1];
     let segments = pathParts.slice(uploadIdx + 1);
 
     if (segments[0]?.match(/^v\d+$/)) {
@@ -178,7 +191,7 @@ export class CloudinaryService {
     return {
       publicId,
       format,
-      resourceType: resourceType === 'video' || resourceType === 'raw' ? resourceType : 'image',
+      resourceType: resourceType === 'raw' ? 'raw' : 'image',
     };
   }
 
@@ -203,39 +216,113 @@ export class CloudinaryService {
     };
   }
 
-  /**
-   * Fetches a Cloudinary asset server-to-server and returns it as a Buffer.
-   * fileKey may be a public_id or a legacy secure_url (public upload).
-   */
-  async fetchPrivateAsset(
-    fileKey: string,
-    resourceType?: 'image' | 'raw'
-  ): Promise<{ buffer: Buffer; contentType: string }> {
-    this.ensureConfigured();
-    if (!fileKey?.trim()) {
-      throw new BadRequestException('fileKey is required');
+  private normalizeFormat(format: string): string {
+    return format.toLowerCase() === 'jpeg' ? 'jpg' : format.toLowerCase();
+  }
+
+  private async lookupPrivateResource(publicId: string): Promise<ResolvedCloudinaryAsset | null> {
+    for (const resourceType of ['raw', 'image'] as const) {
+      try {
+        const info = await cloudinary.api.resource(publicId, {
+          resource_type: resourceType,
+          type: 'private',
+        });
+        if (info?.public_id) {
+          return {
+            publicId: info.public_id,
+            format: this.normalizeFormat(info.format || 'bin'),
+            resourceType,
+          };
+        }
+      } catch {
+        /* try next resource type */
+      }
+    }
+    return null;
+  }
+
+  private buildFetchAttempts(fileKey: string): ResolvedCloudinaryAsset[] {
+    const trimmed = fileKey.trim();
+    const attempts: ResolvedCloudinaryAsset[] = [];
+    const seen = new Set<string>();
+    const push = (asset: ResolvedCloudinaryAsset) => {
+      const key = `${asset.resourceType}:${asset.format}:${asset.publicId}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      attempts.push(asset);
+    };
+
+    const encoded = parsePrivateFileKey(trimmed);
+    if (encoded) {
+      const encodedFormat = this.normalizeFormat(encoded.format);
+      push({
+        publicId: encoded.publicId,
+        format: encodedFormat,
+        resourceType: encoded.resourceType,
+      });
+      const inferred = encoded.originalFileName
+        ? extensionFromFileName(encoded.originalFileName)
+        : null;
+      if (inferred && inferred !== encodedFormat) {
+        push({
+          publicId: encoded.publicId,
+          format: inferred,
+          resourceType: encoded.resourceType,
+        });
+      }
+      return attempts;
     }
 
-    const trimmed = fileKey.trim();
-    const resolved = this.resolveAssetReference(trimmed);
-    const effectiveResourceType = resourceType ?? resolved.resourceType;
-    const format = resolved.format.toLowerCase() === 'jpeg' ? 'jpg' : resolved.format;
-    const isLegacyPublicUrl = /^https?:\/\//i.test(trimmed);
+    if (/^https?:\/\//i.test(trimmed)) {
+      const fromUrl = this.resolveAssetReference(trimmed);
+      push({
+        publicId: fromUrl.publicId,
+        format: this.normalizeFormat(fromUrl.format),
+        resourceType: fromUrl.resourceType === 'raw' ? 'raw' : 'image',
+      });
+      return attempts;
+    }
 
-    // Legacy uploads are public (type: upload) — private_download_url only works for private/authenticated assets.
+    const barePublicId = trimmed;
+    for (const resourceType of ['raw', 'image'] as const) {
+      for (const format of ['pdf', 'docx', 'doc', 'png', 'jpg']) {
+        push({ publicId: barePublicId, resourceType, format });
+      }
+    }
+
+    return attempts;
+  }
+
+  private async fetchResolvedPrivateAsset(
+    resolved: ResolvedCloudinaryAsset,
+    originalFileKey: string
+  ): Promise<{ buffer: Buffer; contentType: string; fileName: string }> {
+    const format = this.normalizeFormat(resolved.format);
+    const isLegacyPublicUrl = /^https?:\/\//i.test(originalFileKey.trim());
+
     if (isLegacyPublicUrl) {
-      return this.fetchFromUrl(trimmed, resolved.publicId);
+      const fetched = await this.fetchFromUrl(originalFileKey.trim(), resolved.publicId);
+      return {
+        ...fetched,
+        fileName: `document.${format}`,
+        contentType: mimeTypeFromCloudinaryFormat(format) || fetched.contentType,
+      };
     }
 
     const expiresAt = Math.floor(Date.now() / 1000) + 60;
     const privateUrl = cloudinary.utils.private_download_url(resolved.publicId, format, {
-      resource_type: effectiveResourceType === 'raw' ? 'raw' : 'image',
+      resource_type: resolved.resourceType === 'raw' ? 'raw' : 'image',
       type: 'private',
       expires_at: expiresAt,
     });
 
     try {
-      return await this.fetchFromUrl(privateUrl, resolved.publicId);
+      const fetched = await this.fetchFromUrl(privateUrl, resolved.publicId);
+      return {
+        ...fetched,
+        fileName: `document.${format}`,
+        contentType: mimeTypeFromCloudinaryFormat(format) || fetched.contentType,
+      };
     } catch (error) {
       if (!(error instanceof NotFoundException)) {
         throw error;
@@ -243,13 +330,162 @@ export class CloudinaryService {
     }
 
     const legacyPublicUrl = cloudinary.url(resolved.publicId, {
-      resource_type: effectiveResourceType,
+      resource_type: resolved.resourceType,
       type: 'upload',
       secure: true,
       format,
     });
 
-    return this.fetchFromUrl(legacyPublicUrl, resolved.publicId);
+    const fetched = await this.fetchFromUrl(legacyPublicUrl, resolved.publicId);
+    return {
+      ...fetched,
+      fileName: `document.${format}`,
+      contentType: mimeTypeFromCloudinaryFormat(format) || fetched.contentType,
+    };
+  }
+
+  private async buildResolvedFetchAttempts(fileKey: string): Promise<ResolvedCloudinaryAsset[]> {
+    const trimmed = fileKey.trim();
+    let attempts = this.buildFetchAttempts(trimmed);
+
+    if (!parsePrivateFileKey(trimmed) && !/^https?:\/\//i.test(trimmed)) {
+      const lookedUp = await this.lookupPrivateResource(trimmed);
+      if (lookedUp) {
+        attempts = [lookedUp, ...attempts];
+      }
+    }
+
+    return attempts;
+  }
+
+  private async resolvePrivateAsset(fileKey: string): Promise<ResolvedCloudinaryAsset> {
+    const trimmed = fileKey.trim();
+    const attempts = await this.buildResolvedFetchAttempts(trimmed);
+
+    for (const attempt of attempts) {
+      try {
+        await cloudinary.api.resource(attempt.publicId, {
+          resource_type: attempt.resourceType,
+          type: 'private',
+        });
+        return attempt;
+      } catch {
+        /* try next candidate */
+      }
+    }
+
+    if (attempts[0]) {
+      return attempts[0];
+    }
+
+    throw new NotFoundException(`Asset not found: ${trimmed}`);
+  }
+
+  /**
+   * Issues a short-lived signed Cloudinary URL for admin viewing.
+   * URL expires quickly and is only returned to authenticated admin APIs.
+   */
+  async createPrivateViewLink(
+    fileKey: string,
+    options?: { preferredFileName?: string; expiresInSeconds?: number }
+  ): Promise<SecurePrivateViewLink> {
+    this.ensureConfigured();
+    if (!fileKey?.trim()) {
+      throw new BadRequestException('fileKey is required');
+    }
+
+    const trimmed = fileKey.trim();
+    const resolved = await this.resolvePrivateAsset(trimmed);
+    const preliminaryFileName = resolvePrivateDownloadFileName(
+      trimmed,
+      resolved.format,
+      options?.preferredFileName
+    );
+    const format = resolveEffectiveFormat(
+      this.normalizeFormat(resolved.format),
+      preliminaryFileName,
+      trimmed
+    );
+    const expiresInSeconds = options?.expiresInSeconds ?? 300;
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+
+    const openUrl = cloudinary.utils.private_download_url(resolved.publicId, format, {
+      resource_type: resolved.resourceType === 'raw' ? 'raw' : 'image',
+      type: 'private',
+      expires_at: expiresAt,
+    });
+
+    const fileName = resolvePrivateDownloadFileName(
+      trimmed,
+      format,
+      options?.preferredFileName
+    );
+    const contentType = mimeTypeFromCloudinaryFormat(format);
+    const viewerUrl = ['doc', 'docx'].includes(format)
+      ? buildGoogleDocsViewerUrl(openUrl)
+      : null;
+
+    return {
+      openUrl,
+      viewerUrl,
+      fileName,
+      format,
+      contentType,
+      expiresAt,
+    };
+  }
+
+  /**
+   * Fetches a Cloudinary private asset server-to-server.
+   * Supports encoded file keys (raw::pdf::folder/id), legacy URLs, and bare public_ids.
+   */
+  async fetchPrivateAsset(
+    fileKey: string,
+    options?: { preferredFileName?: string }
+  ): Promise<{ buffer: Buffer; contentType: string; fileName: string }> {
+    this.ensureConfigured();
+    if (!fileKey?.trim()) {
+      throw new BadRequestException('fileKey is required');
+    }
+
+    const trimmed = fileKey.trim();
+    const attempts = await this.buildResolvedFetchAttempts(trimmed);
+
+    let lastError: NotFoundException | null = null;
+    for (const attempt of attempts) {
+      try {
+        const fetched = await this.fetchResolvedPrivateAsset(attempt, trimmed);
+        const preliminaryFileName = resolvePrivateDownloadFileName(
+          trimmed,
+          attempt.format,
+          options?.preferredFileName
+        );
+        const effectiveFormat = resolveEffectiveFormat(
+          attempt.format,
+          preliminaryFileName,
+          trimmed
+        );
+        const fileName = resolvePrivateDownloadFileName(
+          trimmed,
+          effectiveFormat,
+          options?.preferredFileName
+        );
+        return {
+          ...fetched,
+          fileName,
+          contentType:
+            mimeTypeFromCloudinaryFormat(effectiveFormat) || fetched.contentType,
+        };
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          lastError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw lastError ?? new NotFoundException(`Asset not found: ${trimmed}`);
   }
 
   createUploadSignature(params: { folder?: string; publicId?: string; timestamp?: number }) {

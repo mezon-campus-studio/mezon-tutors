@@ -19,6 +19,12 @@ export const defaultAboutState: TutorProfileAboutState = {
   subject: '',
   languages: '',
   proficiencies: '',
+  cv: {
+    dataUrl: null,
+    uploadedUrl: null,
+    publicId: null,
+    fileName: '',
+  },
 }
 
 export const defaultPhotoState: TutorProfilePhotoState = {
@@ -68,6 +74,13 @@ export const defaultAvailabilityState: TutorProfileAvailabilityState = {
   hourlyRate: '',
   currency: ECurrency.VND,
   utcAvailability: [],
+}
+
+function stripAboutDataUrlsForStorage(state: TutorProfileAboutState): TutorProfileAboutState {
+  return {
+    ...state,
+    cv: { ...state.cv, dataUrl: null },
+  }
 }
 
 function stripPhotoDataUrlsForStorage(state: TutorProfilePhotoState): TutorProfilePhotoState {
@@ -129,7 +142,8 @@ function createStrippingLocalStorage<T>(
 
 export const tutorProfileAboutAtom = atomWithStorage<TutorProfileAboutState>(
   'tutorProfile.about',
-  defaultAboutState
+  defaultAboutState,
+  createStrippingLocalStorage(stripAboutDataUrlsForStorage)
 )
 export const tutorProfilePhotoAtom = atomWithStorage<TutorProfilePhotoState>(
   'tutorProfile.photo',

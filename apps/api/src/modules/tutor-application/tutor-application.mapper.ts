@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@mezon-tutors/db';
 import {
   ABOUT_COUNTRIES,
+  derivePrivateFileDisplayMeta,
   ECurrency,
   FullTutorApplication,
   IdentityVerification,
@@ -67,6 +68,7 @@ export class TutorApplicationMapper {
   }
 
   mapProfessionalDocument(doc: Prisma.ProfessionalDocumentGetPayload<{}>): ProfessionalDocument {
+    const fileMeta = derivePrivateFileDisplayMeta(doc.fileKey, doc.name);
     return {
       id: doc.id,
       tutorId: doc.tutorId,
@@ -77,6 +79,8 @@ export class TutorApplicationMapper {
       specialization: doc.specialization,
       yearOfComplete: doc.yearOfComplete,
       hasFile: Boolean(doc.fileKey?.trim()),
+      fileName: fileMeta.fileName,
+      fileFormat: fileMeta.fileFormat,
       institution: doc.institution,
       reviewedAt: doc.reviewedAt,
     };

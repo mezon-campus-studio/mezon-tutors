@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
+  derivePrivateFileDisplayMeta,
   ECountry,
   ECurrency,
   ESubject,
@@ -315,19 +316,24 @@ export class TutorProfileService {
             hasFile: Boolean(identityVerification.fileKey?.trim()),
           }
         : null,
-      professionalDocuments: professionalDocuments.map((doc) => ({
-        id: doc.id,
-        tutorId: doc.tutorId,
-        name: doc.name,
-        type: doc.type,
-        status: doc.status,
-        uploadedAt: doc.uploadedAt,
-        specialization: doc.specialization,
-        yearOfComplete: doc.yearOfComplete,
-        institution: doc.institution,
-        reviewedAt: doc.reviewedAt,
-        hasFile: Boolean(doc.fileKey?.trim()),
-      })),
+      professionalDocuments: professionalDocuments.map((doc) => {
+        const fileMeta = derivePrivateFileDisplayMeta(doc.fileKey, doc.name);
+        return {
+          id: doc.id,
+          tutorId: doc.tutorId,
+          name: doc.name,
+          type: doc.type,
+          status: doc.status,
+          uploadedAt: doc.uploadedAt,
+          specialization: doc.specialization,
+          yearOfComplete: doc.yearOfComplete,
+          institution: doc.institution,
+          reviewedAt: doc.reviewedAt,
+          hasFile: Boolean(doc.fileKey?.trim()),
+          fileName: fileMeta.fileName,
+          fileFormat: fileMeta.fileFormat,
+        };
+      }),
     };
   }
 
@@ -498,6 +504,15 @@ export class TutorProfileService {
         specialization: dto.specialization,
       });
     }
+
+    const cvPublicId = this.normalizeCloudinaryPublicId(dto.cvPublicId);
+    if (cvPublicId && profile) {
+      await this.createTutorCertificateByUserId(profile.id, {
+        name: dto.cvFileName?.trim() || 'CV',
+        fileUrl: cvPublicId,
+        type: ProfessionalDocumentType.CV,
+      });
+    }
   }
 
   async updateByUserId(userId: string, dto: SubmitTutorProfileDto): Promise<void> {
@@ -593,6 +608,15 @@ export class TutorProfileService {
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
         specialization: dto.specialization,
+      });
+    }
+
+    const cvPublicId = this.normalizeCloudinaryPublicId(dto.cvPublicId);
+    if (cvPublicId && profile) {
+      await this.upsertTutorCertificateByUserId(profile.id, {
+        name: dto.cvFileName?.trim() || 'CV',
+        fileUrl: cvPublicId,
+        type: ProfessionalDocumentType.CV,
       });
     }
   }

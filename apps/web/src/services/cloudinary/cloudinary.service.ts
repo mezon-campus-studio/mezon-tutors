@@ -1,3 +1,4 @@
+import { buildPrivateFileKey } from '@mezon-tutors/shared';
 import { apiClient } from '../api-client';
 
 type CloudinaryUploadResponse = {
@@ -36,7 +37,14 @@ class CloudinaryService {
       formData
     );
 
-    return { publicId: result.publicId };
+    return {
+      publicId: buildPrivateFileKey(
+        result.publicId,
+        result.resourceType,
+        result.format,
+        file.name
+      ),
+    };
   }
 
   async uploadFileWithSignature(

@@ -5,6 +5,7 @@ export const CLOUDINARY_FOLDER = {
   TUTOR_IDENTITY: `${BASIC_FOLDER}/tutor-identity`,
   TUTOR_CERTIFICATE: `${BASIC_FOLDER}/tutor-certificate`,
   TUTOR_DIPLOMA: `${BASIC_FOLDER}/tutor-diploma`,
+  TUTOR_CV: `${BASIC_FOLDER}/tutor-cv`,
   ADMIN_PAYMENTS: `${BASIC_FOLDER}/admin-payments`,
   LESSON_COMPLAINT: `${BASIC_FOLDER}/lesson-complaint`,
   EVENT: `${BASIC_FOLDER}/events`,

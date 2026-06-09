@@ -100,7 +100,6 @@ export default function PhotoPage() {
 
           const hasIdentity =
             data.identityPhotoFile !== null ||
-            !!tutorProfilePhoto.identity?.dataUrl ||
             !!tutorProfilePhoto.identity?.publicId;
           if (!hasIdentity) {
             ctx.addIssue({
@@ -112,12 +111,7 @@ export default function PhotoPage() {
             checkImageFile(data.identityPhotoFile, "identityPhotoFile");
           }
         }),
-    [
-      t,
-      tutorProfilePhoto.identity?.dataUrl,
-      tutorProfilePhoto.identity?.publicId,
-      allowedImageExt,
-    ],
+    [t, tutorProfilePhoto.identity?.publicId, allowedImageExt],
   );
 
   type PhotoFormValues = z.infer<typeof photoFormSchema>;
@@ -144,7 +138,10 @@ export default function PhotoPage() {
   } = form;
 
   useEffect(() => {
-    setPreviewIdentityUrl(tutorProfilePhoto.identity?.dataUrl || null);
+    const dataUrl = tutorProfilePhoto.identity?.dataUrl;
+    if (dataUrl) {
+      setPreviewIdentityUrl(dataUrl);
+    }
   }, [tutorProfilePhoto.identity?.dataUrl]);
 
   useEffect(() => {

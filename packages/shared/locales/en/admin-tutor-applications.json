@@ -117,11 +117,14 @@
           "headers": {
             "documentName": "Document name",
             "type": "Type",
+            "format": "Format",
             "status": "Status",
             "uploadedAt": "Uploaded",
             "file": "File"
           },
-          "openFile": "Open"
+          "viewFile": "View",
+          "viewFileLoading": "Loading...",
+          "previewError": "Could not load document preview."
         }
       }
     },

@@ -87,4 +87,5 @@ export * from './utils/platform-fee';
 export * from './utils/wallet-payment';
 export * from './utils/event-lifecycle';
 export * from './utils/onboarding';
+export * from './utils/cloudinary-private-file';
 export * from './schemas/app-settings';

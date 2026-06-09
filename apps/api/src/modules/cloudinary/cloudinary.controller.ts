@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { inferCloudinaryUploadResourceType } from '@mezon-tutors/shared';
 import { CloudinaryService } from './cloudinary.service';
 
 @Controller('cloudinary')
@@ -98,9 +99,14 @@ export class CloudinaryController {
       throw new BadRequestException('File is required');
     }
 
+    const effectiveResourceType =
+      !resourceType || resourceType === 'auto'
+        ? inferCloudinaryUploadResourceType(file.mimetype, file.originalname)
+        : resourceType;
+
     return this.cloudinaryService.uploadPrivateFile(file.buffer, {
       folder,
-      resourceType,
+      resourceType: effectiveResourceType,
     });
   }
 

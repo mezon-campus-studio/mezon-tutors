@@ -36,6 +36,7 @@ enum ProfessionalDocumentStatus {
 enum ProfessionalDocumentType {
   DEGREE
   CERTIFICATE
+  CV
   OTHER
 }
 

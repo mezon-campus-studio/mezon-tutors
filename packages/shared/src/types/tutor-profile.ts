@@ -48,6 +48,9 @@ export interface SubmitTutorProfileDto {
   specialization: string
   educationPublicId?: string
 
+  cvPublicId?: string
+  cvFileName?: string
+
   videoUrl: string
 
   pricePerHour: number
@@ -126,6 +129,10 @@ export type ProfessionalDocument = {
   specialization: string | null
   yearOfComplete: number | null
   hasFile: boolean
+  /** Original upload filename with extension, when available. */
+  fileName: string | null
+  /** Uppercase extension label, e.g. PDF, DOCX. */
+  fileFormat: string | null
   reviewedAt: Date | null
   institution: string | null
 }
@@ -325,6 +332,7 @@ export type TutorProfileAboutState = {
   subject: string
   languages: string
   proficiencies: string
+  cv: TutorProfileFile
 }
 
 export type TutorProfileFile = {

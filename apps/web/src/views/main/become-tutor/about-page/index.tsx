@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { ShieldCheck, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -21,6 +21,11 @@ import {
   parseProficienciesString,
   ROUTES,
   VIETNAM_PHONE_REGEX,
+  CLOUDINARY_FOLDER,
+  EXISTING_SECURE_FILE,
+  MAX_IMAGE_SIZE_MB,
+  ACCEPT_CV_TYPES,
+  PROFESSIONAL_DOCUMENT_EXTENSIONS,
 } from "@mezon-tutors/shared";
 import {
   Button,
@@ -32,10 +37,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
+import UploadFile from "@/components/common/UploadFile";
+import { cloudinaryService } from "@/services";
 import {
   markStepCompletedAtom,
   tutorProfileAboutAtom,
   tutorProfileLastSavedAtAtom,
+  defaultAboutState,
 } from "@/store";
 import {
   BecomeTutorSection,
@@ -67,101 +75,151 @@ export default function AboutPage() {
   const tProficiency = useTranslations("Tutors.Filter.Proficiency");
 
   const router = useRouter();
-  const [about, setAbout] = useAtom(tutorProfileAboutAtom);
+  const [aboutState, setAbout] = useAtom(tutorProfileAboutAtom);
+  const about = useMemo(
+    () => ({
+      ...defaultAboutState,
+      ...aboutState,
+      cv: { ...defaultAboutState.cv, ...(aboutState.cv ?? {}) },
+    }),
+    [aboutState],
+  );
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const [, setLastSavedAt] = useAtom(tutorProfileLastSavedAtAtom);
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
+  const cvUploadSeqRef = useRef(0);
+  const cvCardRef = useRef<HTMLDivElement | null>(null);
+
+  const allowedCvExt = useMemo(
+    () => new Set<string>(PROFESSIONAL_DOCUMENT_EXTENSIONS),
+    [],
+  );
 
   const aboutSchema = useMemo(
     () =>
-      z.object({
-        firstName: z.string().min(1, t("validation.firstNameRequired")),
-        lastName: z.string().min(1, t("validation.lastNameRequired")),
-        email: z.string().email(t("validation.emailInvalid")),
-        country: z
-          .string()
-          .min(1, t("validation.countryRequired"))
-          .refine(
-            (v) => (Object.values(ECountry) as readonly string[]).includes(v),
-            { message: t("validation.countryFromList") },
-          ),
-        phone: z
-          .string()
-          .min(1, t("validation.phoneRequired"))
-          .transform((value) => value.replace(/[\s-]/g, ""))
-          .refine((value) => VIETNAM_PHONE_REGEX.test(value), {
-            message: t("validation.phoneInvalid"),
-          }),
-        subject: z
-          .string()
-          .min(1, t("validation.subjectRequired"))
-          .refine(
-            (v) => (Object.values(ESubject) as readonly string[]).includes(v),
-            { message: t("validation.subjectFromList") },
-          ),
-        languageEntries: z
-          .array(
-            z.object({
-              language: z.string().refine(
-                (v) =>
-                  !v ||
-                  (Object.values(ELanguage) as readonly string[]).includes(v),
-                { message: t("validation.languagesFromList") },
-              ),
-              proficiency: z.string().refine(
-                (v) =>
-                  !v ||
-                  (Object.values(EProficiencyLevel) as readonly string[]).includes(
-                    v,
-                  ),
-                { message: t("validation.proficiencyFromList") },
-              ),
+      z
+        .object({
+          firstName: z.string().min(1, t("validation.firstNameRequired")),
+          lastName: z.string().min(1, t("validation.lastNameRequired")),
+          email: z.string().email(t("validation.emailInvalid")),
+          country: z
+            .string()
+            .min(1, t("validation.countryRequired"))
+            .refine(
+              (v) => (Object.values(ECountry) as readonly string[]).includes(v),
+              { message: t("validation.countryFromList") },
+            ),
+          phone: z
+            .string()
+            .min(1, t("validation.phoneRequired"))
+            .transform((value) => value.replace(/[\s-]/g, ""))
+            .refine((value) => VIETNAM_PHONE_REGEX.test(value), {
+              message: t("validation.phoneInvalid"),
             }),
-          )
-          .superRefine((arr, ctx) => {
-            const hasAnyCompletePair = arr.some(
-              (e) => e.language && e.proficiency,
-            );
-            if (!hasAnyCompletePair) {
-              const idx =
-                arr.findIndex((e) => !e.language || !e.proficiency) ?? 0;
-              const entry = arr[idx] ?? { language: "", proficiency: "" };
-              if (!entry.language) {
-                ctx.addIssue({
-                  code: "custom",
-                  path: [idx, "language"],
-                  message: t("validation.languagesRequired"),
-                });
+          subject: z
+            .string()
+            .min(1, t("validation.subjectRequired"))
+            .refine(
+              (v) => (Object.values(ESubject) as readonly string[]).includes(v),
+              { message: t("validation.subjectFromList") },
+            ),
+          languageEntries: z
+            .array(
+              z.object({
+                language: z.string().refine(
+                  (v) =>
+                    !v ||
+                    (Object.values(ELanguage) as readonly string[]).includes(v),
+                  { message: t("validation.languagesFromList") },
+                ),
+                proficiency: z.string().refine(
+                  (v) =>
+                    !v ||
+                    (Object.values(EProficiencyLevel) as readonly string[]).includes(
+                      v,
+                    ),
+                  { message: t("validation.proficiencyFromList") },
+                ),
+              }),
+            )
+            .superRefine((arr, ctx) => {
+              const hasAnyCompletePair = arr.some(
+                (e) => e.language && e.proficiency,
+              );
+              if (!hasAnyCompletePair) {
+                const idx =
+                  arr.findIndex((e) => !e.language || !e.proficiency) ?? 0;
+                const entry = arr[idx] ?? { language: "", proficiency: "" };
+                if (!entry.language) {
+                  ctx.addIssue({
+                    code: "custom",
+                    path: [idx, "language"],
+                    message: t("validation.languagesRequired"),
+                  });
+                }
+                if (!entry.proficiency) {
+                  ctx.addIssue({
+                    code: "custom",
+                    path: [idx, "proficiency"],
+                    message: t("validation.proficiencyRequired"),
+                  });
+                }
+                return;
               }
-              if (!entry.proficiency) {
-                ctx.addIssue({
-                  code: "custom",
-                  path: [idx, "proficiency"],
-                  message: t("validation.proficiencyRequired"),
-                });
-              }
-              return;
-            }
-            arr.forEach((entry, idx) => {
-              const hasAnyValue = entry.language || entry.proficiency;
-              if (!hasAnyValue) return;
-              if (!entry.language) {
-                ctx.addIssue({
-                  code: "custom",
-                  path: [idx, "language"],
-                  message: t("validation.languagesRequired"),
-                });
-              }
-              if (!entry.proficiency) {
-                ctx.addIssue({
-                  code: "custom",
-                  path: [idx, "proficiency"],
-                  message: t("validation.proficiencyRequired"),
-                });
-              }
+              arr.forEach((entry, idx) => {
+                const hasAnyValue = entry.language || entry.proficiency;
+                if (!hasAnyValue) return;
+                if (!entry.language) {
+                  ctx.addIssue({
+                    code: "custom",
+                    path: [idx, "language"],
+                    message: t("validation.languagesRequired"),
+                  });
+                }
+                if (!entry.proficiency) {
+                  ctx.addIssue({
+                    code: "custom",
+                    path: [idx, "proficiency"],
+                    message: t("validation.proficiencyRequired"),
+                  });
+                }
+              });
+            }),
+          cvFile: z.instanceof(File).nullable(),
+        })
+        .superRefine((data, ctx) => {
+          const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+          const hasCv =
+            data.cvFile !== null ||
+            !!about.cv?.dataUrl ||
+            !!about.cv?.publicId;
+          if (!hasCv) {
+            ctx.addIssue({
+              path: ["cvFile"],
+              code: "custom",
+              message: t("validation.cvRequired"),
             });
-          }),
-      }),
-    [t],
+            return;
+          }
+          if (!data.cvFile) return;
+          const ext = data.cvFile.name.split(".").pop()?.toLowerCase() ?? "";
+          if (!allowedCvExt.has(ext)) {
+            ctx.addIssue({
+              path: ["cvFile"],
+              code: "custom",
+              message: t("validation.cvInvalidType"),
+            });
+            return;
+          }
+          if (data.cvFile.size > bytesLimit) {
+            ctx.addIssue({
+              path: ["cvFile"],
+              code: "custom",
+              message: t("validation.cvTooLarge", { max: MAX_IMAGE_SIZE_MB }),
+            });
+          }
+        }),
+    [t, about.cv?.dataUrl, about.cv?.publicId, allowedCvExt],
   );
 
   type AboutFormValues = z.infer<typeof aboutSchema>;
@@ -180,6 +238,7 @@ export default function AboutPage() {
       phone: about.phone,
       subject: about.subject,
       languageEntries: initialEntries,
+      cvFile: null,
     },
     resolver: zodResolver(aboutSchema),
     mode: "onChange",
@@ -191,6 +250,8 @@ export default function AboutPage() {
     setFocus,
     register,
     formState: { errors },
+    setValue,
+    clearErrors,
   } = form;
   const { fields, append, remove } = useFieldArray({
     control,
@@ -198,6 +259,9 @@ export default function AboutPage() {
   });
   const formCardRef = useRef<HTMLDivElement | null>(null);
 
+  // Sync persisted draft into the form when text fields change (e.g. returning from step 2).
+  // Do NOT depend on `about.cv` — CV upload updates the atom mid-edit while form text
+  // fields still live only in react-hook-form, and resetting would wipe user input.
   useEffect(() => {
     const entries = buildLanguageEntries(about.languages, about.proficiencies);
     form.reset({
@@ -208,18 +272,143 @@ export default function AboutPage() {
       phone: about.phone,
       subject: about.subject,
       languageEntries: entries,
+      cvFile: null,
     });
-  }, [about, form]);
+  }, [
+    about.firstName,
+    about.lastName,
+    about.email,
+    about.country,
+    about.phone,
+    about.subject,
+    about.languages,
+    about.proficiencies,
+    form,
+  ]);
+
+  const processCvFile = useCallback(
+    async (file: File) => {
+      const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+      if (!allowedCvExt.has(ext)) {
+        form.setError("cvFile", {
+          type: "manual",
+          message: t("validation.cvInvalidType"),
+        });
+        return;
+      }
+
+      if (file.size > bytesLimit) {
+        form.setError("cvFile", {
+          type: "manual",
+          message: t("validation.cvTooLarge", { max: MAX_IMAGE_SIZE_MB }),
+        });
+        return;
+      }
+
+      clearErrors("cvFile");
+      setValue("cvFile", file);
+      cvUploadSeqRef.current += 1;
+      const seq = cvUploadSeqRef.current;
+      const previousPublicId = about.cv?.publicId;
+      setIsUploadingCv(true);
+
+      const uploadCv = async (dataUrl: string | null) => {
+        try {
+          setAbout((prev) => ({
+            ...prev,
+            cv: {
+              ...defaultAboutState.cv,
+              ...(prev.cv ?? {}),
+              dataUrl,
+              fileName: file.name,
+            },
+          }));
+          setLastSavedAt(new Date().toISOString());
+
+          const uploadedFile = await cloudinaryService.uploadPrivateFile(
+            file,
+            CLOUDINARY_FOLDER.TUTOR_CV,
+            "auto",
+          );
+          if (cvUploadSeqRef.current !== seq) return;
+          setAbout((prev) => ({
+            ...prev,
+            cv: {
+              ...defaultAboutState.cv,
+              ...(prev.cv ?? {}),
+              uploadedUrl: null,
+              publicId: uploadedFile.publicId,
+              fileName: file.name,
+            },
+          }));
+          if (
+            previousPublicId &&
+            previousPublicId !== uploadedFile.publicId &&
+            previousPublicId !== EXISTING_SECURE_FILE
+          ) {
+            void cloudinaryService.deleteFile(previousPublicId).catch(() => null);
+          }
+          await form.trigger("cvFile");
+        } catch {
+          if (cvUploadSeqRef.current !== seq) return;
+          form.setError("cvFile", {
+            type: "manual",
+            message: t("validation.cvUploadFailed"),
+          });
+        } finally {
+          if (cvUploadSeqRef.current === seq) setIsUploadingCv(false);
+        }
+      };
+
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onerror = () => {
+          if (cvUploadSeqRef.current === seq) setIsUploadingCv(false);
+        };
+        reader.onload = () => {
+          void uploadCv(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      await uploadCv(null);
+    },
+    [
+      about.cv?.publicId,
+      allowedCvExt,
+      clearErrors,
+      form,
+      setAbout,
+      setLastSavedAt,
+      setValue,
+      t,
+    ],
+  );
 
   const onSubmit = (values: AboutFormValues) => {
+    if (isUploadingCv) return;
+
+    if (!about.cv?.publicId) {
+      form.setError("cvFile", {
+        type: "manual",
+        message: t("validation.cvUploadFailed"),
+      });
+      cvCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     const entries = values.languageEntries.filter(
       (e) => e.language && e.proficiency,
     );
-    const { languageEntries: _e, ...rest } = values;
+    const { languageEntries: _e, cvFile: _cv, ...rest } = values;
     setAbout({
       ...rest,
       languages: joinLanguagesArray(entries.map((e) => e.language)),
       proficiencies: joinProficienciesArray(entries.map((e) => e.proficiency)),
+      cv: about.cv,
     });
     setLastSavedAt(new Date().toISOString());
     markStepCompleted(CURRENT_STEP);
@@ -227,18 +416,24 @@ export default function AboutPage() {
   };
 
   const handleSaveExit = useCallback(async () => {
+    if (isUploadingCv) return;
     const values = form.getValues();
     const entries = values.languageEntries.filter((e) => e.language && e.proficiency);
-    const { languageEntries: _le, ...rest } = values;
+    const { languageEntries: _le, cvFile: _cv, ...rest } = values;
     setAbout({
       ...rest,
       languages: joinLanguagesArray(entries.map((e) => e.language)),
       proficiencies: joinProficienciesArray(entries.map((e) => e.proficiency)),
+      cv: about.cv,
     });
     setLastSavedAt(new Date().toISOString());
-  }, [form, setAbout, setLastSavedAt]);
+  }, [about.cv, form, isUploadingCv, setAbout, setLastSavedAt]);
 
   const onValidationError = (errors: Record<string, unknown>) => {
+    if (errors.cvFile) {
+      cvCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     formCardRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "center",
@@ -258,6 +453,7 @@ export default function AboutPage() {
       continueLabel={t("continue")}
       currentStep={CURRENT_STEP}
       onContinue={handleSubmit(onSubmit, onValidationError)}
+      continueDisabled={isUploadingCv}
     >
       <BecomeTutorSection
         eyebrow={t("sectionEyebrow", { step: CURRENT_STEP })}
@@ -492,6 +688,26 @@ export default function AboutPage() {
                 ) : null}
               </div>
             ))}
+          </div>
+
+          <div className="space-y-1.5" ref={cvCardRef}>
+            <Label className="text-xs font-semibold text-slate-700">
+              {t("fields.cvLabel")}
+            </Label>
+            <p className="text-xs text-slate-500">{t("fields.cvHelper")}</p>
+            <UploadFile
+              accept={ACCEPT_CV_TYPES}
+              previewUrl={about.cv?.dataUrl}
+              fileName={about.cv?.fileName}
+              isUploading={isUploadingCv}
+              onFile={processCvFile}
+              uploadLabel={t("fields.cvUploadButton")}
+              uploadingLabel={t("fields.cvUploading")}
+              emptyLabel={t("fields.cvEmptyState")}
+              dropHereLabel={t("fields.cvDropHere")}
+              hint={t("fields.cvHint", { max: MAX_IMAGE_SIZE_MB })}
+              error={errors.cvFile?.message}
+            />
           </div>
         </form>
       </BecomeTutorSection>
