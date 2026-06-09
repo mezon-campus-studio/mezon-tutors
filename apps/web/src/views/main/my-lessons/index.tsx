@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import ConnectGoogleCalendarButton from "@/components/google-calendar/ConnectGoogleCalendarButton";
 import { useUserTimezone } from "@/hooks";
 import { getWeekStartMondayInTimezone } from "@/lib/timezone";
 import { useGetMyLessonsOverview } from "@/services/my-lessons/my-lessons.api";
@@ -59,14 +60,17 @@ export default function MyLessonsPage() {
                 {t("header.subtitle")}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => router.push("/tutors")}
-              className="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto"
-            >
-              <Plus className="size-4" />
-              {t("header.scheduleLesson")}
-            </button>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <ConnectGoogleCalendarButton />
+              <button
+                type="button"
+                onClick={() => router.push("/tutors")}
+                className="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto"
+              >
+                <Plus className="size-4" />
+                {t("header.scheduleLesson")}
+              </button>
+            </div>
           </div>
 
           <MyLessonsHeader activeTab={activeTab} onTabChange={setActiveTab} />
