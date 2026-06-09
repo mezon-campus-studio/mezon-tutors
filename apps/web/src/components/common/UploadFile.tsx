@@ -122,7 +122,7 @@ export default function UploadFile({
     : !!(fileName?.trim() || previewUrl);
 
   return (
-    <div className={cn('flex w-full flex-col gap-2', className)}>
+    <div className={cn('flex w-full flex-col items-center gap-2', className)}>
       <div
         role="button"
         tabIndex={isUploading ? -1 : 0}

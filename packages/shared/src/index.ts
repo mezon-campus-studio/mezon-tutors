@@ -65,6 +65,7 @@ export * from './constants/lesson-settlement';
 export * from './constants/lesson-complaint';
 export * from './constants/app-settings';
 export * from './constants/contact';
+export * from './constants/tutor-withdrawal';
 // Utils
 export * from './utils/utils';
 export * from './utils/enum';

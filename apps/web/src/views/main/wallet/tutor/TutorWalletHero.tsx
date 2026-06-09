@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDownToLine, Sparkles, TrendingDown, TrendingUp } from 'lucide-react';
+import { AlertTriangle, ArrowDownToLine, Sparkles, TrendingDown, TrendingUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { formatToCurrency, ECurrency } from '@mezon-tutors/shared';
 import type { WalletDetailsApiResponse, WalletStatsApiResponse } from '@mezon-tutors/shared';
@@ -85,15 +85,23 @@ export default function TutorWalletHero({
             </div>
           </div>
 
-          <Button
-            type="button"
-            disabled={!metrics.canWithdraw}
-            onClick={onWithdrawClick}
-            className="h-11 min-h-11 w-full rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-amber-900/30 hover:bg-amber-200 disabled:opacity-60 sm:w-fit"
-          >
-            <ArrowDownToLine className="size-4" />
-            {t('withdrawCta')}
-          </Button>
+          <div className="space-y-2.5">
+            <Button
+              type="button"
+              disabled={!metrics.canWithdraw}
+              onClick={onWithdrawClick}
+              className="h-11 min-h-11 w-full rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-amber-900/30 hover:bg-amber-200 disabled:opacity-60 sm:w-fit"
+            >
+              <ArrowDownToLine className="size-4" />
+              {t('withdrawCta')}
+            </Button>
+            {details.withdrawalWindowOpen === false ? (
+              <div className="flex items-start gap-2 rounded-xl border border-amber-300/35 bg-amber-400/10 px-3 py-2.5 text-amber-50/95">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" aria-hidden />
+                <p className="text-xs leading-relaxed">{t('withdrawWindowWarning')}</p>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex flex-col justify-end sm:max-w-sm lg:max-w-none">
