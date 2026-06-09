@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
 import SecureImage from "@/components/ui/SecureImage";
 import { cn } from "@/lib/utils";
-import { openSecureProxyInNewTab } from "@/lib/open-secure-proxy-in-new-tab";
+import { openAdminSecureDocument } from "@/lib/open-secure-proxy-in-new-tab";
 import { accessTokenAtom } from "@/store/token.atom";
 import StatusBadge from "../../components/StatusBadge";
 
@@ -34,9 +34,10 @@ export default function IdentityVerificationCard({
   const token = useAtomValue(accessTokenAtom);
   const hasDocument = verification?.hasFile ?? false;
   const proxyPath = `/admin/tutor-profiles/${tutorId}/identity-verification/image`;
+  const viewLinkPath = `/admin/tutor-profiles/${tutorId}/identity-verification/view-link`;
 
   const handleOpenInNewTab = () => {
-    void openSecureProxyInNewTab(proxyPath, token);
+    void openAdminSecureDocument(viewLinkPath, token);
   };
 
   return (

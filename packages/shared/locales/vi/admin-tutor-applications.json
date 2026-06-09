@@ -117,11 +117,14 @@
           "headers": {
             "documentName": "Tên tài liệu",
             "type": "Loại",
+            "format": "Định dạng",
             "status": "Trạng thái",
             "uploadedAt": "Ngày tải",
             "file": "Tệp"
           },
-          "openFile": "Mở"
+          "openFile": "Mở",
+          "openFileLoading": "Đang tải...",
+          "openFileWithFormat": "Mở ({format})"
         }
       }
     },

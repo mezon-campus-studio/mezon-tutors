@@ -129,6 +129,10 @@ export type ProfessionalDocument = {
   specialization: string | null
   yearOfComplete: number | null
   hasFile: boolean
+  /** Original upload filename with extension, when available. */
+  fileName: string | null
+  /** Uppercase extension label, e.g. PDF, DOCX. */
+  fileFormat: string | null
   reviewedAt: Date | null
   institution: string | null
 }

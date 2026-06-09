@@ -169,9 +169,10 @@ export function getStepRoute(step: number): string {
 
 export const ACCEPT_IMAGE_TYPES = 'image/jpeg,image/png,image/jpg';
 
-export const ACCEPT_FILE_TYPES = '.pdf,.jpg,.jpeg,.png';
-
-export const ACCEPT_CV_TYPES = '.pdf,.jpg,.jpeg,.png,.docx';
+export {
+  ACCEPT_PROFESSIONAL_DOCUMENT_TYPES as ACCEPT_FILE_TYPES,
+  ACCEPT_CV_TYPES,
+} from '../utils/cloudinary-private-file';
 
 export function parseYouTubeId(url: string): string | null {
   const trimmed = url.trim();

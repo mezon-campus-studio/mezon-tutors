@@ -11,7 +11,7 @@ import { Input, Label, YearPicker } from "@/components/ui";
 import { BadgeCheck, Wallet, Info } from "lucide-react";
 import UploadFile from "@/components/common/UploadFile";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
-import { CLOUDINARY_FOLDER, EXISTING_SECURE_FILE, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES } from "@mezon-tutors/shared";
+import { CLOUDINARY_FOLDER, EXISTING_SECURE_FILE, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES, PROFESSIONAL_DOCUMENT_EXTENSIONS } from "@mezon-tutors/shared";
 import { cloudinaryService } from "@/services";
 import { BecomeTutorSection, BecomeTutorShell } from "../_shared/BecomeTutorShell";
 
@@ -46,7 +46,7 @@ export default function CertificationPage() {
         teachingCertificateFile: z.instanceof(File).nullable(),
         educationFile: z.instanceof(File).nullable(),
       }).superRefine((data, ctx) => {
-        const allowedExt = new Set(["pdf", "jpg", "jpeg", "png"]);
+        const allowedExt = new Set<string>(PROFESSIONAL_DOCUMENT_EXTENSIONS);
         const bytesLimit = MAX_FILE_SIZE_MB * 1024 * 1024;
 
         const validateFile = (file: File, path: "teachingCertificateFile" | "educationFile", invalidTypeMsg: string, tooLargeMsg: string) => {

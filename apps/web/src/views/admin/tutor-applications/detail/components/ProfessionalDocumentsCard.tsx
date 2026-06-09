@@ -5,8 +5,10 @@ import dayjs from "dayjs";
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAtomValue } from "jotai";
-import { Card, CardContent } from "@/components/ui";
-import { openSecureProxyInNewTab } from "@/lib/open-secure-proxy-in-new-tab";
+import { useState } from "react";
+import { Card, CardContent, Spinner } from "@/components/ui";
+import { openAdminSecureDocument } from "@/lib/open-secure-proxy-in-new-tab";
+import { cn } from "@/lib/utils";
 import { accessTokenAtom } from "@/store/token.atom";
 import StatusBadge from "../../components/StatusBadge";
 
@@ -24,23 +26,50 @@ const formatDate = (date: Date | string | null | undefined) => {
 function OpenDocumentButton({
   tutorId,
   documentId,
-  label,
 }: {
   tutorId: string;
   documentId: string;
-  label: string;
 }) {
+  const t = useTranslations(
+    "AdminTutorApplicationDetail.sections.documents.professionalDocuments",
+  );
   const token = useAtomValue(accessTokenAtom);
+  const [loading, setLoading] = useState(false);
+  const viewLinkPath = `/admin/tutor-profiles/${tutorId}/documents/${documentId}/view-link`;
   const proxyPath = `/admin/tutor-profiles/${tutorId}/documents/${documentId}/image`;
+
+  const handleOpen = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await openAdminSecureDocument(viewLinkPath, token, { proxyPath });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <button
       type="button"
-      onClick={() => void openSecureProxyInNewTab(proxyPath, token)}
-      className="inline-flex items-center gap-1 text-violet-600 hover:underline"
+      onClick={() => void handleOpen()}
+      disabled={loading}
+      aria-busy={loading}
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-1 text-violet-600 hover:underline",
+        "disabled:cursor-wait disabled:opacity-70",
+      )}
     >
-      <ExternalLink className="h-3.5 w-3.5" />
-      {label}
+      {loading ? (
+        <>
+          <Spinner className="h-3.5 w-3.5" />
+          {t("openFileLoading")}
+        </>
+      ) : (
+        <>
+          <ExternalLink className="h-3.5 w-3.5" />
+          {t("openFile")}
+        </>
+      )}
     </button>
   );
 }
@@ -94,7 +123,6 @@ export default function ProfessionalDocumentsCard({
                         <OpenDocumentButton
                           tutorId={tutorId}
                           documentId={doc.id}
-                          label={t("openFile")}
                         />
                       ) : (
                         "—"

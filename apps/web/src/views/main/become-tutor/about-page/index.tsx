@@ -25,6 +25,7 @@ import {
   EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
   ACCEPT_CV_TYPES,
+  PROFESSIONAL_DOCUMENT_EXTENSIONS,
 } from "@mezon-tutors/shared";
 import {
   Button,
@@ -90,7 +91,7 @@ export default function AboutPage() {
   const cvCardRef = useRef<HTMLDivElement | null>(null);
 
   const allowedCvExt = useMemo(
-    () => new Set(["pdf", "jpg", "jpeg", "png", "docx"]),
+    () => new Set<string>(PROFESSIONAL_DOCUMENT_EXTENSIONS),
     [],
   );
 

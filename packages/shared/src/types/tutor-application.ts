@@ -80,6 +80,8 @@ export type ProfessionalDocument = {
   specialization: string | null;
   yearOfComplete: number | null;
   hasFile: boolean;
+  fileName: string | null;
+  fileFormat: string | null;
   reviewedAt: Date | null;
   institution: string | null;
 };

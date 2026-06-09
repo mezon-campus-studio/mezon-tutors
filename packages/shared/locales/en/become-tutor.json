@@ -59,7 +59,7 @@
       "proficiencyRequired": "Proficiency is required",
       "proficiencyFromList": "Please select a proficiency level from the list",
       "cvRequired": "CV is required",
-      "cvInvalidType": "CV must be JPG, PNG, PDF, or DOCX",
+      "cvInvalidType": "CV must be JPG, PNG, PDF, DOC, or DOCX",
       "cvTooLarge": "CV must be {max}MB or smaller",
       "cvUploadFailed": "Failed to upload CV. Please try again."
     }
@@ -221,11 +221,11 @@
       "degreeRequired": "Please enter your degree type",
       "specializationRequired": "Specialization is required",
       "certificateFileRequired": "Certificate file is required",
-      "certificateFileInvalidType": "Certificate file must be PDF, JPG or PNG",
+      "certificateFileInvalidType": "Certificate file must be PDF, JPG, PNG, DOC, or DOCX",
       "certificateFileTooLarge": "Certificate file must be smaller than {max}MB",
       "certificateUploadFailed": "Certificate upload failed, please try again",
       "educationFileRequired": "Diploma file is required",
-      "educationFileInvalidType": "Diploma file must be PDF, JPG or PNG",
+      "educationFileInvalidType": "Diploma file must be PDF, JPG, PNG, DOC, or DOCX",
       "educationFileTooLarge": "Diploma file must be smaller than {max}MB",
       "educationUploadFailed": "Diploma upload failed, please try again"
     }
