@@ -13,6 +13,7 @@ export * from './types/subscription-plan';
 export * from './types/wallet-api';
 export * from './types/lesson-complaint-api';
 export * from './types/app-settings-api';
+export * from './types/google-calendar-api';
 export * from './types/support-api';
 export * from './types/event';
 export * from './types/event-api';

@@ -1,0 +1,58 @@
+{
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage integrations and account preferences.",
+    "tabs": {
+      "googleCalendar": "Google Calendar"
+    },
+    "googleCalendar": {
+      "title": "Connect Google Calendar",
+      "subtitle": "Sync your Mezonly lessons with Google Calendar automatically.",
+      "loading": "Loading...",
+      "status": {
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "needsReconnect": "Reconnect required"
+      },
+      "needsReconnectNotice": "Your Google Calendar session for {email} has expired. Reconnect to keep syncing lessons.",
+      "connectedAs": "Connected as {email}",
+      "lastSynced": "Last synced {date}",
+      "benefits": {
+        "title": "What you get",
+        "items": {
+          "autoSync": "New lessons appear on your Google Calendar automatically.",
+          "reminders": "Use Google Calendar reminders so you never miss a session.",
+          "availability": "Busy times from Google Calendar can help protect your schedule."
+        }
+      },
+      "connect": "Connect Google Calendar",
+      "reconnect": "Reconnect Google Calendar",
+      "sync": "Sync calendar",
+      "syncing": "Syncing lessons…",
+      "syncSummary": "Synced {synced} lessons ({created} new, {updated} updated, {removed} removed).",
+      "disconnect": "Disconnect",
+      "connecting": "Redirecting to Google…",
+      "disconnecting": "Disconnecting…",
+      "disconnectConfirm": {
+        "title": "Disconnect Google Calendar?",
+        "description": "New lessons will no longer sync to Google Calendar. Existing events will not be removed automatically.",
+        "confirm": "Disconnect",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "connectSuccessTitle": "Google Calendar connected",
+        "connectSuccessDescription": "Your lessons can now sync to Google Calendar.",
+        "connectFailedTitle": "Could not connect Google Calendar",
+        "connectFailedDescription": "Please try again in a moment.",
+        "disconnectSuccessTitle": "Google Calendar disconnected",
+        "disconnectSuccessDescription": "Your account is no longer linked.",
+        "disconnectFailedTitle": "Could not disconnect",
+        "disconnectFailedDescription": "Please try again.",
+        "syncSuccessTitle": "Calendar synced",
+        "syncSuccessDescription": "Your upcoming Mezonly lessons are now on Google Calendar.",
+        "syncFailedTitle": "Could not sync calendar",
+        "syncFailedDescription": "Please try again in a moment."
+      }
+    }
+  }
+}

@@ -23,6 +23,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
+import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 
 const MAX_SETTLEMENT_ATTEMPTS = 5;
 
@@ -34,6 +35,7 @@ export class LessonSettlementService {
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
     private readonly appSettingsService: AppSettingsService,
+    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
   ) {}
 
   private async getSettlementReleaseAt(lessonEndAt: Date): Promise<Date> {
@@ -363,6 +365,7 @@ export class LessonSettlementService {
           dedupeKey: `tutor-earnings-released:trial:${result.bookingId}`,
         });
       }
+      this.googleCalendarSyncService.dispatchTrialBookingSync(bookingId);
       return;
     }
     if (result.outcome === 'cancel') {
@@ -517,6 +520,10 @@ export class LessonSettlementService {
           dedupeKey: `tutor-earnings-released:sub:${result.enrollmentId}:${result.slotIndex}`,
         });
       }
+      this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
+        enrollmentId,
+        slotIndex,
+      });
       return;
     }
     if (result.outcome === 'cancel') {

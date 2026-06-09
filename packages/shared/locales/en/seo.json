@@ -34,6 +34,10 @@
     "title": "Wallet | Mezonly",
     "description": "View balance, transactions, and withdrawals on Mezonly."
   },
+  "settings": {
+    "title": "Settings | Mezonly",
+    "description": "Manage integrations and account preferences on Mezonly."
+  },
   "trialBookings": {
     "title": "Trial bookings | Mezonly",
     "description": "Manage trial lessons with students on Mezonly."

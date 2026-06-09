@@ -69,6 +69,11 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().default(''),
   CLOUDINARY_API_KEY: z.string().default(''),
   CLOUDINARY_API_SECRET: z.string().default(''),
+
+  // Google Calendar OAuth (optional until integration is enabled)
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALENDAR_CALLBACK_URL: z.string().url().optional(),
 }).superRefine((data, ctx) => {
   if (data.NODE_ENV !== 'production') return;
   const requiredInProd: [string, string][] = [
@@ -124,6 +129,9 @@ export class AppConfigService {
       CLOUDINARY_CLOUD_NAME: this.configService.get('CLOUDINARY_CLOUD_NAME'),
       CLOUDINARY_API_KEY: this.configService.get('CLOUDINARY_API_KEY'),
       CLOUDINARY_API_SECRET: this.configService.get('CLOUDINARY_API_SECRET'),
+      GOOGLE_CLIENT_ID: this.configService.get('GOOGLE_CLIENT_ID'),
+      GOOGLE_CLIENT_SECRET: this.configService.get('GOOGLE_CLIENT_SECRET'),
+      GOOGLE_CALENDAR_CALLBACK_URL: this.configService.get('GOOGLE_CALENDAR_CALLBACK_URL'),
     };
 
     try {
@@ -241,6 +249,25 @@ export class AppConfigService {
       vnpayHost: this.env.VNPAY_HOST,
       testMode: this.env.VNPAY_TEST_MODE,
     };
+  }
+
+  get googleCalendarOAuthConfig() {
+    const clientId = this.env.GOOGLE_CLIENT_ID?.trim() ?? '';
+    const clientSecret = this.env.GOOGLE_CLIENT_SECRET?.trim() ?? '';
+    const callbackUrl =
+      this.env.GOOGLE_CALENDAR_CALLBACK_URL?.trim() ||
+      `${this.publicApiBaseUrl}/api/google-calendar/oauth/callback`;
+
+    return {
+      clientId,
+      clientSecret,
+      callbackUrl,
+    };
+  }
+
+  isGoogleCalendarConfigured(): boolean {
+    const { clientId, clientSecret, callbackUrl } = this.googleCalendarOAuthConfig;
+    return Boolean(clientId && clientSecret && callbackUrl);
   }
 
   // Helper generic method if needed for other keys

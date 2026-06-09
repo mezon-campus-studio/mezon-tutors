@@ -34,6 +34,10 @@
     "title": "Ví | Mezonly",
     "description": "Xem số dư, giao dịch và rút tiền trên Mezonly."
   },
+  "settings": {
+    "title": "Cài đặt | Mezonly",
+    "description": "Quản lý tích hợp và tùy chọn tài khoản trên Mezonly."
+  },
   "trialBookings": {
     "title": "Buổi học thử | Mezonly",
     "description": "Quản lý các buổi học thử với học viên trên Mezonly."

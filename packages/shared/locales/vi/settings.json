@@ -1,0 +1,58 @@
+{
+  "Settings": {
+    "title": "Cài đặt",
+    "subtitle": "Quản lý tích hợp và tùy chọn tài khoản.",
+    "tabs": {
+      "googleCalendar": "Google Calendar"
+    },
+    "googleCalendar": {
+      "title": "Kết nối Google Calendar",
+      "subtitle": "Đồng bộ buổi học Mezonly với Google Calendar tự động.",
+      "loading": "Đang tải...",
+      "status": {
+        "connected": "Đã kết nối",
+        "notConnected": "Chưa kết nối",
+        "needsReconnect": "Cần kết nối lại"
+      },
+      "needsReconnectNotice": "Phiên Google Calendar của {email} đã hết hạn. Hãy kết nối lại để tiếp tục đồng bộ buổi học.",
+      "connectedAs": "Đã kết nối với {email}",
+      "lastSynced": "Đồng bộ lần cuối {date}",
+      "benefits": {
+        "title": "Lợi ích",
+        "items": {
+          "autoSync": "Buổi học mới sẽ tự động xuất hiện trên Google Calendar.",
+          "reminders": "Dùng nhắc lịch của Google để không bỏ lỡ buổi học.",
+          "availability": "Thời gian bận trên Google Calendar giúp bảo vệ lịch dạy của bạn."
+        }
+      },
+      "connect": "Kết nối Google Calendar",
+      "reconnect": "Kết nối lại Google Calendar",
+      "sync": "Đồng bộ lịch",
+      "syncing": "Đang đồng bộ buổi học…",
+      "syncSummary": "Đã đồng bộ {synced} buổi học ({created} mới, {updated} cập nhật, {removed} đã xóa).",
+      "disconnect": "Ngắt kết nối",
+      "connecting": "Đang chuyển đến Google…",
+      "disconnecting": "Đang ngắt kết nối…",
+      "disconnectConfirm": {
+        "title": "Ngắt kết nối Google Calendar?",
+        "description": "Buổi học mới sẽ không còn đồng bộ sang Google Calendar. Các sự kiện đã tạo sẽ không tự động bị xóa.",
+        "confirm": "Ngắt kết nối",
+        "cancel": "Hủy"
+      },
+      "toast": {
+        "connectSuccessTitle": "Đã kết nối Google Calendar",
+        "connectSuccessDescription": "Buổi học của bạn có thể đồng bộ sang Google Calendar.",
+        "connectFailedTitle": "Không kết nối được Google Calendar",
+        "connectFailedDescription": "Vui lòng thử lại sau.",
+        "disconnectSuccessTitle": "Đã ngắt kết nối Google Calendar",
+        "disconnectSuccessDescription": "Tài khoản của bạn không còn được liên kết.",
+        "disconnectFailedTitle": "Không ngắt kết nối được",
+        "disconnectFailedDescription": "Vui lòng thử lại.",
+        "syncSuccessTitle": "Đã đồng bộ lịch",
+        "syncSuccessDescription": "Các buổi học sắp tới trên Mezonly đã được đưa lên Google Calendar.",
+        "syncFailedTitle": "Không đồng bộ được lịch",
+        "syncFailedDescription": "Vui lòng thử lại sau."
+      }
+    }
+  }
+}

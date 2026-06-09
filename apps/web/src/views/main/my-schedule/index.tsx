@@ -22,6 +22,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import ConnectGoogleCalendarButton from '@/components/google-calendar/ConnectGoogleCalendarButton';
 import { Button } from '@/components/ui';
 import { useUserTimezone } from '@/hooks';
 import {
@@ -632,7 +633,10 @@ export default function MyScheduleView() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <div className="flex flex-col gap-5 md:gap-6">
-          <MyScheduleHeader activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <MyScheduleHeader activeTab={activeTab} onTabChange={setActiveTab} />
+            <ConnectGoogleCalendarButton className="shrink-0" />
+          </div>
 
           {((activeTab === 'calendar' && isLoading) ||
             ((activeTab === 'lessons' || activeTab === 'students') && isLessonsListLoading)) && (

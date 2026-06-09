@@ -52,6 +52,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
+import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
@@ -145,6 +146,7 @@ export class SubscriptionService {
     private readonly walletService: WalletService,
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
+    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
   ) {}
 
   private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
@@ -745,6 +747,7 @@ export class SubscriptionService {
     await this.lessonSettlementService.scheduleSubscriptionEnrollmentSettlements(
       enrollment.id,
     );
+    this.googleCalendarSyncService.dispatchSubscriptionEnrollmentSync(enrollment.id);
 
     return this.serializeEnrollmentRow(
       enrollment as unknown as SubscriptionEnrollmentSerializeRow,
@@ -1106,6 +1109,12 @@ export class SubscriptionService {
       });
     });
 
+    this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
+      enrollmentId,
+      slotIndex,
+      previousOccurrenceStartAt: occurrence.startAt,
+    });
+
     return {
       success: true,
       refunded,
@@ -1207,6 +1216,12 @@ export class SubscriptionService {
           processedAt: new Date(),
         },
       });
+    });
+
+    this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
+      enrollmentId: enrollment.id,
+      slotIndex,
+      previousOccurrenceStartAt: occurrence.startAt,
     });
 
     return {
@@ -1471,6 +1486,12 @@ export class SubscriptionService {
           runAt: newRunAt,
         },
       });
+    });
+
+    this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
+      enrollmentId: enrollment.id,
+      slotIndex,
+      previousOccurrenceStartAt: originalStartAt,
     });
 
     return { success: true };

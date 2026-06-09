@@ -174,8 +174,26 @@ model User {
   appSettingsUpdates               AppSettings[]            @relation("AppSettingsUpdatedBy")
   createdEvents                    Event[]                  @relation("EventCreatedBy")
   reviewedEvents                   Event[]                  @relation("EventReviewedBy")
+  googleCalendarConnection         GoogleCalendarConnection?
 
   @@map("users")
+}
+
+model GoogleCalendarConnection {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String    @unique @map("user_id") @db.Uuid
+  googleEmail    String    @map("google_email")
+  accessToken    String    @map("access_token") @db.Text
+  refreshToken   String?   @map("refresh_token") @db.Text
+  tokenExpiresAt DateTime? @map("token_expires_at")
+  calendarId     String?   @map("calendar_id")
+  lastSyncedAt   DateTime? @map("last_synced_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_calendar_connections")
 }
 
 model Notification {

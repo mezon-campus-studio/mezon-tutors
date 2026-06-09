@@ -29,6 +29,7 @@ import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complai
 import { AppSettingsModule } from './modules/app-settings/app-settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { EventModule } from './modules/event/event.module';
+import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -71,6 +72,7 @@ import { CommonModule } from './common/common.module';
     AppSettingsModule,
     SupportModule,
     EventModule,
+    GoogleCalendarModule,
   ],
   controllers: [HealthController],
   providers: [

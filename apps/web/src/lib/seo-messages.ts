@@ -16,6 +16,7 @@ export type SeoMessages = {
   myLessons: { title: string; description: string };
   mySchedule: { title: string; description: string };
   wallet: { title: string; description: string };
+  settings: { title: string; description: string };
   trialBookings: { title: string; description: string };
   tutorProfile: { title: string; description: string };
   becomeTutor: { title: string; description: string };
