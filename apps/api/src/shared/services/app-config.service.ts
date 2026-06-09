@@ -11,6 +11,10 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGINS: z.string().optional(),
+  CORS_DELEGATE_TO_PROXY: z
+    .string()
+    .default('false')
+    .transform((value) => value === 'true'),
 
   // Frontend
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
@@ -107,6 +111,7 @@ export class AppConfigService {
       PORT: this.configService.get('PORT'),
       NODE_ENV: this.configService.get('NODE_ENV'),
       CORS_ORIGINS: this.configService.get('CORS_ORIGINS'),
+      CORS_DELEGATE_TO_PROXY: this.configService.get('CORS_DELEGATE_TO_PROXY'),
       FRONTEND_URL: this.configService.get('FRONTEND_URL'),
       PUBLIC_API_URL: this.configService.get('PUBLIC_API_URL'),
       DATABASE_URL: this.configService.get('DATABASE_URL'),
@@ -159,6 +164,10 @@ export class AppConfigService {
 
   get corsOrigins(): string | undefined {
     return this.env.CORS_ORIGINS;
+  }
+
+  get corsDelegateToProxy(): boolean {
+    return this.env.CORS_DELEGATE_TO_PROXY;
   }
 
   get frontendUrl(): string {

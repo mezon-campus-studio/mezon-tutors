@@ -4,6 +4,7 @@ import { isLoadingAtom, userAtom } from "@/store/auth.atom";
 import {
   authenticateMezonLightClient,
   clearMezonLightSessionStorage,
+  getMezonGatewayUrl,
   restoreMezonLightClientFromStorage,
 } from "@/services/mezon-light/mezon-light.client";
 import { releaseMezonLightSocket } from "@/services/mezon-light/mezon-light.service";
@@ -70,6 +71,7 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
           userId: user.mezonUserId,
           username: user.username,
           serverKey: MEZON_LIGHT_SERVER_KEY,
+          gatewayUrl: getMezonGatewayUrl(),
         });
 
         if (!client) {

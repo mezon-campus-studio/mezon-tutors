@@ -1,4 +1,4 @@
-import { apiClient } from "../api-client";
+import { apiClient, publicApiClient } from "../api-client";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { tutorProfileQueryKey } from "./tutor-profile.qkey";
 import {
@@ -36,7 +36,7 @@ export const tutorProfileApi = {
   ): Promise<PaginatedData<VerifiedTutorProfileDto> | null> {
     const { sortBy, subject, country, currency, minPrice, maxPrice } = filters;
 
-    const response = await apiClient.get<PaginatedResponse<VerifiedTutorProfileDto>>(
+    const response = await publicApiClient.get<PaginatedResponse<VerifiedTutorProfileDto>>(
       "/tutor-profiles/verified",
       {
         params: {

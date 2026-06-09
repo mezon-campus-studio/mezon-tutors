@@ -1,6 +1,21 @@
 import { MEZON_LIGHT_SERVER_KEY } from "@mezon-tutors/shared";
 import { LightClient } from "mezon-light-sdk";
 import { storage, MEZON_LIGHT_SESSION_STORAGE_KEY } from "../storage/storage.service";
+
+const MEZON_GATEWAY_UPSTREAM = "https://gw.mezon.ai";
+
+export function getMezonGatewayUrl() {
+  return process.env.NEXT_PUBLIC_MEZON_GATEWAY_URL?.trim() || MEZON_GATEWAY_UPSTREAM;
+}
+
+function rewriteMezonGatewayUrl(url: string) {
+  const proxyUrl = getMezonGatewayUrl();
+  if (!proxyUrl || proxyUrl === MEZON_GATEWAY_UPSTREAM) {
+    return url;
+  }
+
+  return url.replaceAll(MEZON_GATEWAY_UPSTREAM, proxyUrl);
+}
 type MezonAuthenticateOptions = {
   idToken: string;
   userId: string;
@@ -45,7 +60,7 @@ export async function authenticateMezonLightClient(options: MezonAuthenticateOpt
     user_id: options.userId,
     username: options.username,
     serverkey: options.serverKey,
-    gateway_url: options.gatewayUrl,
+    gateway_url: options.gatewayUrl ?? getMezonGatewayUrl(),
   });
 
   await persistMezonLightSession(client);
@@ -88,8 +103,8 @@ export async function restoreMezonLightClientFromStorage() {
     return initMezonLightClientFromSession({
       token: parsedSession.token as string,
       refreshToken: parsedSession.refresh_token as string,
-      apiUrl: parsedSession.api_url as string,
-      wsUrl: parsedSession.ws_url as string,
+      apiUrl: rewriteMezonGatewayUrl(parsedSession.api_url as string),
+      wsUrl: rewriteMezonGatewayUrl(parsedSession.ws_url as string),
       userId: parsedSession.user_id as string,
       serverKey: MEZON_LIGHT_SERVER_KEY,
     });

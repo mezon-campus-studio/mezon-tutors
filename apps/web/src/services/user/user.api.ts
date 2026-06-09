@@ -2,13 +2,13 @@
 
 import type { TrustShowcaseAvatarDto } from "@mezon-tutors/shared";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../api-client";
+import { publicApiClient } from "../api-client";
 
 export const userTrustShowcaseAvatarsQueryKey = ["trust-showcase-avatars"] as const;
 
 export const userApi = {
   getTrustShowcaseAvatars(): Promise<TrustShowcaseAvatarDto[]> {
-    return apiClient.get("/users/trust-showcase-avatars");
+    return publicApiClient.get("/users/trust-showcase-avatars");
   },
 };
 

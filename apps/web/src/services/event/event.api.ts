@@ -4,15 +4,15 @@ import type {
   EventListItemDto,
 } from "@mezon-tutors/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/services/api-client";
+import { apiClient, publicApiClient } from "@/services/api-client";
 import { eventQueryKey } from "./event.qkey";
 
 const BASE = "/events";
 
 export const eventApi = {
-  listPublished: () => apiClient.get<EventListItemDto[]>(BASE),
+  listPublished: () => publicApiClient.get<EventListItemDto[]>(BASE),
   getBySlug: (slug: string) =>
-    apiClient.get<EventDetailDto>(`${BASE}/${encodeURIComponent(slug)}`),
+    publicApiClient.get<EventDetailDto>(`${BASE}/${encodeURIComponent(slug)}`),
   create: (payload: CreateEventPayload) =>
     apiClient.post<EventDetailDto>(BASE, payload),
   listMySubmissions: () =>

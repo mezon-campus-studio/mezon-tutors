@@ -23,9 +23,27 @@ export class ApiError extends Error {
 let refreshPromise: Promise<string> | null = null;
 const store = getDefaultStore();
 
+/** Cookie-based auth endpoints only (refresh, logout, login). */
+export const credentialsApiClient = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+credentialsApiClient.interceptors.response.use(
+  (response) => unwrapApiEnvelope(response) as never,
+  (error: AxiosError) => {
+    const finalStatus = error.response?.status || 500;
+    const body = error.response?.data || null;
+    return Promise.reject(new ApiError(finalStatus, error.message, body));
+  },
+);
+
 export async function refreshAccessTokenWithLock(): Promise<string> {
   if (!refreshPromise) {
-    refreshPromise = apiClient
+    refreshPromise = credentialsApiClient
       .post<{ accessToken: string }>('/auth/refresh')
       .then((data) => {
         store.set(accessTokenAtom, data.accessToken);
@@ -38,13 +56,40 @@ export async function refreshAccessTokenWithLock(): Promise<string> {
   return refreshPromise;
 }
 
+function unwrapApiEnvelope(response: { status: number; data: unknown }) {
+  const body = response.data;
+  if (body && typeof body === 'object' && 'data' in body && 'error' in body) {
+    if ((body as { error: unknown }).error) {
+      throw new ApiError(response.status, 'API Error', (body as { error: unknown }).error);
+    }
+    return (body as { data: unknown }).data;
+  }
+  return body;
+}
+
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+/** Public reads — no cookies so credentialed CORS is not required. */
+export const publicApiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+publicApiClient.interceptors.response.use(
+  (response) => unwrapApiEnvelope(response) as never,
+  (error: AxiosError) => {
+    const finalStatus = error.response?.status || 500;
+    const body = error.response?.data || null;
+    return Promise.reject(new ApiError(finalStatus, error.message, body));
+  },
+);
 
 function isAuthRefreshRequest(config: InternalAxiosRequestConfig | undefined): boolean {
   const url = config?.url ?? '';
@@ -67,16 +112,7 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => {
-    const body = response.data;
-    if (body && typeof body === 'object' && 'data' in body && 'error' in body) {
-      if (body.error) {
-        throw new ApiError(response.status, 'API Error', body.error);
-      }
-      return body.data;
-    }
-    return body;
-  },
+  (response) => unwrapApiEnvelope(response) as never,
   async (error: AxiosError) => {
     const originalRequest = error.config as
       | (InternalAxiosRequestConfig & {

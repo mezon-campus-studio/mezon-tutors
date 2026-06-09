@@ -27,8 +27,9 @@ export function createCorsOriginDelegate(allowedOrigins: string[]) {
     origin: string | undefined,
     callback: (err: Error | null, allow?: boolean | string) => void
   ) => {
+    // No Origin header (server-to-server). Do not reflect "*" — that breaks credentialed browser requests.
     if (!origin) {
-      callback(null, true);
+      callback(null, false);
       return;
     }
 

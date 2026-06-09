@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDefaultStore } from "jotai";
-import { apiClient, refreshAccessTokenWithLock } from "@/services/api-client";
+import {
+  apiClient,
+  credentialsApiClient,
+  refreshAccessTokenWithLock,
+} from "@/services/api-client";
 import { accessTokenAtom } from "@/store/token.atom";
 import { storage } from "../storage/storage.service";
 import { base64EncodeUtf8 } from "@/lib/mezon-channel-app";
@@ -38,7 +42,7 @@ class AuthService {
   private readonly store = getDefaultStore();
 
   async loginWithChannelAppHash(rawHashData: string): Promise<ExchangeResponse> {
-    const data = await apiClient.post<ExchangeResponse>(
+    const data = await credentialsApiClient.post<ExchangeResponse>(
       "/auth/channel-app/login",
       { hashData: base64EncodeUtf8(rawHashData) }
     );
@@ -57,7 +61,7 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await apiClient.post("/auth/logout");
+      await credentialsApiClient.post("/auth/logout");
     } finally {
       this.store.set(accessTokenAtom, null);
       await storage.clearMezonLightSession();

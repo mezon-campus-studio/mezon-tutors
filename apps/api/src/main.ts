@@ -16,17 +16,29 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   const configService = app.get(AppConfigService);
 
-  const allowedOrigins = buildAllowedCorsOrigins(
-    configService.corsOrigins,
-    configService.frontendUrl
-  );
+  if (!configService.corsDelegateToProxy) {
+    const allowedOrigins = buildAllowedCorsOrigins(
+      configService.corsOrigins,
+      configService.frontendUrl
+    );
 
-  app.enableCors({
-    origin: createCorsOriginDelegate(allowedOrigins),
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Content-Length', 'Accept-Encoding', 'X-CSRF-Token', 'Authorization', 'accept', 'origin', 'Cache-Control', 'X-Requested-With'],
-  });
+    app.enableCors({
+      origin: createCorsOriginDelegate(allowedOrigins),
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: [
+        'Content-Type',
+        'Content-Length',
+        'Accept-Encoding',
+        'X-CSRF-Token',
+        'Authorization',
+        'accept',
+        'origin',
+        'Cache-Control',
+        'X-Requested-With',
+      ],
+    });
+  }
 
   app.use(
     helmet({

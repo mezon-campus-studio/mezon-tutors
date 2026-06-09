@@ -63,6 +63,10 @@ curl -i https://api.mezonly.com/api/health
 
 Expected: `HTTP/2 200` with JSON status.
 
+Production `.env.production` should set `CORS_DELEGATE_TO_PROXY=true` so NestJS does not emit its own
+`Access-Control-Allow-Origin` headers (nginx owns CORS). Duplicate or wildcard ACAO headers break
+browser requests that use `withCredentials`.
+
 Check API CORS:
 
 ```sh
