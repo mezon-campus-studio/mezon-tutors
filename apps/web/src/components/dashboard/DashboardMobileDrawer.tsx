@@ -10,7 +10,7 @@ import {
   isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, MessageSquareWarning, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
+import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, MessageSquareWarning, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -36,6 +36,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   events: CalendarDays,
   adminPanel: ShieldCheck,
   onboarding: Sparkles,
+  settings: Settings,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -55,6 +56,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
   onboarding: "from-violet-500 to-fuchsia-500",
+  settings: "from-slate-500 to-violet-500",
 };
 
 type DashboardMobileDrawerProps = {

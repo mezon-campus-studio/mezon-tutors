@@ -60,6 +60,7 @@ import { WalletCheckoutService } from '../wallet/wallet-checkout.service'
 import { AppSettingsService } from '../app-settings/app-settings.service'
 import { NotificationService } from '../notification/notification.service'
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service'
+import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service'
 
 @Injectable()
 export class TrialLessonBookingService {
@@ -72,6 +73,7 @@ export class TrialLessonBookingService {
     private readonly appSettingsService: AppSettingsService,
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
+    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
   ) {}
 
   async getTutorBookingRequests(
@@ -1152,6 +1154,8 @@ export class TrialLessonBookingService {
       },
     })
 
+    this.googleCalendarSyncService.dispatchSubscriptionEnrollmentSync(enrollmentId)
+
     return true
   }
 
@@ -1194,6 +1198,8 @@ export class TrialLessonBookingService {
         cancelReason: LESSON_CANCEL_REASON_SLOT_CONFLICT,
       },
     })
+
+    this.googleCalendarSyncService.dispatchTrialBookingSync(bookingId)
 
     return true
   }
@@ -1732,6 +1738,7 @@ export class TrialLessonBookingService {
       tutorProfileId: params.tutorId,
     })
     await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id)
+    this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)
 
     return this.serializeTrialLessonBookingResponse(booking)
   }
@@ -1901,6 +1908,8 @@ export class TrialLessonBookingService {
         },
       })
     })
+
+    this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)
 
     return { success: true }
   }
@@ -2175,6 +2184,8 @@ export class TrialLessonBookingService {
         })
       }
     })
+
+    this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)
 
     return {
       refunded,

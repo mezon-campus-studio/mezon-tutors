@@ -42,6 +42,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { WalletService } from '../wallet/wallet.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
+import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 import type { CreateLessonComplaintDto } from './dto/create-lesson-complaint.dto';
 import type { ReviewLessonComplaintDto } from './dto/review-lesson-complaint.dto';
 import {
@@ -106,7 +107,8 @@ export class LessonComplaintService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly notificationService: NotificationService,
-    private readonly appSettingsService: AppSettingsService
+    private readonly appSettingsService: AppSettingsService,
+    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
   ) {}
 
   async createComplaint(
@@ -716,6 +718,25 @@ export class LessonComplaintService {
           tutorAmount: enrollment.tutorAmount,
           slotCount: slots.length,
           description: `Refund approved for subscription lesson complaint with ${tutorLabel}`,
+        });
+      }
+    }
+
+    if (targetStatus === 'APPROVED') {
+      if (
+        complaint.lessonType === ELessonChangeLessonType.TRIAL &&
+        complaint.trialLessonBookingId
+      ) {
+        this.googleCalendarSyncService.dispatchTrialBookingSync(complaint.trialLessonBookingId);
+      } else if (
+        complaint.lessonType === ELessonChangeLessonType.SUBSCRIPTION &&
+        complaint.subscriptionEnrollmentId != null &&
+        complaint.subscriptionSlotIndex != null
+      ) {
+        this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
+          enrollmentId: complaint.subscriptionEnrollmentId,
+          slotIndex: complaint.subscriptionSlotIndex,
+          previousOccurrenceStartAt: complaint.lessonStartAt,
         });
       }
     }

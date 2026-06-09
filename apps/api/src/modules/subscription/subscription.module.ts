@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { PrismaModule } from '../../prisma/prisma.module'
 import { LessonSettlementModule } from '../lesson-settlement/lesson-settlement.module'
+import { GoogleCalendarModule } from '../google-calendar/google-calendar.module'
 import { NotificationModule } from '../notification/notification.module'
 import { VnpayModule } from '../vnpay/vnpay.module'
 import { WalletModule } from '../wallet/wallet.module'
@@ -19,6 +20,7 @@ import { SubscriptionEnrollmentSchedulerService } from './subscription-enrollmen
     TrialLessonBookingModule,
     NotificationModule,
     LessonSettlementModule,
+    GoogleCalendarModule,
     ScheduleModule,
   ],
   controllers: [SubscriptionPlanController, SubscriptionEnrollmentController],

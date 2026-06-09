@@ -19,6 +19,7 @@ import { NotificationService } from '../notification/notification.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
+import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 
 type VnpayQuery = Record<string, string | string[] | undefined>;
 
@@ -54,6 +55,7 @@ export class WebhookService {
     private readonly lessonSettlementService: LessonSettlementService,
     private readonly walletCheckoutService: WalletCheckoutService,
     private readonly trialLessonBookingService: TrialLessonBookingService,
+    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
   ) {}
 
   private lessonCheckoutCancelUrl(
@@ -393,6 +395,10 @@ export class WebhookService {
       await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id);
     }
 
+    if (processed.updated) {
+      this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id);
+    }
+
     const bookingAfterRefund = await this.prisma.trialLessonBooking.findUnique({
       where: { id: booking.id },
       select: {
@@ -550,6 +556,10 @@ export class WebhookService {
       await this.lessonSettlementService.scheduleSubscriptionEnrollmentSettlements(
         enrollment.id
       );
+    }
+
+    if (processed.updated) {
+      this.googleCalendarSyncService.dispatchSubscriptionEnrollmentSync(enrollment.id);
     }
 
     const enrollmentAfterRefund = await this.prisma.subscriptionEnrollment.findUnique({

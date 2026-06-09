@@ -52,6 +52,7 @@ export const ROUTES = {
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
     MY_EVENTS: '/dashboard/events',
+    SETTINGS: '/dashboard/settings',
   },
   SUPPORT: {
     ONBOARDING: '/support/onboarding',

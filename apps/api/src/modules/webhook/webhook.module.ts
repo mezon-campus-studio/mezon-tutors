@@ -5,6 +5,7 @@ import { NotificationModule } from '../notification/notification.module'
 import { VnpayModule } from '../vnpay/vnpay.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { TrialLessonBookingModule } from '../trial-lesson-booking/trial-lesson-booking.module'
+import { GoogleCalendarModule } from '../google-calendar/google-calendar.module'
 import { WebhookController } from './webhook.controller'
 import { WebhookService } from './webhook.service'
 
@@ -16,6 +17,7 @@ import { WebhookService } from './webhook.service'
     LessonSettlementModule,
     WalletModule,
     TrialLessonBookingModule,
+    GoogleCalendarModule,
   ],
   controllers: [WebhookController],
   providers: [WebhookService],

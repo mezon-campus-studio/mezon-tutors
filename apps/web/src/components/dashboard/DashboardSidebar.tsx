@@ -17,6 +17,7 @@ import {
   LineChart,
   LogOut,
   MessageSquareWarning,
+  Settings,
   ShieldCheck,
   Sparkles,
   User,
@@ -45,6 +46,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   events: CalendarDays,
   adminPanel: ShieldCheck,
   onboarding: Sparkles,
+  settings: Settings,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -64,6 +66,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
   onboarding: "from-violet-500 to-fuchsia-500",
+  settings: "from-slate-500 to-violet-500",
 };
 
 type DashboardSidebarProps = {
