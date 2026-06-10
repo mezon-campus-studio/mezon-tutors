@@ -37,3 +37,5 @@ export * from "./admin-event/admin-event.api";
 export * from "./admin-event/admin-event.qkey";
 export * from "./google-calendar/google-calendar.api";
 export * from "./google-calendar/google-calendar.qkey";
+export * from "./vocabulary/vocabulary.api";
+export * from "./vocabulary/vocabulary.qkey";

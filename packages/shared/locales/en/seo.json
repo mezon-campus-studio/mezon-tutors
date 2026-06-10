@@ -26,6 +26,10 @@
     "title": "My lessons | Mezonly",
     "description": "Track upcoming and past lessons on Mezonly."
   },
+  "practice": {
+    "title": "Vocabulary practice | Mezonly",
+    "description": "Practice and manage your English vocabulary on Mezonly."
+  },
   "mySchedule": {
     "title": "My schedule | Mezonly",
     "description": "Manage your teaching schedule and bookings on Mezonly."

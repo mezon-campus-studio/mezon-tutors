@@ -175,8 +175,36 @@ model User {
   createdEvents                    Event[]                  @relation("EventCreatedBy")
   reviewedEvents                   Event[]                  @relation("EventReviewedBy")
   googleCalendarConnection         GoogleCalendarConnection?
+  vocabularyWords                  VocabularyWord[]
 
   @@map("users")
+}
+
+enum VocabularyWordStatus {
+  ready
+  learning
+  learned
+}
+
+/// Student vocabulary words for practice
+model VocabularyWord {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId    String               @map("student_id") @db.Uuid
+  word         String
+  phonetic     String?
+  partOfSpeech String               @map("part_of_speech")
+  definition   String               @db.Text
+  example      String?              @db.Text
+  audioUrl     String?              @map("audio_url")
+  status       VocabularyWordStatus @default(ready)
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, word, definition])
+  @@index([studentId, word])
+  @@map("vocabulary_words")
 }
 
 model GoogleCalendarConnection {

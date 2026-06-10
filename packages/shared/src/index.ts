@@ -17,6 +17,7 @@ export * from './types/google-calendar-api';
 export * from './types/support-api';
 export * from './types/event';
 export * from './types/event-api';
+export * from './types/vocabulary-api';
 
 // Enums
 export * from './enums/verification-status';

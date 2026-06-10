@@ -86,16 +86,24 @@ export function RolePathRedirect() {
     }
 
     if (pathname.startsWith("/dashboard/my-lesson")) {
-      if (role !== "STUDENT") {
+      if (role !== "STUDENT" && role !== "ADMIN") {
+        router.replace(home);
+      }
+      return;
+    }
+
+    if (pathname.startsWith("/practice")) {
+      if (role !== "STUDENT" && role !== "ADMIN") {
         router.replace(home);
       }
       return;
     }
 
     if (pathname.startsWith("/dashboard/wallet")) {
-      if (role !== "STUDENT" && role !== "TUTOR") {
+      if (role !== "STUDENT" && role !== "TUTOR" && role !== "ADMIN") {
         router.replace(home);
       }
+      return;
     }
   }, [isAuthLoading, pathname, router, user]);
 
