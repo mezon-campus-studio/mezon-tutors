@@ -1,4 +1,5 @@
 import type { ECurrency } from "../enums/currency"
+import type { EPaymentProvider } from "../enums/payment-provider"
 import type { ESubscriptionLessonSlotStatus } from "../enums/subscription-lesson-slot"
 
 export interface TutorSubscriptionPlanPriceDto {
@@ -48,6 +49,7 @@ export interface CreateSubscriptionEnrollmentDto {
   currency: ECurrency
   slots: CreateSubscriptionEnrollmentSlotDto[]
   useWalletBalance?: boolean
+  paymentProvider?: EPaymentProvider
 }
 
 export interface SubscriptionEnrollmentDto {
@@ -65,6 +67,7 @@ export interface SubscriptionEnrollmentDto {
   paymentStatus: string
   paymentRef: string | null
   paymentUrl: string | null
+  paymentProvider?: EPaymentProvider
   paidAt: string | null
 }
 

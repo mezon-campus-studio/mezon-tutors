@@ -29,6 +29,41 @@ export function isLessonCheckoutCancelCode(s: string): s is LessonCheckoutCancel
  * Map VNPAY response codes to a small set of UI buckets (non-success paths only).
  * Ref: VNPAY sandbox response code list (00 = success).
  */
+export function mapPayosResponseToLessonCancelCode(
+  code: string | undefined,
+  cancel: boolean | undefined,
+  status: string | undefined,
+): LessonCheckoutCancelCode {
+  if (cancel) {
+    return 'user_cancelled';
+  }
+
+  const normalizedCode = (code ?? '').trim();
+  const normalizedStatus = (status ?? '').trim();
+
+  if (normalizedCode === '00' && normalizedStatus === 'PAID') {
+    return 'unknown';
+  }
+
+  if (normalizedStatus === 'CANCELLED') {
+    return 'user_cancelled';
+  }
+
+  if (normalizedStatus === 'EXPIRED') {
+    return 'session_expired';
+  }
+
+  if (['231', '232'].includes(normalizedCode)) {
+    return 'payment_declined';
+  }
+
+  if (normalizedCode === '20') {
+    return 'gateway_error';
+  }
+
+  return 'unknown';
+}
+
 export function mapVnpayResponseToLessonCancelCode(
   responseCode: string | undefined,
   transactionStatus: string | undefined

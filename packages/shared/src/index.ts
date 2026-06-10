@@ -27,6 +27,7 @@ export * from './enums/date-time';
 export * from './enums/trial-lesson-booking';
 export * from './enums/locale';
 export * from './enums/currency';
+export * from './enums/payment-provider';
 export * from './enums/notification';
 export * from './enums/subscription-lesson-slot';
 export * from './enums/lesson-complaint';

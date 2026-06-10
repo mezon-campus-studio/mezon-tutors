@@ -1,6 +1,7 @@
 import type {
   ApiResponse,
   ECurrency,
+  EPaymentProvider,
   ETrialLessonBookingPaymentStatus,
   ETrialLessonBookingStatus,
   PaginatedData,
@@ -24,6 +25,7 @@ export type CreateTrialLessonBookingPayload = {
   durationMinutes: number;
   currency?: ECurrency;
   useWalletBalance?: boolean;
+  paymentProvider?: EPaymentProvider;
 };
 
 export type TrialLessonBooking = {

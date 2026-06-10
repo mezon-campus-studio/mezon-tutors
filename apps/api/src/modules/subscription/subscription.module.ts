@@ -3,7 +3,7 @@ import { PrismaModule } from '../../prisma/prisma.module'
 import { LessonSettlementModule } from '../lesson-settlement/lesson-settlement.module'
 import { GoogleCalendarModule } from '../google-calendar/google-calendar.module'
 import { NotificationModule } from '../notification/notification.module'
-import { VnpayModule } from '../vnpay/vnpay.module'
+import { PaymentModule } from '../payment/payment.module'
 import { WalletModule } from '../wallet/wallet.module'
 import { TrialLessonBookingModule } from '../trial-lesson-booking/trial-lesson-booking.module'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -15,7 +15,7 @@ import { SubscriptionEnrollmentSchedulerService } from './subscription-enrollmen
 @Module({
   imports: [
     PrismaModule,
-    VnpayModule,
+    PaymentModule,
     WalletModule,
     TrialLessonBookingModule,
     NotificationModule,
