@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { Button, Kbd } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { useUpdateWordStatusMutation } from "@/services/vocabulary/vocabulary.api";
 
 type FlashcardPhase = "ready" | "learning";
@@ -28,6 +29,81 @@ type FlashcardModalProps = {
   onReadySessionComplete?: (result: ReadySessionCompleteResult) => void;
   words: VocabularyWordItem[];
 };
+
+// ─── Swipe config ────────────────────────────────────────────────────────────
+const SWIPE_THRESHOLD = 80; // px — minimum drag distance to trigger action
+const ROTATE_FACTOR = 0.12; // deg per px dragged
+const EXIT_TRANSITION_MS = 400;
+
+function getExitDistance() {
+  return typeof window !== "undefined" ? window.innerWidth * 1.1 : 500;
+}
+
+type SwipeTint = "none" | "emerald-300" | "emerald-600" | "blue-500";
+
+const SWIPE_TINT_START = 20;
+
+const FLASHCARD_ACTION_BTN =
+  "inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 disabled:pointer-events-none disabled:opacity-50 sm:h-10";
+
+function getSwipeTint(
+  dragX: number,
+  phase: FlashcardPhase,
+  exitDirection: "left" | "right" | null,
+): SwipeTint {
+  const direction =
+    exitDirection ??
+    (dragX < -SWIPE_TINT_START
+      ? "left"
+      : dragX > SWIPE_TINT_START
+        ? "right"
+        : null);
+
+  if (!direction) return "none";
+
+  if (direction === "left") {
+    return phase === "ready" ? "emerald-300" : "emerald-600";
+  }
+
+  return phase === "ready" ? "blue-500" : "emerald-300";
+}
+
+function getSwipeCardClasses(tint: SwipeTint) {
+  switch (tint) {
+    case "emerald-300":
+      return {
+        bg: "bg-emerald-300 border-emerald-300",
+        word: "text-slate-900",
+        muted: "text-slate-600",
+        hint: "text-slate-600",
+        badge: "bg-emerald-100 text-emerald-800",
+      };
+    case "emerald-600":
+      return {
+        bg: "bg-emerald-600 border-emerald-600",
+        word: "text-white",
+        muted: "text-emerald-50",
+        hint: "text-emerald-100",
+        badge: "bg-emerald-500 text-white",
+      };
+    case "blue-500":
+      return {
+        bg: "bg-blue-500 border-blue-500",
+        word: "text-white",
+        muted: "text-blue-50",
+        hint: "text-blue-100",
+        badge: "bg-blue-400 text-white",
+      };
+    default:
+      return {
+        bg: "bg-white border-slate-200",
+        word: "text-slate-900",
+        muted: "text-slate-600",
+        hint: "text-slate-400",
+        badge: "bg-violet-50 text-violet-700",
+      };
+  }
+}
 
 function hasRemainingReadyWords(
   words: VocabularyWordItem[],
@@ -79,6 +155,20 @@ export default function FlashcardModal({
   const [deck, setDeck] = useState<VocabularyWordItem[]>([]);
   const [index, setIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [flipAnimated, setFlipAnimated] = useState(true);
+
+  // ─── Swipe state ────────────────────────────────────────────────────────────
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(
+    null,
+  );
+  const [cardMoveAnimated, setCardMoveAnimated] = useState(true);
+  const dragStartX = useRef<number | null>(null);
+  const pendingDismissRef = useRef<(() => void) | null>(null);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const readyWords = useMemo(
     () => words.filter((w) => w.status === "ready"),
@@ -98,6 +188,11 @@ export default function FlashcardModal({
       sessionStartedRef.current = false;
       sessionLearningRef.current = [];
       initialReadyDeckSizeRef.current = 0;
+      pendingDismissRef.current = null;
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+      setIsExiting(false);
+      setExitDirection(null);
+      setDragX(0);
       return;
     }
     if (sessionStartedRef.current) return;
@@ -125,12 +220,18 @@ export default function FlashcardModal({
   const phaseLabel =
     phase === "ready" ? t("phaseReady") : t("phaseLearning");
 
+  // ─── Card advance logic (shared by buttons + swipe) ─────────────────────────
   const advanceCard = useCallback(() => {
+    setFlipAnimated(false);
     setIsFlipped(false);
+    setDragX(0);
     const nextIndex = index + 1;
 
     if (nextIndex < deck.length) {
       setIndex(nextIndex);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setFlipAnimated(true));
+      });
       return;
     }
 
@@ -146,10 +247,13 @@ export default function FlashcardModal({
     }
 
     setIndex(nextIndex);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setFlipAnimated(true));
+    });
   }, [index, deck.length, phase, onReadySessionComplete]);
 
   const handleLeft = useCallback(() => {
-    if (!current || !isFlipped) return;
+    if (!current) return;
     if (phase === "ready") {
       sessionLearningRef.current.push({ ...current, status: "learning" });
       updateStatus.mutate({ id: current.id, status: "learning" });
@@ -157,27 +261,72 @@ export default function FlashcardModal({
       updateStatus.mutate({ id: current.id, status: "learned" });
     }
     advanceCard();
-  }, [current, isFlipped, phase, updateStatus, advanceCard]);
+  }, [current, phase, updateStatus, advanceCard]);
 
   const handleRight = useCallback(() => {
-    if (!current || !isFlipped) return;
+    if (!current) return;
     advanceCard();
-  }, [current, isFlipped, advanceCard]);
+  }, [current, advanceCard]);
 
   const handleFlip = useCallback(() => {
+    if (isExiting) return;
     setIsFlipped((prev) => !prev);
+  }, [isExiting]);
+
+  const completeDismiss = useCallback(() => {
+    if (!pendingDismissRef.current) return;
+    const action = pendingDismissRef.current;
+    pendingDismissRef.current = null;
+    if (exitTimerRef.current) {
+      clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
+    setIsExiting(false);
+    setExitDirection(null);
+    setCardMoveAnimated(false);
+    setDragX(0);
+    action();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setCardMoveAnimated(true));
+    });
   }, []);
 
+  const dismissCard = useCallback(
+    (direction: "left" | "right", action: () => void) => {
+      if (isExiting) return;
+      setIsDragging(false);
+      dragStartX.current = null;
+      pendingDismissRef.current = action;
+      setExitDirection(direction);
+      setIsExiting(true);
+      setDragX(direction === "left" ? -getExitDistance() : getExitDistance());
+      exitTimerRef.current = setTimeout(
+        completeDismiss,
+        EXIT_TRANSITION_MS + 50,
+      );
+    },
+    [isExiting, completeDismiss],
+  );
+
+  const handleCardTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLDivElement>) => {
+      if (e.propertyName !== "transform" || !isExiting) return;
+      completeDismiss();
+    },
+    [isExiting, completeDismiss],
+  );
+
+  // ─── Keyboard ───────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        if (isFlipped) handleLeft();
+        handleLeft();
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        if (isFlipped) handleRight();
+        handleRight();
       } else if (e.key === "Enter") {
         e.preventDefault();
         setIsFlipped((prev) => !prev);
@@ -186,7 +335,62 @@ export default function FlashcardModal({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, isFlipped, handleLeft, handleRight]);
+  }, [isOpen, handleLeft, handleRight]);
+
+  // ─── Pointer / touch drag handlers ─────────────────────────────────────────
+  const onDragStart = useCallback(
+    (clientX: number) => {
+      if (isExiting) return;
+      dragStartX.current = clientX;
+      setIsDragging(true);
+    },
+    [isExiting],
+  );
+
+  const onDragMove = useCallback(
+    (clientX: number) => {
+      if (dragStartX.current === null || !isDragging) return;
+      setDragX(clientX - dragStartX.current);
+    },
+    [isDragging],
+  );
+
+  const onDragEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    dragStartX.current = null;
+
+    if (dragX <= -SWIPE_THRESHOLD) {
+      dismissCard("left", handleLeft);
+    } else if (dragX >= SWIPE_THRESHOLD) {
+      dismissCard("right", handleRight);
+    } else {
+      setDragX(0);
+    }
+  }, [isDragging, dragX, dismissCard, handleLeft, handleRight]);
+
+  // Mouse events
+  const onMouseDown = (e: React.MouseEvent) => onDragStart(e.clientX);
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) onDragMove(e.clientX);
+  };
+  const onMouseUp = () => onDragEnd();
+  const onMouseLeave = () => { if (isDragging) onDragEnd(); };
+
+  // Touch events
+  const onTouchStart = (e: React.TouchEvent) =>
+    onDragStart(e.touches[0].clientX);
+  const onTouchMove = (e: React.TouchEvent) =>
+    onDragMove(e.touches[0].clientX);
+  const onTouchEnd = () => onDragEnd();
+
+  const rotate = dragX * ROTATE_FACTOR;
+  const swipeTint = getSwipeTint(
+    dragX,
+    phase,
+    isExiting ? exitDirection : null,
+  );
+  const swipeStyles = getSwipeCardClasses(swipeTint);
 
   if (!isOpen) return null;
 
@@ -239,76 +443,125 @@ export default function FlashcardModal({
           </div>
         ) : (
           <div className="flex w-full max-w-3xl items-center justify-center gap-4 md:gap-8">
+            {/* ── Left button (desktop) ─────────────────────────────────────── */}
             <div className="hidden flex-col items-center gap-2 sm:flex">
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 onClick={handleLeft}
                 disabled={!isFlipped}
-                className="rounded-full px-4"
+                className={cn(FLASHCARD_ACTION_BTN, "sm:w-auto")}
               >
-                ← {leftLabel}
-              </Button>
+                <ArrowLeft className="size-4 shrink-0" aria-hidden />
+                <span className="whitespace-nowrap">{leftLabel}</span>
+              </button>
               <KeyHint label={t("pressKey")}>
                 <ArrowLeft className="size-3.5" aria-hidden />
               </KeyHint>
             </div>
 
+            {/* ── Card stack ───────────────────────────────────────────────── */}
             <div
-              className="relative w-full max-w-md"
+              className="relative w-full max-w-md select-none"
               style={{ perspective: "1200px" }}
             >
-              {[2, 1].map((offset) => (
-                <div
-                  key={offset}
-                  className="absolute inset-x-0 top-2 mx-auto h-[280px] w-[92%] rounded-2xl border border-slate-100 bg-white shadow-sm"
-                  style={{
-                    transform: `translateY(${offset * 6}px) scale(${1 - offset * 0.02})`,
-                    zIndex: 10 - offset,
-                  }}
-                />
-              ))}
+              {/* Background stacked cards — next words visible underneath */}
+              {[2, 1].map((offset) => {
+                const stacked = deck[index + offset];
+                if (!stacked) return null;
+
+                return (
+                  <div
+                    key={`${stacked.id}-${offset}`}
+                    className="absolute inset-x-0 top-2 mx-auto flex h-[280px] w-[92%] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                    style={{
+                      transform: `translateY(${offset * 6}px) scale(${1 - offset * 0.02})`,
+                      zIndex: 10 - offset,
+                    }}
+                  >
+                    <p
+                      className={`font-bold text-slate-900 ${
+                        offset === 1 ? "text-4xl" : "text-3xl text-slate-500"
+                      }`}
+                    >
+                      {stacked.word}
+                    </p>
+                  </div>
+                );
+              })}
+
+              {/* Active draggable card */}
               <div
+                ref={cardRef}
+                className="relative z-20 mx-auto block h-[280px] w-full max-w-md"
+                style={{
+                  transform: `translateX(${dragX}px) rotate(${rotate}deg)`,
+                  transition:
+                    isDragging || !cardMoveAnimated
+                      ? "none"
+                      : `transform ${EXIT_TRANSITION_MS}ms cubic-bezier(0.25,0.46,0.45,0.94)`,
+                  cursor: isExiting
+                    ? "default"
+                    : isDragging
+                      ? "grabbing"
+                      : "grab",
+                  touchAction: "none",
+                  pointerEvents: isExiting ? "none" : "auto",
+                }}
+                onTransitionEnd={handleCardTransitionEnd}
+                // Mouse
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseLeave}
+                // Touch
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                // Click to flip (only when not dragging)
+                onClick={() => {
+                  if (!isExiting && Math.abs(dragX) < 5) handleFlip();
+                }}
                 role="button"
                 tabIndex={0}
-                onClick={handleFlip}
                 onKeyDown={(e) => {
-                  if (e.key === " ") {
-                    e.preventDefault();
-                    handleFlip();
-                  }
+                  if (e.key === " ") { e.preventDefault(); handleFlip(); }
                 }}
-                className="relative z-20 mx-auto block h-[280px] w-full max-w-md cursor-pointer"
-                style={{ perspective: "1200px" }}
               >
+                {/* 3D flip inner — key resets face when advancing to next card */}
                 <div
-                  className="relative size-full transition-transform duration-500"
+                  key={current?.id}
+                  className={`relative size-full ${flipAnimated ? "transition-transform duration-500" : ""}`}
                   style={{
                     transformStyle: "preserve-3d",
                     transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
                   }}
                 >
+                  {/* ── Front face ─────────────────────────────────────────── */}
                   <div
-                    className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 shadow-lg"
+                    className={cn(
+                      "absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 shadow-lg transition-colors duration-150",
+                      swipeStyles.bg,
+                    )}
                     style={{ backfaceVisibility: "hidden" }}
                   >
-                    <p className="text-4xl font-bold text-slate-900">
+                    <p className={cn("text-4xl font-bold", swipeStyles.word)}>
                       {current?.word}
                     </p>
-                    <p className="absolute bottom-6 text-xs text-slate-400">
-                      {t("flipHint")}
-                    </p>
                   </div>
+
+                  {/* ── Back face ──────────────────────────────────────────── */}
                   <div
-                    className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
+                    className={cn(
+                      "absolute inset-0 flex flex-col overflow-hidden rounded-2xl border p-6 shadow-lg transition-colors duration-150",
+                      swipeStyles.bg,
+                    )}
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
-                    onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex shrink-0 items-center gap-2">
-                      <span className="text-xl font-bold text-slate-900">
+                      <span className={cn("text-xl font-bold", swipeStyles.word)}>
                         {current?.word}
                       </span>
                       {current?.audioUrl && (
@@ -319,40 +572,69 @@ export default function FlashcardModal({
                             const audio = new Audio(current.audioUrl!);
                             void audio.play();
                           }}
-                          className="text-slate-500 hover:text-violet-600"
+                          className={cn(
+                            "hover:opacity-80",
+                            swipeTint === "none"
+                              ? "text-slate-500 hover:text-violet-600"
+                              : "text-white/80",
+                          )}
                         >
                           <Volume2 className="size-4" />
                         </button>
                       )}
-                      <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700">
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          swipeStyles.badge,
+                        )}
+                      >
                         {current?.partOfSpeech}
                       </span>
                     </div>
                     <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-                      <p className="text-base font-semibold leading-relaxed text-slate-800">
+                      <p
+                        className={cn(
+                          "text-base font-semibold leading-relaxed",
+                          swipeStyles.word,
+                        )}
+                      >
                         {current?.definition}
                       </p>
                       {current?.example && (
-                        <ul className="mt-3 list-disc pl-5 text-sm text-slate-600">
+                        <ul
+                          className={cn(
+                            "mt-3 list-disc pl-5 text-sm",
+                            swipeStyles.muted,
+                          )}
+                        >
                           <li>{current.example}</li>
                         </ul>
                       )}
                     </div>
                   </div>
                 </div>
+
               </div>
+
+              <p className="mt-8 text-center text-xs text-slate-400 ">
+                {t("flipHint")}
+              </p>
+              <p className="mt-1 text-center text-xs text-slate-400">
+                {t("swipeHint")}
+              </p>
             </div>
 
+            {/* ── Right button (desktop) ────────────────────────────────────── */}
             <div className="hidden flex-col items-center gap-2 sm:flex">
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 onClick={handleRight}
                 disabled={!isFlipped}
-                className="rounded-full px-4"
+                className={cn(FLASHCARD_ACTION_BTN, "sm:w-auto")}
               >
-                {t("keepPracticing")} →
-              </Button>
+                <span className="whitespace-nowrap">{t("keepPracticing")}</span>
+                <ArrowRight className="size-4 shrink-0" aria-hidden />
+              </button>
               <KeyHint label={t("pressKey")}>
                 <ArrowRight className="size-3.5" aria-hidden />
               </KeyHint>
@@ -360,26 +642,27 @@ export default function FlashcardModal({
           </div>
         )}
 
+        {/* ── Mobile buttons ──────────────────────────────────────────────────── */}
         {!isComplete && deck.length > 0 && (
           <div className="mt-8 flex w-full max-w-md gap-3 sm:hidden">
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={handleLeft}
               disabled={!isFlipped}
-              className="flex-1 rounded-full text-xs"
+              className={cn(FLASHCARD_ACTION_BTN, "flex-1")}
             >
-              ← {leftLabel}
-            </Button>
-            <Button
+              <ArrowLeft className="size-4 shrink-0" aria-hidden />
+              <span className="whitespace-nowrap">{leftLabel}</span>
+            </button>
+            <button
               type="button"
-              variant="outline"
               onClick={handleRight}
               disabled={!isFlipped}
-              className="flex-1 rounded-full text-xs"
+              className={cn(FLASHCARD_ACTION_BTN, "flex-1")}
             >
-              {t("keepPracticing")} →
-            </Button>
+              <span className="whitespace-nowrap">{t("keepPracticing")}</span>
+              <ArrowRight className="size-4 shrink-0" aria-hidden />
+            </button>
           </div>
         )}
       </div>
