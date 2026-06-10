@@ -3,7 +3,7 @@
 import type { VocabularyWordItem } from "@mezon-tutors/shared";
 import { Pencil, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -71,6 +71,7 @@ export default function AddWordModal({
   const [notFound, setNotFound] = useState(false);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [addedKeys, setAddedKeys] = useState<AddedState>({});
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const existingKeys = useMemo(() => {
     const set = new Set<string>();
@@ -91,6 +92,21 @@ export default function AddWordModal({
       setAddedKeys({});
     }
   }, [isOpen]);
+
+  const resetToSearch = useCallback(() => {
+    setStep(1);
+    setQuery("");
+    setSearchedWord("");
+    setEntries(null);
+    setNotFound(false);
+    setAddedKeys({});
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && step === 1) {
+      searchInputRef.current?.focus();
+    }
+  }, [isOpen, step]);
 
   const searchWord = useCallback(async (word: string) => {
     const trimmed = word.trim();
@@ -189,11 +205,11 @@ export default function AddWordModal({
         example: item.example,
         audioUrl: getAudioUrl(entries),
       });
-      setAddedKeys((prev) => ({ ...prev, [item.key]: true }));
       void queryClient.invalidateQueries({ queryKey: vocabularyQueryKey.all });
+      resetToSearch();
     } catch (error) {
       if (error instanceof VocabularyAlreadyAddedError) {
-        setAddedKeys((prev) => ({ ...prev, [item.key]: true }));
+        resetToSearch();
       } else {
         toast.error(t("error"));
       }
@@ -203,10 +219,9 @@ export default function AddWordModal({
   };
 
   const handleBackToSearch = () => {
-    setStep(1);
-    setQuery(searchedWord);
-    setEntries(null);
-    setNotFound(false);
+    const word = searchedWord;
+    resetToSearch();
+    setQuery(word);
   };
 
   return (
@@ -234,6 +249,7 @@ export default function AddWordModal({
         {step === 1 ? (
           <div className="px-5 py-8">
             <input
+              ref={searchInputRef}
               type="text"
               value={query}
               onChange={(e) => {
@@ -248,7 +264,6 @@ export default function AddWordModal({
               }}
               placeholder={t("placeholder")}
               className="w-full border-0 bg-transparent text-center text-2xl font-medium text-slate-900 outline-none placeholder:text-slate-300"
-              autoFocus
             />
             <p className="mt-2 text-center text-sm text-slate-400">
               {t("hint")}
