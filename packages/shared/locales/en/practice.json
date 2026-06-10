@@ -1,0 +1,75 @@
+{
+  "title": "My vocabulary",
+  "subtitle": "Practice and track your vocabulary progress",
+  "tabs": {
+    "ready": "Ready to practice",
+    "learning": "Up next",
+    "learned": "Learned"
+  },
+  "exercises": {
+    "title": "Keep your progress going",
+    "subtitle": "Choose an exercise to continue learning.",
+    "addFromLesson": "Add words from your lesson",
+    "flashcards": "Flashcards",
+    "quizzes": "Quizzes",
+    "crosswords": "Crosswords",
+    "comingSoon": "Coming soon"
+  },
+  "stats": {
+    "wordsPracticed": "Words practiced",
+    "readyToPractice": "Ready to practice ({count})",
+    "upNext": "Up next ({count})",
+    "learned": "Learned ({count})",
+    "addNewWords": "Add new words",
+    "howToLearn": "How to learn new words",
+    "howToLearnTitle": "How to learn new words",
+    "howToLearnDescription": "Search for an English word, pick the meaning that fits, and practice with flashcards. Mark words you know or keep practicing to remember them longer."
+  },
+  "wordList": {
+    "emptyTitle": "Your vocabulary list is empty",
+    "emptyDescription": "Your vocabulary list is empty. Start by adding new words!",
+    "addFirstWord": "Add your first word",
+    "deleteConfirm": "Are you sure you want to delete this word?",
+    "deleteDialog": {
+      "title": "Delete word?",
+      "description": "Are you sure you want to remove \"{word}\" from your list?",
+      "cancel": "Cancel",
+      "confirm": "Delete word"
+    },
+    "status": {
+      "ready": "Ready",
+      "learning": "Learning",
+      "learned": "Learned"
+    },
+    "sourceNote": "Added from Vocabulary",
+    "markAsLearned": "Mark as Learned"
+  },
+  "addWord": {
+    "title": "Add word",
+    "placeholder": "Type an English word",
+    "hint": "Type an English word",
+    "notFound": "Word not found. Check your spelling.",
+    "chooseMeaning": "Choose a meaning",
+    "add": "Add",
+    "added": "✓ Added",
+    "error": "Could not add word. Please try again."
+  },
+  "flashcards": {
+    "title": "Flashcards",
+    "flipHint": "Click card or press Enter ↵ to see definition",
+    "knowWord": "I know this word",
+    "markAsLearned": "Mark as Learned",
+    "keepPracticing": "Keep practicing",
+    "phaseReady": "Ready to practice",
+    "phaseLearning": "Up next review",
+    "pressKey": "Press",
+    "complete": "Great job! You've reviewed all your words.",
+    "backToVocabulary": "Back to vocabulary",
+    "noCards": "No words to practice. Add some words first.",
+    "readySessionComplete": {
+      "title": "All done!",
+      "description": "You've completed {percent}% of the words in your ready to practice list.",
+      "confirm": "Got it"
+    }
+  }
+}

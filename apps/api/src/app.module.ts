@@ -30,6 +30,7 @@ import { AppSettingsModule } from './modules/app-settings/app-settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { EventModule } from './modules/event/event.module';
 import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
+import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -73,6 +74,7 @@ import { CommonModule } from './common/common.module';
     SupportModule,
     EventModule,
     GoogleCalendarModule,
+    VocabularyModule,
   ],
   controllers: [HealthController],
   providers: [

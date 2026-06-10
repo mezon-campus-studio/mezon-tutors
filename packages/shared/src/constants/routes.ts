@@ -40,6 +40,7 @@ export const ROUTES = {
   MY_LESSONS: {
     INDEX: '/my-lessons',
   },
+  PRACTICE: '/practice',
   DASHBOARD: {
     INDEX: '/dashboard',
     TUTOR_PROFILE: '/dashboard/tutor/profile',

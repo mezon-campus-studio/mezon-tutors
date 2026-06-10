@@ -27,7 +27,8 @@ type MessageLoaderConfig = {
     | "Admin"
     | "AdminTutorApplicationDetail"
     | "Onboarding"
-    | "Legal";
+    | "Legal"
+    | "Practice";
   file: string;
   pick?: (payload: Record<string, unknown>) => unknown;
 };
@@ -73,6 +74,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   },
   { messageKey: "Onboarding", file: "onboarding" },
   { messageKey: "Legal", file: "legal" },
+  { messageKey: "Practice", file: "practice" },
 ];
 
 const loadMessage = async (locale: string, file: string) => {

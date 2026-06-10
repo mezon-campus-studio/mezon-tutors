@@ -62,6 +62,11 @@ export default function Header() {
         href: ROUTES.DASHBOARD.MY_LESSONS,
         requiresAuth: true,
       });
+      roleNav.push({
+        label: t("practice"),
+        href: ROUTES.PRACTICE,
+        requiresAuth: true,
+      });
     } else if (user?.role === "TUTOR") {
       roleNav.push({
         label: t("mySchedule"),

@@ -1,0 +1,75 @@
+{
+  "title": "Từ vựng của tôi",
+  "subtitle": "Luyện tập và theo dõi tiến độ từ vựng của bạn",
+  "tabs": {
+    "ready": "Sẵn sàng luyện tập",
+    "learning": "Tiếp theo",
+    "learned": "Đã học"
+  },
+  "exercises": {
+    "title": "Tiếp tục tiến độ của bạn",
+    "subtitle": "Chọn bài tập để tiếp tục học.",
+    "addFromLesson": "Thêm từ từ buổi học",
+    "flashcards": "Flashcards",
+    "quizzes": "Câu đố",
+    "crosswords": "Ô chữ",
+    "comingSoon": "Sắp ra mắt"
+  },
+  "stats": {
+    "wordsPracticed": "Từ đã luyện tập",
+    "readyToPractice": "Sẵn sàng luyện tập ({count})",
+    "upNext": "Tiếp theo ({count})",
+    "learned": "Đã học ({count})",
+    "addNewWords": "Thêm từ mới",
+    "howToLearn": "Cách học từ mới",
+    "howToLearnTitle": "Cách học từ mới",
+    "howToLearnDescription": "Tìm từ tiếng Anh, chọn nghĩa phù hợp và luyện tập bằng flashcards. Đánh dấu từ bạn đã biết hoặc tiếp tục luyện để ghi nhớ lâu hơn."
+  },
+  "wordList": {
+    "emptyTitle": "Danh sách từ vựng trống",
+    "emptyDescription": "Danh sách từ vựng của bạn đang trống. Hãy bắt đầu bằng cách thêm từ mới!",
+    "addFirstWord": "Thêm từ đầu tiên",
+    "deleteConfirm": "Bạn có chắc muốn xóa từ này?",
+    "deleteDialog": {
+      "title": "Xóa từ?",
+      "description": "Bạn có chắc muốn xóa \"{word}\" khỏi danh sách?",
+      "cancel": "Hủy",
+      "confirm": "Xóa từ"
+    },
+    "status": {
+      "ready": "Sẵn sàng",
+      "learning": "Đang học",
+      "learned": "Đã học"
+    },
+    "sourceNote": "Thêm từ Từ vựng",
+    "markAsLearned": "Đánh dấu đã học"
+  },
+  "addWord": {
+    "title": "Thêm từ",
+    "placeholder": "Nhập từ tiếng Anh",
+    "hint": "Nhập một từ tiếng Anh",
+    "notFound": "Không tìm thấy từ. Kiểm tra lại chính tả.",
+    "chooseMeaning": "Chọn nghĩa",
+    "add": "Thêm",
+    "added": "✓ Đã thêm",
+    "error": "Không thể thêm từ. Vui lòng thử lại."
+  },
+  "flashcards": {
+    "title": "Flashcards",
+    "flipHint": "Nhấn thẻ hoặc Enter ↵ để xem định nghĩa",
+    "knowWord": "Tôi biết từ này",
+    "markAsLearned": "Đánh dấu đã học",
+    "keepPracticing": "Tiếp tục luyện tập",
+    "phaseReady": "Sẵn sàng luyện tập",
+    "phaseLearning": "Ôn tập tiếp theo",
+    "pressKey": "Nhấn",
+    "complete": "Tuyệt vời! Bạn đã ôn tập hết các từ.",
+    "backToVocabulary": "Quay lại từ vựng",
+    "noCards": "Không có từ để luyện tập. Hãy thêm từ mới trước.",
+    "readySessionComplete": {
+      "title": "Hoàn thành!",
+      "description": "Bạn đã hoàn thành {percent}% các từ trong danh sách sẵn sàng luyện tập.",
+      "confirm": "Đã hiểu"
+    }
+  }
+}
