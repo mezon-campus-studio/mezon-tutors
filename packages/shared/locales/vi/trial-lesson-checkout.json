@@ -39,6 +39,10 @@
         "loadingName": "..."
       },
       "paymentMethods": {
+        "payos": {
+          "title": "payOS",
+          "subtitle": "VietQR, Napas 24/7"
+        },
         "vnpay": {
           "title": "VNPAY",
           "subtitle": "VietQR, ATM, thẻ nội địa"

@@ -3,6 +3,7 @@
 import {
   DEFAULT_TIMEZONE,
   ECurrency,
+  EPaymentProvider,
   formatToCurrency,
   ROUTES,
   utcWeeklySlotsToCalendarInstances,
@@ -211,7 +212,7 @@ export default function SubscriptionPlanSchedulePage() {
       ? formatToCurrency(ECurrency.VND, walletPayment.vnpayAmount)
       : totalDisplay;
 
-  const redirectToVnpay = useCallback((url: string) => {
+  const redirectToPaymentGateway = useCallback((url: string) => {
     if (typeof window === "undefined") {
       return;
     }
@@ -356,7 +357,7 @@ export default function SubscriptionPlanSchedulePage() {
   );
 
   const submitEnrollment = useCallback(
-    async (withWallet: boolean) => {
+    async (withWallet: boolean, paymentProvider: EPaymentProvider = EPaymentProvider.PAYOS) => {
       if (!canSubmit || !plan) {
         return;
       }
@@ -365,6 +366,7 @@ export default function SubscriptionPlanSchedulePage() {
         lessonsPerWeek: plan.lessonsPerWeek,
         currency,
         useWalletBalance: withWallet && showWalletRow,
+        paymentProvider,
         slots: selectedSlots.map((s) =>
           convertWallClockSlotBetweenTimezones(
             s.date,
@@ -376,7 +378,7 @@ export default function SubscriptionPlanSchedulePage() {
         ),
       });
       if (enrollment.paymentUrl) {
-        redirectToVnpay(enrollment.paymentUrl);
+        redirectToPaymentGateway(enrollment.paymentUrl);
       } else if (enrollment.paymentStatus === "SUCCEEDED") {
         router.push(ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(enrollment.id));
       }
@@ -387,7 +389,7 @@ export default function SubscriptionPlanSchedulePage() {
       createEnrollment,
       currency,
       plan,
-      redirectToVnpay,
+      redirectToPaymentGateway,
       router,
       selectedSlots,
       showWalletRow,
@@ -407,9 +409,11 @@ export default function SubscriptionPlanSchedulePage() {
   }, [submitEnrollment, t]);
 
   const handlePay = useCallback(
-    async (_methodId: PaymentMethodId) => {
+    async (methodId: PaymentMethodId) => {
       try {
-        await submitEnrollment(useWalletBalance);
+        const paymentProvider =
+          methodId === "vnpay" ? EPaymentProvider.VNPAY : EPaymentProvider.PAYOS;
+        await submitEnrollment(useWalletBalance, paymentProvider);
       } catch (e) {
         const msg = e instanceof Error ? e.message : t("toastErrorFallback");
         toast.error(t("toastErrorTitle"), { description: msg });

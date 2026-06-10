@@ -9,6 +9,8 @@ import {
   LESSON_CANCEL_REASON_SLOT_CONFLICT,
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   trialLessonPaymentHoldExpiresAt,
+  EPaymentProvider,
+  inferPaymentProviderFromUrl,
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared'
@@ -18,7 +20,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  ServiceUnavailableException,
 } from '@nestjs/common'
 import {
   ECurrency,
@@ -48,8 +49,7 @@ function weekStartMondayYmd(instant: dayjs.Dayjs, timezoneName: string): string 
   return local.subtract(daysFromMonday, 'day').format('YYYY-MM-DD')
 }
 import { PrismaService } from '../../prisma/prisma.service'
-import { AppConfigService } from '../../shared/services/app-config.service'
-import { VnpayService } from '../vnpay/vnpay.service'
+import { PaymentCheckoutService } from '../payment/payment-checkout.service'
 import { CreateTrialLessonBookingDto } from './dto/create-trial-lesson-booking.dto'
 import { RescheduleTrialLessonBookingDto } from './dto/reschedule-trial-lesson-booking.dto'
 import type { TutorRescheduleRequestDto } from './dto/tutor-reschedule-request.dto'
@@ -66,8 +66,7 @@ import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sy
 export class TrialLessonBookingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly vnpayService: VnpayService,
-    private readonly appConfig: AppConfigService,
+    private readonly paymentCheckoutService: PaymentCheckoutService,
     private readonly walletService: WalletService,
     private readonly walletCheckoutService: WalletCheckoutService,
     private readonly appSettingsService: AppSettingsService,
@@ -1571,12 +1570,11 @@ export class TrialLessonBookingService {
       deductAmount,
     )
 
-    const vnpayAmountNumber = Number(vnpayAmount)
+    const gatewayAmountNumber = Number(vnpayAmount)
+    const paymentProvider = this.paymentCheckoutService.resolveProvider(dto.paymentProvider)
     if (vnpayAmount > 0n) {
-      if (!this.vnpayService.isConfigured()) {
-        throw new ServiceUnavailableException('VNPay is not configured; cannot create payment')
-      }
-      if (!Number.isFinite(vnpayAmountNumber) || vnpayAmountNumber < 1) {
+      this.paymentCheckoutService.assertGatewayConfigured(paymentProvider)
+      if (!Number.isFinite(gatewayAmountNumber) || gatewayAmountNumber < 1) {
         throw new BadRequestException('Invalid payment amount for this lesson')
       }
     }
@@ -1621,24 +1619,21 @@ export class TrialLessonBookingService {
       select: { id: true },
     })
 
-    const publicApi = this.appConfig.publicApiBaseUrl.replace(/\/$/, '')
-    const returnUrl = `${publicApi}/api/webhook/vnpay/trial-lesson/return`
     const description = `Trial ${booking.id.slice(0, 8)}`
-    const vnpTxnRef = booking.id.replaceAll('-', '').slice(0, 32)
-
-    const checkoutUrl = this.vnpayService.createPaymentUrl({
-      vnp_Amount: vnpayAmountNumber,
-      vnp_OrderInfo: description,
-      vnp_TxnRef: vnpTxnRef,
-      vnp_ReturnUrl: returnUrl,
-      vnp_IpAddr: clientIp.trim() || '127.0.0.1',
+    const checkout = await this.paymentCheckoutService.createCheckout({
+      provider: paymentProvider,
+      resourceId: booking.id,
+      amount: gatewayAmountNumber,
+      description,
+      checkoutKind: 'trial',
+      clientIp,
     })
 
     const updated = await this.prisma.trialLessonBooking.update({
       where: { id: booking.id },
       data: {
-        paymentRef: vnpTxnRef,
-        paymentUrl: checkoutUrl,
+        paymentRef: checkout.paymentRef,
+        paymentUrl: checkout.paymentUrl,
       },
       select: {
         id: true,
@@ -1659,7 +1654,7 @@ export class TrialLessonBookingService {
       },
     })
 
-    return this.serializeTrialLessonBookingResponse(updated)
+    return this.serializeTrialLessonBookingResponse(updated, checkout.paymentProvider)
   }
 
   private async createTrialLessonBookingPaidByWallet(params: {
@@ -1740,7 +1735,7 @@ export class TrialLessonBookingService {
     await this.lessonSettlementService.scheduleTrialLessonSettlement(booking.id)
     this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)
 
-    return this.serializeTrialLessonBookingResponse(booking)
+    return this.serializeTrialLessonBookingResponse(booking, EPaymentProvider.VNPAY)
   }
 
   private serializeTrialLessonBookingResponse(
@@ -1761,6 +1756,7 @@ export class TrialLessonBookingService {
     paymentUrl: string | null
     createdAt?: Date
   },
+    paymentProvider: EPaymentProvider = inferPaymentProviderFromUrl(booking.paymentUrl),
   ) {
     const paymentExpiresAt =
       booking.status === ETrialLessonStatus.PENDING &&
@@ -1782,7 +1778,7 @@ export class TrialLessonBookingService {
       tutorAmount: Number(booking.tutorAmount),
       deductAmount: Number(booking.deductAmount),
       currency: booking.currency,
-      paymentProvider: 'vnpay',
+      paymentProvider,
       paymentUrl: booking.paymentUrl,
       paymentRef: booking.paymentRef,
       paymentExpiresAt,

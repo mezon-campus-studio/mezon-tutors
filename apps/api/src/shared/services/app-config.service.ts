@@ -70,6 +70,10 @@ const envSchema = z.object({
     .default('true')
     .transform((value) => value === 'true'),
 
+  PAYOS_CLIENT_ID: z.string().default(''),
+  PAYOS_API_KEY: z.string().default(''),
+  PAYOS_CHECKSUM_KEY: z.string().default(''),
+
   CLOUDINARY_CLOUD_NAME: z.string().default(''),
   CLOUDINARY_API_KEY: z.string().default(''),
   CLOUDINARY_API_SECRET: z.string().default(''),
@@ -131,6 +135,9 @@ export class AppConfigService {
       VNPAY_SECURE_SECRET: this.configService.get('VNPAY_SECURE_SECRET'),
       VNPAY_HOST: this.configService.get('VNPAY_HOST'),
       VNPAY_TEST_MODE: this.configService.get('VNPAY_TEST_MODE'),
+      PAYOS_CLIENT_ID: this.configService.get('PAYOS_CLIENT_ID'),
+      PAYOS_API_KEY: this.configService.get('PAYOS_API_KEY'),
+      PAYOS_CHECKSUM_KEY: this.configService.get('PAYOS_CHECKSUM_KEY'),
       CLOUDINARY_CLOUD_NAME: this.configService.get('CLOUDINARY_CLOUD_NAME'),
       CLOUDINARY_API_KEY: this.configService.get('CLOUDINARY_API_KEY'),
       CLOUDINARY_API_SECRET: this.configService.get('CLOUDINARY_API_SECRET'),
@@ -257,6 +264,14 @@ export class AppConfigService {
       secureSecret: this.env.VNPAY_SECURE_SECRET,
       vnpayHost: this.env.VNPAY_HOST,
       testMode: this.env.VNPAY_TEST_MODE,
+    };
+  }
+
+  get payosConfig() {
+    return {
+      clientId: this.env.PAYOS_CLIENT_ID,
+      apiKey: this.env.PAYOS_API_KEY,
+      checksumKey: this.env.PAYOS_CHECKSUM_KEY,
     };
   }
 

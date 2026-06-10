@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { VnpayModule } from '../vnpay/vnpay.module'
+import { PaymentModule } from '../payment/payment.module'
 import { PrismaModule } from '../../prisma/prisma.module'
 import { NotificationModule } from '../notification/notification.module'
 import { WalletModule } from '../wallet/wallet.module'
@@ -12,7 +12,7 @@ import { TrialLessonBookingSchedulerService } from './trial-lesson-booking-sched
 @Module({
   imports: [
     PrismaModule,
-    VnpayModule,
+    PaymentModule,
     NotificationModule,
     WalletModule,
     LessonSettlementModule,

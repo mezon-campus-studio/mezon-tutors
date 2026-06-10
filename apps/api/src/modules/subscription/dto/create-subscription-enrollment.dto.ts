@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer'
 import { ECurrency } from '@mezon-tutors/db'
+import { EPaymentProvider } from '@mezon-tutors/shared'
 import {
   ArrayMinSize,
   IsArray,
@@ -51,4 +52,8 @@ export class CreateSubscriptionEnrollmentBodyDto {
   @IsOptional()
   @IsBoolean()
   useWalletBalance?: boolean
+
+  @IsOptional()
+  @IsEnum(EPaymentProvider)
+  paymentProvider?: EPaymentProvider
 }

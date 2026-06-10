@@ -27,7 +27,13 @@ import {
   useWalletDetails,
 } from "@/services";
 import { userAtom } from "@/store";
-import { ECurrency, ETrialLessonBookingPaymentStatus, formatToCurrency, ROUTES } from "@mezon-tutors/shared";
+import {
+  ECurrency,
+  EPaymentProvider,
+  ETrialLessonBookingPaymentStatus,
+  formatToCurrency,
+  ROUTES,
+} from "@mezon-tutors/shared";
 import { PaymentSummaryCard } from "./components/PaymentSummaryCard";
 import { TrialLessonDetailsCard } from "./components/TrialLessonDetailsCard";
 import { computeWalletPaymentSplit } from "./components/wallet-payment";
@@ -85,7 +91,7 @@ export default function TrialLessonCheckoutPage() {
   const { data: walletDetails } = useWalletDetails();
   const [useWalletBalance, setUseWalletBalance] = useState(false);
 
-  const redirectToVnpay = useCallback((url: string) => {
+  const redirectToPaymentGateway = useCallback((url: string) => {
     if (typeof window === "undefined") {
       return;
     }
@@ -113,14 +119,14 @@ export default function TrialLessonCheckoutPage() {
   }, [currentBooking]);
 
   const submitBooking = useCallback(
-    async (withWallet: boolean) => {
+    async (withWallet: boolean, paymentProvider: EPaymentProvider = EPaymentProvider.PAYOS) => {
       if (!query || !tutor) {
         return;
       }
       if (currentBooking?.hasBooked && currentBooking.status !== "CANCELLED") {
         if (currentBooking.paymentStatus === "PENDING" && currentBooking.paymentUrl) {
           setPaymentLink(currentBooking.paymentUrl);
-          redirectToVnpay(currentBooking.paymentUrl);
+          redirectToPaymentGateway(currentBooking.paymentUrl);
           return;
         }
         toast.error(t("toast.alreadyBookedTitle"), {
@@ -159,10 +165,11 @@ export default function TrialLessonCheckoutPage() {
             withWallet &&
             currency === ECurrency.VND &&
             (walletDetails?.walletBalance ?? walletDetails?.availableBalance ?? 0) > 0,
+          paymentProvider,
         });
         setPaymentLink(booking.paymentUrl);
         if (booking.paymentUrl) {
-          redirectToVnpay(booking.paymentUrl);
+          redirectToPaymentGateway(booking.paymentUrl);
         } else if (
           booking.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED
         ) {
@@ -181,7 +188,7 @@ export default function TrialLessonCheckoutPage() {
       currentUser?.timezone,
       hasMounted,
       query,
-      redirectToVnpay,
+      redirectToPaymentGateway,
       router,
       timezoneFromQuery,
       walletDetails,
@@ -190,24 +197,25 @@ export default function TrialLessonCheckoutPage() {
     ],
   );
 
-  const createVnpayBooking = useCallback(async () => {
-    await submitBooking(useWalletBalance);
-  }, [submitBooking, useWalletBalance]);
-
   const handleWalletPay = useCallback(async () => {
     await submitBooking(true);
   }, [submitBooking]);
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
-      vnpay: createVnpayBooking,
+      payos: async () => {
+        await submitBooking(useWalletBalance, EPaymentProvider.PAYOS);
+      },
+      vnpay: async () => {
+        await submitBooking(useWalletBalance, EPaymentProvider.VNPAY);
+      },
       paypal: async () => {
         toast.error(t("toast.paypalUnavailableTitle"), {
           description: t("toast.paypalUnavailableDescription"),
         });
       },
     }),
-    [createVnpayBooking, t],
+    [submitBooking, useWalletBalance, t],
   );
 
   const handlePay = useCallback(
@@ -226,8 +234,8 @@ export default function TrialLessonCheckoutPage() {
     if (!paymentLink) {
       return;
     }
-    redirectToVnpay(paymentLink);
-  }, [redirectToVnpay, paymentLink]);
+    redirectToPaymentGateway(paymentLink);
+  }, [redirectToPaymentGateway, paymentLink]);
 
   const scheduleLabels = useMemo(() => {
     if (!query) {

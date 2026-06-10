@@ -8,20 +8,26 @@ import {
 import {
   LESSON_CANCEL_REASON_SLOT_CONFLICT,
   LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+  mapPayosResponseToLessonCancelCode,
   mapVnpayResponseToLessonCancelCode,
   ROUTES,
   type LessonCheckoutCancelCode,
 } from '@mezon-tutors/shared';
+import type { Webhook } from '@payos/node/lib/resources/webhooks/webhook';
+import { WebhookError } from '@payos/node';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
 import { NotificationService } from '../notification/notification.service';
+import { PayosService } from '../payos/payos.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 
 type VnpayQuery = Record<string, string | string[] | undefined>;
+type PayosReturnQuery = Record<string, string | string[] | undefined>;
+type PaymentGateway = 'vnpay' | 'payos';
 
 export type ApplyVnpayPaymentResult =
   | {
@@ -50,6 +56,7 @@ export class WebhookService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
+    private readonly payosService: PayosService,
     private readonly appConfig: AppConfigService,
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
@@ -206,6 +213,211 @@ export class WebhookService {
     return { RspCode: '00', Message: 'Confirm Success' };
   }
 
+  async buildTrialLessonPayosReturnRedirectUrl(query: PayosReturnQuery): Promise<string> {
+    return this.buildPayosReturnRedirectUrl(query, 'trial');
+  }
+
+  async buildSubscriptionEnrollmentPayosReturnRedirectUrl(query: PayosReturnQuery): Promise<string> {
+    return this.buildPayosReturnRedirectUrl(query, 'subscription');
+  }
+
+  async buildTrialLessonPayosCancelRedirectUrl(query: PayosReturnQuery): Promise<string> {
+    return this.buildPayosCancelRedirectUrl(query, 'trial');
+  }
+
+  async buildSubscriptionEnrollmentPayosCancelRedirectUrl(query: PayosReturnQuery): Promise<string> {
+    return this.buildPayosCancelRedirectUrl(query, 'subscription');
+  }
+
+  async handlePayosIpn(body: unknown) {
+    const payload = body as Webhook;
+    let verifiedData;
+    try {
+      verifiedData = await this.payosService.verifyWebhook(payload);
+    } catch (error) {
+      if (error instanceof WebhookError) {
+        throw new BadRequestException('Invalid PayOS webhook signature');
+      }
+      throw error;
+    }
+
+    const paymentOk =
+      payload.success === true &&
+      payload.code === '00' &&
+      verifiedData.code === '00' &&
+      verifiedData.status === 'PAID';
+
+    await this.applyPayosPaymentResult({
+      orderRef: String(verifiedData.orderCode),
+      isSucceeded: paymentOk,
+      rawPayload: body,
+      responseCode: payload.code,
+      transactionStatus: verifiedData.status,
+    });
+
+    return { received: true };
+  }
+
+  private async buildPayosReturnRedirectUrl(
+    query: PayosReturnQuery,
+    checkout: 'trial' | 'subscription',
+  ): Promise<string> {
+    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
+    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
+    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
+      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
+
+    const orderCode = this.getScalarQueryValue(query.orderCode);
+    const code = this.getScalarQueryValue(query.code);
+    const status = this.getScalarQueryValue(query.status);
+    const cancel = this.parsePayosCancelFlag(query.cancel);
+
+    if (!orderCode) {
+      return checkout === 'trial' ? toTrialCancel('invalid_signature') : toSubCancel('invalid_signature');
+    }
+
+    if (cancel) {
+      return checkout === 'trial'
+        ? toTrialCancel('user_cancelled')
+        : toSubCancel('user_cancelled');
+    }
+
+    try {
+      const isSucceeded = code === '00' && status === 'PAID';
+      const result = await this.applyPayosPaymentResult({
+        orderRef: orderCode,
+        isSucceeded,
+        rawPayload: query,
+        responseCode: code,
+        transactionStatus: status,
+      });
+
+      if (result.kind === 'subscription') {
+        if (result.slotConflictAfterPayment) {
+          return toSubCancel(
+            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+            result.enrollmentId,
+          );
+        }
+        if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
+          return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
+        }
+        const cancelCode = mapPayosResponseToLessonCancelCode(code, cancel, status);
+        return toSubCancel(cancelCode, result.enrollmentId);
+      }
+
+      if (result.slotConflictAfterPayment) {
+        return toTrialCancel(
+          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+          result.bookingId,
+        );
+      }
+      if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
+        return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
+      }
+      const cancelCode = mapPayosResponseToLessonCancelCode(code, cancel, status);
+      return toTrialCancel(cancelCode, result.bookingId);
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        return checkout === 'trial' ? toTrialCancel('order_not_found') : toSubCancel('order_not_found');
+      }
+      if (e instanceof BadRequestException) {
+        return checkout === 'trial' ? toTrialCancel('gateway_error') : toSubCancel('gateway_error');
+      }
+      throw e;
+    }
+  }
+
+  private buildPayosCancelRedirectUrl(
+    query: PayosReturnQuery,
+    checkout: 'trial' | 'subscription',
+  ): string {
+    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
+    const orderCode = this.getScalarQueryValue(query.orderCode);
+    const code = this.getScalarQueryValue(query.code);
+    const status = this.getScalarQueryValue(query.status);
+    const cancelCode = mapPayosResponseToLessonCancelCode(code, true, status);
+
+    if (orderCode) {
+      void this.applyPayosPaymentResult({
+        orderRef: orderCode,
+        isSucceeded: false,
+        rawPayload: query,
+        responseCode: code,
+        transactionStatus: status,
+      }).catch(() => undefined);
+    }
+
+    return this.lessonCheckoutCancelUrl(frontend, checkout, cancelCode);
+  }
+
+  private async applyPayosPaymentResult(params: {
+    orderRef: string;
+    isSucceeded: boolean;
+    rawPayload: unknown;
+    responseCode?: string;
+    transactionStatus?: string;
+  }): Promise<ApplyVnpayPaymentResult> {
+    const booking = await this.prisma.trialLessonBooking.findFirst({
+      where: { paymentRef: params.orderRef },
+      select: {
+        id: true,
+        tutorId: true,
+        studentId: true,
+        paymentStatus: true,
+        tutorAmount: true,
+        deductAmount: true,
+        tutor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+    if (booking) {
+      return this.applyTrialLessonGatewayPayment({
+        gateway: 'payos',
+        rawPayload: params.rawPayload,
+        booking,
+        isSucceeded: params.isSucceeded,
+        responseCode: params.responseCode,
+        transactionStatus: params.transactionStatus,
+        orderRef: params.orderRef,
+      });
+    }
+
+    const enrollment = await this.prisma.subscriptionEnrollment.findFirst({
+      where: { paymentRef: params.orderRef },
+      select: {
+        id: true,
+        studentId: true,
+        tutorId: true,
+        tutorAmount: true,
+        deductAmount: true,
+        paymentStatus: true,
+        tutor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+    if (enrollment) {
+      return this.applySubscriptionEnrollmentGatewayPayment({
+        gateway: 'payos',
+        rawPayload: params.rawPayload,
+        enrollment,
+        isSucceeded: params.isSucceeded,
+        responseCode: params.responseCode,
+        transactionStatus: params.transactionStatus,
+        orderRef: params.orderRef,
+      });
+    }
+
+    throw new NotFoundException(`Payment order not found for ref ${params.orderRef}`);
+  }
+
   private async applyVnpayPaymentResult(query: VnpayQuery): Promise<ApplyVnpayPaymentResult> {
     const txnRef = this.getScalarQueryValue(query.vnp_TxnRef);
     const responseCode = this.getScalarQueryValue(query.vnp_ResponseCode);
@@ -232,7 +444,16 @@ export class WebhookService {
       },
     });
     if (booking) {
-      return this.applyTrialLessonVnpayPayment(query, booking, responseCode, transactionStatus);
+      return this.applyTrialLessonGatewayPayment({
+        gateway: 'vnpay',
+        rawPayload: query,
+        booking,
+        isSucceeded:
+          responseCode === '00' && (!transactionStatus || transactionStatus === '00'),
+        responseCode,
+        transactionStatus,
+        orderRef: txnRef,
+      });
     }
 
     const enrollment = await this.prisma.subscriptionEnrollment.findFirst({
@@ -252,19 +473,24 @@ export class WebhookService {
       },
     });
     if (enrollment) {
-      return this.applySubscriptionEnrollmentVnpayPayment(
-        query,
+      return this.applySubscriptionEnrollmentGatewayPayment({
+        gateway: 'vnpay',
+        rawPayload: query,
         enrollment,
+        isSucceeded:
+          responseCode === '00' && (!transactionStatus || transactionStatus === '00'),
         responseCode,
-        transactionStatus
-      );
+        transactionStatus,
+        orderRef: txnRef,
+      });
     }
 
     throw new NotFoundException(`Payment order not found for ref ${txnRef}`);
   }
 
-  private async applyTrialLessonVnpayPayment(
-    query: VnpayQuery,
+  private async applyTrialLessonGatewayPayment(params: {
+    gateway: PaymentGateway;
+    rawPayload: unknown;
     booking: {
       id: string;
       tutorId: string;
@@ -273,14 +499,19 @@ export class WebhookService {
       tutorAmount: bigint;
       deductAmount: bigint;
       tutor: { userId: string };
-    },
-    responseCode: string | undefined,
-    transactionStatus: string | undefined
-  ): Promise<ApplyVnpayPaymentResult> {
-    const isSucceeded = responseCode === '00' && (!transactionStatus || transactionStatus === '00');
+    };
+    isSucceeded: boolean;
+    responseCode: string | undefined;
+    transactionStatus: string | undefined;
+    orderRef: string;
+  }): Promise<ApplyVnpayPaymentResult> {
+    const { gateway, rawPayload, booking, isSucceeded, responseCode, transactionStatus, orderRef } =
+      params;
+    const serializedPayload = this.toWebhookRawPayload(rawPayload);
     const now = new Date();
-    const eventType = isSucceeded ? 'vnpay.payment.succeeded' : 'vnpay.payment.failed';
-    const txnRef = this.getScalarQueryValue(query.vnp_TxnRef)!;
+    const eventType = isSucceeded
+      ? `${gateway}.payment.succeeded`
+      : `${gateway}.payment.failed`;
 
     const bookingSlot = await this.prisma.trialLessonBooking.findUnique({
       where: { id: booking.id },
@@ -305,9 +536,9 @@ export class WebhookService {
 
     const processed = await this.prisma.$transaction(async (tx) => {
       const webhookLog = await this.upsertWebhookLog(tx, {
-        orderCode: txnRef,
+        orderCode: orderRef,
         eventType,
-        rawPayload: query,
+        rawPayload: serializedPayload,
         isProcessed: false,
       });
 
@@ -359,7 +590,7 @@ export class WebhookService {
       await tx.webhookLog.update({
         where: { id: webhookLog.id },
         data: {
-          rawPayload: query,
+          rawPayload: serializedPayload,
           isProcessed: true,
           processedAt: now,
         },
@@ -424,8 +655,9 @@ export class WebhookService {
     };
   }
 
-  private async applySubscriptionEnrollmentVnpayPayment(
-    query: VnpayQuery,
+  private async applySubscriptionEnrollmentGatewayPayment(params: {
+    gateway: PaymentGateway;
+    rawPayload: unknown;
     enrollment: {
       id: string;
       studentId: string;
@@ -434,14 +666,26 @@ export class WebhookService {
       deductAmount: bigint;
       paymentStatus: EPaymentStatus;
       tutor: { userId: string };
-    },
-    responseCode: string | undefined,
-    transactionStatus: string | undefined
-  ): Promise<ApplyVnpayPaymentResult> {
-    const isSucceeded = responseCode === '00' && (!transactionStatus || transactionStatus === '00');
+    };
+    isSucceeded: boolean;
+    responseCode: string | undefined;
+    transactionStatus: string | undefined;
+    orderRef: string;
+  }): Promise<ApplyVnpayPaymentResult> {
+    const {
+      gateway,
+      rawPayload,
+      enrollment,
+      isSucceeded,
+      responseCode,
+      transactionStatus,
+      orderRef,
+    } = params;
+    const serializedPayload = this.toWebhookRawPayload(rawPayload);
     const now = new Date();
-    const eventType = isSucceeded ? 'vnpay.payment.succeeded' : 'vnpay.payment.failed';
-    const txnRef = this.getScalarQueryValue(query.vnp_TxnRef)!;
+    const eventType = isSucceeded
+      ? `${gateway}.payment.succeeded`
+      : `${gateway}.payment.failed`;
 
     const enrollmentSlots = await this.prisma.subscriptionEnrollment.findUnique({
       where: { id: enrollment.id },
@@ -465,9 +709,9 @@ export class WebhookService {
 
     const processed = await this.prisma.$transaction(async (tx) => {
       const webhookLog = await this.upsertWebhookLog(tx, {
-        orderCode: txnRef,
+        orderCode: orderRef,
         eventType,
-        rawPayload: query,
+        rawPayload: serializedPayload,
         isProcessed: false,
       });
 
@@ -518,7 +762,7 @@ export class WebhookService {
       await tx.webhookLog.update({
         where: { id: webhookLog.id },
         data: {
-          rawPayload: query,
+          rawPayload: serializedPayload,
           isProcessed: true,
           processedAt: now,
         },
@@ -595,16 +839,26 @@ export class WebhookService {
     return value;
   }
 
+  private parsePayosCancelFlag(value: string | string[] | undefined): boolean {
+    const raw = this.getScalarQueryValue(value)?.trim().toLowerCase();
+    return raw === 'true' || raw === '1';
+  }
+
+  private toWebhookRawPayload(rawPayload: unknown): Prisma.InputJsonValue {
+    return rawPayload as Prisma.InputJsonValue;
+  }
+
   private async upsertWebhookLog(
     tx: Prisma.TransactionClient,
     payload: {
       orderCode: string;
       eventType: string;
-      rawPayload: VnpayQuery;
+      rawPayload: unknown;
       isProcessed: boolean;
       processedAt?: Date;
     }
   ) {
+    const rawPayload = this.toWebhookRawPayload(payload.rawPayload);
     const existing = await tx.webhookLog.findFirst({
       where: {
         orderCode: payload.orderCode,
@@ -622,7 +876,7 @@ export class WebhookService {
       await tx.webhookLog.update({
         where: { id: existing.id },
         data: {
-          rawPayload: payload.rawPayload,
+          rawPayload,
           isProcessed: payload.isProcessed,
           processedAt: payload.processedAt ?? null,
         },
@@ -634,7 +888,7 @@ export class WebhookService {
       data: {
         orderCode: payload.orderCode,
         eventType: payload.eventType,
-        rawPayload: payload.rawPayload,
+        rawPayload,
         isProcessed: payload.isProcessed,
         processedAt: payload.processedAt ?? null,
       },

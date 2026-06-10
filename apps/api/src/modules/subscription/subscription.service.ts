@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   ECurrency as PrismaCurrency,
@@ -19,6 +18,8 @@ import {
 } from '@mezon-tutors/db';
 import {
   ECurrency,
+  EPaymentProvider,
+  inferPaymentProviderFromUrl,
   LESSON_SETTLEMENT_GRACE_MINUTES,
   calculatePlatformFeeAmounts,
   buildMonthlySubscriptionSlotJson,
@@ -50,11 +51,10 @@ import {
   trialLessonPaymentHoldExpiresAt,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AppConfigService } from '../../shared/services/app-config.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
 import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 import { NotificationService } from '../notification/notification.service';
-import { VnpayService } from '../vnpay/vnpay.service';
+import { PaymentCheckoutService } from '../payment/payment-checkout.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
@@ -138,8 +138,7 @@ function toPresetPlanDto(
 export class SubscriptionService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly vnpayService: VnpayService,
-    private readonly appConfig: AppConfigService,
+    private readonly paymentCheckoutService: PaymentCheckoutService,
     private readonly trialLessonBookingService: TrialLessonBookingService,
     private readonly appSettingsService: AppSettingsService,
     private readonly walletCheckoutService: WalletCheckoutService,
@@ -446,7 +445,8 @@ export class SubscriptionService {
 
   private serializeEnrollmentRow(
     row: SubscriptionEnrollmentSerializeRow,
-    weeklySlots: SubscriptionWeeklySlotDto[]
+    weeklySlots: SubscriptionWeeklySlotDto[],
+    paymentProvider: EPaymentProvider = inferPaymentProviderFromUrl(row.paymentUrl),
   ): SubscriptionEnrollmentDto {
     return {
       id: row.id,
@@ -463,6 +463,7 @@ export class SubscriptionService {
       paymentStatus: row.paymentStatus,
       paymentRef: row.paymentRef,
       paymentUrl: row.paymentUrl,
+      paymentProvider,
       paidAt: row.paidAt?.toISOString() ?? null,
     };
   }
@@ -617,12 +618,11 @@ export class SubscriptionService {
       deductAmount,
     );
 
-    const vnpayAmountNumber = Number(vnpayAmount);
+    const gatewayAmountNumber = Number(vnpayAmount);
+    const paymentProvider = this.paymentCheckoutService.resolveProvider(dto.paymentProvider);
     if (vnpayAmount > 0n) {
-      if (!this.vnpayService.isConfigured()) {
-        throw new ServiceUnavailableException('VNPay is not configured; cannot create payment');
-      }
-      if (!Number.isFinite(vnpayAmountNumber) || vnpayAmountNumber < 1) {
+      this.paymentCheckoutService.assertGatewayConfigured(paymentProvider);
+      if (!Number.isFinite(gatewayAmountNumber) || gatewayAmountNumber < 1) {
         throw new BadRequestException('Invalid payment amount');
       }
     }
@@ -666,30 +666,28 @@ export class SubscriptionService {
       select: { id: true },
     });
 
-    const publicApi = this.appConfig.publicApiBaseUrl.replace(/\/$/, '');
-    const returnUrl = `${publicApi}/api/webhook/vnpay/subscription-enrollment/return`;
     const description = `Sub ${created.id.slice(0, 8)}`;
-    const vnpTxnRef = created.id.replaceAll('-', '').slice(0, 32);
-
-    const checkoutUrl = this.vnpayService.createPaymentUrl({
-      vnp_Amount: vnpayAmountNumber,
-      vnp_OrderInfo: description,
-      vnp_TxnRef: vnpTxnRef,
-      vnp_ReturnUrl: returnUrl,
-      vnp_IpAddr: clientIp.trim() || '127.0.0.1',
+    const checkout = await this.paymentCheckoutService.createCheckout({
+      provider: paymentProvider,
+      resourceId: created.id,
+      amount: gatewayAmountNumber,
+      description,
+      checkoutKind: 'subscription',
+      clientIp,
     });
 
     const updated = await this.prisma.subscriptionEnrollment.update({
       where: { id: created.id },
       data: {
-        paymentRef: vnpTxnRef,
-        paymentUrl: checkoutUrl,
+        paymentRef: checkout.paymentRef,
+        paymentUrl: checkout.paymentUrl,
       },
     });
 
     return this.serializeEnrollmentRow(
       updated as unknown as SubscriptionEnrollmentSerializeRow,
-      expandedSlots
+      expandedSlots,
+      checkout.paymentProvider,
     );
   }
 
