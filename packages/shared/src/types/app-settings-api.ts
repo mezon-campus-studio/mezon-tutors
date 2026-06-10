@@ -1,3 +1,15 @@
+export type MezonChannelAppInviteLinks = {
+  home?: string;
+  wallet?: string;
+  myLessons?: string;
+  mySchedule?: string;
+};
+
+export type MezonLinks = {
+  botInviteLink?: string;
+  channelAppInviteLinks?: MezonChannelAppInviteLinks;
+};
+
 export type AppSettings = {
   id: string;
   platformFeePercentage: number;
@@ -7,6 +19,7 @@ export type AppSettings = {
   minWithdrawalAmountVnd: number;
   minWithdrawalAmountUsd: number;
   minWithdrawalAmountPhp: number;
+  mezonLinks: MezonLinks | null;
   updatedByUserId: string | null;
   updatedBy: {
     id: string;
@@ -23,6 +36,7 @@ export type PublicAppSettings = {
   minWithdrawalAmountVnd: number;
   minWithdrawalAmountUsd: number;
   minWithdrawalAmountPhp: number;
+  mezonLinks: MezonLinks | null;
 };
 
 export type UpdateAppSettingsBody = {
@@ -33,4 +47,5 @@ export type UpdateAppSettingsBody = {
   minWithdrawalAmountVnd?: number;
   minWithdrawalAmountUsd?: number;
   minWithdrawalAmountPhp?: number;
+  mezonLinks?: MezonLinks | null;
 };

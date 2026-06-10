@@ -257,6 +257,10 @@
         "withdrawal": {
           "title": "Minimum withdrawal",
           "description": "Minimum amount tutors can request per currency."
+        },
+        "mezonLinks": {
+          "title": "Mezon links",
+          "description": "Bot and Channel App invite links used on the onboarding guide."
         }
       },
       "fields": {
@@ -270,11 +274,19 @@
         "lessonChangePeriodHoursHint": "Hours before lesson start required to reschedule a lesson.",
         "minWithdrawalAmountVnd": "Minimum (VND)",
         "minWithdrawalAmountUsd": "Minimum (USD)",
-        "minWithdrawalAmountPhp": "Minimum (PHP)"
+        "minWithdrawalAmountPhp": "Minimum (PHP)",
+        "botInviteLink": "Mezonly Bot invite link",
+        "botInviteLinkHint": "Bot install link from the Mezon Developer Portal.",
+        "channelAppHomeLink": "Channel App — Home page",
+        "channelAppWalletLink": "Channel App — Wallet",
+        "channelAppMyLessonsLink": "Channel App — My lesson",
+        "channelAppMyScheduleLink": "Channel App — My schedule",
+        "channelAppLinkHint": "Channel App install link from the Mezon Developer Portal."
       },
       "validation": {
         "required": "This field is required.",
         "invalidNumber": "Enter a valid number.",
+        "invalidUrl": "Enter a valid URL (http/https) or leave blank.",
         "integerOnly": "Enter a whole number.",
         "platformFeePercentRange": "Must be between {min} and {max}%.",
         "settlementPeriodHoursRange": "Must be between {min} and {max} hours.",

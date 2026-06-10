@@ -1,18 +1,23 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAtomValue } from "jotai";
 import {
   ONBOARDING_ACTION_ROUTES_BY_ROLE,
-  ONBOARDING_ROLES,
+  ONBOARDING_PROFILE_ROLES,
+  ONBOARDING_SECTIONS,
   ONBOARDING_STEPS_BY_ROLE,
   OnboardingStepConfig,
+  buildUtilitiesChannelAppTipLinks,
+  type OnboardingProfileRole,
   type OnboardingRole,
+  type OnboardingSection,
 } from "@mezon-tutors/shared";
 import { Badge, Button } from "@/components/ui";
 import { useOpenAdminSupportChat } from "@/hooks/useOpenAdminSupportChat";
+import { usePublicAppSettings } from "@/services/app-settings/app-settings.api";
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from "@/store";
 import { CompletionPanel } from "./components/CompletionPanel";
 import { OnboardingBackground } from "./components/OnboardingBackground";
@@ -25,12 +30,17 @@ export default function OnboardingView() {
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const { openAdminSupportChat, isOpening } = useOpenAdminSupportChat();
+  const { data: publicSettings } = usePublicAppSettings();
 
-  const [role, setRole] = useState<OnboardingRole>("student");
+  const [section, setSection] = useState<OnboardingSection>("roleGuide");
+  const [profileRole, setProfileRole] = useState<OnboardingProfileRole>("student");
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const role: OnboardingRole =
+    section === "utilities" ? "utilities" : profileRole;
+
   useEffect(() => {
-    setRole(user?.role === "TUTOR" ? "tutor" : "student");
+    setProfileRole(user?.role === "TUTOR" ? "tutor" : "student");
   }, [user?.role]);
 
   const steps = ONBOARDING_STEPS_BY_ROLE[role];
@@ -78,13 +88,28 @@ export default function OnboardingView() {
     setActiveIndex((prev) => Math.max(0, prev - 1));
   };
 
-  const actionHref = ONBOARDING_ACTION_ROUTES_BY_ROLE[role][activeStep?.id];
+  const mezonLinks = publicSettings?.mezonLinks ?? null;
+
+  const tipLinks = useMemo(() => {
+    if (role !== "utilities" || activeStep?.id !== "channelApps") {
+      return {};
+    }
+    return buildUtilitiesChannelAppTipLinks(mezonLinks);
+  }, [role, activeStep?.id, mezonLinks]);
+
+  const actionHref = useMemo(() => {
+    if (role === "tutor" && activeStep?.id === "inviteBot") {
+      return mezonLinks?.botInviteLink;
+    }
+    return ONBOARDING_ACTION_ROUTES_BY_ROLE[role][activeStep?.id];
+  }, [role, activeStep?.id, mezonLinks]);
+
   const actionLabel =
-    role === "tutor"
-      ? activeStep?.id === "inviteBot"
+    role === "student"
+      ? t("goToDashboard")
+      : role === "tutor" && activeStep?.id === "inviteBot"
         ? t("goToBotInvite")
-        : t("goToMezon")
-      : t("goToDashboard");
+        : t("goToMezon");
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -105,33 +130,62 @@ export default function OnboardingView() {
           </h1>
 
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:100ms] [animation-fill-mode:both] sm:text-base">
-            {role === "tutor" ? t("tutor.intro") : t("student.intro")}
+            {t(`${role}.intro`)}
           </p>
         </div>
 
-        <div className="mb-6 flex flex-col items-center gap-3 sm:mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-            {t("roleLabel")}
-          </p>
-          <div className="inline-flex rounded-full border border-violet-100 bg-white/80 p-1 shadow-sm shadow-violet-100/40 backdrop-blur">
-            {ONBOARDING_ROLES.map((item) => {
-              const isActive = role === item;
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setRole(item)}
-                  className={`relative cursor-pointer rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 ${
-                    isActive
-                      ? "bg-[linear-gradient(110deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40"
-                      : "text-slate-600 hover:text-violet-700"
-                  }`}
-                >
-                  {t(`roles.${item}`)}
-                </button>
-              );
-            })}
+        <div className="mb-6 flex flex-col items-center gap-4 sm:mb-8">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+              {t("sectionLabel")}
+            </p>
+            <div className="inline-flex max-w-full flex-wrap justify-center gap-1 rounded-full border border-violet-100 bg-white/80 p-1 shadow-sm shadow-violet-100/40 backdrop-blur">
+              {ONBOARDING_SECTIONS.map((item) => {
+                const isActive = section === item;
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setSection(item)}
+                    className={`relative cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 sm:px-5 ${
+                      isActive
+                        ? "bg-[linear-gradient(110deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40"
+                        : "text-slate-600 hover:text-violet-700"
+                    }`}
+                  >
+                    {t(`sections.${item}`)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {section === "roleGuide" ? (
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+                {t("roleLabel")}
+              </p>
+              <div className="inline-flex max-w-full flex-wrap justify-center gap-1 rounded-full border border-slate-200/80 bg-slate-50/80 p-1 shadow-sm backdrop-blur">
+                {ONBOARDING_PROFILE_ROLES.map((item) => {
+                  const isActive = profileRole === item;
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setProfileRole(item)}
+                      className={`relative cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 sm:px-5 ${
+                        isActive
+                          ? "bg-white text-violet-700 shadow-sm ring-1 ring-violet-200"
+                          : "text-slate-600 hover:text-violet-700"
+                      }`}
+                    >
+                      {t(`roles.${item}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="overflow-hidden rounded-[2rem] border border-violet-100 bg-white/80 shadow-sm shadow-violet-100/40 backdrop-blur">
@@ -186,6 +240,7 @@ export default function OnboardingView() {
                     stepIndex={activeIndex}
                     actionHref={actionHref}
                     actionLabel={actionLabel}
+                    tipLinks={tipLinks}
                     isOpening={isOpening}
                     onContactSupport={() => void openAdminSupportChat()}
                   />

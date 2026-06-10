@@ -3,7 +3,7 @@
 import { ArrowRight, Headphones } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { OnboardingRole, OnboardingStepConfig } from '@mezon-tutors/shared';
 import {
   ONBOARDING_AVATAR_OPACITY_CLASS,
@@ -13,6 +13,53 @@ import {
   getOnboardingImageSrcForCheck,
 } from '@mezon-tutors/shared';
 import { ONBOARDING_ICON_BY_KEY } from './onboarding-icons';
+
+function getOnboardingRoleBadgeLabel(
+  role: OnboardingRole,
+  t: ReturnType<typeof useTranslations<'Onboarding'>>,
+) {
+  return role === 'utilities' ? t('sections.utilities') : t(`roles.${role}`);
+}
+
+function renderOnboardingLink(href: string | undefined, chunks: ReactNode) {
+  if (!href?.trim()) {
+    return <span className="font-semibold text-violet-700">{chunks}</span>;
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="cursor-pointer font-semibold text-violet-700 underline underline-offset-2"
+    >
+      {chunks}
+    </a>
+  );
+}
+
+function buildOnboardingTipRichComponents(
+  actionHref: string | undefined,
+  tipLinks: Record<string, string>,
+) {
+  return {
+    plus: (chunks: ReactNode) => (
+      <span className="text-xl font-black text-violet-700">{chunks}</span>
+    ),
+    command: (chunks: ReactNode) => (
+      <span className="rounded-md bg-violet-100 px-1.5 py-0.5 font-bold text-violet-800">
+        {chunks}
+      </span>
+    ),
+    link: (chunks: ReactNode) => renderOnboardingLink(actionHref, chunks),
+    ...Object.fromEntries(
+      Object.entries(tipLinks).map(([key, href]) => [
+        key,
+        (chunks: ReactNode) => renderOnboardingLink(href, chunks),
+      ]),
+    ),
+  };
+}
 
 function buildRoundedRectPathFromTopLeft(w: number, h: number, radius: number) {
   if (w <= 0 || h <= 0) return '';
@@ -225,7 +272,7 @@ function StepVisual({
             <Icon className="size-5" />
           </div>
           <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-600">
-            {t(`roles.${role}`)} · {String(index + 1).padStart(2, '0')}
+            {getOnboardingRoleBadgeLabel(role, t)} · {String(index + 1).padStart(2, '0')}
           </span>
         </div>
 
@@ -311,6 +358,7 @@ type StepDetailPanelProps = {
   stepIndex: number;
   actionHref?: string;
   actionLabel: string;
+  tipLinks?: Record<string, string>;
   isOpening: boolean;
   onContactSupport: () => void;
 };
@@ -321,6 +369,7 @@ export function StepDetailPanel({
   stepIndex,
   actionHref,
   actionLabel,
+  tipLinks = {},
   isOpening,
   onContactSupport,
 }: StepDetailPanelProps) {
@@ -330,6 +379,7 @@ export function StepDetailPanel({
     role,
     step.tipKeys.length
   );
+  const tipRichComponents = buildOnboardingTipRichComponents(actionHref, tipLinks);
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_minmax(240px,320px)]">
@@ -386,29 +436,10 @@ export function StepDetailPanel({
                         isActive ? 'font-semibold text-violet-900' : 'text-slate-700'
                       }`}
                     >
-                      {t.rich(`${role}.steps.${step.id}.tips.${tipKey}`, {
-                        plus: (chunks) => (
-                          <span className="text-xl font-black text-violet-700">{chunks}</span>
-                        ),
-                        command: (chunks) => (
-                          <span className="rounded-md bg-violet-100 px-1.5 py-0.5 font-bold text-violet-800">
-                            {chunks}
-                          </span>
-                        ),
-                        link: (chunks) =>
-                          actionHref?.startsWith('http') ? (
-                            <a
-                              href={actionHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="cursor-pointer font-semibold text-violet-700 underline underline-offset-2"
-                            >
-                              {chunks}
-                            </a>
-                          ) : (
-                            <span className="font-semibold text-violet-700">{chunks}</span>
-                          ),
-                      })}
+                      {t.rich(
+                        `${role}.steps.${step.id}.tips.${tipKey}`,
+                        tipRichComponents,
+                      )}
                     </span>
                   </button>
                 </div>

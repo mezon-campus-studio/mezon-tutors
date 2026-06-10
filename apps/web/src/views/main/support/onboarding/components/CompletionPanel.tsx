@@ -21,13 +21,21 @@ export function CompletionPanel({
   const primaryHref =
     role === "student" ? ROUTES.DASHBOARD.MY_LESSONS : MEZON_URL;
   const primaryLabel =
-    role === "student" ? t("completion.studentCta") : t("completion.tutorCta");
+    role === "student"
+      ? t("completion.studentCta")
+      : role === "utilities"
+        ? t("completion.utilitiesCta")
+        : t("completion.tutorCta");
   const secondaryHref =
-    role === "student" ? ROUTES.TUTOR.INDEX : ROUTES.DASHBOARD.INDEX;
+    role === "student"
+      ? ROUTES.TUTOR.INDEX
+      : ROUTES.DASHBOARD.INDEX;
   const secondaryLabel =
     role === "student"
       ? t("completion.findTutorCta")
-      : t("completion.dashboardCta");
+      : role === "utilities"
+        ? t("completion.utilitiesSecondaryCta")
+        : t("completion.dashboardCta");
 
   return (
     <div className="flex flex-col items-center gap-6 py-4 text-center animate-in fade-in zoom-in-95 duration-500">
