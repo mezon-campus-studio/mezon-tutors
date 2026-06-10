@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowRight, Globe, Mail, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ROUTES, SUPPORT_EMAIL } from "@mezon-tutors/shared";
-import { Button, Input, Separator } from "@/components/ui";
+import { Separator } from "@/components/ui";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -79,17 +78,14 @@ export default function Footer() {
       title: t("product.title"),
       links: [
         { label: t("product.findTutor"), href: "/tutors" },
-        { label: t("product.pricing"), href: "/checkout/trial-lesson" },
-        { label: t("product.enterprise"), href: "/" },
       ],
     },
     {
       key: "community",
       title: t("community.title"),
       links: [
-        { label: t("community.blog"), href: "/" },
         { label: t("community.becomeTutor"), href: "/become-tutor" },
-        { label: t("community.events"), href: "/" },
+        { label: t("community.events"), href: ROUTES.HOME.events, sectionId: "events" },
       ],
     },
     {
@@ -174,6 +170,18 @@ export default function Footer() {
                   <li key={`${column.key}-${link.label}`}>
                     <Link
                       href={link.href}
+                      onClick={(e) => {
+                        if (
+                          "sectionId" in link &&
+                          link.sectionId &&
+                          pathname === ROUTES.HOME.index
+                        ) {
+                          e.preventDefault();
+                          document
+                            .getElementById(link.sectionId)
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
                       className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-violet-700"
                     >
                       <span className="size-1 rounded-full bg-slate-300 transition-all group-hover:size-1.5 group-hover:bg-[linear-gradient(135deg,#7c3aed,#ec4899)]" />
@@ -186,56 +194,11 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 overflow-hidden rounded-3xl border border-violet-100 bg-white p-6 shadow-sm shadow-violet-100/40 sm:p-8">
-          <div className="flex flex-col items-start gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-            <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
-                <Mail className="size-5" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-                  Newsletter
-                </p>
-                <h3 className="text-base font-extrabold text-slate-900 sm:text-lg">
-                  {t("newsletter.title")}
-                </h3>
-                <p className="max-w-md text-xs text-slate-600 sm:text-sm">
-                  {t("newsletter.description")}
-                </p>
-              </div>
-            </div>
-
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto lg:min-w-[400px]"
-            >
-              <Input
-                type="email"
-                placeholder={t("newsletter.placeholder")}
-                className="h-11 flex-1 rounded-full border-slate-200 bg-slate-50/60 px-4 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              />
-              <Button
-                type="submit"
-                className="group h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
-              >
-                <Sparkles className="mr-1.5 size-4" />
-                {t("newsletter.submit")}
-                <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            </form>
-          </div>
-        </div>
-
         <Separator className="mt-10 bg-violet-100" />
 
         <div className="mt-6 flex flex-col-reverse items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <p className="text-xs text-slate-500">{t("copyright")}</p>
-            <span className="hidden size-1 rounded-full bg-slate-300 sm:block" />
-            <p className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-              <Globe className="size-3 text-violet-500" />
-              {t("madeWith")}
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">

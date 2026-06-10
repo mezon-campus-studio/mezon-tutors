@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { TrustShowcaseAvatarDto } from '@mezon-tutors/shared';
+import type { TrustShowcaseDto } from '@mezon-tutors/shared';
 import { UserService } from './user.service';
 
 const TRUST_SHOWCASE_AVATAR_COUNT = 4;
@@ -12,7 +12,7 @@ export class UserController {
 
   @Get('trust-showcase-avatars')
   @ApiOperation({ summary: 'Random user avatars for public marketing UI' })
-  getTrustShowcaseAvatars(): Promise<TrustShowcaseAvatarDto[]> {
+  getTrustShowcaseAvatars(): Promise<TrustShowcaseDto> {
     return this.userService.findRandomTrustShowcaseAvatars(TRUST_SHOWCASE_AVATAR_COUNT);
   }
 }

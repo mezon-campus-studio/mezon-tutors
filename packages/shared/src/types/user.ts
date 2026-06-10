@@ -14,3 +14,8 @@ export type TrustShowcaseAvatarDto = {
   id: string;
   url: string;
 };
+
+export type TrustShowcaseDto = {
+  avatars: TrustShowcaseAvatarDto[];
+  tutor: number;
+};
