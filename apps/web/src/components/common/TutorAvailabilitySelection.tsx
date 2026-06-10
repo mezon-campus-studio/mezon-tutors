@@ -32,25 +32,35 @@ function minsToTime(mins: number): string {
   return `${hh}:${mm}`;
 }
 
-function getSlotError(slot: TimeSlot): string | null {
+type SlotValidationMessages = {
+  endTimeMustBeAfterStartTime: string;
+  minSlotDuration: string;
+  overlappingWithSlot: (params: { startTime: string; endTime: string }) => string;
+};
+
+function getSlotError(slot: TimeSlot, messages: SlotValidationMessages): string | null {
   if (!slot.startTime || !slot.endTime) return null;
 
   const startMins = toMinutes(slot.startTime);
   const endMins = toMinutes(slot.endTime);
 
   if (startMins >= endMins) {
-    return 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc';
+    return messages.endTimeMustBeAfterStartTime;
   }
   if (endMins - startMins < 30) {
-    return 'Khung giờ tối thiểu 30 phút';
+    return messages.minSlotDuration;
   }
   return null;
 }
 
-function getOverlapError(slots: TimeSlot[], currentIndex: number): string | null {
+function getOverlapError(
+  slots: TimeSlot[],
+  currentIndex: number,
+  messages: SlotValidationMessages
+): string | null {
   const current = slots[currentIndex];
   if (!current.startTime || !current.endTime) return null;
-  if (getSlotError(current) !== null) return null;
+  if (getSlotError(current, messages) !== null) return null;
 
   const cStart = toMinutes(current.startTime);
   const cEnd = toMinutes(current.endTime);
@@ -59,13 +69,16 @@ function getOverlapError(slots: TimeSlot[], currentIndex: number): string | null
     if (i === currentIndex) continue;
     const other = slots[i];
     if (!other.startTime || !other.endTime) continue;
-    if (getSlotError(other) !== null) continue;
+    if (getSlotError(other, messages) !== null) continue;
 
     const oStart = toMinutes(other.startTime);
     const oEnd = toMinutes(other.endTime);
 
     if (!(cEnd <= oStart || cStart >= oEnd)) {
-      return `Trùng với khung giờ ${other.startTime}–${other.endTime}`;
+      return messages.overlappingWithSlot({
+        startTime: other.startTime,
+        endTime: other.endTime,
+      });
     }
   }
   return null;
@@ -99,6 +112,15 @@ export function TutorAvailabilitySelection({
   showTimezoneLabel = true,
 }: TutorAvailabilitySelectionProps) {
   const t = useTranslations('BecomeTutor.availability');
+  const slotValidationMessages = useMemo<SlotValidationMessages>(
+    () => ({
+      endTimeMustBeAfterStartTime: t('validation.endTimeMustBeAfterStartTime'),
+      minSlotDuration: t('validation.minSlotDuration'),
+      overlappingWithSlot: ({ startTime, endTime }) =>
+        t('validation.overlappingWithSlot', { startTime, endTime }),
+    }),
+    [t]
+  );
   const userTimezone = useUserTimezone();
   const resolvedTimezone = normalizeTimezoneParam(userTimezone) ?? 'UTC';
   const timezoneLabel = useMemo(
@@ -123,7 +145,9 @@ export function TutorAvailabilitySelection({
   }, [normalizedUtc, resolvedTimezone, syncFromUtc, slotsByDay, onSlotsByDayChange]);
 
   const hasInvalidSlots = daySlots.some(
-    (slot, i) => getSlotError(slot) !== null || getOverlapError(daySlots, i) !== null
+    (slot, i) =>
+      getSlotError(slot, slotValidationMessages) !== null ||
+      getOverlapError(daySlots, i, slotValidationMessages) !== null
   );
 
   const addSlot = () => {
@@ -177,8 +201,8 @@ export function TutorAvailabilitySelection({
 
       <div className="space-y-3">
         {daySlots.map((slot, index) => {
-          const slotError = getSlotError(slot);
-          const overlapError = getOverlapError(daySlots, index);
+          const slotError = getSlotError(slot, slotValidationMessages);
+          const overlapError = getOverlapError(daySlots, index, slotValidationMessages);
           const errorMsg = slotError ?? overlapError;
           const hasError = errorMsg !== null;
 

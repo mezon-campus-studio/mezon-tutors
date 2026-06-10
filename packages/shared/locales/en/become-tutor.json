@@ -325,6 +325,8 @@
       "timeRequired": "Start time and end time are required.",
       "minuteStepInvalid": "Minutes must be 00 or 30 (30-minute step).",
       "endTimeMustBeAfterStartTime": "End time must be after start time.",
+      "minSlotDuration": "Minimum slot duration is 30 minutes.",
+      "overlappingWithSlot": "Overlaps with slot {startTime}–{endTime}.",
       "duplicateSlot": "The same time slot was added twice on {day}. Please remove the duplicate.",
       "overlappingSlot": "Time slots on {day} overlap with each other. Please adjust the times.",
       "currencyConversionFailed": "Failed to convert currency. Please try again later.",

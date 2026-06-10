@@ -324,6 +324,8 @@
       "weeklySlotsRequired": "Vui lòng thêm ít nhất 1 khung giờ dạy trong tuần trước khi tiếp tục.",
       "timeRequired": "Giờ bắt đầu và giờ kết thúc là bắt buộc.",
       "endTimeMustBeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu.",
+      "minSlotDuration": "Khung giờ tối thiểu 30 phút.",
+      "overlappingWithSlot": "Trùng với khung giờ {startTime}–{endTime}.",
       "duplicateSlot": "Khung giờ trùng lặp trong ngày {day}. Vui lòng xóa hoặc chỉnh sửa.",
       "overlappingSlot": "Các khung giờ trong ngày {day} bị trùng giờ. Vui lòng điều chỉnh lại.",
       "minuteStepInvalid": "Giờ bắt đầu và kết thúc phải là :00 hoặc :30.",
