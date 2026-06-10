@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   type AppSettings,
+  type MezonLinks,
   type PublicAppSettings,
+  mezonLinksSchema,
+  normalizeMezonLinksForStorage,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
@@ -108,8 +111,26 @@ export class AppSettingsService {
     if (dto.minWithdrawalAmountPhp !== undefined) {
       data.minWithdrawalAmountPhp = new Prisma.Decimal(dto.minWithdrawalAmountPhp);
     }
+    if (dto.mezonLinks !== undefined) {
+      data.mezonLinks = normalizeMezonLinksForStorage(
+        dto.mezonLinks,
+      ) as Prisma.InputJsonValue;
+    }
 
     return data;
+  }
+
+  private parseMezonLinks(value: Prisma.JsonValue | null): MezonLinks | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    const parsed = mezonLinksSchema.safeParse(value);
+    if (!parsed.success) {
+      return null;
+    }
+
+    return normalizeMezonLinksForStorage(parsed.data);
   }
 
   private serialize(row: {
@@ -121,6 +142,7 @@ export class AppSettingsService {
     minWithdrawalAmountVnd: bigint;
     minWithdrawalAmountUsd: Prisma.Decimal;
     minWithdrawalAmountPhp: Prisma.Decimal;
+    mezonLinks: Prisma.JsonValue | null;
     updatedByUserId: string | null;
     updatedAt: Date;
     updatedBy: { id: string; username: string } | null;
@@ -134,6 +156,7 @@ export class AppSettingsService {
       minWithdrawalAmountVnd: Number(row.minWithdrawalAmountVnd),
       minWithdrawalAmountUsd: Number(row.minWithdrawalAmountUsd),
       minWithdrawalAmountPhp: Number(row.minWithdrawalAmountPhp),
+      mezonLinks: this.parseMezonLinks(row.mezonLinks),
       updatedByUserId: row.updatedByUserId,
       updatedBy: row.updatedBy,
       updatedAt: row.updatedAt.toISOString(),
@@ -149,6 +172,7 @@ export class AppSettingsService {
       minWithdrawalAmountVnd: settings.minWithdrawalAmountVnd,
       minWithdrawalAmountUsd: settings.minWithdrawalAmountUsd,
       minWithdrawalAmountPhp: settings.minWithdrawalAmountPhp,
+      mezonLinks: settings.mezonLinks,
     };
   }
 }

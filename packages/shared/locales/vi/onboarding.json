@@ -3,6 +3,11 @@
   "title": "Bắt đầu với",
   "titleHighlight": "Mezonly",
   "subtitle": "Làm quen nền tảng theo từng bước — chọn vai trò của bạn và khám phá cách học hoặc dạy hiệu quả nhất.",
+  "sectionLabel": "Chọn hướng dẫn",
+  "sections": {
+    "roleGuide": "Hướng dẫn Mezonly",
+    "utilities": "Mezon Utilities"
+  },
   "roleLabel": "Bạn là",
   "roles": {
     "student": "Học viên",
@@ -17,6 +22,7 @@
   "goToDashboard": "Mở ngay",
   "goToMezon": "Mở Mezon",
   "goToBotInvite": "Mở link mời bot",
+  "goToSettings": "Mở cài đặt",
   "contactSupport": "Liên hệ hỗ trợ",
   "completion": {
     "title": "Bạn đã sẵn sàng!",
@@ -24,10 +30,12 @@
     "studentCta": "Vào bảng điều khiển",
     "findTutorCta": "Tìm gia sư",
     "tutorCta": "Mở Mezon",
-    "dashboardCta": "Vào bảng điều khiển"
+    "dashboardCta": "Vào bảng điều khiển",
+    "utilitiesCta": "Mở Mezon",
+    "utilitiesSecondaryCta": "Vào bảng điều khiển"
   },
   "student": {
-    "intro": "Làm quen các tính năng trong Dashboard — lịch học, thanh toán, ví, khiếu nại và đổi lịch/hủy buổi học.",
+    "intro": "Làm quen các tính năng trong Dashboard — lịch học, thanh toán, ví, khiếu nại, đổi lịch/hủy và nhắc nhở trước giờ học.",
     "steps": {
       "myLessons": {
         "title": "Buổi học của tôi",
@@ -73,11 +81,20 @@
           "tip2": "Đổi lịch chỉ khả dụng khi còn hơn 12 tiếng trước giờ học — chọn khung giờ trống mới.",
           "tip3": "Hủy buổi thử trước 12 tiếng được hoàn tiền vào ví; trong vòng 12 tiếng thì không hoàn."
         }
+      },
+      "reminder": {
+        "title": "Nhắc nhở trước giờ học",
+        "description": "Trước 10 phút khi buổi học bắt đầu, Mezonly gửi thông báo để bạn kịp chuẩn bị và vào lớp.",
+        "tips": {
+          "tip1": "Nhận thông báo trên web Mezonly — nhắc còn 10 phút nữa là đến giờ học, vui lòng chuẩn bị.",
+          "tip2": "Thông báo trên Google Calendar và app Mezon kèm link voice room — nhấn để vào lớp ngay.",
+          "tip3": "Kiểm tra thiết bị và mạng trước khi nhận thông báo để không bỏ lỡ buổi học."
+        }
       }
     }
   },
   "tutor": {
-    "intro": "Thiết lập Clan trên Mezon sau khi trở thành gia sư — làm theo từng bước bên dưới.",
+    "intro": "Thiết lập Clan trên Mezon và làm quen nhắc nhở trước giờ học — làm theo từng bước bên dưới.",
     "steps": {
       "createClan": {
         "title": "Tạo Clan trên Mezon",
@@ -127,6 +144,40 @@
           "tip1": "Đổi theme, emoji và role cho Clan nếu muốn cá nhân hóa.",
           "tip2": "Thêm hoặc sắp xếp lại kênh text/voice theo cách dạy của bạn.",
           "tip3": "Clan đã sẵn sàng — học viên có thể vào buổi học qua Mezonly."
+        }
+      },
+      "reminder": {
+        "title": "Nhắc nhở trước giờ học",
+        "description": "Trước 10 phút khi buổi học bắt đầu, Mezonly gửi thông báo cho bạn và học viên để cả hai kịp chuẩn bị.",
+        "tips": {
+          "tip1": "Nhận thông báo trên web Mezonly — nhắc còn 10 phút nữa là đến giờ dạy, vui lòng chuẩn bị.",
+          "tip2": "Thông báo trên Google Calendar và app Mezon kèm link voice room — nhấn để vào phòng dạy ngay.",
+          "tip3": "Kiểm tra Clan và voice channel trước khi nhận thông báo để buổi học bắt đầu đúng giờ."
+        }
+      }
+    }
+  },
+  "utilities": {
+    "intro": "Lệnh Mezonly Bot và Channel Apps — vào voice room nhanh và truy cập các trang Mezonly ngay trong Clan.",
+    "steps": {
+      "botCommands": {
+        "title": "Lệnh Mezonly Bot",
+        "description": "Dùng lệnh bot trong Clan để nhận voice channel sẵn có — không cần tự tìm channel.",
+        "tips": {
+          "tip1": "Mở text channel (ví dụ #general) trong Clan đã có Mezonly Bot.",
+          "tip2": "Gõ <command>*mezonly meeting</command> rồi gửi.",
+          "tip3": "Bot gửi voice channel trong Clan — nhấn để join ngay, tiết kiệm thời gian tìm channel."
+        }
+      },
+      "channelApps": {
+        "title": "Mezonly Channel Apps",
+        "description": "Mời Channel App vào Clan để mở từng trang Mezonly ngay trong Mezon — không cần mở web và điều hướng thủ công.",
+        "tips": {
+          "tip1": "Mỗi Channel App là một trang Mezonly nhúng trong Clan — mời app vào Clan rồi mở từ sidebar.",
+          "tip2": "Mời <homeLink>Home page</homeLink> — trang chủ Mezonly trong Clan.",
+          "tip3": "Mời <walletLink>Wallet</walletLink> — xem và nạp ví ngay trong Mezon.",
+          "tip4": "Mời <myLessonsLink>My lesson</myLessonsLink> — quản lý buổi học cho học viên.",
+          "tip5": "Mời <myScheduleLink>My schedule</myScheduleLink> — xem lịch dạy cho gia sư."
         }
       }
     }

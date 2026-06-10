@@ -3,6 +3,11 @@
   "title": "Get started with",
   "titleHighlight": "Mezonly",
   "subtitle": "Learn the platform step by step — pick your role and discover how to learn or teach effectively.",
+  "sectionLabel": "Choose a guide",
+  "sections": {
+    "roleGuide": "Mezonly guide",
+    "utilities": "Mezon Utilities"
+  },
   "roleLabel": "I am a",
   "roles": {
     "student": "Student",
@@ -24,10 +29,12 @@
     "studentCta": "Go to dashboard",
     "findTutorCta": "Find tutors",
     "tutorCta": "Open Mezon",
-    "dashboardCta": "Go to dashboard"
+    "dashboardCta": "Go to dashboard",
+    "utilitiesCta": "Open Mezon",
+    "utilitiesSecondaryCta": "Go to dashboard"
   },
   "student": {
-    "intro": "Get to know dashboard features — lessons, payments, wallet, complaints, and rescheduling or cancelling.",
+    "intro": "Get to know dashboard features — lessons, payments, wallet, complaints, rescheduling, and lesson reminders.",
     "steps": {
       "myLessons": {
         "title": "My lessons",
@@ -73,11 +80,20 @@
           "tip2": "Rescheduling is only available more than 12 hours before the lesson — pick a new open slot.",
           "tip3": "Cancelling a trial more than 12 hours ahead refunds to your wallet; within 12 hours there is no refund."
         }
+      },
+      "reminder": {
+        "title": "Lesson reminders",
+        "description": "Ten minutes before a lesson starts, Mezonly sends you a reminder so you can get ready and join on time.",
+        "tips": {
+          "tip1": "Get a notification on the Mezonly website — your lesson starts in 10 minutes, please get ready.",
+          "tip2": "Google Calendar and Mezon app reminders include a voice room link — tap to join class right away.",
+          "tip3": "Check your device and connection before the reminder so you do not miss the lesson."
+        }
       }
     }
   },
   "tutor": {
-    "intro": "Set up your Mezon Clan after becoming a tutor — follow the steps below.",
+    "intro": "Set up your Mezon Clan and learn about lesson reminders — follow the steps below.",
     "steps": {
       "createClan": {
         "title": "Create your Clan on Mezon",
@@ -127,6 +143,40 @@
           "tip1": "Change theme, emoji, and roles to personalize your Clan.",
           "tip2": "Add or rearrange text/voice channels to match how you teach.",
           "tip3": "You're ready — students can join lessons through Mezonly."
+        }
+      },
+      "reminder": {
+        "title": "Lesson reminders",
+        "description": "Ten minutes before a lesson starts, Mezonly notifies you and your student so you can both get ready.",
+        "tips": {
+          "tip1": "Get a notification on the Mezonly website — your lesson starts in 10 minutes, please get ready.",
+          "tip2": "Google Calendar and Mezon app reminders include a voice room link — tap to open your teaching room.",
+          "tip3": "Check your Clan and voice channel before the reminder so the lesson starts on time."
+        }
+      }
+    }
+  },
+  "utilities": {
+    "intro": "Mezonly Bot commands and Channel Apps — join voice rooms faster and open Mezonly pages right inside your Clan.",
+    "steps": {
+      "botCommands": {
+        "title": "Mezonly Bot commands",
+        "description": "Use bot commands in your Clan to get an available voice channel — no need to hunt for a channel yourself.",
+        "tips": {
+          "tip1": "Open a text channel (e.g. #general) in a Clan that already has Mezonly Bot.",
+          "tip2": "Type <command>*mezonly meeting</command> and send.",
+          "tip3": "The bot replies with a voice channel in your Clan — tap to join right away and save time."
+        }
+      },
+      "channelApps": {
+        "title": "Mezonly Channel Apps",
+        "description": "Invite Channel Apps into your Clan to open Mezonly pages inside Mezon — no need to open the website and navigate manually.",
+        "tips": {
+          "tip1": "Each Channel App is a Mezonly page embedded in your Clan — invite the app, then open it from the sidebar.",
+          "tip2": "Invite <homeLink>Home page</homeLink> — Mezonly home inside your Clan.",
+          "tip3": "Invite <walletLink>Wallet</walletLink> — view and top up your wallet in Mezon.",
+          "tip4": "Invite <myLessonsLink>My lesson</myLessonsLink> — manage lessons as a student.",
+          "tip5": "Invite <myScheduleLink>My schedule</myScheduleLink> — view your teaching schedule as a tutor."
         }
       }
     }

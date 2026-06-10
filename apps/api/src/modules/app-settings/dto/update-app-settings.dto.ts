@@ -1,6 +1,6 @@
-import { APP_SETTINGS_LIMITS } from '@mezon-tutors/shared';
+import { APP_SETTINGS_LIMITS, type MezonLinks } from '@mezon-tutors/shared';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, Max, Min } from 'class-validator';
+import { IsInt, IsNumber, IsObject, IsOptional, Max, Min } from 'class-validator';
 
 const limits = APP_SETTINGS_LIMITS;
 
@@ -46,4 +46,8 @@ export class UpdateAppSettingsDto {
   @Min(limits.minWithdrawalAmountPhp.min)
   @Max(limits.minWithdrawalAmountPhp.max)
   minWithdrawalAmountPhp!: number;
+
+  @IsOptional()
+  @IsObject()
+  mezonLinks?: MezonLinks | null;
 }

@@ -1,7 +1,15 @@
 import { MEZON_URL } from './mezon';
 import { ROUTES } from './routes';
 
-export const ONBOARDING_ROLES = ['student', 'tutor'] as const;
+export const ONBOARDING_PROFILE_ROLES = ['student', 'tutor'] as const;
+
+export type OnboardingProfileRole = (typeof ONBOARDING_PROFILE_ROLES)[number];
+
+export const ONBOARDING_SECTIONS = ['roleGuide', 'utilities'] as const;
+
+export type OnboardingSection = (typeof ONBOARDING_SECTIONS)[number];
+
+export const ONBOARDING_ROLES = [...ONBOARDING_PROFILE_ROLES, 'utilities'] as const;
 
 export type OnboardingRole = (typeof ONBOARDING_ROLES)[number];
 
@@ -22,7 +30,11 @@ export type OnboardingStepIconKey =
   | 'mic'
   | 'bot'
   | 'terminal'
-  | 'palette';
+  | 'palette'
+  | 'bell'
+  | 'messageSquare'
+  | 'monitorUp'
+  | 'smartphone';
 
 export type OnboardingStepConfig = {
   id: string;
@@ -63,6 +75,12 @@ export const ONBOARDING_STUDENT_STEPS: readonly OnboardingStepConfig[] = [
     id: 'cancelAndSchedule',
     iconKey: 'refreshCw',
     accent: 'from-amber-500 to-rose-500',
+    tipKeys: ['tip1', 'tip2', 'tip3'],
+  },
+  {
+    id: 'reminder',
+    iconKey: 'bell',
+    accent: 'from-emerald-500 to-teal-500',
     tipKeys: ['tip1', 'tip2', 'tip3'],
   },
 ] as const;
@@ -114,11 +132,33 @@ export const ONBOARDING_TUTOR_STEPS: readonly OnboardingStepConfig[] = [
     accent: 'from-amber-500 to-rose-500',
     tipKeys: ['tip1', 'tip2', 'tip3'],
   },
+  {
+    id: 'reminder',
+    iconKey: 'bell',
+    accent: 'from-emerald-500 to-teal-500',
+    tipKeys: ['tip1', 'tip2', 'tip3'],
+  },
+] as const;
+
+export const ONBOARDING_UTILITIES_STEPS: readonly OnboardingStepConfig[] = [
+  {
+    id: 'botCommands',
+    iconKey: 'terminal',
+    accent: 'from-violet-500 to-purple-500',
+    tipKeys: ['tip1', 'tip2', 'tip3'],
+  },
+  {
+    id: 'channelApps',
+    iconKey: 'sparkles',
+    accent: 'from-purple-500 to-fuchsia-500',
+    tipKeys: ['tip1', 'tip2', 'tip3', 'tip4', 'tip5'],
+  },
 ] as const;
 
 export const ONBOARDING_STEPS_BY_ROLE: Record<OnboardingRole, readonly OnboardingStepConfig[]> = {
   student: ONBOARDING_STUDENT_STEPS,
   tutor: ONBOARDING_TUTOR_STEPS,
+  utilities: ONBOARDING_UTILITIES_STEPS,
 };
 
 export const ONBOARDING_CHECKLIST_AUTO_INTERVAL_MS = 10_000;
@@ -127,23 +167,26 @@ export const ONBOARDING_CHECKLIST_RING_STROKE = 2.5;
 
 export const ONBOARDING_AVATAR_OPACITY_CLASS = ['opacity-100', 'opacity-60', 'opacity-30'] as const;
 
-export const ONBOARDING_BOT_INVITE_LINK =
-  'https://mezon.ai/developers/bot/install/2047567352794451968';
-
 const ONBOARDING_STUDENT_ACTION_ROUTES: Partial<Record<string, string>> = {
   myLessons: ROUTES.DASHBOARD.MY_LESSONS,
   pendingBookings: ROUTES.DASHBOARD.PENDING_BOOKINGS,
   wallet: ROUTES.DASHBOARD.WALLET,
   complaints: ROUTES.DASHBOARD.COMPLAINTS,
   cancelAndSchedule: ROUTES.DASHBOARD.MY_LESSONS,
+  reminder: ROUTES.DASHBOARD.MY_LESSONS,
 };
 
 const ONBOARDING_TUTOR_ACTION_ROUTES: Partial<Record<string, string>> = {
   createClan: MEZON_URL,
   voiceChannels: MEZON_URL,
-  inviteBot: ONBOARDING_BOT_INVITE_LINK,
   setupCommand: MEZON_URL,
   customizeClan: MEZON_URL,
+  reminder: ROUTES.DASHBOARD.MY_SCHEDULE,
+};
+
+const ONBOARDING_UTILITIES_ACTION_ROUTES: Partial<Record<string, string>> = {
+  botCommands: MEZON_URL,
+  channelApps: MEZON_URL,
 };
 
 export const ONBOARDING_ACTION_ROUTES_BY_ROLE: Record<
@@ -152,4 +195,5 @@ export const ONBOARDING_ACTION_ROUTES_BY_ROLE: Record<
 > = {
   student: ONBOARDING_STUDENT_ACTION_ROUTES,
   tutor: ONBOARDING_TUTOR_ACTION_ROUTES,
+  utilities: ONBOARDING_UTILITIES_ACTION_ROUTES,
 };

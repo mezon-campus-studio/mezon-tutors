@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { APP_SETTINGS_LIMITS } from '../constants/app-settings';
 import type { UpdateAppSettingsBody } from '../types/app-settings-api';
+import { createMezonLinksFormFieldsSchema, mapMezonLinksFormToStorage } from './mezon-links';
 
 export type AppSettingsFormValues = {
   platformFeePercent: string;
@@ -10,12 +11,18 @@ export type AppSettingsFormValues = {
   minWithdrawalAmountVnd: string;
   minWithdrawalAmountUsd: string;
   minWithdrawalAmountPhp: string;
+  botInviteLink: string;
+  channelAppHomeLink: string;
+  channelAppWalletLink: string;
+  channelAppMyLessonsLink: string;
+  channelAppMyScheduleLink: string;
 };
 
 export type AppSettingsValidationMessages = {
   required: string;
   invalidNumber: string;
   integerOnly: string;
+  invalidUrl: string;
   platformFeePercentRange: string;
   settlementPeriodHoursRange: string;
   disputePeriodHoursRange: string;
@@ -58,6 +65,10 @@ function requiredDecimalString(
 }
 
 export function createAppSettingsFormSchema(messages: AppSettingsValidationMessages) {
+  const mezonLinksFields = createMezonLinksFormFieldsSchema({
+    invalidUrl: messages.invalidUrl,
+  }).shape;
+
   return z
     .object({
       platformFeePercent: z
@@ -108,6 +119,7 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
         limits.minWithdrawalAmountPhp.min,
         limits.minWithdrawalAmountPhp.max,
       ),
+      ...mezonLinksFields,
     })
     .transform(
       (values): UpdateAppSettingsBody => ({
@@ -118,6 +130,13 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
         minWithdrawalAmountVnd: values.minWithdrawalAmountVnd,
         minWithdrawalAmountUsd: values.minWithdrawalAmountUsd,
         minWithdrawalAmountPhp: values.minWithdrawalAmountPhp,
+        mezonLinks: mapMezonLinksFormToStorage({
+          botInviteLink: values.botInviteLink,
+          channelAppHomeLink: values.channelAppHomeLink,
+          channelAppWalletLink: values.channelAppWalletLink,
+          channelAppMyLessonsLink: values.channelAppMyLessonsLink,
+          channelAppMyScheduleLink: values.channelAppMyScheduleLink,
+        }),
       }),
     );
 }

@@ -6,6 +6,7 @@ import {
   type AppSettingsFormValues,
   createAppSettingsFormSchema,
   mapAppSettingsFormErrors,
+  mapMezonLinksToFormValues,
 } from "@mezon-tutors/shared";
 import { Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -32,6 +33,7 @@ function toFormState(settings: AppSettings): AppSettingsFormValues {
     minWithdrawalAmountVnd: String(settings.minWithdrawalAmountVnd),
     minWithdrawalAmountUsd: String(settings.minWithdrawalAmountUsd),
     minWithdrawalAmountPhp: String(settings.minWithdrawalAmountPhp),
+    ...mapMezonLinksToFormValues(settings.mezonLinks),
   };
 }
 
@@ -46,6 +48,37 @@ type NumberFieldProps = {
   max?: number;
   step?: string;
 };
+
+type UrlFieldProps = {
+  id: string;
+  label: string;
+  hint?: string;
+  error?: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function UrlField({ id, label, hint, error, value, onChange }: UrlFieldProps) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id} className="text-sm font-medium text-slate-700">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        type="url"
+        inputMode="url"
+        placeholder="https://"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={Boolean(error)}
+        className={`h-10 ${error ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
+      />
+      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {!error && hint ? <p className="text-xs text-slate-500">{hint}</p> : null}
+    </div>
+  );
+}
 
 function NumberField({
   id,
@@ -142,6 +175,7 @@ export default function AdminAppSettingsView() {
           min: limits.minWithdrawalAmountPhp.min,
           max: limits.minWithdrawalAmountPhp.max,
         }),
+        invalidUrl: tValidation("invalidUrl"),
       }),
     [tValidation],
   );
@@ -332,6 +366,58 @@ export default function AdminAppSettingsView() {
                 max={limits.minWithdrawalAmountPhp.max}
                 step="0.01"
               />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection
+            title={t("sections.mezonLinks.title")}
+            description={t("sections.mezonLinks.description")}
+          >
+            <div className="grid gap-4">
+              <div className="max-w-2xl">
+                <UrlField
+                  id="botInviteLink"
+                  label={t("fields.botInviteLink")}
+                  hint={t("fields.botInviteLinkHint")}
+                  error={errors.botInviteLink}
+                  value={form.botInviteLink}
+                  onChange={(v) => setField("botInviteLink", v)}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <UrlField
+                  id="channelAppHomeLink"
+                  label={t("fields.channelAppHomeLink")}
+                  hint={t("fields.channelAppLinkHint")}
+                  error={errors.channelAppHomeLink}
+                  value={form.channelAppHomeLink}
+                  onChange={(v) => setField("channelAppHomeLink", v)}
+                />
+                <UrlField
+                  id="channelAppWalletLink"
+                  label={t("fields.channelAppWalletLink")}
+                  hint={t("fields.channelAppLinkHint")}
+                  error={errors.channelAppWalletLink}
+                  value={form.channelAppWalletLink}
+                  onChange={(v) => setField("channelAppWalletLink", v)}
+                />
+                <UrlField
+                  id="channelAppMyLessonsLink"
+                  label={t("fields.channelAppMyLessonsLink")}
+                  hint={t("fields.channelAppLinkHint")}
+                  error={errors.channelAppMyLessonsLink}
+                  value={form.channelAppMyLessonsLink}
+                  onChange={(v) => setField("channelAppMyLessonsLink", v)}
+                />
+                <UrlField
+                  id="channelAppMyScheduleLink"
+                  label={t("fields.channelAppMyScheduleLink")}
+                  hint={t("fields.channelAppLinkHint")}
+                  error={errors.channelAppMyScheduleLink}
+                  value={form.channelAppMyScheduleLink}
+                  onChange={(v) => setField("channelAppMyScheduleLink", v)}
+                />
+              </div>
             </div>
           </SettingsSection>
         </div>

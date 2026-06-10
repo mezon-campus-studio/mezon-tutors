@@ -257,6 +257,10 @@
         "withdrawal": {
           "title": "Rút tiền tối thiểu",
           "description": "Số tiền tối thiểu gia sư có thể yêu cầu rút theo từng loại tiền."
+        },
+        "mezonLinks": {
+          "title": "Link Mezon",
+          "description": "Link mời bot và Channel App — dùng trên trang hướng dẫn onboarding."
         }
       },
       "fields": {
@@ -270,11 +274,19 @@
         "lessonChangePeriodHoursHint": "Số giờ trước giờ học được phép đổi lịch buổi học.",
         "minWithdrawalAmountVnd": "Tối thiểu (VND)",
         "minWithdrawalAmountUsd": "Tối thiểu (USD)",
-        "minWithdrawalAmountPhp": "Tối thiểu (PHP)"
+        "minWithdrawalAmountPhp": "Tối thiểu (PHP)",
+        "botInviteLink": "Link mời Mezonly Bot",
+        "botInviteLinkHint": "Link install bot từ Mezon Developer Portal.",
+        "channelAppHomeLink": "Channel App — Home page",
+        "channelAppWalletLink": "Channel App — Wallet",
+        "channelAppMyLessonsLink": "Channel App — My lesson",
+        "channelAppMyScheduleLink": "Channel App — My schedule",
+        "channelAppLinkHint": "Link install Channel App từ Mezon Developer Portal."
       },
       "validation": {
         "required": "Trường này là bắt buộc.",
         "invalidNumber": "Nhập số hợp lệ.",
+        "invalidUrl": "Nhập URL hợp lệ (http/https) hoặc để trống.",
         "integerOnly": "Chỉ nhập số nguyên.",
         "platformFeePercentRange": "Phải từ {min} đến {max}%.",
         "settlementPeriodHoursRange": "Phải từ {min} đến {max} giờ.",
