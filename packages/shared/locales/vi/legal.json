@@ -214,7 +214,7 @@
         "title": "1. Nguyên tắc chung",
         "paragraphs": [
           "Việc hoàn tiền được xử lý dựa trên loại đặt lịch, trạng thái thanh toán, thời điểm hủy và việc buổi học có được thực hiện đúng như đã thỏa thuận hay không.",
-          "Các mốc thời gian áp dụng mặc định trên nền tảng: mốc 12 giờ được tính theo thời gian còn lại trước giờ bắt đầu buổi học; gửi khiếu nại trong 72 giờ sau khi buổi học kết thúc; quyết toán thu nhập gia sư sau 72 giờ kể từ khi buổi học hoàn tất; gia sư chỉ được gửi yêu cầu rút tiền trong 10 ngày cuối cùng của mỗi tháng.",
+          "Các mốc thời gian áp dụng mặc định trên nền tảng: mốc 12 giờ được tính theo thời gian còn lại trước giờ bắt đầu buổi học; gửi khiếu nại trong 72 giờ sau khi buổi học kết thúc; quyết toán thu nhập gia sư sau 72 giờ kể từ khi buổi học hoàn tất; gia sư chỉ được gửi yêu cầu rút tiền từ ngày 1 đến ngày 10 hàng tháng.",
           "Điều kiện hoàn tiền phụ thuộc vào loại đặt lịch, bên chủ động hủy và thời gian còn lại trước giờ bắt đầu buổi học. Gia sư hủy buổi học thường dẫn đến hoàn tiền cho học viên. Học viên hủy buổi học theo quy định riêng cho buổi học thử và gói đăng ký tại mục 2 và 3 dưới đây.",
           "Khi yêu cầu hoàn tiền được chấp thuận, số tiền thường được trả về ví Mezonly, trừ khi có quy định khác tại bước thanh toán hoặc theo yêu cầu của phương thức thanh toán ban đầu."
         ]
@@ -303,7 +303,7 @@
         "title": "5. Chi trả cho gia sư",
         "paragraphs": [
           "Thu nhập của gia sư được quyết toán và chuyển sang số dư có thể rút sau 72 giờ kể từ khi buổi học hoàn tất. Nếu khoản thanh toán của học viên bị hoàn hoặc bị thu hồi trong thời gian này, khoản chi trả của gia sư cho buổi học đó có thể bị điều chỉnh tương ứng.",
-          "Gia sư chỉ được gửi yêu cầu rút tiền trong 10 ngày cuối cùng của mỗi tháng dương lịch. Các yêu cầu gửi ngoài khung thời gian này sẽ không được xử lý.",
+          "Gia sư chỉ được gửi yêu cầu rút tiền từ ngày 1 đến ngày 10 hàng tháng dương lịch. Các yêu cầu gửi ngoài khung thời gian này sẽ không được xử lý.",
           "Gia sư không nên yêu cầu hoàn tiền ngoài nền tảng hoặc khiếu nại hoàn trả qua ngân hàng nhằm bỏ qua hồ sơ thanh toán trên Mezonly."
         ]
       },
@@ -417,7 +417,7 @@
         "list": [
           "Thu nhập của bạn được quyết toán và chuyển sang số dư có thể rút sau 72 giờ kể từ khi buổi học hoàn tất.",
           "Nếu học viên được hoàn tiền hoặc khiếu nại được chấp thuận, khoản chi trả liên quan đến buổi học đó có thể bị điều chỉnh.",
-          "Bạn có thể rút thu nhập trong ví thông qua các phương thức chi trả được hỗ trợ trên bảng điều khiển, nhưng chỉ được gửi yêu cầu rút trong 10 ngày cuối cùng của mỗi tháng dương lịch.",
+          "Bạn có thể rút thu nhập trong ví thông qua các phương thức chi trả được hỗ trợ trên bảng điều khiển, nhưng chỉ được gửi yêu cầu rút từ ngày 1 đến ngày 10 hàng tháng dương lịch.",
           "Bạn không được khuyến khích học viên khiếu nại hoàn trả qua ngân hàng hoặc hoàn tiền ngoài nền tảng."
         ]
       },

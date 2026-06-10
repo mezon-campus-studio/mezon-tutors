@@ -17,6 +17,7 @@ export type DashboardMenuIconKey =
   | 'events'
   | 'adminPanel'
   | 'onboarding'
+  | 'tutorPolicy'
   | 'settings';
 export type DashboardMenuLabelKey =
   | 'myLessons'
@@ -36,6 +37,7 @@ export type DashboardMenuLabelKey =
   | 'events'
   | 'adminPanel'
   | 'onboarding'
+  | 'tutorPolicy'
   | 'settings';
 
 export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
@@ -146,6 +148,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     roles: ['STUDENT', 'TUTOR'],
   },
   {
+    key: 'tutor-policy',
+    type: 'link',
+    labelKey: 'tutorPolicy',
+    iconKey: 'tutorPolicy',
+    href: ROUTES.SUPPORT.TUTOR_POLICY,
+    roles: ['TUTOR'],
+  },
+  {
     key: 'logout',
     type: 'action',
     labelKey: 'logout',
@@ -225,6 +235,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'onboarding') {
     return pathname.startsWith(ROUTES.SUPPORT.ONBOARDING);
+  }
+  if (item.key === 'tutor-policy') {
+    return pathname.startsWith(ROUTES.SUPPORT.TUTOR_POLICY);
   }
   return false;
 }

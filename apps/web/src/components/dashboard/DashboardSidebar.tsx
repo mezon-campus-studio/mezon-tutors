@@ -17,6 +17,7 @@ import {
   LineChart,
   LogOut,
   MessageSquareWarning,
+  Scale,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -46,6 +47,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   events: CalendarDays,
   adminPanel: ShieldCheck,
   onboarding: Sparkles,
+  tutorPolicy: Scale,
   settings: Settings,
 };
 
@@ -66,6 +68,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
   onboarding: "from-violet-500 to-fuchsia-500",
+  tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
 };
 
@@ -82,9 +85,13 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
 
   const menuItems = getDashboardMenuItemsByRole(userRole);
   const navItems = menuItems.filter(
-    (item) => item.key !== "logout" && item.key !== "onboarding",
+    (item) =>
+      item.key !== "logout" &&
+      item.key !== "onboarding" &&
+      item.key !== "tutor-policy",
   );
   const onboardingItem = menuItems.find((item) => item.key === "onboarding");
+  const tutorPolicyItem = menuItems.find((item) => item.key === "tutor-policy");
   const logoutItem = menuItems.find((item) => item.key === "logout");
   const isAdmin = userRole === "ADMIN";
   const dashboardTitle =
@@ -206,6 +213,18 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
               >
                 <Sparkles className="mr-2 size-4" />
                 {t(`sidebar.${onboardingItem.labelKey}`)}
+              </Button>
+            </Link>
+          ) : null}
+
+          {tutorPolicyItem?.href ? (
+            <Link href={tutorPolicyItem.href} className="block">
+              <Button
+                variant="outline"
+                className="h-11 w-full rounded-xl border-violet-200 bg-white text-sm font-semibold text-violet-700 shadow-sm hover:bg-violet-50 hover:text-violet-900"
+              >
+                <Scale className="mr-2 size-4" />
+                {t(`sidebar.${tutorPolicyItem.labelKey}`)}
               </Button>
             </Link>
           ) : null}
