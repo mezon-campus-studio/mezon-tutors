@@ -10,9 +10,22 @@ type TimePickerProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  minTime?: string;
+  maxTime?: string;
 };
 
-export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePickerProps) {
+function toMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+export function TimePicker({
+  value,
+  onChange,
+  placeholder = '09:00',
+  minTime,
+  maxTime,
+}: TimePickerProps) {
   const t = useTranslations('BecomeTutor.availability.availability');
   const [isOpen, setIsOpen] = useState(false);
   const [hours, minutes] = value.split(':');
@@ -20,6 +33,21 @@ export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePicke
   const [hasMinuteError, setHasMinuteError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const hourListRef = useRef<HTMLDivElement>(null);
+
+  const minMins = minTime ? toMinutes(minTime) : 0;
+  const maxMins = maxTime ? toMinutes(maxTime) : 23 * 60 + 30;
+
+  function isHourDisabled(hour: string): boolean {
+    const h = parseInt(hour);
+    const opts = [h * 60, h * 60 + 30];
+    return opts.every((m) => m < minMins || m > maxMins);
+  }
+
+  function isMinuteDisabled(minute: string): boolean {
+    if (!hours) return false;
+    const total = parseInt(hours) * 60 + parseInt(minute);
+    return total < minMins || total > maxMins;
+  }
 
   useEffect(() => {
     setInputValue(value);
@@ -32,36 +60,45 @@ export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePicke
         setIsOpen(false);
       }
     };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
-    const scrollToSelectedHour = () => {
+    const timer = setTimeout(() => {
       if (hours && hourListRef.current) {
         const selectedHour = hourListRef.current.querySelector(`[data-hour="${hours}"]`);
         selectedHour?.scrollIntoView({ block: 'center', behavior: 'auto' });
       }
-    };
-    const timer = setTimeout(scrollToSelectedHour, 40);
+    }, 40);
     return () => clearTimeout(timer);
   }, [isOpen, hours]);
 
   const handleHourSelect = (hour: string) => {
-    const newValue = `${hour}:${minutes || '00'}`;
+    if (isHourDisabled(hour)) return;
+    const currentMinute = minutes || '00';
+    const newMinute = isMinuteDisabledForHour(hour, currentMinute)
+      ? getFirstValidMinute(hour)
+      : currentMinute;
+    if (!newMinute) return;
+    const newValue = `${hour}:${newMinute}`;
     onChange(newValue);
     setInputValue(newValue);
     setHasMinuteError(false);
   };
 
+  function isMinuteDisabledForHour(hour: string, minute: string): boolean {
+    const total = parseInt(hour) * 60 + parseInt(minute);
+    return total < minMins || total > maxMins;
+  }
+
+  function getFirstValidMinute(hour: string): string | null {
+    return ['00', '30'].find((m) => !isMinuteDisabledForHour(hour, m)) ?? null;
+  }
+
   const handleMinuteSelect = (minute: string) => {
+    if (isMinuteDisabled(minute)) return;
     const newValue = `${hours || '09'}:${minute}`;
     onChange(newValue);
     setInputValue(newValue);
@@ -71,19 +108,22 @@ export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePicke
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
     setInputValue(text);
-    
-    if (text === '') {
-      return;
-    }
+    if (text === '') return;
 
     const cleanText = text.replace(/[^\d:]/g, '');
-    
     if (cleanText.match(/^\d{2}:\d{2}$/)) {
       const [h, m] = cleanText.split(':');
       const hourNum = parseInt(h);
       const minuteNum = parseInt(m);
-      
-      if (hourNum >= 0 && hourNum <= 23 && (minuteNum === 0 || minuteNum === 30)) {
+      const totalMins = hourNum * 60 + minuteNum;
+
+      if (
+        hourNum >= 0 &&
+        hourNum <= 23 &&
+        (minuteNum === 0 || minuteNum === 30) &&
+        totalMins >= minMins &&
+        totalMins <= maxMins
+      ) {
         onChange(cleanText);
         setHasMinuteError(false);
       } else if (hourNum >= 0 && hourNum <= 23 && minuteNum >= 0 && minuteNum <= 59) {
@@ -101,12 +141,16 @@ export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePicke
     const [h, m] = inputValue.split(':');
     const hourNum = Number(h);
     const minuteNum = Number(m);
+    const totalMins = hourNum * 60 + minuteNum;
+
     if (
       Number.isNaN(hourNum) ||
       Number.isNaN(minuteNum) ||
       hourNum < 0 ||
       hourNum > 23 ||
-      (minuteNum !== 0 && minuteNum !== 30)
+      (minuteNum !== 0 && minuteNum !== 30) ||
+      totalMins < minMins ||
+      totalMins > maxMins
     ) {
       setHasMinuteError(true);
       setInputValue(value);
@@ -141,48 +185,69 @@ export function TimePicker({ value, onChange, placeholder = '09:00' }: TimePicke
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[70] max-h-72 overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-[70] mt-1 max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="flex h-full">
-            <div ref={hourListRef} className="no-scrollbar flex-1 border-r border-gray-200 overflow-y-auto max-h-72">
-              <div className="sticky top-0 bg-white border-b border-gray-100 px-2 py-1">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            {/* Hours column */}
+            <div
+              ref={hourListRef}
+              className="no-scrollbar max-h-72 flex-1 overflow-y-auto border-r border-gray-200"
+            >
+              <div className="sticky top-0 border-b border-gray-100 bg-white px-2 py-1">
+                <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   {t('hour')}
                 </span>
               </div>
-              {hourOptions.map((hour) => (
-                <button
-                  key={hour}
-                  type="button"
-                  data-hour={hour}
-                  className={`w-full px-3 py-2 text-sm text-center hover:bg-gray-50 ${
-                    hours === hour ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                  }`}
-                  onClick={() => handleHourSelect(hour)}
-                >
-                  {hour}
-                </button>
-              ))}
+              {hourOptions.map((hour) => {
+                const disabled = isHourDisabled(hour);
+                return (
+                  <button
+                    key={hour}
+                    type="button"
+                    data-hour={hour}
+                    disabled={disabled}
+                    className={`w-full px-3 py-2 text-center text-sm transition-colors ${
+                      disabled
+                        ? 'cursor-not-allowed text-gray-300'
+                        : hours === hour
+                          ? 'bg-blue-50 font-medium text-blue-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleHourSelect(hour)}
+                  >
+                    {hour}
+                  </button>
+                );
+              })}
             </div>
 
+            {/* Minutes column */}
             <div className="flex-1 overflow-hidden">
-              <div className="sticky top-0 bg-white border-b border-gray-100 px-2 py-1">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <div className="sticky top-0 border-b border-gray-100 bg-white px-2 py-1">
+                <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
                   {t('minute')}
                 </span>
               </div>
-              {minuteOptions.map((minute) => (
-                <button
-                  key={minute}
-                  type="button"
-                  data-minute={minute}
-                  className={`w-full px-3 py-2 text-sm text-center hover:bg-gray-50 ${
-                    minutes === minute ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                  }`}
-                  onClick={() => handleMinuteSelect(minute)}
-                >
-                  {minute}
-                </button>
-              ))}
+              {minuteOptions.map((minute) => {
+                const disabled = isMinuteDisabled(minute);
+                return (
+                  <button
+                    key={minute}
+                    type="button"
+                    data-minute={minute}
+                    disabled={disabled}
+                    className={`w-full px-3 py-2 text-center text-sm transition-colors ${
+                      disabled
+                        ? 'cursor-not-allowed text-gray-300'
+                        : minutes === minute
+                          ? 'bg-blue-50 font-medium text-blue-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleMinuteSelect(minute)}
+                  >
+                    {minute}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
