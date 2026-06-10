@@ -27,22 +27,17 @@ import { cn } from "@/lib/utils";
 import { useTrustShowcaseAvatars } from "@/services/user/user.api";
 
 const SLIDE_DURATION_MS = 6000;
+const TRUST_SHOWCASE_AVATAR_MAX = 4;
 
-const TRUST_AVATARS = [
-  { id: "a1", initials: "TN", gradient: "from-violet-500 to-purple-500" },
-  { id: "a2", initials: "HL", gradient: "from-purple-500 to-fuchsia-500" },
-  { id: "a3", initials: "PV", gradient: "from-fuchsia-500 to-rose-500" },
-  { id: "a4", initials: "DM", gradient: "from-indigo-500 to-violet-500" },
-] as const;
-
-type TrustAvatarDisplay =
-  | { kind: "image"; key: string; url: string }
-  | {
-      kind: "initials";
-      key: string;
-      initials: string;
-      gradient: string;
-    };
+function formatTutorCountBadge(count: number): string {
+  if (count >= 1000) {
+    const value = count / 1000;
+    if (value >= 10) return `${Math.floor(value)}k`;
+    const rounded = Math.round(value * 10) / 10;
+    return `${Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1)}k`;
+  }
+  return String(count);
+}
 
 const SLIDE_KEYS = ["schedule", "mezon", "pricing", "verified"] as const;
 type SlideKey = (typeof SLIDE_KEYS)[number];
@@ -61,26 +56,15 @@ export default function HomeHeroSection() {
   const underlineGradientId = useId().replace(/:/g, "");
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const { data: trustShowcaseAvatars } = useTrustShowcaseAvatars();
+  const { data: trustShowcase, isPending, isError } = useTrustShowcaseAvatars();
 
-  const trustAvatarStrip = useMemo((): TrustAvatarDisplay[] => {
-    const fallbacks: TrustAvatarDisplay[] = TRUST_AVATARS.map((a) => ({
-      kind: "initials",
-      key: a.id,
-      initials: a.initials,
-      gradient: a.gradient,
-    }));
-    if (!trustShowcaseAvatars?.length) {
-      return fallbacks;
-    }
-    return [0, 1, 2, 3].map((i) => {
-      const remote = trustShowcaseAvatars[i];
-      if (remote?.url) {
-        return { kind: "image", key: remote.id, url: remote.url };
-      }
-      return fallbacks[i]!;
-    });
-  }, [trustShowcaseAvatars]);
+  const trustAvatars = useMemo(
+    () => trustShowcase?.avatars.slice(0, TRUST_SHOWCASE_AVATAR_MAX) ?? [],
+    [trustShowcase?.avatars],
+  );
+  const totalTutors = trustShowcase?.tutor ?? 0;
+  const tutorOverflowCount = Math.max(0, totalTutors - trustAvatars.length);
+  const showTrustShowcase = !isPending && !isError && trustAvatars.length > 0;
 
   useEffect(() => {
     if (isPaused) return;
@@ -243,20 +227,15 @@ export default function HomeHeroSection() {
             </Link>
           </div>
 
-          <div className="flex max-w-md flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/55 p-4 shadow-[0_20px_50px_-28px_rgba(91,33,182,0.18)] backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both] sm:flex-row sm:items-center sm:gap-5 sm:p-5">
-            <div className="flex -space-x-2.5">
-              {trustAvatarStrip.map((avatar, index) => (
-                <div
-                  key={avatar.key}
-                  style={{ zIndex: index + 1 }}
-                  className={cn(
-                    "relative flex size-10 shrink-0 overflow-hidden rounded-full border-[3px] border-white shadow-md ring-1 ring-black/5 transition-transform duration-300 hover:z-20 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
-                    avatar.kind === "initials" &&
-                      `items-center justify-center bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${avatar.gradient} text-[11px] font-bold text-foreground`,
-                    avatar.kind === "image" && "bg-slate-100",
-                  )}
-                >
-                  {avatar.kind === "image" ? (
+          {showTrustShowcase ? (
+            <div className="flex max-w-md flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/55 p-4 shadow-[0_20px_50px_-28px_rgba(91,33,182,0.18)] backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-700 [animation-delay:360ms] [animation-fill-mode:both] sm:flex-row sm:items-center sm:gap-5 sm:p-5">
+              <div className="flex -space-x-2.5">
+                {trustAvatars.map((avatar, index) => (
+                  <div
+                    key={avatar.id}
+                    style={{ zIndex: index + 1 }}
+                    className="relative flex size-10 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-slate-100 shadow-md ring-1 ring-black/5 transition-transform duration-300 hover:z-20 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                  >
                     <img
                       src={avatar.url}
                       alt=""
@@ -265,36 +244,36 @@ export default function HomeHeroSection() {
                       decoding="async"
                       referrerPolicy="no-referrer"
                     />
-                  ) : (
-                    avatar.initials
-                  )}
-                </div>
-              ))}
-              <div
-                style={{ zIndex: 50 }}
-                className="relative flex size-10 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(135deg,#ede9fe,#fae8ff)] text-[10px] font-bold text-violet-800 shadow-md ring-1 ring-violet-200/60"
-              >
-                +25k
-              </div>
-            </div>
-            <div className="hidden h-10 w-px shrink-0 bg-gradient-to-b from-transparent via-slate-200 to-transparent sm:block" />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1">
-                {["s1", "s2", "s3", "s4", "s5"].map((id) => (
-                  <Star
-                    key={id}
-                    className="size-4 fill-amber-400 text-amber-400 drop-shadow-sm"
-                  />
+                  </div>
                 ))}
-                <span className="ml-1.5 text-sm font-bold tabular-nums text-slate-900">
-                  4.9
-                </span>
+                {tutorOverflowCount > 0 ? (
+                  <div
+                    style={{ zIndex: 50 }}
+                    className="relative flex size-10 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-violet-50 text-[10px] font-bold text-violet-800 shadow-md ring-1 ring-violet-200/60"
+                  >
+                    +{formatTutorCountBadge(tutorOverflowCount)}
+                  </div>
+                ) : null}
               </div>
-              <p className="text-xs leading-snug font-medium text-slate-500">
-                {t("trust")}
-              </p>
+              <div className="hidden h-10 w-px shrink-0 bg-gradient-to-b from-transparent via-slate-200 to-transparent sm:block" />
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1">
+                  {["s1", "s2", "s3", "s4", "s5"].map((id) => (
+                    <Star
+                      key={id}
+                      className="size-4 fill-amber-400 text-amber-400 drop-shadow-sm"
+                    />
+                  ))}
+                  <span className="ml-1.5 text-sm font-bold tabular-nums text-slate-900">
+                    4.9
+                  </span>
+                </div>
+                <p className="text-xs leading-snug font-medium text-slate-500">
+                  {t("trust")}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="relative mx-auto w-full max-w-[26rem] motion-reduce:animate-none lg:mx-0 lg:max-w-none animate-in fade-in slide-in-from-bottom-6 duration-1000 [animation-delay:120ms] [animation-fill-mode:both] motion-safe:[animation:hero-card-float_10s_ease-in-out_infinite]">

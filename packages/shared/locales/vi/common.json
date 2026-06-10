@@ -30,14 +30,11 @@
     },
     "product": {
       "title": "Sản phẩm",
-      "findTutor": "Tìm gia sư",
-      "pricing": "Bảng giá",
-      "enterprise": "Doanh nghiệp"
+      "findTutor": "Tìm gia sư"
     },
     "community": {
       "title": "Cộng đồng",
       "becomeTutor": "Trở thành gia sư",
-      "blog": "Blog giáo dục",
       "events": "Sự kiện"
     },
     "support": {
@@ -54,8 +51,7 @@
       "facebook": "Facebook",
       "linkedin": "LinkedIn"
     },
-    "copyright": "© 2026 Mezonly. Bảo lưu mọi quyền.",
-    "madeWith": "Powered by Mezon",
+    "copyright": "© 2026 Mezonly.",
     "bottom": {
       "terms": "Điều khoản dịch vụ",
       "privacy": "Chính sách quyền riêng tư",

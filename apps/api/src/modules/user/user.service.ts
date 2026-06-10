@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { Role, type User } from '@mezon-tutors/db';
-import type { TrustShowcaseAvatarDto } from '@mezon-tutors/shared';
+import { Role, VerificationStatus, type User } from '@mezon-tutors/db';
+import type { TrustShowcaseDto } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 
 const RANDOM_POOL_MAX = 150;
@@ -51,24 +51,32 @@ export class UserService {
     }
   }
 
-  async findRandomTrustShowcaseAvatars(limit: number): Promise<TrustShowcaseAvatarDto[]> {
+  async findRandomTrustShowcaseAvatars(limit: number): Promise<TrustShowcaseDto> {
     const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 20);
 
-    const where = {
+    const verifiedWhere = {
+      verificationStatus: VerificationStatus.APPROVED,
+    } as const;
+
+    const avatarWhere = {
+      ...verifiedWhere,
       avatar: { not: { equals: '' } },
     } as const;
 
-    const count = await this.prisma.user.count({ where });
+    const [totalTutors, avatarCount] = await Promise.all([
+      this.prisma.tutorProfile.count({ where: verifiedWhere }),
+      this.prisma.tutorProfile.count({ where: avatarWhere }),
+    ]);
 
-    if (count === 0) {
-      return [];
+    if (avatarCount === 0) {
+      return { avatars: [], tutor: totalTutors };
     }
 
-    const poolSize = Math.min(RANDOM_POOL_MAX, count);
-    const skip = Math.max(0, Math.floor(Math.random() * (count - poolSize + 1)));
+    const poolSize = Math.min(RANDOM_POOL_MAX, avatarCount);
+    const skip = Math.max(0, Math.floor(Math.random() * (avatarCount - poolSize + 1)));
 
-    const rows = await this.prisma.user.findMany({
-      where,
+    const rows = await this.prisma.tutorProfile.findMany({
+      where: avatarWhere,
       select: { id: true, avatar: true },
       skip,
       take: poolSize,
@@ -77,7 +85,13 @@ export class UserService {
 
     shuffleInPlace(rows);
 
-    return rows.slice(0, safeLimit).map((u) => ({ id: u.id, url: u.avatar }));
+    return {
+      avatars: rows.slice(0, safeLimit).map((tutor) => ({
+        id: tutor.id,
+        url: tutor.avatar,
+      })),
+      tutor: totalTutors,
+    };
   }
 
   async upsertFromMezon(params: {

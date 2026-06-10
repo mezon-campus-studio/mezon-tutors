@@ -30,14 +30,11 @@
     },
     "product": {
       "title": "Product",
-      "findTutor": "Find a tutor",
-      "pricing": "Pricing",
-      "enterprise": "Enterprise"
+      "findTutor": "Find a tutor"
     },
     "community": {
       "title": "Community",
       "becomeTutor": "Become a tutor",
-      "blog": "Education blog",
       "events": "Events"
     },
     "support": {
@@ -54,8 +51,7 @@
       "facebook": "Facebook",
       "linkedin": "LinkedIn"
     },
-    "copyright": "© 2026 Mezonly. All rights reserved.",
-    "madeWith": "Powered by Mezon",
+    "copyright": "© 2026 Mezonly.",
     "bottom": {
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",

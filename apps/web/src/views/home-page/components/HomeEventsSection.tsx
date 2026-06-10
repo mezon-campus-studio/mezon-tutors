@@ -4,6 +4,7 @@ import { ROUTES } from "@mezon-tutors/shared";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { EventHomeCard } from "@/components/events/EventHomeCard";
 import { Button } from "@/components/ui";
 import { isRegistrationOnlyEventDto, pickEventContent } from "@/lib/event-view";
@@ -42,6 +43,11 @@ export default function HomeEventsSection() {
   const locale = useLocale();
   const { ref, isInView } = useInView();
   const { data: events = [], isLoading } = usePublishedEvents();
+
+  useEffect(() => {
+    if (window.location.hash !== "#events") return;
+    document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   const publishedEvents = sortPublishedEvents(events);
   const previewEvents = publishedEvents.slice(0, HOME_EVENT_PREVIEW_LIMIT);
