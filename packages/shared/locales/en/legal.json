@@ -214,7 +214,7 @@
         "title": "1. General principles",
         "paragraphs": [
           "Refunds are handled based on booking type, payment status, cancellation timing, and whether the lesson was delivered as agreed.",
-          "Default time thresholds on the platform: the 12-hour window is measured as time remaining before the lesson start time; file a complaint within 72 hours after the lesson ends; tutor earnings are settled 72 hours after lesson completion; tutors may only submit withdrawal requests during the last 10 calendar days of each month.",
+          "Default time thresholds on the platform: the 12-hour window is measured as time remaining before the lesson start time; file a complaint within 72 hours after the lesson ends; tutor earnings are settled 72 hours after lesson completion; tutors may only submit withdrawal requests from the 1st to the 10th of each calendar month.",
           "Refund eligibility depends on booking type, who initiates the cancellation, and how much time remains before the lesson start time. Tutor-initiated cancellations generally result in a refund to the student. Student-initiated cancellations follow the trial and subscription rules in sections 2 and 3 below.",
           "When a refund request is approved, funds are typically returned to your Mezonly wallet unless otherwise stated at checkout or required by the original payment method."
         ]
@@ -303,7 +303,7 @@
         "title": "5. Tutor payouts",
         "paragraphs": [
           "Tutor earnings are settled and moved to withdrawable balance 72 hours after lesson completion. If a student payment is refunded or reversed during this period, the tutor's payout for that lesson may be adjusted accordingly.",
-          "Tutors may only submit withdrawal requests during the last 10 calendar days of each month. Requests submitted outside this window will not be processed.",
+          "Tutors may only submit withdrawal requests from the 1st to the 10th of each calendar month. Requests submitted outside this window will not be processed.",
           "Tutors should not request off-platform refunds or bank chargebacks that bypass Mezonly payment records."
         ]
       },
@@ -417,7 +417,7 @@
         "list": [
           "Your earnings are settled and moved to withdrawable balance 72 hours after lesson completion.",
           "If a student receives a refund or a complaint is approved, your payout for that lesson may be adjusted.",
-          "You may withdraw wallet earnings through the payout methods supported in your dashboard, but withdrawal requests can only be submitted during the last 10 calendar days of each month.",
+          "You may withdraw wallet earnings through the payout methods supported in your dashboard, but withdrawal requests can only be submitted from the 1st to the 10th of each calendar month.",
           "You must not encourage students to file bank chargebacks or request off-platform refunds."
         ]
       },
