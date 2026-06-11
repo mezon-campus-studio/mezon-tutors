@@ -58,6 +58,7 @@
     "title": "Flashcards",
     "flipHint": "Nhấn thẻ hoặc Enter ↵ để lật thẻ",
     "swipeHint": "Vuốt trái: đã biết · Vuốt phải: tiếp tục luyện tập",
+    "swipeHintLearning": "Vuốt trái: Đánh dấu đã học · Vuốt phải: tiếp tục luyện tập",
     "knowWord": "Tôi biết từ này",
     "markAsLearned": "Đánh dấu đã học",
     "keepPracticing": "Tiếp tục luyện tập",

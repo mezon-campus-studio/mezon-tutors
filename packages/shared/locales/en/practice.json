@@ -58,6 +58,7 @@
     "title": "Flashcards",
     "flipHint": "Click card or press Enter ↵ to flip",
     "swipeHint": "Swipe left: I know it · Swipe right: keep practicing",
+    "swipeHintLearning": "Swipe left: Mark as Learned · Swipe right: keep practicing",
     "knowWord": "I know this word",
     "markAsLearned": "Mark as Learned",
     "keepPracticing": "Keep practicing",
