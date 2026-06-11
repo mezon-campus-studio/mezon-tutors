@@ -2,15 +2,8 @@
 
 import type { VocabularyWordItem } from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import { Button } from "@/components/ui";
 
 type VocabularyStatsProps = {
   words: VocabularyWordItem[];
@@ -22,7 +15,6 @@ export default function VocabularyStats({
   onAddWord,
 }: VocabularyStatsProps) {
   const t = useTranslations("Practice.stats");
-  const [isHowToOpen, setIsHowToOpen] = useState(false);
 
   const counts = useMemo(
     () => ({
@@ -90,36 +82,14 @@ export default function VocabularyStats({
         </li>
       </ul>
 
-      <div className="flex flex-col gap-2">
-        <Button
-          type="button"
-          onClick={onAddWord}
-          className={cn(
-            "h-11 rounded-full border-2 border-slate-900 bg-white font-semibold text-slate-900 hover:bg-slate-50",
-          )}
-        >
-          {t("addNewWords")}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setIsHowToOpen(true)}
-          className="h-11 rounded-full border-slate-200 font-medium text-slate-700"
-        >
-          {t("howToLearn")}
-        </Button>
-      </div>
-
-      <Dialog open={isHowToOpen} onOpenChange={setIsHowToOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("howToLearnTitle")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm leading-relaxed text-slate-600">
-            {t("howToLearnDescription")}
-          </p>
-        </DialogContent>
-      </Dialog>
+      <Button
+        type="button"
+        variant="gradient"
+        onClick={onAddWord}
+        className="h-11 w-full rounded-full font-semibold shadow-md shadow-violet-300/30"
+      >
+        {t("addNewWords")}
+      </Button>
     </div>
   );
 }

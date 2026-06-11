@@ -20,10 +20,7 @@
     "readyToPractice": "Sẵn sàng luyện tập ({count})",
     "upNext": "Tiếp theo ({count})",
     "learned": "Đã học ({count})",
-    "addNewWords": "Thêm từ mới",
-    "howToLearn": "Cách học từ mới",
-    "howToLearnTitle": "Cách học từ mới",
-    "howToLearnDescription": "Tìm từ tiếng Anh, chọn nghĩa phù hợp và luyện tập bằng flashcards. Đánh dấu từ bạn đã biết hoặc tiếp tục luyện để ghi nhớ lâu hơn."
+    "addNewWords": "Thêm từ mới"
   },
   "wordList": {
     "emptyTitle": "Danh sách từ vựng trống",

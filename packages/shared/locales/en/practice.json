@@ -20,10 +20,7 @@
     "readyToPractice": "Ready to practice ({count})",
     "upNext": "Up next ({count})",
     "learned": "Learned ({count})",
-    "addNewWords": "Add new words",
-    "howToLearn": "How to learn new words",
-    "howToLearnTitle": "How to learn new words",
-    "howToLearnDescription": "Search for an English word, pick the meaning that fits, and practice with flashcards. Mark words you know or keep practicing to remember them longer."
+    "addNewWords": "Add new words"
   },
   "wordList": {
     "emptyTitle": "Your vocabulary list is empty",
