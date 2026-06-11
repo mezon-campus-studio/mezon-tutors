@@ -432,7 +432,7 @@
       "subtitle": "Complete payment before the hold expires, or your reserved slots will be released.",
       "empty": {
         "title": "No pending payments",
-        "description": "Trial lessons and subscription plans waiting for payment will appear here until you pay or the 10-minute hold ends.",
+        "description": "Trial lessons and subscription plans waiting for payment will appear here until you pay or the 15-minute hold ends.",
         "browseTutors": "Browse tutors"
       },
       "loadError": "Failed to load pending payments.",
