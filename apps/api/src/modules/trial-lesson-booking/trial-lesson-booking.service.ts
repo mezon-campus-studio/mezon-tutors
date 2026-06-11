@@ -6,8 +6,10 @@ import {
   subscriptionSlotsOccurrencesForWeek,
   subscriptionSlotsUseConcreteDates,
   DEFAULT_TIMEZONE,
+  LESSON_AUTO_COMPLETE_GRACE_MINUTES,
   LESSON_CANCEL_REASON_SLOT_CONFLICT,
   TRIAL_LESSON_PAYMENT_HOLD_MS,
+  addMinutes,
   trialLessonPaymentHoldExpiresAt,
   EPaymentProvider,
   buildTrialLessonPaymentDescription,
@@ -28,6 +30,7 @@ import {
   ELessonChangeAction,
   ELessonChangeInitiatorRole,
   ELessonChangeLessonType,
+  ELessonSettlementJobStatus,
   ESubscriptionEnrollmentStatus,
   EPaymentStatus,
   ETrialLessonStatus,
@@ -1917,6 +1920,18 @@ export class TrialLessonBookingService {
           originalDurationMinutes: booking.durationMinutes,
         },
       })
+
+      const lessonEndAt = addMinutes(startAt.toDate(), dto.durationMinutes)
+      const completionRunAt = addMinutes(lessonEndAt, LESSON_AUTO_COMPLETE_GRACE_MINUTES)
+      await tx.lessonCompletionJob.updateMany({
+        where: {
+          bookingId: booking.id,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          runAt: completionRunAt,
+        },
+      })
     })
 
     this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)
@@ -2193,6 +2208,17 @@ export class TrialLessonBookingService {
           },
         })
       }
+
+      await tx.lessonCompletionJob.updateMany({
+        where: {
+          bookingId: booking.id,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          status: ELessonSettlementJobStatus.CANCELLED,
+          processedAt: new Date(),
+        },
+      })
     })
 
     this.googleCalendarSyncService.dispatchTrialBookingSync(booking.id)

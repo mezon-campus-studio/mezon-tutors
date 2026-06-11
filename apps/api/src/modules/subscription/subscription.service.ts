@@ -22,7 +22,7 @@ import {
   buildSubscriptionPaymentDescription,
   formatTutorDisplayName,
   inferPaymentProviderFromUrl,
-  LESSON_SETTLEMENT_GRACE_MINUTES,
+  LESSON_AUTO_COMPLETE_GRACE_MINUTES,
   calculatePlatformFeeAmounts,
   buildMonthlySubscriptionSlotJson,
   DEFAULT_TIMEZONE,
@@ -1135,6 +1135,18 @@ export class SubscriptionService {
           processedAt: new Date(),
         },
       });
+
+      await tx.lessonCompletionJob.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          slotIndex,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          status: ELessonSettlementJobStatus.CANCELLED,
+          processedAt: new Date(),
+        },
+      });
     });
 
     this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
@@ -1234,6 +1246,18 @@ export class SubscriptionService {
       });
 
       await tx.lessonSettlementJob.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          slotIndex,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          status: ELessonSettlementJobStatus.CANCELLED,
+          processedAt: new Date(),
+        },
+      });
+
+      await tx.lessonCompletionJob.updateMany({
         where: {
           enrollmentId: enrollment.id,
           slotIndex,
@@ -1478,7 +1502,9 @@ export class SubscriptionService {
     const newEndAt = newStartUtc.add(durationMinutes, 'minute').toDate();
     const newRunAt = dayjs(newEndAt)
       .add(settlementPeriodHours, 'hour')
-      .add(LESSON_SETTLEMENT_GRACE_MINUTES, 'minute')
+      .toDate();
+    const newCompletionRunAt = dayjs(newEndAt)
+      .add(LESSON_AUTO_COMPLETE_GRACE_MINUTES, 'minute')
       .toDate();
 
     await this.prisma.$transaction(async (tx) => {
@@ -1512,6 +1538,17 @@ export class SubscriptionService {
         },
         data: {
           runAt: newRunAt,
+        },
+      });
+
+      await tx.lessonCompletionJob.updateMany({
+        where: {
+          enrollmentId: enrollment.id,
+          slotIndex,
+          status: ELessonSettlementJobStatus.PENDING,
+        },
+        data: {
+          runAt: newCompletionRunAt,
         },
       });
     });

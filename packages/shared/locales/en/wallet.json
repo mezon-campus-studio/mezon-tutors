@@ -143,8 +143,8 @@
       "WITHDRAWAL": "Withdrawal",
       "REFUND": "Refund",
       "PLATFORM_FEE": "Platform fee",
-      "LESSON_PAYMENT": "VNPay payment",
-      "SUBSCRIPTION_PAYMENT": "VNPay payment"
+      "LESSON_PAYMENT": "Trial lesson payment",
+      "SUBSCRIPTION_PAYMENT": "Subscription payment"
     },
     "student": {
       "hero": {

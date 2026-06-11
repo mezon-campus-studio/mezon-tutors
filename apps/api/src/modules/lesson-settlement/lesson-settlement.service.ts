@@ -12,7 +12,6 @@ import {
 } from '@mezon-tutors/db';
 import {
   DEFAULT_TIMEZONE,
-  LESSON_SETTLEMENT_GRACE_MINUTES,
   addMinutes,
   ESubscriptionLessonSlotStatus,
   normalizeSubscriptionSlotStatus,
@@ -23,7 +22,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
-import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
+import { LessonCompletionService } from './lesson-completion.service';
 
 const MAX_SETTLEMENT_ATTEMPTS = 5;
 
@@ -35,15 +34,12 @@ export class LessonSettlementService {
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
     private readonly appSettingsService: AppSettingsService,
-    private readonly googleCalendarSyncService: GoogleCalendarSyncService,
+    private readonly lessonCompletionService: LessonCompletionService,
   ) {}
 
   private async getSettlementReleaseAt(lessonEndAt: Date): Promise<Date> {
     const settings = await this.appSettingsService.getSettings();
-    return addMinutes(
-      addMinutes(lessonEndAt, settings.settlementPeriodHours * 60),
-      LESSON_SETTLEMENT_GRACE_MINUTES,
-    );
+    return addMinutes(lessonEndAt, settings.settlementPeriodHours * 60)
   }
 
   private async scheduleJob(params: {
@@ -100,6 +96,7 @@ export class LessonSettlementService {
     }
 
     const lessonEndAt = addMinutes(booking.startAt, booking.durationMinutes);
+    await this.lessonCompletionService.scheduleTrialLessonCompletion(booking.id);
     const runAt = await this.getSettlementReleaseAt(lessonEndAt);
     await this.scheduleJob({
       kind: ELessonSettlementKind.TRIAL_LESSON,
@@ -136,8 +133,10 @@ export class LessonSettlementService {
       if (!slot) {
         continue;
       }
+      const slotStatus = normalizeSubscriptionSlotStatus(slot.status);
       if (
-        normalizeSubscriptionSlotStatus(slot.status) === ESubscriptionLessonSlotStatus.COMPLETED
+        slotStatus === ESubscriptionLessonSlotStatus.CANCELLED ||
+        slotStatus === ESubscriptionLessonSlotStatus.REFUNDED
       ) {
         continue;
       }
@@ -150,6 +149,7 @@ export class LessonSettlementService {
         dedupeKey: `sub:${enrollment.id}:${occ.slotIndex}`,
       });
     }
+    await this.lessonCompletionService.scheduleSubscriptionEnrollmentCompletions(enrollmentId);
   }
 
   async reconcilePendingSchedules(): Promise<void> {
@@ -278,11 +278,8 @@ export class LessonSettlementService {
       if (booking.status === ETrialLessonStatus.CANCELLED) {
         return { outcome: 'cancel' as const };
       }
-      if (booking.status === ETrialLessonStatus.COMPLETED) {
-        return { outcome: 'done' as const, released: false };
-      }
-      if (booking.status !== ETrialLessonStatus.CONFIRMED) {
-        return { outcome: 'fail' as const, reason: `Unexpected booking status ${booking.status}` };
+      if (booking.status !== ETrialLessonStatus.COMPLETED) {
+        return { outcome: 'retry' as const, reason: 'Lesson not completed yet' };
       }
 
       const lessonEndAt = addMinutes(booking.startAt, booking.durationMinutes);
@@ -298,10 +295,6 @@ export class LessonSettlementService {
         },
       });
       if (existingRelease) {
-        await tx.trialLessonBooking.update({
-          where: { id: booking.id },
-          data: { status: ETrialLessonStatus.COMPLETED },
-        });
         return { outcome: 'done' as const, released: false };
       }
 
@@ -337,11 +330,6 @@ export class LessonSettlementService {
         },
       });
 
-      await tx.trialLessonBooking.update({
-        where: { id: booking.id },
-        data: { status: ETrialLessonStatus.COMPLETED },
-      });
-
       return {
         outcome: 'done' as const,
         released: true,
@@ -365,7 +353,6 @@ export class LessonSettlementService {
           dedupeKey: `tutor-earnings-released:trial:${result.bookingId}`,
         });
       }
-      this.googleCalendarSyncService.dispatchTrialBookingSync(bookingId);
       return;
     }
     if (result.outcome === 'cancel') {
@@ -409,11 +396,14 @@ export class LessonSettlementService {
       }
 
       const slotStatus = normalizeSubscriptionSlotStatus(slot.status);
-      if (slotStatus === ESubscriptionLessonSlotStatus.CANCELLED) {
+      if (
+        slotStatus === ESubscriptionLessonSlotStatus.CANCELLED ||
+        slotStatus === ESubscriptionLessonSlotStatus.REFUNDED
+      ) {
         return { outcome: 'cancel' as const };
       }
-      if (slotStatus === ESubscriptionLessonSlotStatus.COMPLETED) {
-        return { outcome: 'done' as const, released: false };
+      if (slotStatus !== ESubscriptionLessonSlotStatus.COMPLETED) {
+        return { outcome: 'retry' as const, reason: 'Lesson slot not completed yet' };
       }
 
       const occurrences = subscriptionConcreteOccurrencesSorted(slots, DEFAULT_TIMEZONE);
@@ -444,13 +434,6 @@ export class LessonSettlementService {
         },
       });
       if (existingRelease) {
-        const updatedSlots = slots.map((s, i) =>
-          i === slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.COMPLETED } : s
-        );
-        await tx.subscriptionEnrollment.update({
-          where: { id: enrollment.id },
-          data: { weeklySlots: updatedSlots as unknown as Prisma.InputJsonValue },
-        });
         return { outcome: 'done' as const, released: false };
       }
 
@@ -487,14 +470,6 @@ export class LessonSettlementService {
         },
       });
 
-      const updatedSlots = slots.map((s, i) =>
-        i === slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.COMPLETED } : s
-      );
-      await tx.subscriptionEnrollment.update({
-        where: { id: enrollment.id },
-        data: { weeklySlots: updatedSlots as unknown as Prisma.InputJsonValue },
-      });
-
       return {
         outcome: 'done' as const,
         released: true,
@@ -520,10 +495,6 @@ export class LessonSettlementService {
           dedupeKey: `tutor-earnings-released:sub:${result.enrollmentId}:${result.slotIndex}`,
         });
       }
-      this.googleCalendarSyncService.dispatchSubscriptionSlotSync({
-        enrollmentId,
-        slotIndex,
-      });
       return;
     }
     if (result.outcome === 'cancel') {

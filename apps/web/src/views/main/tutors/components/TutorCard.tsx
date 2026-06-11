@@ -11,6 +11,7 @@ import {
   BadgeCheck,
   Calendar,
   CalendarRange,
+  CreditCard,
   GraduationCap,
   Languages,
   MapPin,
@@ -23,7 +24,12 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button, Card, CardContent } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { useCurrency } from "@/hooks";
+import {
+  continueTutorPendingPayment,
+  useCurrency,
+  useTutorPendingPayment,
+  useUserTimezone,
+} from "@/hooks";
 import { useGetSubscriptionEligibility, useGetSubscriptionPlansByTutor } from "@/services";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "./TrialBookingSheet";
@@ -48,6 +54,7 @@ export default function TutorCard({
   const tCountry = useTranslations("Tutors.Filter.Country");
   const tLanguage = useTranslations("Tutors.Filter.Language");
   const { currency } = useCurrency();
+  const userTimezone = useUserTimezone();
   const currentUser = useAtomValue(userAtom);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isTrialBookingSheetOpen, setIsTrialBookingSheetOpen] = useState(false);
@@ -60,15 +67,19 @@ export default function TutorCard({
   const canFetchSub = Boolean(currentUser?.id && !isOwnProfile);
   const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
   const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
+  const { pendingPayment } = useTutorPendingPayment(tutor.id, canFetchSub);
   const hasSubscriptionPlans = Boolean(subscriptionPlans?.length);
   const trialDone =
     elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
+  const showContinuePayment = canFetchSub && Boolean(pendingPayment);
   const showSubscribe =
     canFetchSub &&
+    !showContinuePayment &&
     trialDone &&
     hasSubscriptionPlans &&
     elig?.reason !== "ALREADY_ENROLLED";
-  const showBookTrial = !isOwnProfile && (!currentUser?.id || !trialDone);
+  const showBookTrial =
+    !isOwnProfile && (!currentUser?.id || !trialDone) && !showContinuePayment;
   const bookTrialDisabled =
     canFetchSub &&
     (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
@@ -189,7 +200,19 @@ export default function TutorCard({
             </div>
 
             <div className="mt-auto flex flex-col gap-2 pt-3">
-              {showSubscribe ? (
+              {showContinuePayment && pendingPayment ? (
+                <Button
+                  size="lg"
+                  className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    continueTutorPendingPayment(pendingPayment, userTimezone);
+                  }}
+                >
+                  <CreditCard className="mr-1.5 size-4" />
+                  {t("continuePayment")}
+                </Button>
+              ) : showSubscribe ? (
                 <Link
                   href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}
                   className={cn(
