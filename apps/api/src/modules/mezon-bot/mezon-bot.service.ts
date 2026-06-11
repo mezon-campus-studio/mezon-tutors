@@ -2,6 +2,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { ChannelMessageContent, ChannelType, MezonClient } from 'mezon-sdk';
 import { User as MezonUser } from 'mezon-sdk/dist/cjs/mezon-client/structures/User';
+import { TextChannel } from 'mezon-sdk/dist/cjs/mezon-client/structures/TextChannel';
+import { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
 
 @Injectable()
 export class MezonBotService implements OnModuleInit {
@@ -46,6 +48,30 @@ export class MezonBotService implements OnModuleInit {
     return this.client;
   }
 
+  private async getChannel(channelId: string): Promise<TextChannel> {
+    const channel = await this.client.channels.fetch(channelId);
+    if (!channel) {
+      const channel = await this.client.channels.get(channelId);
+      if (!channel) {
+        throw new Error('Channel not found');
+      }
+      return channel;
+    }
+    return channel;
+  }
+
+  private async getMessage(channel: TextChannel, messageId: string): Promise<Message> {
+    const message = await channel.messages.fetch(messageId);
+    if (!message) {
+      const message = await channel.messages.get(messageId);
+      if (!message) {
+        throw new Error('Message not found');
+      }
+      return message;
+    }
+    return message;
+  }
+
   async sendDMToUser(mezonId: string, messageContent: ChannelMessageContent): Promise<void> {
     let userFetched: MezonUser;
     try {
@@ -58,7 +84,7 @@ export class MezonBotService implements OnModuleInit {
 
   async sendChannelMessage(channelId: string, messageContent: ChannelMessageContent) {
     try {
-      const channel = await this.client.channels.fetch(channelId);
+      const channel = await this.getChannel(channelId);
 
       await channel.send(messageContent);
     } catch (error) {
@@ -68,8 +94,8 @@ export class MezonBotService implements OnModuleInit {
 
   async replyMessage(channelId: string, messageId: string, messageContent: ChannelMessageContent) {
     try {
-      const channel = await this.client.channels.fetch(channelId);
-      const messageFetched = await channel.messages.fetch(messageId);
+      const channel = await this.getChannel(channelId);
+      const messageFetched = await this.getMessage(channel, messageId);
 
       return await messageFetched.reply(messageContent);
     } catch (error) {
