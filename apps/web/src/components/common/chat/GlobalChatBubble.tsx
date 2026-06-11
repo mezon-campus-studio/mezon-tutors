@@ -377,7 +377,7 @@ export default function GlobalChatBubble() {
                             <div
                               key={message.id}
                               className={cn(
-                                'pointer-events-none max-w-[min(85%,20rem)] select-none rounded-2xl px-3.5 py-2 text-sm leading-relaxed blur-[1.5px] opacity-60',
+                                'pointer-events-none max-w-[min(85%,20rem)] select-none rounded-2xl px-3.5 py-2 text-sm leading-relaxed blur-[5px] opacity-60',
                                 message.sender === mySenderRole
                                   ? 'ml-auto rounded-br-md bg-violet-200 text-violet-900'
                                   : 'rounded-bl-md border border-violet-100/80 bg-white text-slate-600',

@@ -687,7 +687,7 @@ export default function SubscriptionPlanSchedulePage() {
             <Link
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-11 w-full",
+                "h-11 w-full rounded-full border border-violet-200 bg-white px-5 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto",
               )}
               href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutorId)}`}
             >

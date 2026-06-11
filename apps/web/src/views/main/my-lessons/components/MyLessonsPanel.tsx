@@ -7,7 +7,6 @@ import {
   Info,
   Sparkles,
   Star,
-  Video,
   CalendarClock,
   MessageCircle,
   Trash2,
@@ -24,6 +23,7 @@ import { Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import { cn } from "@/lib/utils";
 import { ActionMenu } from "@/components/common/ActionMenu";
+import { SendMessageModal } from "@/components/common/SendMessageModal";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
 import { useCancelSubscriptionSlotMutation } from "@/services/subscription/subscription.api";
 import {
@@ -367,7 +367,7 @@ function PastLessonListItem({
 type UpcomingLessonItemProps = {
   lesson: LessonItem;
   rescheduleOrCancelLabel: string;
-  joinLessonLabel: string;
+  messageLabel: string;
   cancelledLabel: string;
   appSettingsRules: AppSettingsRules;
   onReschedule: (lesson: LessonItem) => void;
@@ -377,13 +377,18 @@ type UpcomingLessonItemProps = {
 function UpcomingLessonItem({
   lesson,
   rescheduleOrCancelLabel,
-  joinLessonLabel,
+  messageLabel,
   cancelledLabel,
   appSettingsRules,
   onReschedule,
   onCancel,
 }: UpcomingLessonItemProps) {
   const locale = useLocale();
+  const currentUser = useAtomValue(userAtom);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const senderId = currentUser?.id ?? "";
+  const senderMezonUserId = currentUser?.mezonUserId ?? "";
+  const tutorFirstName = lesson.tutor.trim().split(/\s+/)[0] ?? lesson.tutor;
   const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
   const tUpcoming = useTranslations("MyLessons.panels.lessons.upcoming");
   const cancelled = isCancelledTrialLesson(lesson);
@@ -418,7 +423,19 @@ function UpcomingLessonItem({
     },
   ];
 
+  const messageButton = (
+    <Button
+      variant="gradient"
+      className="h-11 w-full rounded-full px-4 text-xs font-semibold text-white sm:h-9 sm:w-auto sm:min-w-28"
+      onClick={() => setIsMessageModalOpen(true)}
+    >
+      <MessageCircle className="mr-1 size-3.5" />
+      {messageLabel}
+    </Button>
+  );
+
   return (
+    <>
     <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
       <div className="flex w-full flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -454,16 +471,10 @@ function UpcomingLessonItem({
                 }
                 items={actionItems}
               />
-              <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto">
-                <Video className="mr-1.5 size-3.5" />
-                {joinLessonLabel}
-              </Button>
+              {messageButton}
             </>
           ) : (
-            <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto">
-              <Video className="mr-1.5 size-3.5" />
-              {joinLessonLabel}
-            </Button>
+            messageButton
           )}
         </div>
       </div>
@@ -477,6 +488,17 @@ function UpcomingLessonItem({
         </div>
       )}
     </div>
+
+    <SendMessageModal
+      open={isMessageModalOpen}
+      title={tutorFirstName}
+      senderId={senderId}
+      senderMezonUserId={senderMezonUserId}
+      recipientId={lesson.tutorUserId}
+      recipientMezonUserId={lesson.tutorMezonUserId ?? ""}
+      onOpenChangeAction={setIsMessageModalOpen}
+    />
+    </>
   );
 }
 
@@ -568,7 +590,7 @@ type LessonsSectionProps = {
   lessons: LessonItem[];
   emptyState?: React.ReactNode;
   rescheduleOrCancelLabel: string;
-  joinLessonLabel: string;
+  messageLabel: string;
   cancelledLabel: string;
   appSettingsRules: AppSettingsRules;
   onReschedule: (lesson: LessonItem) => void;
@@ -580,7 +602,7 @@ function LessonsSection({
   lessons,
   emptyState,
   rescheduleOrCancelLabel,
-  joinLessonLabel,
+  messageLabel,
   cancelledLabel,
   appSettingsRules,
   onReschedule,
@@ -603,7 +625,7 @@ function LessonsSection({
                 key={lesson.id}
                 lesson={lesson}
                 rescheduleOrCancelLabel={rescheduleOrCancelLabel}
-                joinLessonLabel={joinLessonLabel}
+                messageLabel={messageLabel}
                 cancelledLabel={cancelledLabel}
                 appSettingsRules={appSettingsRules}
                 onReschedule={onReschedule}
@@ -1007,7 +1029,7 @@ export default function MyLessonsPanel({
         rescheduleOrCancelLabel={t(
           "panels.lessons.upcoming.rescheduleOrCancel",
         )}
-        joinLessonLabel={t("panels.lessons.upcoming.joinLesson")}
+        messageLabel={t("panels.tutors.message")}
         cancelledLabel={t("panels.lessons.upcoming.statusCancelled")}
         appSettingsRules={appSettingsRules}
         onReschedule={handleReschedule}
