@@ -137,7 +137,7 @@ export class MezonMessageService {
     return this.toChannelMessage(
       subscriptionEnrollmentConfirmedEmbed({
         ...params,
-        enrollmentUrl: this.url(ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(params.enrollmentId)),
+        enrollmentUrl: this.url(ROUTES.CHECKOUT.SUCCESS_WITH_ID('subscription', params.enrollmentId)),
       })
     );
   }

@@ -2,6 +2,7 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { EPaymentProvider } from '@mezon-tutors/shared';
 import { AppConfigService } from '../../shared/services/app-config.service';
 import { PayosService } from '../payos/payos.service';
+import { SepayService } from '../sepay/sepay.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 
 export type PaymentCheckoutKind = 'trial' | 'subscription';
@@ -12,6 +13,7 @@ export class PaymentCheckoutService {
     private readonly appConfig: AppConfigService,
     private readonly vnpayService: VnpayService,
     private readonly payosService: PayosService,
+    private readonly sepayService: SepayService,
   ) {}
 
   resolveProvider(provider?: EPaymentProvider): EPaymentProvider {
@@ -22,6 +24,13 @@ export class PaymentCheckoutService {
     if (provider === EPaymentProvider.PAYOS) {
       if (!this.payosService.isConfigured()) {
         throw new ServiceUnavailableException('PayOS is not configured; cannot create payment');
+      }
+      return;
+    }
+
+    if (provider === EPaymentProvider.SEPAY) {
+      if (!this.sepayService.isConfigured()) {
+        throw new ServiceUnavailableException('SePay is not configured; cannot create payment');
       }
       return;
     }
@@ -61,6 +70,22 @@ export class PaymentCheckoutService {
         paymentRef: String(orderCode),
         paymentUrl: checkoutUrl,
         paymentProvider: EPaymentProvider.PAYOS,
+      };
+    }
+
+    if (params.provider === EPaymentProvider.SEPAY) {
+      const invoiceNumber = this.sepayService.buildInvoiceNumber(params.resourceId);
+      const paymentUrl = await this.sepayService.initPaymentPageUrl({
+        invoiceNumber,
+        amount: params.amount,
+        description: params.description,
+        checkoutKind: params.checkoutKind,
+      });
+
+      return {
+        paymentRef: invoiceNumber,
+        paymentUrl,
+        paymentProvider: EPaymentProvider.SEPAY,
       };
     }
 

@@ -89,6 +89,7 @@ export * from './utils/tutor-lesson-dm';
 export * from './utils/lesson-complaint';
 export * from './utils/platform-fee';
 export * from './utils/wallet-payment';
+export * from './utils/payment-description';
 export * from './utils/event-lifecycle';
 export * from './utils/onboarding';
 export * from './utils/cloudinary-private-file';

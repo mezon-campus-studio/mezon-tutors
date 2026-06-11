@@ -47,6 +47,10 @@
           "title": "VNPAY",
           "subtitle": "VietQR, ATM, Domestic cards"
         },
+        "sepay": {
+          "title": "SePay",
+          "subtitle": "VietQR bank transfer, Napas"
+        },
         "paypal": {
           "title": "PayPal",
           "subtitle": "International cards and PayPal balance"
@@ -94,7 +98,7 @@
           "user_cancelled": {
             "badge": "Checkout not completed",
             "title": "Booking was cancelled",
-            "description": "This booking was not paid, so the system automatically cancelled it to avoid keeping an unpaid reservation.",
+            "description": "This booking has been cancelled.",
             "nextStepsTitle": "What this means",
             "nextSteps": {
               "noCharge": "No money was charged for this cancelled booking.",

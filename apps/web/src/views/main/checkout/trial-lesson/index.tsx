@@ -173,7 +173,7 @@ export default function TrialLessonCheckoutPage() {
         } else if (
           booking.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED
         ) {
-          router.push(ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(booking.id));
+          router.push(ROUTES.CHECKOUT.SUCCESS_WITH_ID('trial', booking.id));
         }
       } catch (error) {
         const message =
@@ -208,6 +208,9 @@ export default function TrialLessonCheckoutPage() {
       },
       vnpay: async () => {
         await submitBooking(useWalletBalance, EPaymentProvider.VNPAY);
+      },
+      sepay: async () => {
+        await submitBooking(useWalletBalance, EPaymentProvider.SEPAY);
       },
       paypal: async () => {
         toast.error(t("toast.paypalUnavailableTitle"), {

@@ -72,7 +72,7 @@ export interface SubscriptionEnrollmentDto {
 }
 
 export interface SubscriptionEnrollmentDetailDto extends SubscriptionEnrollmentDto {
-  tutor: { id: string; displayName: string; avatarUrl: string | null }
+  tutor: { id: string; displayName: string; avatarUrl: string | null; timezone: string }
 }
 
 export interface TutorSubscriptionWeekOccurrenceDto {

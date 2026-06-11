@@ -74,6 +74,10 @@ const envSchema = z.object({
   PAYOS_API_KEY: z.string().default(''),
   PAYOS_CHECKSUM_KEY: z.string().default(''),
 
+  SEPAY_MERCHANT_ID: z.string().default(''),
+  SEPAY_SECRET_KEY: z.string().default(''),
+  SEPAY_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
+
   CLOUDINARY_CLOUD_NAME: z.string().default(''),
   CLOUDINARY_API_KEY: z.string().default(''),
   CLOUDINARY_API_SECRET: z.string().default(''),
@@ -138,6 +142,9 @@ export class AppConfigService {
       PAYOS_CLIENT_ID: this.configService.get('PAYOS_CLIENT_ID'),
       PAYOS_API_KEY: this.configService.get('PAYOS_API_KEY'),
       PAYOS_CHECKSUM_KEY: this.configService.get('PAYOS_CHECKSUM_KEY'),
+      SEPAY_MERCHANT_ID: this.configService.get('SEPAY_MERCHANT_ID'),
+      SEPAY_SECRET_KEY: this.configService.get('SEPAY_SECRET_KEY'),
+      SEPAY_ENV: this.configService.get('SEPAY_ENV'),
       CLOUDINARY_CLOUD_NAME: this.configService.get('CLOUDINARY_CLOUD_NAME'),
       CLOUDINARY_API_KEY: this.configService.get('CLOUDINARY_API_KEY'),
       CLOUDINARY_API_SECRET: this.configService.get('CLOUDINARY_API_SECRET'),
@@ -272,6 +279,14 @@ export class AppConfigService {
       clientId: this.env.PAYOS_CLIENT_ID,
       apiKey: this.env.PAYOS_API_KEY,
       checksumKey: this.env.PAYOS_CHECKSUM_KEY,
+    };
+  }
+
+  get sepayConfig() {
+    return {
+      merchantId: this.env.SEPAY_MERCHANT_ID,
+      secretKey: this.env.SEPAY_SECRET_KEY,
+      env: this.env.SEPAY_ENV,
     };
   }
 

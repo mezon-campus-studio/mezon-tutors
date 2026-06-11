@@ -17,6 +17,7 @@ import { MyScheduleModule } from './modules/my-schedule/my-schedule.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { DmChannelModule } from './modules/dm-channel/dm-channel.module';
+import { SepayModule } from './modules/sepay/sepay.module';
 import { VnpayModule } from './modules/vnpay/vnpay.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { NotificationModule } from './modules/notification/notification.module';
@@ -62,6 +63,7 @@ import { CommonModule } from './common/common.module';
     ReviewsModule,
     DmChannelModule,
     VnpayModule,
+    SepayModule,
     WebhookModule,
     NotificationModule,
     MezonBotModule,

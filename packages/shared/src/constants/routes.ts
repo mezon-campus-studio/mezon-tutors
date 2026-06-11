@@ -66,16 +66,30 @@ export const ROUTES = {
   CHECKOUT: {
     INDEX: '/checkout',
     TRIAL_LESSON: '/checkout/trial-lesson',
-    TRIAL_LESSON_SUCCESS: (bookingId: string) => `/checkout/trial-lesson/success/${bookingId}`,
-    TRIAL_LESSON_CANCEL: '/checkout/trial-lesson/cancel',
-    TRIAL_LESSON_CANCEL_WITH_CODE: (cancelCode: string) =>
-      `/checkout/trial-lesson/cancel?code=${encodeURIComponent(cancelCode)}`,
     SUBSCRIPTION_PLAN: '/checkout/subscription-plan',
     SUBSCRIPTION_PLAN_SCHEDULE: '/checkout/subscription-plan/schedule',
-    SUBSCRIPTION_PLAN_SUCCESS: (enrollmentId: string) =>
-      `/checkout/subscription-plan/success/${enrollmentId}`,
-    SUBSCRIPTION_PLAN_CANCEL: '/checkout/subscription-plan/cancel',
-    SUBSCRIPTION_PLAN_CANCEL_WITH_CODE: (cancelCode: string) =>
-      `/checkout/subscription-plan/cancel?code=${encodeURIComponent(cancelCode)}`,
+    SUCCESS: '/checkout/success',
+    SUCCESS_WITH_ID: (type: 'trial' | 'subscription', id: string) => {
+      const params = new URLSearchParams({ type });
+      params.set(type === 'trial' ? 'bookingId' : 'enrollmentId', id);
+      return `/checkout/success?${params}`;
+    },
+    CANCEL: '/checkout/cancel',
+    CANCEL_WITH_CODE: (
+      cancelCode: string,
+      options?: { type?: 'trial' | 'subscription'; id?: string },
+    ) => {
+      const params = new URLSearchParams({ code: cancelCode });
+      if (options?.type) {
+        params.set('type', options.type);
+      }
+      if (options?.id) {
+        params.set(
+          options.type === 'trial' ? 'bookingId' : 'enrollmentId',
+          options.id,
+        );
+      }
+      return `/checkout/cancel?${params}`;
+    },
   },
 } as const;
