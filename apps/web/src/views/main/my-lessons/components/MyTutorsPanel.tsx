@@ -8,10 +8,14 @@ import {
   Plus,
   Star,
 } from "lucide-react";
+import { useAtomValue } from "jotai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { Button } from "@/components/ui";
+import { userAtom } from "@/store/auth.atom";
 import { formatTutorNextLessonLabel } from "@/components/calendar/utils/format-locale";
 import { useUserTimezone } from "@/hooks";
 import type { TutorItem } from "@/services/my-lessons/my-lessons.api";
@@ -25,6 +29,11 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
   const t = useTranslations("MyLessons");
   const locale = useLocale();
   const userTimezone = useUserTimezone();
+  const currentUser = useAtomValue(userAtom);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const senderId = currentUser?.id ?? "";
+  const senderMezonUserId = currentUser?.mezonUserId ?? "";
+  const tutorFirstName = tutor.name.trim().split(/\s+/)[0] ?? tutor.name;
   const displayNextLesson = tutor.nextLessonAt
     ? formatTutorNextLessonLabel(
         tutor.nextLessonLabel,
@@ -37,6 +46,7 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
       : t("panels.tutors.unscheduled");
 
   return (
+    <>
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white p-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:items-center sm:gap-5">
       <button
         type="button"
@@ -104,13 +114,10 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
         </span>
 
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <Button className="group/btn h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28">
-            <CalendarPlus className="mr-1 size-3.5" />
-            {t("panels.tutors.schedule")}
-          </Button>
           <Button
-            variant="outline"
-            className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto sm:min-w-28"
+            variant="gradient"
+            className="h-11 w-full rounded-full px-4 text-xs font-semibold text-white sm:h-9 sm:w-auto sm:min-w-28"
+            onClick={() => setIsMessageModalOpen(true)}
           >
             <MessageCircle className="mr-1 size-3.5" />
             {t("panels.tutors.message")}
@@ -118,6 +125,17 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
         </div>
       </div>
     </div>
+
+    <SendMessageModal
+      open={isMessageModalOpen}
+      title={tutorFirstName}
+      senderId={senderId}
+      senderMezonUserId={senderMezonUserId}
+      recipientId={tutor.userId}
+      recipientMezonUserId={tutor.mezonUserId ?? ""}
+      onOpenChangeAction={setIsMessageModalOpen}
+    />
+    </>
   );
 }
 

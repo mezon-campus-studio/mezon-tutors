@@ -668,6 +668,8 @@ export class MyLessonsService {
     const tutorMap = new Map<
       string,
       {
+        userId: string;
+        mezonUserId: string | null;
         name: string;
         avatar: string;
         subjects: Set<string>;
@@ -690,6 +692,8 @@ export class MyLessonsService {
             : null;
 
         tutorMap.set(lesson.tutor.id, {
+          userId: lesson.tutor.userId,
+          mezonUserId: lesson.tutor.user.mezonUserId,
           name: this.getTutorName(lesson.tutor),
           avatar: lesson.tutor.avatar || lesson.tutor.user.avatar,
           subjects: new Set([lesson.tutor.subject]),
@@ -720,6 +724,8 @@ export class MyLessonsService {
     return Array.from(tutorMap.entries())
       .map(([id, tutor]) => ({
         id,
+        user_id: tutor.userId,
+        mezon_user_id: tutor.mezonUserId,
         name: tutor.name,
         avatar: tutor.avatar,
         teaches: Array.from(tutor.subjects).sort().join(', '),

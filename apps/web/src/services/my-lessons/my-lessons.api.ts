@@ -82,6 +82,8 @@ export type LessonItem = {
 
 export type TutorItem = {
   id: string;
+  userId: string;
+  mezonUserId: string | null;
   name: string;
   avatar: string;
   teaches: string;
@@ -242,6 +244,8 @@ const mapLesson = (
 
 const mapTutor = (item: MyLessonTutorApiItem, timezoneName: string): TutorItem => ({
   id: item.id,
+  userId: item.user_id,
+  mezonUserId: item.mezon_user_id,
   name: item.name,
   avatar: item.avatar,
   teaches: item.teaches,
