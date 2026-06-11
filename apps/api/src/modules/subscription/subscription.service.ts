@@ -478,7 +478,13 @@ export class SubscriptionService {
       where: { id: enrollmentId, studentId: studentUserId },
       include: {
         tutor: {
-          select: { id: true, firstName: true, lastName: true, avatar: true, timezone: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+            user: { select: { timezone: true } },
+          },
         },
       },
     });
@@ -499,7 +505,7 @@ export class SubscriptionService {
         id: row.tutor.id,
         displayName,
         avatarUrl: row.tutor.avatar?.trim() ? row.tutor.avatar : null,
-        timezone: row.tutor.timezone?.trim() || DEFAULT_TIMEZONE,
+        timezone: row.tutor.user?.timezone?.trim() || DEFAULT_TIMEZONE,
       },
     };
   }

@@ -203,12 +203,6 @@ export default function TrialLessonCheckoutPage() {
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
-      payos: async () => {
-        await submitBooking(useWalletBalance, EPaymentProvider.PAYOS);
-      },
-      vnpay: async () => {
-        await submitBooking(useWalletBalance, EPaymentProvider.VNPAY);
-      },
       sepay: async () => {
         await submitBooking(useWalletBalance, EPaymentProvider.SEPAY);
       },

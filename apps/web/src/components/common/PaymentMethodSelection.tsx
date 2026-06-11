@@ -11,15 +11,13 @@ export type PaymentMethodOption = {
   subtitle: string;
   disabled?: boolean;
 };
-export type PaymentMethodId = "payos" | "vnpay" | "sepay" | "paypal";
+export type PaymentMethodId = "sepay" | "paypal";
 
-const PAYMENT_METHOD_IDS: PaymentMethodId[] = ["payos", "vnpay", "sepay", "paypal"];
+const PAYMENT_METHOD_IDS: PaymentMethodId[] = ["sepay", "paypal"];
 
 const DISABLED_PAYMENT_METHOD_IDS = new Set<PaymentMethodId>(["paypal"]);
 
 const METHOD_ACCENT: Record<PaymentMethodId, string> = {
-  payos: "from-emerald-500 to-teal-500",
-  vnpay: "from-violet-500 to-purple-500",
   sepay: "from-sky-500 to-blue-500",
   paypal: "from-purple-500 to-fuchsia-500",
 };
@@ -55,7 +53,7 @@ export function PaymentMethodSelection({
   const tPanel = useTranslations("Common.PaymentMethodSelection");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMethodId, setSelectedMethodId] =
-    useState<PaymentMethodId>("payos");
+    useState<PaymentMethodId>("sepay");
   const paymentMethods = useMemo<PaymentMethodOption[]>(
     () =>
       PAYMENT_METHOD_IDS.map((methodId) => ({

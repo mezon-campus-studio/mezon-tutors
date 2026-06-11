@@ -410,12 +410,6 @@ export default function SubscriptionPlanSchedulePage() {
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
-      payos: async () => {
-        await submitEnrollment(useWalletBalance, EPaymentProvider.PAYOS);
-      },
-      vnpay: async () => {
-        await submitEnrollment(useWalletBalance, EPaymentProvider.VNPAY);
-      },
       sepay: async () => {
         await submitEnrollment(useWalletBalance, EPaymentProvider.SEPAY);
       },
