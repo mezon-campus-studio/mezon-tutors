@@ -148,12 +148,14 @@ function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCardProps
           </div>
         </div>
 
-        <Link
-          href={detailHref}
-          className="inline-flex h-9 w-full items-center justify-center gap-1 rounded-full bg-violet-600 text-xs font-semibold text-white transition-colors hover:bg-violet-700"
-        >
-          {t("bookTrial")}
-          <ArrowRight className="ml-1 size-3.5" />
+        <Link href={detailHref}>
+          <Button
+            variant="gradient"
+            className="h-9 w-full rounded-full text-xs font-semibold"
+          >
+            {t("bookTrial")}
+            <ArrowRight className="ml-1 size-3.5" />
+          </Button>
         </Link>
       </div>
     </article>
@@ -189,7 +191,7 @@ export default function HomeFeaturedTutorsSection() {
           </div>
           <Link href="/tutors">
             <Button
-              variant="outline"
+              variant="gradient"
               className="h-10 w-fit rounded-full px-5 text-sm font-semibold"
             >
               {t("viewAll")}
