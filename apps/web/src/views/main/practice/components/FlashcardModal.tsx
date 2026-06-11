@@ -1,7 +1,8 @@
 "use client";
 
 import type { VocabularyWordItem } from "@mezon-tutors/shared";
-import { ArrowLeft, ArrowRight, Layers, Volume2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Volume2, X } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   useCallback,
@@ -13,6 +14,7 @@ import {
 } from "react";
 import { Button, Kbd } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { useUpdateWordStatusMutation } from "@/services/vocabulary/vocabulary.api";
 
 type FlashcardPhase = "ready" | "learning";
@@ -34,6 +36,31 @@ type FlashcardModalProps = {
 const SWIPE_THRESHOLD = 80; // px — minimum drag distance to trigger action
 const ROTATE_FACTOR = 0.12; // deg per px dragged
 const EXIT_TRANSITION_MS = 400;
+
+// ─── Stack config — subtle tilt per card; next card stays full size (no zoom) ─
+const CARD_TILTS = [
+  { rotate: -1.2, translateX: -2, translateY: 2 },
+  { rotate: 1.2, translateX: 2, translateY: 3 },
+  { rotate: -1.8, translateX: -3, translateY: 4 },
+] as const;
+
+const STACK_DEPTH_STYLES = [
+  { scale: 1, wordClass: "text-3xl text-slate-500" },
+  { scale: 0.98, wordClass: "text-2xl text-slate-400" },
+  { scale: 0.96, wordClass: "text-2xl text-slate-300" },
+] as const;
+
+const CARD_SHELL_CLASS =
+  "mx-auto h-[300px] w-full max-w-[220px] rounded-2xl sm:h-[380px] sm:max-w-[260px]";
+
+const STACK_BACK_DEPTHS = [1, 2, 3] as const;
+
+function getCardTilt(cardIndex: number) {
+  if (cardIndex === 0) {
+    return { rotate: 0, translateX: 0, translateY: 0 };
+  }
+  return CARD_TILTS[(cardIndex - 1) % CARD_TILTS.length];
+}
 
 function getExitDistance() {
   return typeof window !== "undefined" ? window.innerWidth * 1.1 : 500;
@@ -217,6 +244,8 @@ export default function FlashcardModal({
 
   const leftLabel =
     phase === "ready" ? t("knowWord") : t("markAsLearned");
+  const swipeHint =
+    phase === "ready" ? t("swipeHint") : t("swipeHintLearning");
   const phaseLabel =
     phase === "ready" ? t("phaseReady") : t("phaseLearning");
 
@@ -323,10 +352,10 @@ export default function FlashcardModal({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        handleLeft();
+        dismissCard("left", handleLeft);
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        handleRight();
+        dismissCard("right", handleRight);
       } else if (e.key === "Enter") {
         e.preventDefault();
         setIsFlipped((prev) => !prev);
@@ -335,7 +364,7 @@ export default function FlashcardModal({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, handleLeft, handleRight]);
+  }, [isOpen, handleLeft, handleRight, dismissCard]);
 
   // ─── Pointer / touch drag handlers ─────────────────────────────────────────
   const onDragStart = useCallback(
@@ -384,7 +413,8 @@ export default function FlashcardModal({
     onDragMove(e.touches[0].clientX);
   const onTouchEnd = () => onDragEnd();
 
-  const rotate = dragX * ROTATE_FACTOR;
+  const dragRotate = dragX * ROTATE_FACTOR;
+  const activeTilt = getCardTilt(index);
   const swipeTint = getSwipeTint(
     dragX,
     phase,
@@ -395,11 +425,26 @@ export default function FlashcardModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      <header className="flex items-center justify-between border-b border-slate-100 px-4 py-4 md:px-6">
-        <div className="flex items-center gap-2 text-slate-800">
-          <Layers className="size-5" />
-          <span className="font-semibold">{t("title")}</span>
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:py-4 md:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src={MezonlyLogo}
+              alt="Mezonly"
+              width={40}
+              height={40}
+              className="drop-shadow-[0_6px_16px_rgba(124,58,237,0.28)]"
+            />
+            <div className="flex flex-col leading-none">
+              <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
+                Mezonly
+              </span>
+              <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Tutor Matching
+              </span>
+            </div>
+          </div>
           {!isComplete && deck.length > 0 && (
             <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
               {phaseLabel}
@@ -415,7 +460,7 @@ export default function FlashcardModal({
         </button>
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 py-4 sm:justify-center sm:py-8">
         {deck.length === 0 ? (
           <div className="text-center">
             <p className="text-slate-600">{t("noCards")}</p>
@@ -447,8 +492,8 @@ export default function FlashcardModal({
             <div className="hidden flex-col items-center gap-2 sm:flex">
               <button
                 type="button"
-                onClick={handleLeft}
-                disabled={!isFlipped}
+                onClick={() => dismissCard("left", handleLeft)}
+                disabled={isExiting}
                 className={cn(FLASHCARD_ACTION_BTN, "sm:w-auto")}
               >
                 <ArrowLeft className="size-4 shrink-0" aria-hidden />
@@ -460,29 +505,34 @@ export default function FlashcardModal({
             </div>
 
             {/* ── Card stack ───────────────────────────────────────────────── */}
+            <div className="w-full max-w-[280px]">
             <div
-              className="relative w-full max-w-md select-none"
+              className="relative h-[312px] w-full select-none overflow-visible px-3 py-2 sm:h-[392px]"
               style={{ perspective: "1200px" }}
             >
-              {/* Background stacked cards — next words visible underneath */}
-              {[2, 1].map((offset) => {
-                const stacked = deck[index + offset];
+              {/* Background stacked cards */}
+              {STACK_BACK_DEPTHS.map((depth) => {
+                const cardIndex = index + depth;
+                const stacked = deck[cardIndex];
                 if (!stacked) return null;
+
+                const tilt = getCardTilt(cardIndex);
+                const depthStyle = STACK_DEPTH_STYLES[depth - 1];
 
                 return (
                   <div
-                    key={`${stacked.id}-${offset}`}
-                    className="absolute inset-x-0 top-2 mx-auto flex h-[280px] w-[92%] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                    key={`${stacked.id}-${cardIndex}`}
+                    className={cn(
+                      "pointer-events-none absolute inset-x-0 top-2 flex items-center justify-center overflow-hidden border border-slate-200/90 bg-white",
+                      CARD_SHELL_CLASS,
+                    )}
                     style={{
-                      transform: `translateY(${offset * 6}px) scale(${1 - offset * 0.02})`,
-                      zIndex: 10 - offset,
+                      transform: `translate(${tilt.translateX}px, ${tilt.translateY}px) rotate(${tilt.rotate}deg) scale(${depthStyle.scale})`,
+                      filter: "drop-shadow(0 4px 12px rgba(15,23,42,0.08))",
+                      zIndex: 10 - depth,
                     }}
                   >
-                    <p
-                      className={`font-bold text-slate-900 ${
-                        offset === 1 ? "text-4xl" : "text-3xl text-slate-500"
-                      }`}
-                    >
+                    <p className={cn("font-bold", depthStyle.wordClass)}>
                       {stacked.word}
                     </p>
                   </div>
@@ -492,9 +542,13 @@ export default function FlashcardModal({
               {/* Active draggable card */}
               <div
                 ref={cardRef}
-                className="relative z-20 mx-auto block h-[280px] w-full max-w-md"
+                className={cn(
+                  "absolute inset-x-0 top-2 z-20 block",
+                  CARD_SHELL_CLASS,
+                )}
                 style={{
-                  transform: `translateX(${dragX}px) rotate(${rotate}deg)`,
+                  transform: `translate(${activeTilt.translateX + dragX}px, ${activeTilt.translateY}px) rotate(${activeTilt.rotate + dragRotate}deg)`,
+                  filter: "drop-shadow(0 8px 20px rgba(15,23,42,0.12))",
                   transition:
                     isDragging || !cardMoveAnimated
                       ? "none"
@@ -539,12 +593,12 @@ export default function FlashcardModal({
                   {/* ── Front face ─────────────────────────────────────────── */}
                   <div
                     className={cn(
-                      "absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-2xl border p-8 shadow-lg transition-colors duration-150",
+                      "absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-2xl border p-6 transition-colors duration-150 sm:p-8",
                       swipeStyles.bg,
                     )}
                     style={{ backfaceVisibility: "hidden" }}
                   >
-                    <p className={cn("text-4xl font-bold", swipeStyles.word)}>
+                    <p className={cn("text-3xl font-bold sm:text-4xl", swipeStyles.word)}>
                       {current?.word}
                     </p>
                   </div>
@@ -552,7 +606,7 @@ export default function FlashcardModal({
                   {/* ── Back face ──────────────────────────────────────────── */}
                   <div
                     className={cn(
-                      "absolute inset-0 flex flex-col overflow-hidden rounded-2xl border p-6 shadow-lg transition-colors duration-150",
+                      "absolute inset-0 flex flex-col overflow-hidden rounded-2xl border p-4 transition-colors duration-150 sm:p-6",
                       swipeStyles.bg,
                     )}
                     style={{
@@ -615,12 +669,13 @@ export default function FlashcardModal({
                 </div>
 
               </div>
+            </div>
 
-              <p className="mt-8 text-center text-xs text-slate-400 ">
+              <p className="mt-4 text-center text-xs text-slate-400 sm:mt-8">
                 {t("flipHint")}
               </p>
               <p className="mt-1 text-center text-xs text-slate-400">
-                {t("swipeHint")}
+                {swipeHint}
               </p>
             </div>
 
@@ -628,8 +683,8 @@ export default function FlashcardModal({
             <div className="hidden flex-col items-center gap-2 sm:flex">
               <button
                 type="button"
-                onClick={handleRight}
-                disabled={!isFlipped}
+                onClick={() => dismissCard("right", handleRight)}
+                disabled={isExiting}
                 className={cn(FLASHCARD_ACTION_BTN, "sm:w-auto")}
               >
                 <span className="whitespace-nowrap">{t("keepPracticing")}</span>
@@ -644,11 +699,11 @@ export default function FlashcardModal({
 
         {/* ── Mobile buttons ──────────────────────────────────────────────────── */}
         {!isComplete && deck.length > 0 && (
-          <div className="mt-8 flex w-full max-w-md gap-3 sm:hidden">
+          <div className="mt-4 flex w-full max-w-md shrink-0 gap-2 pb-2 sm:hidden">
             <button
               type="button"
-              onClick={handleLeft}
-              disabled={!isFlipped}
+              onClick={() => dismissCard("left", handleLeft)}
+              disabled={isExiting}
               className={cn(FLASHCARD_ACTION_BTN, "flex-1")}
             >
               <ArrowLeft className="size-4 shrink-0" aria-hidden />
@@ -656,8 +711,8 @@ export default function FlashcardModal({
             </button>
             <button
               type="button"
-              onClick={handleRight}
-              disabled={!isFlipped}
+              onClick={() => dismissCard("right", handleRight)}
+              disabled={isExiting}
               className={cn(FLASHCARD_ACTION_BTN, "flex-1")}
             >
               <span className="whitespace-nowrap">{t("keepPracticing")}</span>

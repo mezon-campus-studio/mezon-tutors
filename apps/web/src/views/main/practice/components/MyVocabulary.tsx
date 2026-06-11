@@ -210,8 +210,9 @@ export default function MyVocabulary({
             </p>
             <Button
               type="button"
+              variant="gradient"
               onClick={onAddWord}
-              className="mt-5 rounded-full bg-violet-600 px-6 hover:bg-violet-700"
+              className="mt-5 h-11 rounded-full px-6 font-semibold shadow-md shadow-violet-300/30"
             >
               {t("wordList.addFirstWord")}
             </Button>
@@ -292,10 +293,10 @@ export default function MyVocabulary({
                         {word.status !== "learned" && (
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="gradient"
                             onClick={() => handleMarkAsLearned(word.id)}
                             disabled={updateStatus.isPending}
-                            className="h-10 flex-1 rounded-full border-slate-900 font-semibold text-slate-900"
+                            className="h-10 flex-1 rounded-full font-semibold shadow-md shadow-violet-300/30"
                           >
                             <Check className="size-4" />
                             {t("wordList.markAsLearned")}
