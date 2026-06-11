@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
 import { DEFAULT_LOCALE } from "@/i18n/request";
 import {
@@ -78,6 +79,7 @@ export default async function RootLayout({
   const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
   const locale =
     cookieLocale === "vi" || cookieLocale === "en" ? cookieLocale : DEFAULT_LOCALE;
+  const messages = await getMessages();
   return (
     <html
       lang={locale}
@@ -85,7 +87,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full w-full flex-col bg-white text-slate-900">
-        <NextIntlClientProvider locale={locale}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <AppProvider>
             <Header />
             {children}

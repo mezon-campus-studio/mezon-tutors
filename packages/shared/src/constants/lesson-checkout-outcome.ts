@@ -64,6 +64,40 @@ export function mapPayosResponseToLessonCancelCode(
   return 'unknown';
 }
 
+export function mapSepayResponseToLessonCancelCode(
+  outcome: 'success' | 'error' | 'cancel',
+  orderStatus: string | undefined,
+  transactionStatus: string | undefined,
+): LessonCheckoutCancelCode {
+  if (outcome === 'cancel') {
+    return 'user_cancelled';
+  }
+
+  const normalizedOrderStatus = (orderStatus ?? '').trim().toUpperCase();
+  const normalizedTransactionStatus = (transactionStatus ?? '').trim().toUpperCase();
+
+  if (outcome === 'success') {
+    if (normalizedOrderStatus === 'CAPTURED' || normalizedTransactionStatus === 'APPROVED') {
+      return 'unknown';
+    }
+    return 'gateway_error';
+  }
+
+  if (normalizedOrderStatus === 'CANCELED' || normalizedOrderStatus === 'CANCELLED') {
+    return 'user_cancelled';
+  }
+
+  if (normalizedOrderStatus === 'EXPIRED') {
+    return 'session_expired';
+  }
+
+  if (normalizedTransactionStatus === 'DECLINED') {
+    return 'payment_declined';
+  }
+
+  return 'gateway_error';
+}
+
 export function mapVnpayResponseToLessonCancelCode(
   responseCode: string | undefined,
   transactionStatus: string | undefined

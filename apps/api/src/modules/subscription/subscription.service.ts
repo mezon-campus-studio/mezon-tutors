@@ -19,6 +19,8 @@ import {
 import {
   ECurrency,
   EPaymentProvider,
+  buildSubscriptionPaymentDescription,
+  formatTutorDisplayName,
   inferPaymentProviderFromUrl,
   LESSON_SETTLEMENT_GRACE_MINUTES,
   calculatePlatformFeeAmounts,
@@ -475,7 +477,9 @@ export class SubscriptionService {
     const row = await this.prisma.subscriptionEnrollment.findFirst({
       where: { id: enrollmentId, studentId: studentUserId },
       include: {
-        tutor: { select: { id: true, firstName: true, lastName: true, avatar: true } },
+        tutor: {
+          select: { id: true, firstName: true, lastName: true, avatar: true, timezone: true },
+        },
       },
     });
     if (!row) {
@@ -495,6 +499,7 @@ export class SubscriptionService {
         id: row.tutor.id,
         displayName,
         avatarUrl: row.tutor.avatar?.trim() ? row.tutor.avatar : null,
+        timezone: row.tutor.timezone?.trim() || DEFAULT_TIMEZONE,
       },
     };
   }
@@ -511,7 +516,12 @@ export class SubscriptionService {
 
     const tutorProfile = await this.prisma.tutorProfile.findUnique({
       where: { id: dto.tutorId },
-      select: { userId: true },
+      select: {
+        userId: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { username: true } },
+      },
     });
     if (!tutorProfile) {
       throw new NotFoundException('Tutor not found');
@@ -666,7 +676,21 @@ export class SubscriptionService {
       select: { id: true },
     });
 
-    const description = `Sub ${created.id.slice(0, 8)}`;
+    const firstSlot = [...dto.slots].sort((a, b) =>
+      `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`),
+    )[0];
+    const description = buildSubscriptionPaymentDescription({
+      enrollmentId: created.id,
+      lessonsPerWeek: dto.lessonsPerWeek,
+      firstSlotDate: firstSlot.date,
+      firstSlotStartTime: firstSlot.startTime,
+      tutorName: formatTutorDisplayName({
+        firstName: tutorProfile.firstName,
+        lastName: tutorProfile.lastName,
+        username: tutorProfile.user.username,
+      }),
+      timezone: DEFAULT_TIMEZONE,
+    });
     const checkout = await this.paymentCheckoutService.createCheckout({
       provider: paymentProvider,
       resourceId: created.id,

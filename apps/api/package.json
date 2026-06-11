@@ -41,6 +41,7 @@
     "reflect-metadata": "^0.2.2",
     "resend": "^6.9.3",
     "rxjs": "^7.8.1",
+    "sepay-pg-node": "^1.0.0",
     "vnpay": "^2.5.0",
     "zod": "^4.1.12"
   },

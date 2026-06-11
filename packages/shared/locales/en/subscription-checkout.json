@@ -11,6 +11,10 @@
         "vnpay": {
           "title": "VNPAY",
           "subtitle": "VietQR, ATM, Domestic cards"
+        },
+        "sepay": {
+          "title": "SePay",
+          "subtitle": "VietQR bank transfer, Napas"
         }
       }
     },
@@ -101,6 +105,8 @@
       "toastSuccessDescription": "Your subscription is pending payment.",
       "toastErrorTitle": "Error",
       "toastErrorFallback": "Could not submit.",
+      "paypalUnavailableTitle": "PayPal is not available",
+      "paypalUnavailableDescription": "PayPal is not configured yet. Please choose another payment method.",
       "toast": {
         "slotUnavailableTitle": "Time slot no longer available",
         "slotUnavailableDescription": "Someone else booked this time while you were checking out. Please choose another slot."
@@ -136,8 +142,22 @@
         "copiedToast": "Copied to clipboard",
         "tutorSection": "Your tutor",
         "lessonsPerWeekLabel": "{n} sessions per week",
+        "lessonSection": "Weekly schedule",
+        "scheduleSection": "Weekly schedule",
+        "lessonTimezoneCaption": "Displayed in your tutor's timezone ({timezone}).",
+        "scheduleTimezoneCaption": "Displayed in your tutor's timezone ({timezone}).",
+        "durationLabel": "{minutes} min per session",
+        "studentSection": "Subscribed as",
+        "tipsTitle": "Before your lessons",
+        "tips": {
+          "checkEmail": "Check your email and in-app notifications for messages from the tutor or platform.",
+          "dm": "Open a chat with your tutor in the app to align on materials, link, or platform <brand>MEZON</brand>.",
+          "early": "Join each session 3–5 minutes early to test camera and microphone.",
+          "policy": "If you need to change a recurring slot, request it as early as possible and follow the tutor’s policy.",
+          "support": "Keep your enrollment reference handy when contacting support."
+        },
         "paymentSection": "Payment",
-        "amountPaid": "Amount",
+        "amountPaid": "Amount paid",
         "paidAt": "Paid at",
         "pendingPaymentHint": "Payment is still processing. Refresh this page in a moment if it does not update.",
         "paymentStatus": {

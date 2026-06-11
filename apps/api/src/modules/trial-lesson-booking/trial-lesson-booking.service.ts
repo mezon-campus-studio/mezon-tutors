@@ -10,6 +10,8 @@ import {
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   trialLessonPaymentHoldExpiresAt,
   EPaymentProvider,
+  buildTrialLessonPaymentDescription,
+  formatTutorDisplayName,
   inferPaymentProviderFromUrl,
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
@@ -1498,15 +1500,18 @@ export class TrialLessonBookingService {
         user: {
           select: {
             timezone: true,
+            username: true,
           },
         },
       } as unknown as Prisma.TutorProfileInclude,
     }) as unknown as {
       id: string
       userId: string
+      firstName: string
+      lastName: string
       verificationStatus: VerificationStatus
       trialLessonPrice?: { usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } | null
-      user?: { timezone: string } | null
+      user?: { timezone: string; username: string } | null
     } | null
 
     if (!tutor || tutor.verificationStatus !== VerificationStatus.APPROVED) {
@@ -1619,7 +1624,16 @@ export class TrialLessonBookingService {
       select: { id: true },
     })
 
-    const description = `Trial ${booking.id.slice(0, 8)}`
+    const description = buildTrialLessonPaymentDescription({
+      bookingId: booking.id,
+      startAt: startAt.toDate(),
+      tutorName: formatTutorDisplayName({
+        firstName: tutor.firstName,
+        lastName: tutor.lastName,
+        username: tutor.user?.username,
+      }),
+      timezone: viewerTimezone,
+    })
     const checkout = await this.paymentCheckoutService.createCheckout({
       provider: paymentProvider,
       resourceId: booking.id,

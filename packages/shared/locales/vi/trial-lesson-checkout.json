@@ -47,6 +47,10 @@
           "title": "VNPAY",
           "subtitle": "VietQR, ATM, thẻ nội địa"
         },
+        "sepay": {
+          "title": "SePay",
+          "subtitle": "Chuyển khoản VietQR, Napas"
+        },
         "paypal": {
           "title": "PayPal",
           "subtitle": "Thẻ quốc tế và số dư PayPal"
@@ -94,7 +98,7 @@
           "user_cancelled": {
             "badge": "Thanh toán chưa hoàn tất",
             "title": "Booking đã được hủy",
-            "description": "Bạn chưa thanh toán cho booking này, nên hệ thống đã tự động hủy để tránh giữ chỗ sai trạng thái.",
+            "description": "Booking này đã được hủy.",
             "nextStepsTitle": "Điều này có nghĩa là",
             "nextSteps": {
               "noCharge": "Bạn không bị trừ tiền cho booking vừa hủy.",

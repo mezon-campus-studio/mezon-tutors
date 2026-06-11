@@ -380,7 +380,7 @@ export default function SubscriptionPlanSchedulePage() {
       if (enrollment.paymentUrl) {
         redirectToPaymentGateway(enrollment.paymentUrl);
       } else if (enrollment.paymentStatus === "SUCCEEDED") {
-        router.push(ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(enrollment.id));
+        router.push(ROUTES.CHECKOUT.SUCCESS_WITH_ID('subscription', enrollment.id));
       }
       return enrollment;
     },
@@ -408,18 +408,40 @@ export default function SubscriptionPlanSchedulePage() {
     }
   }, [submitEnrollment, t]);
 
+  const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
+    () => ({
+      payos: async () => {
+        await submitEnrollment(useWalletBalance, EPaymentProvider.PAYOS);
+      },
+      vnpay: async () => {
+        await submitEnrollment(useWalletBalance, EPaymentProvider.VNPAY);
+      },
+      sepay: async () => {
+        await submitEnrollment(useWalletBalance, EPaymentProvider.SEPAY);
+      },
+      paypal: async () => {
+        toast.error(t("toast.paypalUnavailableTitle"), {
+          description: t("toast.paypalUnavailableDescription"),
+        });
+      },
+    }),
+    [submitEnrollment, useWalletBalance, t],
+  );
+
   const handlePay = useCallback(
     async (methodId: PaymentMethodId) => {
       try {
-        const paymentProvider =
-          methodId === "vnpay" ? EPaymentProvider.VNPAY : EPaymentProvider.PAYOS;
-        await submitEnrollment(useWalletBalance, paymentProvider);
+        const executePayment = paymentMethodHandlers[methodId];
+        if (!executePayment) {
+          return;
+        }
+        await executePayment();
       } catch (e) {
         const msg = e instanceof Error ? e.message : t("toastErrorFallback");
         toast.error(t("toastErrorTitle"), { description: msg });
       }
     },
-    [submitEnrollment, t, useWalletBalance],
+    [paymentMethodHandlers, t],
   );
 
   const removeSlot = (key: string) => {

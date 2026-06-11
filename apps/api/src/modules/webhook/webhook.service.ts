@@ -9,6 +9,7 @@ import {
   LESSON_CANCEL_REASON_SLOT_CONFLICT,
   LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
   mapPayosResponseToLessonCancelCode,
+  mapSepayResponseToLessonCancelCode,
   mapVnpayResponseToLessonCancelCode,
   ROUTES,
   type LessonCheckoutCancelCode,
@@ -20,14 +21,27 @@ import { AppConfigService } from '../../shared/services/app-config.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
 import { NotificationService } from '../notification/notification.service';
 import { PayosService } from '../payos/payos.service';
+import { SepayService } from '../sepay/sepay.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 
-type VnpayQuery = Record<string, string | string[] | undefined>;
-type PayosReturnQuery = Record<string, string | string[] | undefined>;
-type PaymentGateway = 'vnpay' | 'payos';
+type GatewayQuery = Record<string, string | string[] | undefined>;
+type LessonCheckoutKind = 'trial' | 'subscription';
+type PaymentGateway = 'vnpay' | 'payos' | 'sepay';
+type SepayCallbackOutcome = 'success' | 'error' | 'cancel';
+
+type SepayIpnPayload = {
+  notification_type?: string;
+  order?: {
+    order_invoice_number?: string;
+    order_status?: string;
+  };
+  transaction?: {
+    transaction_status?: string;
+  };
+};
 
 export type ApplyVnpayPaymentResult =
   | {
@@ -57,6 +71,7 @@ export class WebhookService {
     private readonly prisma: PrismaService,
     private readonly vnpayService: VnpayService,
     private readonly payosService: PayosService,
+    private readonly sepayService: SepayService,
     private readonly appConfig: AppConfigService,
     private readonly notificationService: NotificationService,
     private readonly lessonSettlementService: LessonSettlementService,
@@ -71,128 +86,59 @@ export class WebhookService {
     code: LessonCheckoutCancelCode,
     resourceId?: string,
   ): string {
-    const base =
-      checkout === 'trial'
-        ? `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_CANCEL_WITH_CODE(code)}`
-        : `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_CANCEL_WITH_CODE(code)}`;
-    if (!resourceId) {
-      return base;
-    }
-    const param = checkout === 'trial' ? 'bookingId' : 'enrollmentId';
-    return `${base}&${param}=${encodeURIComponent(resourceId)}`;
+    return `${frontend}${ROUTES.CHECKOUT.CANCEL_WITH_CODE(code, {
+      type: checkout,
+      id: resourceId,
+    })}`;
   }
 
-  async buildTrialLessonVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
-    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
-    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
-    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
+  async buildLessonCheckoutRedirectUrl(
+    gateway: string,
+    checkoutKindRoute: string,
+    outcome: string,
+    query: GatewayQuery,
+  ): Promise<string> {
+    const checkout = this.parseLessonCheckoutKind(checkoutKindRoute);
 
-    const verification = this.vnpayService.verifyReturnUrl(query);
-    if (!verification.isVerified) {
-      return toTrialCancel('invalid_signature');
-    }
-
-    try {
-      const result = await this.applyVnpayPaymentResult(query);
-      if (result.kind === 'subscription') {
-        if (result.slotConflictAfterPayment) {
-          return toSubCancel(
-            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-            result.enrollmentId,
-          );
+    switch (gateway) {
+      case 'vnpay':
+        if (outcome !== 'return') {
+          throw new BadRequestException('VNPay only supports return callback');
         }
-        if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-          return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
+        return this.buildVnpayLessonCheckoutRedirectUrl(query, checkout);
+      case 'payos':
+        if (outcome === 'return') {
+          return this.buildPayosReturnRedirectUrl(query, checkout);
         }
-        const code = mapVnpayResponseToLessonCancelCode(
-          result.responseCode,
-          result.transactionStatus
-        );
-        return toSubCancel(code, result.enrollmentId);
+        if (outcome === 'cancel') {
+          return this.buildPayosCancelRedirectUrl(query, checkout);
+        }
+        throw new BadRequestException('Invalid PayOS callback outcome');
+      case 'sepay': {
+        if (!['return', 'error', 'cancel'].includes(outcome)) {
+          throw new BadRequestException('Invalid SePay callback outcome');
+        }
+        const sepayOutcome: SepayCallbackOutcome =
+          outcome === 'return' ? 'success' : (outcome as 'error' | 'cancel');
+        return this.buildSepayReturnRedirectUrl(query, checkout, sepayOutcome);
       }
-      if (result.slotConflictAfterPayment) {
-        return toTrialCancel(
-          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-          result.bookingId,
-        );
-      }
-      if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-        return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
-      }
-      const code = mapVnpayResponseToLessonCancelCode(
-        result.responseCode,
-        result.transactionStatus
-      );
-      return toTrialCancel(code, result.bookingId);
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        return toTrialCancel('order_not_found');
-      }
-      if (e instanceof BadRequestException) {
-        return toTrialCancel('gateway_error');
-      }
-      throw e;
+      default:
+        throw new BadRequestException(`Unsupported payment gateway: ${gateway}`);
     }
   }
 
-  async buildSubscriptionEnrollmentVnpayReturnRedirectUrl(query: VnpayQuery): Promise<string> {
-    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
-    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
-    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
-
-    const verification = this.vnpayService.verifyReturnUrl(query);
-    if (!verification.isVerified) {
-      return toSubCancel('invalid_signature');
-    }
-
-    try {
-      const result = await this.applyVnpayPaymentResult(query);
-      if (result.kind === 'trial') {
-        if (result.slotConflictAfterPayment) {
-          return toTrialCancel(
-            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-            result.bookingId,
-          );
-        }
-        if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-          return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
-        }
-        const code = mapVnpayResponseToLessonCancelCode(
-          result.responseCode,
-          result.transactionStatus
-        );
-        return toTrialCancel(code, result.bookingId);
-      }
-      if (result.slotConflictAfterPayment) {
-        return toSubCancel(
-          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-          result.enrollmentId,
-        );
-      }
-      if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-        return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
-      }
-      const code = mapVnpayResponseToLessonCancelCode(
-        result.responseCode,
-        result.transactionStatus
-      );
-      return toSubCancel(code, result.enrollmentId);
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        return toSubCancel('order_not_found');
-      }
-      if (e instanceof BadRequestException) {
-        return toSubCancel('gateway_error');
-      }
-      throw e;
+  async handleGatewayIpn(gateway: string, body: unknown, secretKeyHeader?: string) {
+    switch (gateway) {
+      case 'payos':
+        return this.handlePayosIpn(body);
+      case 'sepay':
+        return this.handleSepayIpn(body, secretKeyHeader);
+      default:
+        throw new BadRequestException(`Unsupported payment gateway: ${gateway}`);
     }
   }
 
-  async handleVnpayReturn(query: VnpayQuery) {
+  async handleVnpayReturn(query: GatewayQuery) {
     const verification = this.vnpayService.verifyReturnUrl(query);
     if (!verification.isVerified) {
       throw new BadRequestException('Invalid VNPay return signature');
@@ -200,7 +146,7 @@ export class WebhookService {
     return this.applyVnpayPaymentResult(query);
   }
 
-  async handleVnpayIpn(query: VnpayQuery) {
+  async handleVnpayIpn(query: GatewayQuery) {
     const verification = this.vnpayService.verifyIpnCall(query);
     if (!verification.isVerified) {
       return { RspCode: '97', Message: 'Invalid checksum' };
@@ -213,23 +159,33 @@ export class WebhookService {
     return { RspCode: '00', Message: 'Confirm Success' };
   }
 
-  async buildTrialLessonPayosReturnRedirectUrl(query: PayosReturnQuery): Promise<string> {
-    return this.buildPayosReturnRedirectUrl(query, 'trial');
+  private async handleSepayIpn(body: unknown, secretKeyHeader: string | undefined) {
+    if (!this.sepayService.verifyIpnSecretKey(secretKeyHeader)) {
+      throw new BadRequestException('Invalid SePay IPN secret key');
+    }
+
+    const payload = body as SepayIpnPayload;
+    const orderRef = payload.order?.order_invoice_number?.trim();
+    if (!orderRef) {
+      throw new BadRequestException('Missing SePay order invoice number');
+    }
+
+    const isSucceeded =
+      payload.notification_type === 'ORDER_PAID' &&
+      (payload.order?.order_status ?? '').trim().toUpperCase() === 'CAPTURED';
+
+    await this.applySepayPaymentResult({
+      orderRef,
+      isSucceeded,
+      rawPayload: body,
+      orderStatus: payload.order?.order_status,
+      transactionStatus: payload.transaction?.transaction_status,
+    });
+
+    return { success: true };
   }
 
-  async buildSubscriptionEnrollmentPayosReturnRedirectUrl(query: PayosReturnQuery): Promise<string> {
-    return this.buildPayosReturnRedirectUrl(query, 'subscription');
-  }
-
-  async buildTrialLessonPayosCancelRedirectUrl(query: PayosReturnQuery): Promise<string> {
-    return this.buildPayosCancelRedirectUrl(query, 'trial');
-  }
-
-  async buildSubscriptionEnrollmentPayosCancelRedirectUrl(query: PayosReturnQuery): Promise<string> {
-    return this.buildPayosCancelRedirectUrl(query, 'subscription');
-  }
-
-  async handlePayosIpn(body: unknown) {
+  private async handlePayosIpn(body: unknown) {
     const payload = body as Webhook;
     let verifiedData;
     try {
@@ -258,32 +214,45 @@ export class WebhookService {
     return { received: true };
   }
 
-  private async buildPayosReturnRedirectUrl(
-    query: PayosReturnQuery,
-    checkout: 'trial' | 'subscription',
+  private async buildVnpayLessonCheckoutRedirectUrl(
+    query: GatewayQuery,
+    checkout: LessonCheckoutKind,
   ): Promise<string> {
     const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
-    const toTrialCancel = (code: LessonCheckoutCancelCode, bookingId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'trial', code, bookingId);
-    const toSubCancel = (code: LessonCheckoutCancelCode, enrollmentId?: string) =>
-      this.lessonCheckoutCancelUrl(frontend, 'subscription', code, enrollmentId);
+    const verification = this.vnpayService.verifyReturnUrl(query);
+    if (!verification.isVerified) {
+      return this.lessonCheckoutCancelUrl(frontend, checkout, 'invalid_signature');
+    }
 
+    return this.withLessonCheckoutRedirectErrors(checkout, frontend, async () => {
+      const result = await this.applyVnpayPaymentResult(query);
+      const cancelCode = mapVnpayResponseToLessonCancelCode(
+        result.responseCode,
+        result.transactionStatus,
+      );
+      return this.resolveLessonPaymentRedirectUrl(frontend, result, cancelCode);
+    });
+  }
+
+  private async buildPayosReturnRedirectUrl(
+    query: GatewayQuery,
+    checkout: LessonCheckoutKind,
+  ): Promise<string> {
+    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
     const orderCode = this.getScalarQueryValue(query.orderCode);
     const code = this.getScalarQueryValue(query.code);
     const status = this.getScalarQueryValue(query.status);
     const cancel = this.parsePayosCancelFlag(query.cancel);
 
     if (!orderCode) {
-      return checkout === 'trial' ? toTrialCancel('invalid_signature') : toSubCancel('invalid_signature');
+      return this.lessonCheckoutCancelUrl(frontend, checkout, 'invalid_signature');
     }
 
     if (cancel) {
-      return checkout === 'trial'
-        ? toTrialCancel('user_cancelled')
-        : toSubCancel('user_cancelled');
+      return this.lessonCheckoutCancelUrl(frontend, checkout, 'user_cancelled');
     }
 
-    try {
+    return this.withLessonCheckoutRedirectErrors(checkout, frontend, async () => {
       const isSucceeded = code === '00' && status === 'PAID';
       const result = await this.applyPayosPaymentResult({
         orderRef: orderCode,
@@ -292,46 +261,14 @@ export class WebhookService {
         responseCode: code,
         transactionStatus: status,
       });
-
-      if (result.kind === 'subscription') {
-        if (result.slotConflictAfterPayment) {
-          return toSubCancel(
-            LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-            result.enrollmentId,
-          );
-        }
-        if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-          return `${frontend}${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SUCCESS(result.enrollmentId)}`;
-        }
-        const cancelCode = mapPayosResponseToLessonCancelCode(code, cancel, status);
-        return toSubCancel(cancelCode, result.enrollmentId);
-      }
-
-      if (result.slotConflictAfterPayment) {
-        return toTrialCancel(
-          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
-          result.bookingId,
-        );
-      }
-      if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
-        return `${frontend}${ROUTES.CHECKOUT.TRIAL_LESSON_SUCCESS(result.bookingId)}`;
-      }
       const cancelCode = mapPayosResponseToLessonCancelCode(code, cancel, status);
-      return toTrialCancel(cancelCode, result.bookingId);
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        return checkout === 'trial' ? toTrialCancel('order_not_found') : toSubCancel('order_not_found');
-      }
-      if (e instanceof BadRequestException) {
-        return checkout === 'trial' ? toTrialCancel('gateway_error') : toSubCancel('gateway_error');
-      }
-      throw e;
-    }
+      return this.resolveLessonPaymentRedirectUrl(frontend, result, cancelCode);
+    });
   }
 
   private buildPayosCancelRedirectUrl(
-    query: PayosReturnQuery,
-    checkout: 'trial' | 'subscription',
+    query: GatewayQuery,
+    checkout: LessonCheckoutKind,
   ): string {
     const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
     const orderCode = this.getScalarQueryValue(query.orderCode);
@@ -350,6 +287,126 @@ export class WebhookService {
     }
 
     return this.lessonCheckoutCancelUrl(frontend, checkout, cancelCode);
+  }
+
+  private async buildSepayReturnRedirectUrl(
+    query: GatewayQuery,
+    checkout: LessonCheckoutKind,
+    outcome: SepayCallbackOutcome,
+  ): Promise<string> {
+    const frontend = this.appConfig.frontendUrl.replace(/\/$/, '');
+    const orderRef = this.getScalarQueryValue(query.order_invoice_number);
+    if (!orderRef) {
+      return this.lessonCheckoutCancelUrl(frontend, checkout, 'invalid_signature');
+    }
+
+    if (outcome === 'cancel') {
+      try {
+        const result = await this.applySepayPaymentResult({
+          orderRef,
+          isSucceeded: false,
+          rawPayload: query,
+          orderStatus: 'CANCELED',
+          transactionStatus: undefined,
+        });
+        const cancelCode = mapSepayResponseToLessonCancelCode('cancel', 'CANCELED', undefined);
+        return this.resolveLessonPaymentRedirectUrl(frontend, result, cancelCode);
+      } catch (e) {
+        if (e instanceof NotFoundException) {
+          return this.lessonCheckoutCancelUrl(frontend, checkout, 'order_not_found');
+        }
+        return this.lessonCheckoutCancelUrl(frontend, checkout, 'user_cancelled');
+      }
+    }
+
+    return this.withLessonCheckoutRedirectErrors(checkout, frontend, async () => {
+      const orderSnapshot =
+        outcome === 'success' ? await this.sepayService.retrieveOrder(orderRef) : null;
+      const orderStatus = orderSnapshot?.orderStatus;
+      const transactionStatus = orderSnapshot?.transactionStatus;
+      const isSucceeded =
+        outcome === 'success' && this.sepayService.isCapturedOrder(orderSnapshot);
+
+      const result = await this.applySepayPaymentResult({
+        orderRef,
+        isSucceeded,
+        rawPayload: query,
+        orderStatus,
+        transactionStatus,
+      });
+      const cancelCode = mapSepayResponseToLessonCancelCode(
+        outcome,
+        orderStatus,
+        transactionStatus,
+      );
+      return this.resolveLessonPaymentRedirectUrl(frontend, result, cancelCode);
+    });
+  }
+
+  private async applySepayPaymentResult(params: {
+    orderRef: string;
+    isSucceeded: boolean;
+    rawPayload: unknown;
+    orderStatus?: string;
+    transactionStatus?: string;
+  }): Promise<ApplyVnpayPaymentResult> {
+    const booking = await this.prisma.trialLessonBooking.findFirst({
+      where: { paymentRef: params.orderRef },
+      select: {
+        id: true,
+        tutorId: true,
+        studentId: true,
+        paymentStatus: true,
+        tutorAmount: true,
+        deductAmount: true,
+        tutor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+    if (booking) {
+      return this.applyTrialLessonGatewayPayment({
+        gateway: 'sepay',
+        rawPayload: params.rawPayload,
+        booking,
+        isSucceeded: params.isSucceeded,
+        responseCode: params.orderStatus,
+        transactionStatus: params.transactionStatus,
+        orderRef: params.orderRef,
+      });
+    }
+
+    const enrollment = await this.prisma.subscriptionEnrollment.findFirst({
+      where: { paymentRef: params.orderRef },
+      select: {
+        id: true,
+        studentId: true,
+        tutorId: true,
+        tutorAmount: true,
+        deductAmount: true,
+        paymentStatus: true,
+        tutor: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+    if (enrollment) {
+      return this.applySubscriptionEnrollmentGatewayPayment({
+        gateway: 'sepay',
+        rawPayload: params.rawPayload,
+        enrollment,
+        isSucceeded: params.isSucceeded,
+        responseCode: params.orderStatus,
+        transactionStatus: params.transactionStatus,
+        orderRef: params.orderRef,
+      });
+    }
+
+    throw new NotFoundException(`Payment order not found for ref ${params.orderRef}`);
   }
 
   private async applyPayosPaymentResult(params: {
@@ -418,7 +475,7 @@ export class WebhookService {
     throw new NotFoundException(`Payment order not found for ref ${params.orderRef}`);
   }
 
-  private async applyVnpayPaymentResult(query: VnpayQuery): Promise<ApplyVnpayPaymentResult> {
+  private async applyVnpayPaymentResult(query: GatewayQuery): Promise<ApplyVnpayPaymentResult> {
     const txnRef = this.getScalarQueryValue(query.vnp_TxnRef);
     const responseCode = this.getScalarQueryValue(query.vnp_ResponseCode);
     const transactionStatus = this.getScalarQueryValue(query.vnp_TransactionStatus);
@@ -830,6 +887,68 @@ export class WebhookService {
       responseCode,
       transactionStatus,
     };
+  }
+
+  private parseLessonCheckoutKind(routeKind: string): LessonCheckoutKind {
+    if (routeKind === 'trial-lesson') {
+      return 'trial';
+    }
+    if (routeKind === 'subscription-enrollment') {
+      return 'subscription';
+    }
+    throw new BadRequestException(`Invalid checkout kind: ${routeKind}`);
+  }
+
+  private resolveLessonPaymentRedirectUrl(
+    frontend: string,
+    result: ApplyVnpayPaymentResult,
+    cancelCode: LessonCheckoutCancelCode,
+  ): string {
+    if (result.kind === 'subscription') {
+      if (result.slotConflictAfterPayment) {
+        return this.lessonCheckoutCancelUrl(
+          frontend,
+          'subscription',
+          LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+          result.enrollmentId,
+        );
+      }
+      if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
+        return `${frontend}${ROUTES.CHECKOUT.SUCCESS_WITH_ID('subscription', result.enrollmentId)}`;
+      }
+      return this.lessonCheckoutCancelUrl(frontend, 'subscription', cancelCode, result.enrollmentId);
+    }
+
+    if (result.slotConflictAfterPayment) {
+      return this.lessonCheckoutCancelUrl(
+        frontend,
+        'trial',
+        LESSON_CHECKOUT_SLOT_UNAVAILABLE_AFTER_PAYMENT_CODE,
+        result.bookingId,
+      );
+    }
+    if (result.paymentStatus === EPaymentStatus.SUCCEEDED) {
+      return `${frontend}${ROUTES.CHECKOUT.SUCCESS_WITH_ID('trial', result.bookingId)}`;
+    }
+    return this.lessonCheckoutCancelUrl(frontend, 'trial', cancelCode, result.bookingId);
+  }
+
+  private async withLessonCheckoutRedirectErrors(
+    checkout: LessonCheckoutKind,
+    frontend: string,
+    run: () => Promise<string>,
+  ): Promise<string> {
+    try {
+      return await run();
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        return this.lessonCheckoutCancelUrl(frontend, checkout, 'order_not_found');
+      }
+      if (e instanceof BadRequestException) {
+        return this.lessonCheckoutCancelUrl(frontend, checkout, 'gateway_error');
+      }
+      throw e;
+    }
   }
 
   private getScalarQueryValue(value: string | string[] | undefined): string | undefined {

@@ -11,6 +11,10 @@
         "vnpay": {
           "title": "VNPAY",
           "subtitle": "VietQR, ATM, thẻ nội địa"
+        },
+        "sepay": {
+          "title": "SePay",
+          "subtitle": "Chuyển khoản VietQR, Napas"
         }
       }
     },
@@ -101,6 +105,8 @@
       "toastSuccessDescription": "Đăng ký đang chờ thanh toán.",
       "toastErrorTitle": "Lỗi",
       "toastErrorFallback": "Không thể gửi.",
+      "paypalUnavailableTitle": "PayPal chưa khả dụng",
+      "paypalUnavailableDescription": "PayPal chưa được cấu hình. Vui lòng chọn phương thức thanh toán khác.",
       "toast": {
         "slotUnavailableTitle": "Khung giờ không còn trống",
         "slotUnavailableDescription": "Có người khác vừa giữ hoặc đặt khung giờ này. Vui lòng chọn lịch khác."
@@ -136,8 +142,22 @@
         "copiedToast": "Đã sao chép",
         "tutorSection": "Gia sư của bạn",
         "lessonsPerWeekLabel": "{n} buổi mỗi tuần",
+        "lessonSection": "Lịch học hàng tuần",
+        "scheduleSection": "Lịch học hàng tuần",
+        "lessonTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
+        "scheduleTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
+        "durationLabel": "{minutes} phút mỗi buổi",
+        "studentSection": "Đăng ký với tài khoản",
+        "tipsTitle": "Trước các buổi học",
+        "tips": {
+          "checkEmail": "Kiểm tra email và thông báo trong app từ gia sư hoặc nền tảng.",
+          "dm": "Mở chat với gia sư trong app để thống nhất tài liệu, link hoặc nền tảng <brand>MEZON</brand>.",
+          "early": "Vào mỗi buổi sớm 3–5 phút để kiểm tra camera và micro.",
+          "policy": "Nếu cần đổi khung giờ cố định, hãy yêu cầu sớm nhất có thể và tuân theo chính sách của gia sư.",
+          "support": "Giữ mã đăng ký khi liên hệ hỗ trợ."
+        },
         "paymentSection": "Thanh toán",
-        "amountPaid": "Số tiền",
+        "amountPaid": "Số tiền đã thanh toán",
         "paidAt": "Thanh toán lúc",
         "pendingPaymentHint": "Thanh toán đang xử lý. Làm mới trang sau vài phút nếu chưa cập nhật.",
         "paymentStatus": {
