@@ -11,6 +11,7 @@ import {
   Calendar,
   CalendarRange,
   type CheckCircle2,
+  CreditCard,
   MessageCircle,
   Sparkles,
   Users,
@@ -21,7 +22,12 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { useCurrency } from "@/hooks";
+import {
+  continueTutorPendingPayment,
+  useCurrency,
+  useTutorPendingPayment,
+  useUserTimezone,
+} from "@/hooks";
 import { useGetSubscriptionEligibility, useGetSubscriptionPlansByTutor } from "@/services";
 import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "../../components/TrialBookingSheet";
@@ -35,6 +41,7 @@ type TutorDetailSidebarProps = {
 export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
   const t = useTranslations("Tutors.Detail");
   const { currency } = useCurrency();
+  const userTimezone = useUserTimezone();
   const currentUser = useAtomValue(userAtom);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isTrialBookingSheetOpen, setIsTrialBookingSheetOpen] = useState(false);
@@ -47,15 +54,19 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
   const canFetchSub = Boolean(senderId && !isOwnProfile);
   const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
   const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
+  const { pendingPayment } = useTutorPendingPayment(tutor.id, canFetchSub);
   const hasSubscriptionPlans = Boolean(subscriptionPlans?.length);
   const trialDone =
     elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
+  const showContinuePayment = canFetchSub && Boolean(pendingPayment);
   const showSubscribe =
     canFetchSub &&
+    !showContinuePayment &&
     trialDone &&
     hasSubscriptionPlans &&
     elig?.reason !== "ALREADY_ENROLLED";
-  const showBookTrial = !isOwnProfile && (!senderId || !trialDone);
+  const showBookTrial =
+    !isOwnProfile && (!senderId || !trialDone) && !showContinuePayment;
   const bookTrialDisabled =
     canFetchSub &&
     (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
@@ -98,7 +109,15 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
           </div>
 
           <div className="space-y-2.5 p-5">
-            {showBookTrial ? (
+            {showContinuePayment && pendingPayment ? (
+              <Button
+                onClick={() => continueTutorPendingPayment(pendingPayment, userTimezone)}
+                className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+              >
+                <CreditCard className="mr-1.5 size-4" />
+                {t("continuePayment")}
+              </Button>
+            ) : showBookTrial ? (
               <Button
                 disabled={bookTrialDisabled}
                 title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}

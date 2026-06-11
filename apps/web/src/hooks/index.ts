@@ -4,3 +4,4 @@ export * from "./useCalendarNow";
 export * from "./useUnsavedChangesGuard";
 export * from "./useOpenAdminSupportChat";
 export * from "./use-breakpoint";
+export * from "./useTutorPendingPayment";
