@@ -432,7 +432,7 @@
       "subtitle": "Hoàn tất thanh toán trước khi hết thời gian giữ chỗ, nếu không các khung giờ đã chọn sẽ được giải phóng.",
       "empty": {
         "title": "Không có khoản chờ thanh toán",
-        "description": "Buổi học thử và gói đăng ký đang chờ thanh toán sẽ hiển thị ở đây cho đến khi bạn thanh toán hoặc hết 10 phút giữ chỗ.",
+        "description": "Buổi học thử và gói đăng ký đang chờ thanh toán sẽ hiển thị ở đây cho đến khi bạn thanh toán hoặc hết 15 phút giữ chỗ.",
         "browseTutors": "Danh sách gia sư"
       },
       "loadError": "Không tải được danh sách chờ thanh toán.",

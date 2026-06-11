@@ -28,7 +28,7 @@
         "paragraphs": [
           "When you book a trial lesson or subscription plan, you agree to pay the displayed price, applicable fees, and any taxes shown at checkout.",
           "Payments are processed through supported payment methods and may be held in your Mezonly wallet until the lesson is completed or settled according to platform rules.",
-          "When booking a trial lesson or subscription plan, the time slot is held for 10 minutes from when you start checkout. If payment is not completed within 10 minutes, the hold expires automatically.",
+          "When booking a trial lesson or subscription plan, the time slot is held for 15 minutes from when you start checkout. If payment is not completed within 15 minutes, the hold expires automatically and the booking is cancelled.",
           "Prices shown on tutor profiles are set by tutors within platform guidelines. Mezonly may update pricing rules, fees, or payment methods and will provide reasonable notice before changes take effect."
         ]
       },
@@ -246,7 +246,7 @@
             "label": "Other cases",
             "items": [
               "If you miss a lesson without valid notice, the booking may be marked as completed and may not be refundable.",
-              "The time slot is held for 10 minutes from when you start checkout. If payment is not completed within 10 minutes, the hold expires automatically."
+              "The time slot is held for 15 minutes from when you start checkout. If payment is not completed within 15 minutes, the hold expires automatically and the booking is cancelled."
             ]
           }
         ]
@@ -286,7 +286,7 @@
           {
             "label": "Other cases",
             "items": [
-              "The time slot is held for 10 minutes from when you start checkout for a subscription plan. If payment is not completed within 10 minutes, the hold expires automatically.",
+              "The time slot is held for 15 minutes from when you start checkout for a subscription plan. If payment is not completed within 15 minutes, the hold expires automatically and the enrollment is cancelled.",
               "If Mezonly or a tutor cancels a confirmed time slot because the platform or tutor is unavailable, the corresponding amount may be credited or refunded."
             ]
           }

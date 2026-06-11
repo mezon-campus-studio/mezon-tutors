@@ -28,7 +28,7 @@
         "paragraphs": [
           "Khi đặt buổi học thử hoặc đăng ký gói học, bạn đồng ý thanh toán đúng mức giá hiển thị, các khoản phí áp dụng và thuế (nếu có) tại bước thanh toán.",
           "Thanh toán được xử lý qua các phương thức được hỗ trợ và có thể được giữ trong ví Mezonly cho đến khi buổi học hoàn tất hoặc được quyết toán theo quy định của nền tảng.",
-          "Khi đặt buổi học thử hoặc gói học, khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn.",
+          "Khi đặt buổi học thử hoặc gói học, khung giờ được giữ chỗ trong 15 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 15 phút, giữ chỗ sẽ hết hạn và booking bị hủy tự động.",
           "Mức giá trên hồ sơ gia sư do gia sư tự đặt trong khung hướng dẫn của nền tảng. Mezonly có thể điều chỉnh quy tắc về giá, phí hoặc phương thức thanh toán và sẽ thông báo trước khi thay đổi có hiệu lực."
         ]
       },
@@ -246,7 +246,7 @@
             "label": "Các trường hợp khác",
             "items": [
               "Nếu bạn vắng mặt mà không thông báo hợp lệ, buổi học có thể được đánh dấu là đã hoàn tất và không được hoàn tiền.",
-              "Khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn."
+              "Khung giờ được giữ chỗ trong 15 phút kể từ khi bạn bắt đầu thanh toán. Nếu không hoàn tất thanh toán trong 15 phút, giữ chỗ sẽ hết hạn và booking bị hủy tự động."
             ]
           }
         ]
@@ -286,7 +286,7 @@
           {
             "label": "Các trường hợp khác",
             "items": [
-              "Khung giờ được giữ chỗ trong 10 phút kể từ khi bạn bắt đầu thanh toán gói học. Nếu không hoàn tất thanh toán trong 10 phút, giữ chỗ sẽ tự động hết hạn.",
+              "Khung giờ được giữ chỗ trong 15 phút kể từ khi bạn bắt đầu thanh toán gói học. Nếu không hoàn tất thanh toán trong 15 phút, giữ chỗ sẽ hết hạn và đăng ký bị hủy tự động.",
               "Nếu Mezonly hoặc gia sư hủy một khung giờ đã xác nhận do nền tảng hoặc gia sư không thể dạy, số tiền tương ứng có thể được cộng vào ví hoặc hoàn lại."
             ]
           }
