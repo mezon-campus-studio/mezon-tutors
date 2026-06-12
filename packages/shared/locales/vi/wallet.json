@@ -77,6 +77,8 @@
       "credit": "Nhận",
       "debit": "Chi",
       "viewDetail": "Xem chi tiết buổi học",
+      "platformFee": "Phí nền tảng: {amount}",
+      "platformFeeCompact": "Phí nền tảng {amount}",
       "detailDialog": {
         "title": "Chi tiết thu nhập",
         "description": "Thu nhập nhận được từ buổi học này.",
@@ -98,6 +100,7 @@
         "amountEarned": "Số tiền nhận",
         "amountPaid": "Số tiền đã thanh toán",
         "amountRefunded": "Số tiền hoàn",
+        "platformFee": "Phí nền tảng",
         "paidAt": "Thanh toán lúc",
         "receivedAt": "Nhận lúc",
         "refundedAt": "Hoàn lúc",
@@ -142,6 +145,7 @@
       "RELEASE": "Giải ngân",
       "WITHDRAWAL": "Rút tiền",
       "REFUND": "Hoàn tiền",
+      "CANCELLATION_REFUND": "Trừ tiền do hủy buổi học",
       "PLATFORM_FEE": "Phí nền tảng",
       "LESSON_PAYMENT": "Thanh toán VNPay",
       "SUBSCRIPTION_PAYMENT": "Thanh toán VNPay"

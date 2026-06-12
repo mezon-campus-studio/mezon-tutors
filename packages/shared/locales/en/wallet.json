@@ -77,6 +77,8 @@
       "credit": "Credit",
       "debit": "Debit",
       "viewDetail": "View lesson detail",
+      "platformFee": "Platform fee: {amount}",
+      "platformFeeCompact": "Platform fee {amount}",
       "detailDialog": {
         "title": "Earning detail",
         "description": "Earnings received from this lesson.",
@@ -98,6 +100,7 @@
         "amountEarned": "Amount earned",
         "amountPaid": "Amount paid",
         "amountRefunded": "Amount refunded",
+        "platformFee": "Platform fee",
         "paidAt": "Paid at",
         "receivedAt": "Received at",
         "refundedAt": "Refunded at",
@@ -142,6 +145,7 @@
       "RELEASE": "Funds released",
       "WITHDRAWAL": "Withdrawal",
       "REFUND": "Refund",
+      "CANCELLATION_REFUND": "Cancellation refund deduction",
       "PLATFORM_FEE": "Platform fee",
       "LESSON_PAYMENT": "Trial lesson payment",
       "SUBSCRIPTION_PAYMENT": "Subscription payment"

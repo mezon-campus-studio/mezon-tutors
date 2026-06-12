@@ -85,6 +85,7 @@ export type WalletTransactionApiItem = {
   type: WalletTransactionType | 'LESSON_PAYMENT' | 'SUBSCRIPTION_PAYMENT';
   direction: WalletTransactionDirection;
   amount: number;
+  platformFee?: number | null;
   description: string | null;
   createdAt: string;
   referenceLabel?: string | null;

@@ -23,6 +23,7 @@ import {
 import { useUserTimezone } from '@/hooks';
 import { formatInstantForLocale } from '@/lib/timezone';
 import { cn } from '@/lib/utils';
+import WalletTransactionPlatformFeeLine from './WalletTransactionPlatformFeeLine';
 
 type WalletEarningDetailDialogProps = {
   open: boolean;
@@ -101,7 +102,6 @@ export default function WalletEarningDetailDialog({
       ? t('paidAt')
       : t('receivedAt');
   const counterpartyRoleLabel = isStudentViewer ? t('tutor') : t('student');
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -246,6 +246,11 @@ export default function WalletEarningDetailDialog({
                     {amountPrefix}
                     {formatToCurrency(ECurrency.VND, transaction.amount)}
                   </p>
+                  <WalletTransactionPlatformFeeLine
+                    item={transaction}
+                    variant="compact"
+                    className="mt-1 text-[11px] text-violet-500"
+                  />
                   <p
                     className={cn(
                       'mt-1 text-xs',
