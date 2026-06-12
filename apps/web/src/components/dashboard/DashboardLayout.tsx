@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui";
 import { isLoadingAtom, userAtom } from "@/store";
 import DashboardSidebar from "./DashboardSidebar";
 import { TutorSetupChecklistWidget } from "./TutorSetupChecklistWidget";
+import { useDashboardRoutePrefetch } from "./useDashboardRoutePrefetch";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const user = useAtomValue(userAtom);
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const t = useTranslations("Dashboard");
+  const { prefetchHref } = useDashboardRoutePrefetch(user?.role);
 
   if (isAuthLoading) {
     return (
@@ -44,7 +46,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
         <div className="absolute -top-40 left-1/2 size-[44rem] max-w-[100vw] -translate-x-1/2 rounded-full bg-violet-300/15 blur-[140px]" />
       </div>
-      <DashboardSidebar userRole={user.role} />
+      <DashboardSidebar userRole={user.role} prefetchHref={prefetchHref} />
 
       <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto md:ml-64">{children}</main>
 
