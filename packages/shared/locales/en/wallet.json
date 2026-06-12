@@ -153,12 +153,25 @@
         "chartSpend": "Spent",
         "chartRefund": "Refunds",
         "actionTutors": "Find tutors",
-        "actionLessons": "My lessons"
+        "actionLessons": "My lessons",
+        "withdrawableLabel": "Available to withdraw",
+        "withdrawCta": "Withdraw funds",
+        "withdrawWindowWarning": "Withdrawals are only available from the 1st to the 10th of each month. Please come back during this window.",
+        "withdrawWindowToastTitle": "Withdrawal window closed",
+        "withdrawWindowToastDescription": "You can only request a withdrawal from the 1st to the 10th of each month."
       },
       "insight": {
         "securityHint": "Payments and refunds are protected on Mezonly.",
         "monthlyTitle": "Monthly snapshot",
-        "pendingTitle": "Pending checkout"
+        "pendingTitle": "Pending checkout",
+        "pendingWithdrawalTitle": "Pending withdrawal",
+        "pendingWithdrawalHint": "Reserved from your balance while a withdrawal request is reviewed."
+      },
+      "activity": {
+        "title": "Activity",
+        "subtitle": "Payments, refunds, and withdrawal history",
+        "searchPlaceholder": "Search activity…",
+        "export": "Export"
       },
       "bento": {
         "title": "Financial overview",

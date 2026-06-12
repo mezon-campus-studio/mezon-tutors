@@ -39,7 +39,10 @@ export default function StudentWalletInsightPanel({
   }
 
   const studentStats = isStudentWalletStats(stats) ? stats : undefined;
-  const hasPendingPayment = (details.pendingBalance ?? 0) > 0;
+  const pendingBalance = details.pendingBalance ?? 0;
+  const pendingWithdrawal = details.pendingWithdrawal ?? 0;
+  const hasPendingPayment = pendingBalance > 0;
+  const hasPendingWithdrawal = pendingWithdrawal > 0;
 
   return (
     <aside className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col">
@@ -70,8 +73,23 @@ export default function StudentWalletInsightPanel({
             <div>
               <p className="text-xs font-semibold text-amber-900">{t('pendingTitle')}</p>
               <p className="mt-1 text-xs text-amber-800/90">
-                {formatToCurrency(ECurrency.VND, details.pendingBalance)} ·{' '}
+                {formatToCurrency(ECurrency.VND, pendingBalance)} ·{' '}
                 {tCard('studentPendingLabel')}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {hasPendingWithdrawal ? (
+        <div className="rounded-2xl border border-violet-200/80 bg-violet-50/90 p-4 sm:col-span-2 lg:col-span-1">
+          <div className="flex gap-2.5">
+            <Bell className="mt-0.5 size-4 shrink-0 text-violet-700" />
+            <div>
+              <p className="text-xs font-semibold text-violet-900">{t('pendingWithdrawalTitle')}</p>
+              <p className="mt-1 text-xs text-violet-800/90">
+                {formatToCurrency(ECurrency.VND, pendingWithdrawal)} ·{' '}
+                {t('pendingWithdrawalHint')}
               </p>
             </div>
           </div>

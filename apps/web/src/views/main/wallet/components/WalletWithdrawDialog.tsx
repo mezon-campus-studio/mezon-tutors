@@ -67,6 +67,7 @@ type WalletWithdrawDialogProps = {
       reviewDetails: Partial<WalletPayoutBankAccount> & {
         amount: number;
         tutorName?: string;
+        requesterName?: string;
         paymentProofUrl?: string | null;
         adminNote?: string | null;
         processedAt?: string | null;
@@ -75,6 +76,7 @@ type WalletWithdrawDialogProps = {
         title: string;
         description: string;
         tutor: string;
+        requester?: string;
         transferAmount: string;
         bankSectionTitle: string;
         bankName: string;
@@ -413,10 +415,10 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
             <div className="relative mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
               <div className="flex items-center gap-2 text-xs text-orange-50/90">
                 <UserRound className="size-3.5 shrink-0" />
-                <span>{reviewLabels.tutor}</span>
+                <span>{reviewLabels.requester ?? reviewLabels.tutor}</span>
               </div>
               <span className="text-sm font-bold text-white">
-                {reviewDetails.tutorName || '—'}
+                {reviewDetails.requesterName ?? reviewDetails.tutorName ?? '—'}
               </span>
             </div>
           </div>

@@ -806,7 +806,8 @@ export class NotificationService {
 
   async notifyAdminWithdrawalRequested(params: {
     withdrawalId: string
-    tutorName: string
+    requesterName: string
+    requesterRole: string
     amountFormatted: string
     bankName: string
     bankAccountNumber: string
@@ -823,11 +824,12 @@ export class NotificationService {
       if (adminIds.length) {
         await this.createForMany(adminIds, {
           title: 'New withdrawal request',
-          content: `${params.tutorName} requested a withdrawal of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount}. Please review and process it.`,
+          content: `${params.requesterName} (${params.requesterRole}) requested a withdrawal of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount}. Please review and process it.`,
           type: ENotificationType.PAYMENT,
           i18nKey: NOTIFICATION_META.ADMIN_WITHDRAWAL_REQUESTED.templateKey,
           i18nParams: {
-            tutorName: params.tutorName,
+            requesterName: params.requesterName,
+            requesterRole: params.requesterRole,
             amount: params.amountFormatted,
             bankName: params.bankName,
             bankAccountNumber: maskedAccount,
@@ -837,7 +839,8 @@ export class NotificationService {
             titleI18nKey: NOTIFICATION_META.ADMIN_WITHDRAWAL_REQUESTED.titleKey,
             titleI18nParams: {},
             withdrawalId: params.withdrawalId,
-            tutorName: params.tutorName,
+            requesterName: params.requesterName,
+            requesterRole: params.requesterRole,
             amount: params.amountFormatted,
             bankName: params.bankName,
             bankAccountNumber: maskedAccount,
@@ -853,7 +856,8 @@ export class NotificationService {
 
     await this.sendAdminMezonDm(
       this.mezonMessageService.withdrawalRequested({
-        tutorName: params.tutorName,
+        requesterName: params.requesterName,
+        requesterRole: params.requesterRole,
         amountFormatted: params.amountFormatted,
         bankName: params.bankName,
         bankAccountNumber: params.bankAccountNumber,
@@ -861,6 +865,200 @@ export class NotificationService {
       }),
       `withdrawal-requested:${params.withdrawalId}`
     )
+  }
+
+  async notifyStudentWithdrawalSubmitted(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    withdrawalId: string
+    amountFormatted: string
+    bankName: string
+    bankAccountNumber: string
+  }): Promise<void> {
+    const maskedAccount = this.maskBankAccount(params.bankAccountNumber)
+    const content = `Your withdrawal request of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount} has been submitted and is pending review.`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Withdrawal request received',
+        content,
+        type: ENotificationType.PAYMENT,
+        i18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_SUBMITTED.templateKey,
+        i18nParams: {
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        },
+        dedupeKey: `withdrawal-submitted:${params.withdrawalId}`,
+        metadata: {
+          titleI18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_SUBMITTED.titleKey,
+          titleI18nParams: {},
+          withdrawalId: params.withdrawalId,
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student withdrawal-submitted notification (${params.withdrawalId}): ${detail}`
+      )
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId || !this.mezonBotService.isConfigured()) {
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.withdrawalSubmitted({
+          amountFormatted: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to send Mezon DM for student withdrawal-submitted (${params.withdrawalId}): ${detail}`
+      )
+    }
+  }
+
+  async notifyStudentWithdrawalCompleted(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    withdrawalId: string
+    amountFormatted: string
+    bankName: string
+    bankAccountNumber: string
+  }): Promise<void> {
+    const maskedAccount = this.maskBankAccount(params.bankAccountNumber)
+    const content = `Your withdrawal of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount} has been completed.`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Withdrawal completed',
+        content,
+        type: ENotificationType.PAYMENT,
+        i18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_COMPLETED.templateKey,
+        i18nParams: {
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        },
+        dedupeKey: `withdrawal-completed:${params.withdrawalId}`,
+        metadata: {
+          titleI18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_COMPLETED.titleKey,
+          titleI18nParams: {},
+          withdrawalId: params.withdrawalId,
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student withdrawal-completed notification (${params.withdrawalId}): ${detail}`
+      )
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping student withdrawal-completed DM')
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.withdrawalCompleted({
+          amountFormatted: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to send Mezon DM for student withdrawal-completed (${params.withdrawalId}): ${detail}`
+      )
+    }
+  }
+
+  async notifyStudentWithdrawalRejected(params: {
+    studentUserId: string
+    studentMezonUserId?: string | null
+    withdrawalId: string
+    amountFormatted: string
+    bankName: string
+    bankAccountNumber: string
+    adminNote?: string | null
+  }): Promise<void> {
+    const maskedAccount = this.maskBankAccount(params.bankAccountNumber)
+    const adminNoteLabel = params.adminNote?.trim() || '—'
+    const content = `Your withdrawal of ${params.amountFormatted} to ${params.bankName} · ${maskedAccount} was declined. The amount has been returned to your wallet balance. Admin note: ${adminNoteLabel}`
+
+    try {
+      await this.createForUser(params.studentUserId, {
+        title: 'Withdrawal declined',
+        content,
+        type: ENotificationType.PAYMENT,
+        i18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_REJECTED.templateKey,
+        i18nParams: {
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+          adminNote: adminNoteLabel,
+        },
+        dedupeKey: `withdrawal-rejected:${params.withdrawalId}`,
+        metadata: {
+          titleI18nKey: NOTIFICATION_META.STUDENT_WITHDRAWAL_REJECTED.titleKey,
+          titleI18nParams: {},
+          withdrawalId: params.withdrawalId,
+          amount: params.amountFormatted,
+          bankName: params.bankName,
+          bankAccountNumber: maskedAccount,
+          adminNote: params.adminNote?.trim() || null,
+        },
+      })
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to create student withdrawal-rejected notification (${params.withdrawalId}): ${detail}`
+      )
+    }
+
+    const mezonUserId = params.studentMezonUserId?.trim()
+    if (!mezonUserId) {
+      return
+    }
+    if (!this.mezonBotService.isConfigured()) {
+      this.logger.warn('Mezon bot is not configured; skipping student withdrawal-rejected DM')
+      return
+    }
+
+    try {
+      await this.mezonBotService.sendDMToUser(
+        mezonUserId,
+        this.mezonMessageService.withdrawalRejected({
+          amountFormatted: params.amountFormatted,
+          adminNote: params.adminNote?.trim() || undefined,
+        })
+      )
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error)
+      this.logger.warn(
+        `Failed to send Mezon DM for student withdrawal-rejected (${params.withdrawalId}): ${detail}`
+      )
+    }
   }
 
   async notifyTutorWithdrawalCompleted(params: {

@@ -3,26 +3,36 @@
 import { useState } from 'react';
 import { Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import {
   useWalletDetails,
   useWalletStats,
   useWalletTransactions,
+  useWalletWithdrawals,
 } from '@/services';
 import WalletPayoutBankDialog from '../components/WalletPayoutBankDialog';
+import WalletWithdrawDialog from '../components/WalletWithdrawDialog';
 import StudentWalletBentoStats from './StudentWalletBentoStats';
 import StudentWalletHero from './StudentWalletHero';
 import StudentWalletInsightPanel from './StudentWalletInsightPanel';
-import StudentWalletTransactionsSection from './StudentWalletTransactionsSection';
+import StudentWalletActivitySection from './StudentWalletActivitySection';
 
 export default function StudentWalletView() {
   const t = useTranslations('Wallet');
+  const tHero = useTranslations('Wallet.student.hero');
   const [txPage, setTxPage] = useState(1);
+  const [wdPage, setWdPage] = useState(1);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
 
   const { data: details, isPending: detailsPending } = useWalletDetails();
   const { data: stats, isPending: statsPending } = useWalletStats();
   const { data: txData, isPending: txPending, isFetching: txFetching } =
     useWalletTransactions(txPage);
+  const { data: wdData, isPending: wdPending, isFetching: wdFetching } = useWalletWithdrawals(
+    wdPage,
+    true,
+  );
 
   const headerPending = detailsPending || statsPending;
 
@@ -41,7 +51,20 @@ export default function StudentWalletView() {
       </header>
 
       <div className="mb-6 grid grid-cols-1 items-stretch gap-4 md:mb-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <StudentWalletHero details={details} stats={stats} isPending={detailsPending} />
+        <StudentWalletHero
+          details={details}
+          stats={stats}
+          isPending={detailsPending}
+          onWithdrawClick={() => {
+            if (details?.withdrawalWindowOpen === false) {
+              toast.error(tHero('withdrawWindowToastTitle'), {
+                description: tHero('withdrawWindowToastDescription'),
+              });
+              return;
+            }
+            setWithdrawOpen(true);
+          }}
+        />
         <StudentWalletInsightPanel
           details={details}
           stats={stats}
@@ -54,21 +77,37 @@ export default function StudentWalletView() {
         <StudentWalletBentoStats details={details} stats={stats} isPending={headerPending} />
       </div>
 
-      <StudentWalletTransactionsSection
-        items={txData?.items ?? []}
-        page={txPage}
-        totalPages={txData?.meta?.totalPages ?? 1}
-        isLoading={txPending}
-        isFetching={txFetching}
-        onPageChange={setTxPage}
-      />
+      <div className="mb-6 md:mb-8">
+        <StudentWalletActivitySection
+          transactions={txData?.items ?? []}
+          withdrawals={wdData?.items ?? []}
+          txPage={txPage}
+          txTotalPages={txData?.meta?.totalPages ?? 1}
+          wdPage={wdPage}
+          wdTotalPages={wdData?.meta?.totalPages ?? 1}
+          isTxLoading={txPending}
+          isWdLoading={wdPending}
+          isTxFetching={txFetching}
+          isWdFetching={wdFetching}
+          onTxPageChange={setTxPage}
+          onWdPageChange={setWdPage}
+        />
+      </div>
 
       {details ? (
-        <WalletPayoutBankDialog
-          open={bankDialogOpen}
-          onOpenChange={setBankDialogOpen}
-          initialBank={details.payoutBankAccount}
-        />
+        <>
+          <WalletWithdrawDialog
+            open={withdrawOpen}
+            onOpenChange={setWithdrawOpen}
+            maxAmount={details.availableBalance}
+            initialBank={details.payoutBankAccount}
+          />
+          <WalletPayoutBankDialog
+            open={bankDialogOpen}
+            onOpenChange={setBankDialogOpen}
+            initialBank={details.payoutBankAccount}
+          />
+        </>
       ) : null}
     </div>
   );

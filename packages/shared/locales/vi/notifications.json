@@ -32,7 +32,10 @@
     "tutorLessonComplaintSubmitted": "Khiếu nại buổi học mới",
     "adminWithdrawalRequested": "Yêu cầu rút tiền mới",
     "tutorWithdrawalCompleted": "Rút tiền thành công",
-    "tutorWithdrawalRejected": "Rút tiền bị từ chối"
+    "tutorWithdrawalRejected": "Rút tiền bị từ chối",
+    "studentWithdrawalSubmitted": "Đã nhận yêu cầu rút tiền",
+    "studentWithdrawalCompleted": "Rút tiền thành công",
+    "studentWithdrawalRejected": "Rút tiền bị từ chối"
   },
   "templates": {
     "bookingCreated": "{studentName} đã thanh toán buổi học thử với bạn. Xem lịch và chuẩn bị dạy nhé.",
@@ -52,8 +55,11 @@
     "lessonComplaintTutorRejected": "Khiếu nại buổi học với {tutorName} lúc {lessonStartAt} đã bị gia sư từ chối. Lý do: {reason}. Ghi chú gia sư: {tutorNote}",
     "tutorLessonComplaintApproved": "Khiếu nại của học viên về buổi học với bạn (học viên {studentName}) đã được duyệt. Hệ thống đã hoàn tiền từ phần thu nhập tương ứng.",
     "tutorLessonComplaintSubmitted": "{studentName} đã gửi khiếu nại về buổi học lúc {lessonStartAt} ({reason}). Vui lòng xem và xác nhận trong bảng điều khiển.",
-    "adminWithdrawalRequested": "{tutorName} đã yêu cầu rút {amount} về {bankName} · {bankAccountNumber}. Vui lòng kiểm tra và xử lý.",
+    "adminWithdrawalRequested": "{requesterName} ({requesterRole}) đã yêu cầu rút {amount} về {bankName} · {bankAccountNumber}. Vui lòng kiểm tra và xử lý.",
     "tutorWithdrawalCompleted": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã được xử lý thành công.",
-    "tutorWithdrawalRejected": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã bị từ chối. Số tiền đã được hoàn lại vào số dư khả dụng. Ghi chú admin: {adminNote}"
+    "tutorWithdrawalRejected": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã bị từ chối. Số tiền đã được hoàn lại vào số dư khả dụng. Ghi chú admin: {adminNote}",
+    "studentWithdrawalSubmitted": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã được gửi và đang chờ duyệt.",
+    "studentWithdrawalCompleted": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã được xử lý thành công.",
+    "studentWithdrawalRejected": "Yêu cầu rút {amount} về {bankName} · {bankAccountNumber} của bạn đã bị từ chối. Số tiền đã được hoàn lại vào ví. Ghi chú admin: {adminNote}"
   }
 }

@@ -32,8 +32,12 @@
     "tutorLessonComplaintSubmitted": "New lesson complaint",
     "adminWithdrawalRequested": "New withdrawal request",
     "tutorWithdrawalCompleted": "Withdrawal completed",
-    "tutorWithdrawalRejected": "Withdrawal declined"
-  },  "templates": {
+    "tutorWithdrawalRejected": "Withdrawal declined",
+    "studentWithdrawalSubmitted": "Withdrawal request received",
+    "studentWithdrawalCompleted": "Withdrawal completed",
+    "studentWithdrawalRejected": "Withdrawal declined"
+  },
+  "templates": {
     "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
     "bookingConfirmed": "Your booking with {tutorName} has been confirmed.",
     "bookingCancelled": "Your booking has been cancelled.",
@@ -51,8 +55,11 @@
     "lessonComplaintTutorRejected": "Your complaint about the lesson with {tutorName} at {lessonStartAt} was declined by the tutor. Reason: {reason}. Tutor note: {tutorNote}",
     "tutorLessonComplaintApproved": "A student complaint about your lesson with {studentName} has been approved. A refund has been processed from your earnings.",
     "tutorLessonComplaintSubmitted": "{studentName} filed a complaint about your lesson on {lessonStartAt} ({reason}). Please review and confirm in your dashboard.",
-    "adminWithdrawalRequested": "{tutorName} requested a withdrawal of {amount} to {bankName} · {bankAccountNumber}. Please review and process it.",
+    "adminWithdrawalRequested": "{requesterName} ({requesterRole}) requested a withdrawal of {amount} to {bankName} · {bankAccountNumber}. Please review and process it.",
     "tutorWithdrawalCompleted": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} has been completed.",
-    "tutorWithdrawalRejected": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} was declined. The amount has been returned to your available balance. Admin note: {adminNote}"
+    "tutorWithdrawalRejected": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} was declined. The amount has been returned to your available balance. Admin note: {adminNote}",
+    "studentWithdrawalSubmitted": "Your withdrawal request of {amount} to {bankName} · {bankAccountNumber} has been submitted and is pending review.",
+    "studentWithdrawalCompleted": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} has been completed.",
+    "studentWithdrawalRejected": "Your withdrawal of {amount} to {bankName} · {bankAccountNumber} was declined. The amount has been returned to your wallet balance. Admin note: {adminNote}"
   }
 }

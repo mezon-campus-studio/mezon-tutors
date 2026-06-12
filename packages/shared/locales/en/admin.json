@@ -153,12 +153,16 @@
     },
     "Payments": {
       "title": "Payments",
-      "description": "Tutor withdrawal history",
+      "description": "Tutor and student withdrawal history",
       "withdrawals": {
         "empty": "No withdrawal data.",
-        "unknownTutor": "Unknown",
+        "unknownUser": "Unknown",
+        "roles": {
+          "STUDENT": "Student",
+          "TUTOR": "Tutor"
+        },
         "columns": {
-          "tutor": "Tutor",
+          "user": "Requester",
           "amount": "Withdrawal amount",
           "bank": "Bank",
           "accountNumber": "Account number",
@@ -183,10 +187,10 @@
         },
         "approveDialog": {
           "title": "Accept withdrawal",
-          "description": "Confirm the bank transfer details before settling this tutor withdrawal.",
-          "tutor": "Tutor",
+          "description": "Confirm the bank transfer details before settling this withdrawal.",
+          "requester": "Requester",
           "transferAmount": "Amount to transfer",
-          "bankSectionTitle": "Tutor bank account",
+          "bankSectionTitle": "Payout bank account",
           "confirm": "Accept",
           "cancel": "Cancel",
           "submitting": "Processing...",
@@ -206,7 +210,7 @@
         "rejectDialog": {
           "title": "Reject withdrawal",
           "description": "Enter the rejection message that will be saved as the admin note.",
-          "tutor": "Tutor",
+          "requester": "Requester",
           "transferAmount": "Withdrawal amount",
           "noteLabel": "Rejection message",
           "notePlaceholder": "Explain why this withdrawal request is rejected...",
@@ -220,9 +224,9 @@
         "detailDialog": {
           "title": "Withdrawal detail",
           "description": "Withdrawal request information and the bank transfer proof.",
-          "tutor": "Tutor",
+          "requester": "Requester",
           "transferAmount": "Transferred amount",
-          "bankSectionTitle": "Tutor bank account",
+          "bankSectionTitle": "Payout bank account",
           "noteLabel": "Admin note",
           "proofTitle": "Payment proof",
           "viewProof": "View payment proof",
