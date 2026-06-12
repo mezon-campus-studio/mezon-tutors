@@ -8,13 +8,15 @@ import {
   Sparkles,
   Star,
   CalendarClock,
+  ExternalLink,
   MessageCircle,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { userAtom } from "@/store/auth.atom";
@@ -42,11 +44,14 @@ import {
   buildStudentLessonRescheduledDmContent,
   ECurrency,
   formatLessonRangeInTimezone,
+  getLessonEndAt,
   isLessonFinishedForComplaint,
   isTrialLessonRescheduleEligible,
   isWithinLessonComplaintWindow,
+  MEZON_DIRECT_MESSAGE_URL,
   PUBLIC_APP_SETTINGS_FALLBACK,
 } from "@mezon-tutors/shared";
+import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
 import { sendStudentLessonDmToTutor } from "@/lib/send-student-lesson-dm-to-tutor";
 import {
   useGetDmChannel,
@@ -95,6 +100,19 @@ function getLessonDurationMinutes(lesson: LessonItem): number {
     return Math.round((lesson.endHour - lesson.startHour) * 60);
   }
   return 60;
+}
+
+function isLessonInProgress(lesson: LessonItem, now: Date = new Date()): boolean {
+  if (!lesson.startAt || isCancelledLesson(lesson)) {
+    return false;
+  }
+
+  const durationMinutes = getLessonDurationMinutes(lesson);
+  const start = dayjs(lesson.startAt).utc();
+  const end = dayjs(getLessonEndAt(lesson.startAt, durationMinutes)).utc();
+  const nowUtc = dayjs(now).utc();
+
+  return !nowUtc.isBefore(start) && nowUtc.isBefore(end);
 }
 
 function isLessonPaymentEligibleForComplaint(lesson: LessonItem): boolean {
@@ -367,6 +385,8 @@ function PastLessonListItem({
 type UpcomingLessonItemProps = {
   lesson: LessonItem;
   rescheduleOrCancelLabel: string;
+  joinNowLabel: string;
+  joinNowFailedLabel: string;
   messageLabel: string;
   cancelledLabel: string;
   appSettingsRules: AppSettingsRules;
@@ -377,6 +397,8 @@ type UpcomingLessonItemProps = {
 function UpcomingLessonItem({
   lesson,
   rescheduleOrCancelLabel,
+  joinNowLabel,
+  joinNowFailedLabel,
   messageLabel,
   cancelledLabel,
   appSettingsRules,
@@ -386,12 +408,23 @@ function UpcomingLessonItem({
   const locale = useLocale();
   const currentUser = useAtomValue(userAtom);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const [isJoining, setIsJoining] = useState(false);
   const senderId = currentUser?.id ?? "";
   const senderMezonUserId = currentUser?.mezonUserId ?? "";
   const tutorFirstName = lesson.tutor.trim().split(/\s+/)[0] ?? lesson.tutor;
   const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
   const tUpcoming = useTranslations("MyLessons.panels.lessons.upcoming");
+  const { lightClient, setLightClient } = useMezonLight();
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, lesson.tutorUserId, false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
   const cancelled = isCancelledTrialLesson(lesson);
+  const isInProgress = isLessonInProgress(lesson, now);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const canReschedule =
     isReschedulableTrialLesson(lesson, appSettingsRules) ||
@@ -399,6 +432,7 @@ function UpcomingLessonItem({
 
   const showRescheduleNotice =
     !cancelled &&
+    !isInProgress &&
     canShowRescheduleOrCancelMenu(lesson) &&
     !canReschedule &&
     Boolean(lesson.startAt) &&
@@ -423,6 +457,31 @@ function UpcomingLessonItem({
     },
   ];
 
+  const handleJoinNow = async () => {
+    try {
+      setIsJoining(true);
+      const existingChannelId = (await refetchDmChannel()).data?.channelId;
+      const channelId = await ensureMezonDmChannel({
+        lightClient,
+        setLightClient,
+        senderId,
+        senderMezonUserId,
+        recipientId: lesson.tutorUserId,
+        recipientMezonUserId: lesson.tutorMezonUserId ?? "",
+        existingChannelId,
+        createDmChannelMutation,
+      });
+      window.open(MEZON_DIRECT_MESSAGE_URL(channelId), "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : joinNowFailedLabel,
+      );
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   const messageButton = (
     <Button
       variant="gradient"
@@ -431,6 +490,18 @@ function UpcomingLessonItem({
     >
       <MessageCircle className="mr-1 size-3.5" />
       {messageLabel}
+    </Button>
+  );
+
+  const joinNowButton = (
+    <Button
+      variant="gradient"
+      className="h-11 w-full rounded-full px-4 text-xs font-semibold text-white sm:h-9 sm:w-auto sm:min-w-28"
+      onClick={() => void handleJoinNow()}
+      disabled={isJoining}
+    >
+      <ExternalLink className="mr-1 size-3.5" />
+      {joinNowLabel}
     </Button>
   );
 
@@ -458,23 +529,24 @@ function UpcomingLessonItem({
         <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
           {cancelled ? (
             <LessonStatusBadge label={cancelledLabel} tone="neutral" />
-          ) : canShowRescheduleOrCancelMenu(lesson) ? (
+          ) : (
             <>
-              <ActionMenu
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
-                  >
-                    {rescheduleOrCancelLabel}
-                  </Button>
-                }
-                items={actionItems}
-              />
+              {isInProgress ? joinNowButton : null}
+              {!isInProgress && canShowRescheduleOrCancelMenu(lesson) ? (
+                <ActionMenu
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
+                    >
+                      {rescheduleOrCancelLabel}
+                    </Button>
+                  }
+                  items={actionItems}
+                />
+              ) : null}
               {messageButton}
             </>
-          ) : (
-            messageButton
           )}
         </div>
       </div>
@@ -590,6 +662,8 @@ type LessonsSectionProps = {
   lessons: LessonItem[];
   emptyState?: React.ReactNode;
   rescheduleOrCancelLabel: string;
+  joinNowLabel: string;
+  joinNowFailedLabel: string;
   messageLabel: string;
   cancelledLabel: string;
   appSettingsRules: AppSettingsRules;
@@ -602,6 +676,8 @@ function LessonsSection({
   lessons,
   emptyState,
   rescheduleOrCancelLabel,
+  joinNowLabel,
+  joinNowFailedLabel,
   messageLabel,
   cancelledLabel,
   appSettingsRules,
@@ -625,6 +701,8 @@ function LessonsSection({
                 key={lesson.id}
                 lesson={lesson}
                 rescheduleOrCancelLabel={rescheduleOrCancelLabel}
+                joinNowLabel={joinNowLabel}
+                joinNowFailedLabel={joinNowFailedLabel}
                 messageLabel={messageLabel}
                 cancelledLabel={cancelledLabel}
                 appSettingsRules={appSettingsRules}
@@ -1029,6 +1107,8 @@ export default function MyLessonsPanel({
         rescheduleOrCancelLabel={t(
           "panels.lessons.upcoming.rescheduleOrCancel",
         )}
+        joinNowLabel={t("panels.lessons.upcoming.joinLesson")}
+        joinNowFailedLabel={t("panels.lessons.upcoming.joinNowFailed")}
         messageLabel={t("panels.tutors.message")}
         cancelledLabel={t("panels.lessons.upcoming.statusCancelled")}
         appSettingsRules={appSettingsRules}
