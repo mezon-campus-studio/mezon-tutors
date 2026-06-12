@@ -34,6 +34,8 @@ import {
   type AdminWalletWithdrawalsApiResponse,
   ECurrency as SharedCurrency,
   DEFAULT_TIMEZONE,
+  WITHDRAWAL_WINDOW_CLOSED_CODE,
+  isTutorWithdrawalWindowOpen,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
@@ -208,7 +210,10 @@ export class WalletService {
   }
 
   private async getTutorDetails(userId: string): Promise<WalletDetailsApiResponse> {
-    const wallet = await this.ensureWallet(userId);
+    const [wallet, user] = await Promise.all([
+      this.ensureWallet(userId),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { timezone: true } }),
+    ]);
     const payoutBankAccount = this.mapWalletPayoutBank(wallet);
 
     return {
@@ -220,6 +225,7 @@ export class WalletService {
       totalEarned: Number(wallet.totalEarned),
       totalWithdrawn: Number(wallet.totalWithdrawn),
       payoutBankAccount,
+      withdrawalWindowOpen: isTutorWithdrawalWindowOpen(new Date(), user?.timezone),
     };
   }
 
@@ -1088,9 +1094,22 @@ export class WalletService {
     userId: string,
     payload: CreateWalletWithdrawalPayload
   ): Promise<WalletWithdrawalApiItem> {
-    const role = await this.requireWalletRole(userId);
-    if (role !== Role.TUTOR) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, timezone: true },
+    });
+
+    if (!user) {
+      throw new ForbiddenException('Unauthorized');
+    }
+
+    this.assertWalletRole(user.role);
+    if (user.role !== Role.TUTOR) {
       throw new ForbiddenException('Withdrawals are only available for tutors');
+    }
+
+    if (!isTutorWithdrawalWindowOpen(new Date(), user.timezone)) {
+      throw new BadRequestException(WITHDRAWAL_WINDOW_CLOSED_CODE);
     }
 
     const amount = BigInt(Math.round(payload.amount));

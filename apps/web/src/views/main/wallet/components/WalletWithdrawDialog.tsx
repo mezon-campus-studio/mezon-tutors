@@ -28,8 +28,9 @@ import {
   getCurrencySymbol,
   toCanonicalCurrencyAmountInput,
   type WalletPayoutBankAccount,
+  WITHDRAWAL_WINDOW_CLOSED_CODE,
 } from '@mezon-tutors/shared';
-import { cloudinaryService, useCreateWalletWithdrawal } from '@/services';
+import { ApiError, cloudinaryService, useCreateWalletWithdrawal } from '@/services';
 import { cn } from '@/lib/utils';
 import {
   Button,
@@ -231,8 +232,16 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
       toast.success(t('successTitle'), { description: t('successDescription') });
       onOpenChange(false);
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('errorFallback');
-      toast.error(t('errorTitle'), { description: message });
+      const isWindowClosed =
+        err instanceof ApiError && err.message === WITHDRAWAL_WINDOW_CLOSED_CODE;
+      const message = isWindowClosed
+        ? t('windowClosedDescription')
+        : err instanceof Error
+          ? err.message
+          : t('errorFallback');
+      toast.error(isWindowClosed ? t('windowClosedTitle') : t('errorTitle'), {
+        description: message,
+      });
     }
   });
 

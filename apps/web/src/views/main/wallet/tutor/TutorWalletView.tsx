@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Wallet } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import {
   useWalletDetails,
   useWalletStats,
@@ -18,6 +19,7 @@ import TutorWalletInsightPanel from './TutorWalletInsightPanel';
 
 export default function TutorWalletView() {
   const t = useTranslations('Wallet');
+  const tHero = useTranslations('Wallet.tutor.hero');
   const [txPage, setTxPage] = useState(1);
   const [wdPage, setWdPage] = useState(1);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -59,7 +61,15 @@ export default function TutorWalletView() {
           details={details}
           stats={stats}
           isPending={detailsPending}
-          onWithdrawClick={() => setWithdrawOpen(true)}
+          onWithdrawClick={() => {
+            if (details?.withdrawalWindowOpen === false) {
+              toast.error(tHero('withdrawWindowToastTitle'), {
+                description: tHero('withdrawWindowToastDescription'),
+              });
+              return;
+            }
+            setWithdrawOpen(true);
+          }}
         />
         <TutorWalletInsightPanel
           details={details}

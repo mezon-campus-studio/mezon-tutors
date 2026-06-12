@@ -34,6 +34,7 @@ export type WalletDetailsApiResponse = {
   walletBalance?: number;
   hasWallet?: boolean;
   payoutBankAccount?: WalletPayoutBankAccount | null;
+  withdrawalWindowOpen?: boolean;
 };
 
 export type StudentWalletStatsApiResponse = {

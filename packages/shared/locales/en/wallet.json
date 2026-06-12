@@ -177,6 +177,9 @@
         "statusActive": "Earnings active",
         "withdrawableLabel": "Withdrawable now",
         "withdrawCta": "Withdraw funds",
+        "withdrawWindowWarning": "Withdrawals are only available from the 1st to the 10th of each month. Please come back during this window.",
+        "withdrawWindowToastTitle": "Withdrawal window closed",
+        "withdrawWindowToastDescription": "You can only request a withdrawal from the 1st to the 10th of each month.",
         "trendTitle": "This month",
         "chartEarned": "Earned",
         "chartWithdrawn": "Withdrawn"
@@ -271,6 +274,8 @@
       "successDescription": "We will process your withdrawal as soon as possible.",
       "errorTitle": "Could not submit",
       "errorFallback": "Please check your balance and try again.",
+      "windowClosedTitle": "Withdrawal window closed",
+      "windowClosedDescription": "You can only request a withdrawal from the 1st to the 10th of each month.",
       "validation": {
         "amountRequired": "Amount is required",
         "amountDigits": "Amount must be a whole number",

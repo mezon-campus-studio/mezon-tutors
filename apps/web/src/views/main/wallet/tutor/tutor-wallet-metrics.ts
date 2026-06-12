@@ -33,7 +33,7 @@ export function getTutorWalletMetrics(
     totalReceived: tutorStats?.totalReceived ?? details?.totalEarned ?? 0,
     totalWithdrawn: tutorStats?.totalWithdrawn ?? details?.totalWithdrawn ?? 0,
     transactionCount: tutorStats?.transactionCount ?? 0,
-    canWithdraw: available >= 10_000,
+    canWithdraw: available >= 10_000 && (details?.withdrawalWindowOpen ?? true),
   };
 }
 

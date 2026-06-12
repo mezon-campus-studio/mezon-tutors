@@ -177,6 +177,9 @@
         "statusActive": "Thu nhập đang hoạt động",
         "withdrawableLabel": "Có thể rút ngay",
         "withdrawCta": "Rút tiền",
+        "withdrawWindowWarning": "Rút tiền chỉ được thực hiện từ ngày 1 đến ngày 10 hàng tháng. Vui lòng quay lại trong khoảng thời gian này.",
+        "withdrawWindowToastTitle": "Chưa đến kỳ rút tiền",
+        "withdrawWindowToastDescription": "Bạn chỉ có thể yêu cầu rút tiền từ ngày 1 đến ngày 10 mỗi tháng.",
         "trendTitle": "Tháng này",
         "chartEarned": "Thu nhập",
         "chartWithdrawn": "Đã rút"
@@ -271,6 +274,8 @@
       "successDescription": "Chúng tôi sẽ xử lý yêu cầu rút tiền của bạn sớm nhất có thể.",
       "errorTitle": "Không gửi được",
       "errorFallback": "Vui lòng kiểm tra số dư và thử lại.",
+      "windowClosedTitle": "Chưa đến kỳ rút tiền",
+      "windowClosedDescription": "Bạn chỉ có thể yêu cầu rút tiền từ ngày 1 đến ngày 10 mỗi tháng.",
       "validation": {
         "amountRequired": "Vui lòng nhập số tiền",
         "amountDigits": "Số tiền phải là số nguyên",
