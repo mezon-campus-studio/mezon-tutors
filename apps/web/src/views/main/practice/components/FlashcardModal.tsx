@@ -3,6 +3,7 @@
 import type { VocabularyWordItem } from "@mezon-tutors/shared";
 import { ArrowLeft, ArrowRight, Volume2, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   useCallback,
@@ -428,7 +429,10 @@ export default function FlashcardModal({
     <div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-white">
       <header className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 sm:py-4 md:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
+          >
             <Image
               src={MezonlyLogo}
               alt="Mezonly"
@@ -444,7 +448,7 @@ export default function FlashcardModal({
                 Tutor Matching
               </span>
             </div>
-          </div>
+          </Link>
           {!isComplete && deck.length > 0 && (
             <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
               {phaseLabel}
@@ -468,7 +472,7 @@ export default function FlashcardModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
+              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
             >
               {t("backToVocabulary")}
             </Button>
@@ -481,7 +485,7 @@ export default function FlashcardModal({
             <Button
               type="button"
               onClick={onClose}
-              className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
+              className="mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
             >
               {t("backToVocabulary")}
             </Button>
