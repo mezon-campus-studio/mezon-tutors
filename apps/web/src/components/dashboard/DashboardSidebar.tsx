@@ -76,9 +76,13 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
 
 type DashboardSidebarProps = {
   userRole: string | null | undefined;
+  prefetchHref: (href: string) => void;
 };
 
-export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  userRole,
+  prefetchHref,
+}: DashboardSidebarProps) {
   const t = useTranslations("Dashboard");
   const pathname = usePathname();
   const router = useRouter();
@@ -198,7 +202,13 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
 
           if (item.type === "link" && item.href) {
             return (
-              <Link key={item.key} href={item.href} className="block">
+              <Link
+                key={item.key}
+                href={item.href}
+                className="block"
+                prefetch={pathname !== item.href}
+                onMouseEnter={() => prefetchHref(item.href!)}
+              >
                 {buttonContent}
               </Link>
             );
@@ -210,7 +220,12 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
 
         <div className="mt-auto space-y-2 pt-4">
           {becomeTutorItem?.href ? (
-            <Link href={becomeTutorItem.href} className="block">
+            <Link
+              href={becomeTutorItem.href}
+              className="block"
+              prefetch={pathname !== becomeTutorItem.href}
+              onMouseEnter={() => prefetchHref(becomeTutorItem.href!)}
+            >
               <Button
                 variant="gradient"
                 className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
@@ -222,7 +237,12 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
           ) : null}
 
           {onboardingItem?.href ? (
-            <Link href={onboardingItem.href} className="block">
+            <Link
+              href={onboardingItem.href}
+              className="block"
+              prefetch={pathname !== onboardingItem.href}
+              onMouseEnter={() => prefetchHref(onboardingItem.href!)}
+            >
               <Button
                 variant="gradient"
                 className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
@@ -234,7 +254,12 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
           ) : null}
 
           {tutorPolicyItem?.href ? (
-            <Link href={tutorPolicyItem.href} className="block">
+            <Link
+              href={tutorPolicyItem.href}
+              className="block"
+              prefetch={pathname !== tutorPolicyItem.href}
+              onMouseEnter={() => prefetchHref(tutorPolicyItem.href!)}
+            >
               <Button
                 variant="outline"
                 className="h-11 w-full rounded-xl border-violet-200 bg-white text-sm font-semibold text-violet-700 shadow-sm hover:bg-violet-50 hover:text-violet-900"
@@ -246,7 +271,12 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
           ) : null}
 
           {isAdmin ? (
-            <Link href={ROUTES.ADMIN.TUTOR_APPLICATIONS} className="block">
+            <Link
+              href={ROUTES.ADMIN.TUTOR_APPLICATIONS}
+              className="block"
+              prefetch={pathname !== ROUTES.ADMIN.TUTOR_APPLICATIONS}
+              onMouseEnter={() => prefetchHref(ROUTES.ADMIN.TUTOR_APPLICATIONS)}
+            >
               <Button
                 variant="gradient"
                 className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"

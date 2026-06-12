@@ -21,6 +21,7 @@ import { detectBrowserTimezone } from "@/lib/timezone";
 import { MezonSyncButton } from "./MezonSyncButton";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { userAtom } from "@/store/auth.atom";
+import { useDashboardRoutePrefetch } from "./useDashboardRoutePrefetch";
 
 const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: string }>> = {
   document: FileText,
@@ -85,6 +86,9 @@ export default function DashboardMobileDrawer({
   const tHeader = useTranslations("Common.Header");
   const user = useAtomValue(userAtom);
   const isAuthenticated = isDashboardRole(userRole);
+  const { prefetchHref } = useDashboardRoutePrefetch(
+    isAuthenticated ? userRole : null,
+  );
   const menuItems = getDashboardMenuItemsByRole(userRole);
   const guestNavItems = [
     { label: tHeader("findTutors"), href: ROUTES.TUTOR.INDEX, icon: Search },
@@ -290,7 +294,14 @@ export default function DashboardMobileDrawer({
 
             if (item.type === "link" && item.href) {
               return (
-                <Link key={item.key} href={item.href} className="block">
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className="block"
+                  prefetch={pathname !== item.href}
+                  onMouseEnter={() => prefetchHref(item.href!)}
+                  onClick={onCloseAction}
+                >
                   {buttonContent}
                 </Link>
               );
