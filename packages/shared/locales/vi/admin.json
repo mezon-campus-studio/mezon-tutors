@@ -153,12 +153,16 @@
     },
     "Payments": {
       "title": "Thanh toán",
-      "description": "Lịch sử rút tiền của gia sư",
+      "description": "Lịch sử rút tiền của gia sư và học viên",
       "withdrawals": {
         "empty": "Không có dữ liệu rút tiền.",
-        "unknownTutor": "Không rõ",
+        "unknownUser": "Không rõ",
+        "roles": {
+          "STUDENT": "Học viên",
+          "TUTOR": "Gia sư"
+        },
         "columns": {
-          "tutor": "Gia sư",
+          "user": "Người yêu cầu",
           "amount": "Số tiền rút",
           "bank": "Ngân hàng",
           "accountNumber": "Số tài khoản",
@@ -183,10 +187,10 @@
         },
         "approveDialog": {
           "title": "Chấp nhận yêu cầu rút tiền",
-          "description": "Kiểm tra thông tin chuyển khoản trước khi xử lý yêu cầu rút tiền của gia sư.",
-          "tutor": "Gia sư",
+          "description": "Kiểm tra thông tin chuyển khoản trước khi xử lý yêu cầu rút tiền.",
+          "requester": "Người yêu cầu",
           "transferAmount": "Số tiền cần chuyển",
-          "bankSectionTitle": "Tài khoản ngân hàng gia sư",
+          "bankSectionTitle": "Tài khoản nhận tiền",
           "confirm": "Chấp nhận",
           "cancel": "Hủy",
           "submitting": "Đang xử lý...",
@@ -206,7 +210,7 @@
         "rejectDialog": {
           "title": "Từ chối yêu cầu rút tiền",
           "description": "Nhập nội dung từ chối để lưu vào ghi chú admin.",
-          "tutor": "Gia sư",
+          "requester": "Người yêu cầu",
           "transferAmount": "Số tiền rút",
           "noteLabel": "Nội dung từ chối",
           "notePlaceholder": "Nhập lý do từ chối yêu cầu rút tiền...",
@@ -220,9 +224,9 @@
         "detailDialog": {
           "title": "Chi tiết rút tiền",
           "description": "Thông tin yêu cầu rút tiền và minh chứng đã chuyển khoản.",
-          "tutor": "Gia sư",
+          "requester": "Người yêu cầu",
           "transferAmount": "Số tiền đã chuyển",
-          "bankSectionTitle": "Tài khoản ngân hàng gia sư",
+          "bankSectionTitle": "Tài khoản nhận tiền",
           "noteLabel": "Ghi chú admin",
           "proofTitle": "Minh chứng chuyển khoản",
           "viewProof": "Xem minh chứng chuyển khoản",

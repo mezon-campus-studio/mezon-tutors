@@ -1,7 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowUpRight, BookOpen, Sparkles, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUpRight,
+  BookOpen,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { formatToCurrency, ECurrency, ROUTES } from '@mezon-tutors/shared';
 import {
@@ -11,18 +20,29 @@ import {
 } from '@mezon-tutors/shared';
 import { Button, Skeleton } from '@/components/ui';
 
+const WITHDRAW_MIN_AMOUNT = 10_000;
+
 type StudentWalletHeroProps = {
   details: WalletDetailsApiResponse | undefined;
   stats: WalletStatsApiResponse | undefined;
   isPending?: boolean;
+  onWithdrawClick?: () => void;
 };
 
-export default function StudentWalletHero({ details, stats, isPending }: StudentWalletHeroProps) {
+export default function StudentWalletHero({
+  details,
+  stats,
+  isPending,
+  onWithdrawClick,
+}: StudentWalletHeroProps) {
   const t = useTranslations('Wallet.student.hero');
+  const tInsight = useTranslations('Wallet.student.insight');
   const tCard = useTranslations('Wallet.balanceCard');
 
   const isInactive = details?.role === 'STUDENT' && details.hasWallet === false;
   const balance = details?.walletBalance ?? details?.availableBalance ?? 0;
+  const pendingWithdrawal = details?.pendingWithdrawal ?? 0;
+  const canWithdraw = !isInactive && balance >= WITHDRAW_MIN_AMOUNT;
   const studentStats = isStudentWalletStats(stats) ? stats : undefined;
   const totalSpend = studentStats?.totalSpent ?? 0;
   const totalRefunds = studentStats?.totalRefunded ?? 0;
@@ -90,8 +110,36 @@ export default function StudentWalletHero({ details, stats, isPending }: Student
               <p className="mt-1 text-3xl font-extrabold tracking-tight break-words tabular-nums sm:text-4xl md:text-5xl">
                 {formatToCurrency(ECurrency.VND, balance)}
               </p>
+              {pendingWithdrawal > 0 ? (
+                <p className="mt-2 text-sm text-violet-100/85">
+                  {tInsight('pendingWithdrawalTitle')}:{' '}
+                  <span className="font-semibold text-amber-200">
+                    {formatToCurrency(ECurrency.VND, pendingWithdrawal)}
+                  </span>
+                </p>
+              ) : null}
             </>
           )}
+
+          {!isInactive && onWithdrawClick ? (
+            <div className="mt-4 space-y-2.5 sm:mt-5">
+              <Button
+                type="button"
+                disabled={!canWithdraw}
+                onClick={onWithdrawClick}
+                className="h-11 min-h-11 w-full rounded-full border-0 bg-amber-300 px-6 font-semibold text-amber-950 shadow-lg shadow-violet-950/30 hover:bg-amber-200 disabled:opacity-60 sm:w-fit"
+              >
+                <ArrowDownToLine className="size-4" />
+                {t('withdrawCta')}
+              </Button>
+              {details?.withdrawalWindowOpen === false ? (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-300/35 bg-amber-400/10 px-3 py-2.5 text-amber-50/95">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" aria-hidden />
+                  <p className="text-xs leading-relaxed">{t('withdrawWindowWarning')}</p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:flex-wrap">
             <Link href={ROUTES.TUTOR.INDEX} className="w-full sm:w-auto">

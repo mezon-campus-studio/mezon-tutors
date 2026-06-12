@@ -262,7 +262,8 @@ export const refundCreditedEmbed = (
 
 export const withdrawalRequestedEmbed = (
   params: {
-    tutorName: string;
+    requesterName: string;
+    requesterRole: string;
     amountFormatted: string;
     bankName: string;
     bankAccountNumber?: string;
@@ -271,11 +272,11 @@ export const withdrawalRequestedEmbed = (
 ): IInteractiveMessageProps => ({
   color: MEZON_EMBED_COLORS.warning,
   title: 'New withdrawal request',
-  description: `${params.tutorName} requested a payout. Please review and process it in the admin panel.`,
+  description: `${params.requesterName} (${params.requesterRole}) requested a payout. Please review and process it in the admin panel.`,
   fields: [
-    { name: 'Tutor', value: params.tutorName, inline: true },
+    { name: 'Requester', value: params.requesterName, inline: true },
+    { name: 'Role', value: params.requesterRole, inline: true },
     { name: 'Amount', value: params.amountFormatted, inline: true },
-    { name: '\u200B', value: '\u200B', inline: true },
     { name: 'Bank', value: params.bankName, inline: true },
     ...(params.bankAccountNumber
       ? [{ name: 'Account', value: params.bankAccountNumber, inline: true }]
@@ -283,6 +284,26 @@ export const withdrawalRequestedEmbed = (
   ],
   url: params.reviewUrl,
   ...embedSenderThumbnail(params.senderAvatarUrl),
+});
+
+export const withdrawalSubmittedEmbed = (params: {
+  amountFormatted: string;
+  bankName: string;
+  bankAccountNumber?: string;
+  walletUrl?: string;
+}): IInteractiveMessageProps => ({
+  color: MEZON_EMBED_COLORS.info,
+  title: 'Withdrawal request received',
+  description: 'Your withdrawal request has been submitted and is pending admin review.',
+  fields: [
+    { name: 'Amount', value: params.amountFormatted, inline: true },
+    { name: 'Bank', value: params.bankName, inline: true },
+    ...(params.bankAccountNumber
+      ? [{ name: 'Account', value: params.bankAccountNumber, inline: true }]
+      : []),
+  ],
+  url: params.walletUrl,
+  ...embedAdminThumbnail(),
 });
 
 export const withdrawalCompletedEmbed = (params: {

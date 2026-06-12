@@ -186,4 +186,28 @@ export const NOTIFICATION_META: Record<string, NotificationMetaItem> = {
     borderColor: '#dc2626',
     resolveLink: () => ROUTES.DASHBOARD.WALLET,
   },
+  STUDENT_WITHDRAWAL_SUBMITTED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.studentWithdrawalSubmitted',
+    templateKey: 'templates.studentWithdrawalSubmitted',
+    tone: 'positive',
+    borderColor: '#7c3aed',
+    resolveLink: () => ROUTES.DASHBOARD.WALLET,
+  },
+  STUDENT_WITHDRAWAL_COMPLETED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.studentWithdrawalCompleted',
+    templateKey: 'templates.studentWithdrawalCompleted',
+    tone: 'positive',
+    borderColor: '#15803d',
+    resolveLink: () => ROUTES.DASHBOARD.WALLET,
+  },
+  STUDENT_WITHDRAWAL_REJECTED: {
+    type: ENotificationType.PAYMENT,
+    titleKey: 'titles.studentWithdrawalRejected',
+    templateKey: 'templates.studentWithdrawalRejected',
+    tone: 'negative',
+    borderColor: '#dc2626',
+    resolveLink: () => ROUTES.DASHBOARD.WALLET,
+  },
 }

@@ -153,12 +153,25 @@
         "chartSpend": "Đã chi",
         "chartRefund": "Hoàn tiền",
         "actionTutors": "Tìm gia sư",
-        "actionLessons": "Buổi học của tôi"
+        "actionLessons": "Buổi học của tôi",
+        "withdrawableLabel": "Có thể rút",
+        "withdrawCta": "Rút tiền",
+        "withdrawWindowWarning": "Chỉ có thể rút tiền từ ngày 1 đến ngày 10 mỗi tháng. Vui lòng quay lại trong khoảng thời gian này.",
+        "withdrawWindowToastTitle": "Chưa đến kỳ rút tiền",
+        "withdrawWindowToastDescription": "Bạn chỉ có thể yêu cầu rút tiền từ ngày 1 đến ngày 10 mỗi tháng."
       },
       "insight": {
         "securityHint": "Thanh toán và hoàn tiền được bảo vệ trên Mezonly.",
         "monthlyTitle": "Tóm tắt tháng",
-        "pendingTitle": "Đang chờ thanh toán"
+        "pendingTitle": "Đang chờ thanh toán",
+        "pendingWithdrawalTitle": "Đang chờ rút",
+        "pendingWithdrawalHint": "Số tiền tạm giữ khi yêu cầu rút đang được duyệt."
+      },
+      "activity": {
+        "title": "Hoạt động",
+        "subtitle": "Thanh toán, hoàn tiền và lịch sử rút tiền",
+        "searchPlaceholder": "Tìm hoạt động…",
+        "export": "Xuất file"
       },
       "bento": {
         "title": "Tổng quan tài chính",

@@ -123,7 +123,7 @@ export default function WithdrawalsTable({
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
             <tr>
-              <th className="px-5 py-3">{t("columns.tutor")}</th>
+              <th className="px-5 py-3">{t("columns.user")}</th>
               <th className="px-5 py-3">{t("columns.amount")}</th>
               <th className="px-5 py-3">{t("columns.status")}</th>
               <th className="px-5 py-3">{t("columns.requestedAt")}</th>
@@ -134,7 +134,11 @@ export default function WithdrawalsTable({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {withdrawals.map((item) => {
-              const tutorName = item.tutor?.displayName || item.tutor?.username || t("unknownTutor");
+              const requesterName =
+                item.user?.displayName || item.user?.username || t("unknownUser");
+              const requesterRole = item.user?.role
+                ? t(`roles.${item.user.role}`)
+                : "—";
               const canApprove = ACTIVE_WITHDRAWAL_STATUSES.includes(item.status);
               const isActionDisabled =
                 !canApprove || approveMutation.isPending || rejectMutation.isPending;
@@ -144,8 +148,9 @@ export default function WithdrawalsTable({
                   <td className="px-5 py-3">
                     <div className="flex flex-col">
                       <span className="font-medium text-slate-900">
-                        {tutorName}
+                        {requesterName}
                       </span>
+                      <span className="text-xs text-slate-500">{requesterRole}</span>
                     </div>
                   </td>
                   <td className="px-5 py-3 font-semibold text-slate-900">
@@ -237,15 +242,16 @@ export default function WithdrawalsTable({
             bankName: approvingWithdrawal.bankName,
             bankAccountNumber: approvingWithdrawal.bankAccountNumber,
             bankAccountName: approvingWithdrawal.bankAccountName,
-            tutorName:
-              approvingWithdrawal.tutor?.displayName ||
-              approvingWithdrawal.tutor?.username ||
-              t("unknownTutor"),
+            requesterName:
+              approvingWithdrawal.user?.displayName ||
+              approvingWithdrawal.user?.username ||
+              t("unknownUser"),
           }}
           reviewLabels={{
             title: t("approveDialog.title"),
             description: t("approveDialog.description"),
-            tutor: t("approveDialog.tutor"),
+            tutor: t("approveDialog.requester"),
+            requester: t("approveDialog.requester"),
             transferAmount: t("approveDialog.transferAmount"),
             bankSectionTitle: t("approveDialog.bankSectionTitle"),
             bankName: t("columns.bank"),
@@ -281,15 +287,16 @@ export default function WithdrawalsTable({
           maxAmount={rejectingWithdrawal.amount}
           reviewDetails={{
             amount: rejectingWithdrawal.amount,
-            tutorName:
-              rejectingWithdrawal.tutor?.displayName ||
-              rejectingWithdrawal.tutor?.username ||
-              t("unknownTutor"),
+            requesterName:
+              rejectingWithdrawal.user?.displayName ||
+              rejectingWithdrawal.user?.username ||
+              t("unknownUser"),
           }}
           reviewLabels={{
             title: t("rejectDialog.title"),
             description: t("rejectDialog.description"),
-            tutor: t("rejectDialog.tutor"),
+            tutor: t("rejectDialog.requester"),
+            requester: t("rejectDialog.requester"),
             transferAmount: t("rejectDialog.transferAmount"),
             bankSectionTitle: "",
             bankName: "",
@@ -321,10 +328,10 @@ export default function WithdrawalsTable({
             bankName: detailWithdrawal.bankName,
             bankAccountNumber: detailWithdrawal.bankAccountNumber,
             bankAccountName: detailWithdrawal.bankAccountName,
-            tutorName:
-              detailWithdrawal.tutor?.displayName ||
-              detailWithdrawal.tutor?.username ||
-              t("unknownTutor"),
+            requesterName:
+              detailWithdrawal.user?.displayName ||
+              detailWithdrawal.user?.username ||
+              t("unknownUser"),
             paymentProofUrl: detailWithdrawal.paymentProofUrl,
             adminNote: detailWithdrawal.adminNote,
             processedAt: detailWithdrawal.processedAt,
@@ -332,7 +339,8 @@ export default function WithdrawalsTable({
           reviewLabels={{
             title: t("detailDialog.title"),
             description: t("detailDialog.description"),
-            tutor: t("detailDialog.tutor"),
+            tutor: t("detailDialog.requester"),
+            requester: t("detailDialog.requester"),
             transferAmount: t("detailDialog.transferAmount"),
             bankSectionTitle: t("detailDialog.bankSectionTitle"),
             bankName: t("columns.bank"),

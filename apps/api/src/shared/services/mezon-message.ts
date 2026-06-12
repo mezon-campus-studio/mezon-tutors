@@ -24,6 +24,7 @@ import {
   withdrawalCompletedEmbed,
   withdrawalRejectedEmbed,
   withdrawalRequestedEmbed,
+  withdrawalSubmittedEmbed,
   subscriptionEnrollmentBookedEmbed,
   lessonComplaintSubmittedEmbed,
   tutorLessonComplaintSubmittedEmbed,
@@ -178,7 +179,8 @@ export class MezonMessageService {
 
   withdrawalRequested(
     params: {
-      tutorName: string;
+      requesterName: string;
+      requesterRole: string;
       amountFormatted: string;
       bankName: string;
       bankAccountNumber?: string;
@@ -187,7 +189,20 @@ export class MezonMessageService {
     return this.toChannelMessage(
       withdrawalRequestedEmbed({
         ...params,
-        reviewUrl: this.url(ROUTES.ADMIN.TUTOR_APPLICATIONS),
+        reviewUrl: this.url(ROUTES.ADMIN.PAYMENTS),
+      })
+    );
+  }
+
+  withdrawalSubmitted(params: {
+    amountFormatted: string;
+    bankName: string;
+    bankAccountNumber?: string;
+  }): ChannelMessageContent {
+    return this.toChannelMessage(
+      withdrawalSubmittedEmbed({
+        ...params,
+        walletUrl: this.url(ROUTES.DASHBOARD.WALLET),
       })
     );
   }

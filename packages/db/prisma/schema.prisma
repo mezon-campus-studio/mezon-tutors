@@ -680,7 +680,7 @@ model LessonCompletionJob {
 
 model Withdrawal {
   id                    String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tutorId               String            @map("tutor_id") @db.Uuid
+  userId                String            @map("user_id") @db.Uuid
   walletId              String            @map("wallet_id") @db.Uuid
   amount                BigInt
   bankName              String            @map("bank_name") @db.VarChar(100)
@@ -693,11 +693,11 @@ model Withdrawal {
   processedAt           DateTime?         @map("processed_at")
   createdAt             DateTime          @default(now()) @map("created_at")
 
-  tutor        User                @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallet       Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 
-  @@index([tutorId, status])
+  @@index([userId, status])
   @@index([walletId])
   @@map("withdrawals")
 }

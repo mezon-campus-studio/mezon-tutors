@@ -10,7 +10,7 @@ export const TUTOR_WITHDRAWAL_WINDOW_START_DAY = 1;
 export const TUTOR_WITHDRAWAL_WINDOW_END_DAY = 10;
 export const WITHDRAWAL_WINDOW_CLOSED_CODE = 'WITHDRAWAL_WINDOW_CLOSED';
 
-export function isTutorWithdrawalWindowOpen(
+export function isWithdrawalWindowOpen(
   now: Date = new Date(),
   userTimezone?: string
 ): boolean {
@@ -21,3 +21,5 @@ export function isTutorWithdrawalWindowOpen(
     dayOfMonth <= TUTOR_WITHDRAWAL_WINDOW_END_DAY
   );
 }
+
+export const isTutorWithdrawalWindowOpen = isWithdrawalWindowOpen;

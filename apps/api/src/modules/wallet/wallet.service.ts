@@ -35,7 +35,7 @@ import {
   ECurrency as SharedCurrency,
   DEFAULT_TIMEZONE,
   WITHDRAWAL_WINDOW_CLOSED_CODE,
-  isTutorWithdrawalWindowOpen,
+  isWithdrawalWindowOpen,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
@@ -125,6 +125,22 @@ export class WalletService {
     return tutor?.avatar ?? tutor?.user?.avatar ?? null;
   }
 
+  private formatWithdrawalRequesterName(user: {
+    role: Role;
+    username: string;
+    tutorProfile?: { firstName: string; lastName: string } | null;
+  }): string {
+    if (user.role === Role.TUTOR) {
+      return formatTutorDisplayName({
+        firstName: user.tutorProfile?.firstName,
+        lastName: user.tutorProfile?.lastName,
+        username: user.username,
+      });
+    }
+
+    return user.username?.trim() || 'A student';
+  }
+
   private parseWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
     if (!Array.isArray(value)) {
       return [];
@@ -209,7 +225,7 @@ export class WalletService {
 
   private mapWithdrawalRow(row: {
     id: string;
-    tutorId: string;
+    userId: string;
     walletId: string;
     amount: bigint;
     bankName: string;
@@ -224,7 +240,7 @@ export class WalletService {
   }): WalletWithdrawalApiItem {
     return {
       id: row.id,
-      tutorId: row.tutorId,
+      userId: row.userId,
       walletId: row.walletId,
       amount: Number(row.amount),
       bankName: row.bankName,
@@ -255,7 +271,7 @@ export class WalletService {
       totalEarned: Number(wallet.totalEarned),
       totalWithdrawn: Number(wallet.totalWithdrawn),
       payoutBankAccount,
-      withdrawalWindowOpen: isTutorWithdrawalWindowOpen(new Date(), user?.timezone),
+      withdrawalWindowOpen: isWithdrawalWindowOpen(new Date(), user?.timezone),
     };
   }
 
@@ -313,9 +329,10 @@ export class WalletService {
   }
 
   private async getStudentDetails(userId: string): Promise<WalletDetailsApiResponse> {
-    const [wallet, paymentTotals] = await Promise.all([
+    const [wallet, paymentTotals, user] = await Promise.all([
       this.ensureWallet(userId),
       this.getStudentPaymentTotals(userId),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { timezone: true } }),
     ]);
     const walletBalance = Number(wallet.balance);
     const payoutBankAccount = this.mapWalletPayoutBank(wallet);
@@ -327,10 +344,12 @@ export class WalletService {
       walletBalance,
       availableBalance: walletBalance,
       pendingBalance: paymentTotals.pendingAmount,
+      pendingWithdrawal: Number(wallet.pendingWithdrawal),
       totalEarned: Number(wallet.totalEarned),
       totalWithdrawn: Number(wallet.totalWithdrawn),
       totalSpent: paymentTotals.totalSpent,
       payoutBankAccount,
+      withdrawalWindowOpen: isWithdrawalWindowOpen(new Date(), user?.timezone),
     };
   }
 
@@ -1065,13 +1084,10 @@ export class WalletService {
     page = 1,
     limit = 10
   ): Promise<WalletWithdrawalsApiResponse> {
-    const role = await this.requireWalletRole(userId);
-    if (role !== Role.TUTOR) {
-      throw new ForbiddenException('Withdrawals are only available for tutors');
-    }
+    await this.requireWalletRole(userId);
 
     const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
-    const where: Prisma.WithdrawalWhereInput = { tutorId: userId };
+    const where: Prisma.WithdrawalWhereInput = { userId };
 
     const [total, rows] = await Promise.all([
       this.prisma.withdrawal.count({ where }),
@@ -1095,12 +1111,13 @@ export class WalletService {
       this.prisma.withdrawal.count(),
       this.prisma.withdrawal.findMany({
         include: {
-          tutor: {
+          user: {
             select: {
               id: true,
               username: true,
               email: true,
               tutorProfile: { select: { firstName: true, lastName: true } },
+              role: true,
             },
           },
         },
@@ -1112,21 +1129,22 @@ export class WalletService {
 
     const items: AdminWalletWithdrawalApiItem[] = rows.map((row) => ({
       ...this.mapWithdrawalRow(row),
-      tutor: row.tutor
+      user: row.user
         ? {
-            id: row.tutor.id,
-            username: row.tutor.username,
-            displayName: formatTutorDisplayName({
-              firstName: row.tutor.tutorProfile?.firstName,
-              lastName: row.tutor.tutorProfile?.lastName,
-              username: row.tutor.username,
-            }),
-            email: row.tutor.email,
+            id: row.user.id,
+            username: row.user.username,
+            displayName: this.formatWithdrawalRequesterName(row.user),
+            email: row.user.email,
+            role: row.user.role as 'STUDENT' | 'TUTOR',
           }
         : undefined,
     }));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
+  private withdrawalRequesterRoleLabel(role: Role): string {
+    return role === Role.STUDENT ? 'Student' : 'Tutor';
   }
 
   async createWithdrawal(
@@ -1135,7 +1153,14 @@ export class WalletService {
   ): Promise<WalletWithdrawalApiItem> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true, timezone: true },
+      select: {
+        role: true,
+        timezone: true,
+        username: true,
+        avatar: true,
+        mezonUserId: true,
+        tutorProfile: { select: { firstName: true, lastName: true } },
+      },
     });
 
     if (!user) {
@@ -1143,12 +1168,17 @@ export class WalletService {
     }
 
     this.assertWalletRole(user.role);
-    if (user.role !== Role.TUTOR) {
-      throw new ForbiddenException('Withdrawals are only available for tutors');
+
+    if (!isWithdrawalWindowOpen(new Date(), user.timezone)) {
+      throw new BadRequestException(WITHDRAWAL_WINDOW_CLOSED_CODE);
     }
 
-    if (!isTutorWithdrawalWindowOpen(new Date(), user.timezone)) {
-      throw new BadRequestException(WITHDRAWAL_WINDOW_CLOSED_CODE);
+    const bankName = payload.bankName.trim();
+    const bankAccountNumber = payload.bankAccountNumber.trim();
+    const bankAccountName = payload.bankAccountName.trim();
+
+    if (!bankName || !bankAccountNumber || !bankAccountName) {
+      throw new BadRequestException('Payout bank account details are required');
     }
 
     const amount = BigInt(Math.round(payload.amount));
@@ -1168,7 +1198,7 @@ export class WalletService {
 
     const pending = await this.prisma.withdrawal.count({
       where: {
-        tutorId: userId,
+        userId,
         status: { in: this.activeWithdrawalStatuses() },
       },
     });
@@ -1179,12 +1209,12 @@ export class WalletService {
     const created = await this.prisma.$transaction(async (tx) => {
       const withdrawal = await tx.withdrawal.create({
         data: {
-          tutorId: userId,
+          userId,
           walletId: wallet.id,
           amount,
-          bankName: payload.bankName.trim(),
-          bankAccountNumber: payload.bankAccountNumber.trim(),
-          bankAccountName: payload.bankAccountName.trim(),
+          bankName,
+          bankAccountNumber,
+          bankAccountName,
           status: EWithdrawalStatus.PENDING,
         },
       });
@@ -1194,42 +1224,48 @@ export class WalletService {
         data: {
           balance: { decrement: amount },
           pendingWithdrawal: { increment: amount },
-          payoutBankName: payload.bankName.trim(),
-          payoutBankAccountNumber: payload.bankAccountNumber.trim(),
-          payoutBankAccountName: payload.bankAccountName.trim(),
+          payoutBankName: bankName,
+          payoutBankAccountNumber: bankAccountNumber,
+          payoutBankAccountName: bankAccountName,
         },
       });
 
       return withdrawal;
     });
 
-    const tutor = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        username: true,
-        avatar: true,
-        tutorProfile: { select: { firstName: true, lastName: true } },
-      },
-    });
-    const tutorName = formatTutorDisplayName({
-      firstName: tutor?.tutorProfile?.firstName,
-      lastName: tutor?.tutorProfile?.lastName,
-      username: tutor?.username,
-    });
+    const requesterName = this.formatWithdrawalRequesterName(user);
     const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
+    const requesterRole = this.withdrawalRequesterRoleLabel(user.role);
 
     try {
       await this.notificationService.notifyAdminWithdrawalRequested({
         withdrawalId: created.id,
-        tutorName,
+        requesterName,
+        requesterRole,
         amountFormatted,
         bankName: created.bankName,
         bankAccountNumber: created.bankAccountNumber,
-        senderAvatarUrl: tutor?.avatar,
+        senderAvatarUrl: user.avatar,
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Failed to notify admin for withdrawal ${created.id}: ${detail}`);
+    }
+
+    if (user.role === Role.STUDENT) {
+      try {
+        await this.notificationService.notifyStudentWithdrawalSubmitted({
+          studentUserId: userId,
+          studentMezonUserId: user.mezonUserId,
+          withdrawalId: created.id,
+          amountFormatted,
+          bankName: created.bankName,
+          bankAccountNumber: created.bankAccountNumber,
+        });
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Failed to notify student for submitted withdrawal ${created.id}: ${detail}`);
+      }
     }
 
     return this.mapWithdrawalRow(created);
@@ -1296,24 +1332,35 @@ export class WalletService {
       });
     });
 
-    const tutor = await this.prisma.user.findUnique({
-      where: { id: created.tutorId },
-      select: { mezonUserId: true },
+    const requester = await this.prisma.user.findUnique({
+      where: { id: created.userId },
+      select: { role: true, mezonUserId: true },
     });
     const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
 
     try {
-      await this.notificationService.notifyTutorWithdrawalCompleted({
-        tutorUserId: created.tutorId,
-        tutorMezonUserId: tutor?.mezonUserId,
-        withdrawalId: created.id,
-        amountFormatted,
-        bankName: created.bankName,
-        bankAccountNumber: created.bankAccountNumber,
-      });
+      if (requester?.role === Role.STUDENT) {
+        await this.notificationService.notifyStudentWithdrawalCompleted({
+          studentUserId: created.userId,
+          studentMezonUserId: requester.mezonUserId,
+          withdrawalId: created.id,
+          amountFormatted,
+          bankName: created.bankName,
+          bankAccountNumber: created.bankAccountNumber,
+        });
+      } else {
+        await this.notificationService.notifyTutorWithdrawalCompleted({
+          tutorUserId: created.userId,
+          tutorMezonUserId: requester?.mezonUserId,
+          withdrawalId: created.id,
+          amountFormatted,
+          bankName: created.bankName,
+          bankAccountNumber: created.bankAccountNumber,
+        });
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to notify tutor for completed withdrawal ${created.id}: ${detail}`);
+      this.logger.warn(`Failed to notify user for completed withdrawal ${created.id}: ${detail}`);
     }
 
     return this.mapWithdrawalRow(created);
@@ -1359,25 +1406,37 @@ export class WalletService {
       });
     });
 
-    const tutor = await this.prisma.user.findUnique({
-      where: { id: created.tutorId },
-      select: { mezonUserId: true },
+    const requester = await this.prisma.user.findUnique({
+      where: { id: created.userId },
+      select: { role: true, mezonUserId: true },
     });
     const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
 
     try {
-      await this.notificationService.notifyTutorWithdrawalRejected({
-        tutorUserId: created.tutorId,
-        tutorMezonUserId: tutor?.mezonUserId,
-        withdrawalId: created.id,
-        amountFormatted,
-        bankName: created.bankName,
-        bankAccountNumber: created.bankAccountNumber,
-        adminNote: created.adminNote,
-      });
+      if (requester?.role === Role.STUDENT) {
+        await this.notificationService.notifyStudentWithdrawalRejected({
+          studentUserId: created.userId,
+          studentMezonUserId: requester.mezonUserId,
+          withdrawalId: created.id,
+          amountFormatted,
+          bankName: created.bankName,
+          bankAccountNumber: created.bankAccountNumber,
+          adminNote: created.adminNote,
+        });
+      } else {
+        await this.notificationService.notifyTutorWithdrawalRejected({
+          tutorUserId: created.userId,
+          tutorMezonUserId: requester?.mezonUserId,
+          withdrawalId: created.id,
+          amountFormatted,
+          bankName: created.bankName,
+          bankAccountNumber: created.bankAccountNumber,
+          adminNote: created.adminNote,
+        });
+      }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to notify tutor for rejected withdrawal ${created.id}: ${detail}`);
+      this.logger.warn(`Failed to notify user for rejected withdrawal ${created.id}: ${detail}`);
     }
 
     return this.mapWithdrawalRow(created);

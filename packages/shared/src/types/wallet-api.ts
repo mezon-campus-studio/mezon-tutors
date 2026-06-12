@@ -93,7 +93,7 @@ export type WalletTransactionApiItem = {
 
 export type WalletWithdrawalApiItem = {
   id: string;
-  tutorId: string;
+  userId: string;
   walletId: string;
   amount: number;
   bankName: string;
@@ -114,11 +114,12 @@ export type ApproveWalletWithdrawalAdminPayload = {
 };
 
 export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {
-  tutor?: {
+  user?: {
     id: string;
     username: string;
     displayName: string;
     email: string | null;
+    role: 'STUDENT' | 'TUTOR';
   };
 };
 
