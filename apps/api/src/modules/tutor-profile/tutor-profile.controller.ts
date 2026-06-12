@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
@@ -6,7 +6,9 @@ import type {
   PaginatedResponse,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
+  UpdateTutorSetupChecklistDto,
   TutorAboutDto,
+  TutorSetupChecklistDto,
   TutorScheduleDto,
   TutorReviewsDto,
   TutorResourcesDto,
@@ -15,9 +17,11 @@ import type {
 import { VerificationStatus } from '@mezon-tutors/db'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { TutorProfileService } from './tutor-profile.service'
+import { TutorSetupChecklistService } from './tutor-setup-checklist.service'
 import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto'
 import { UpdateAvailabilityDto } from './dto/update-availability.dto'
 import { UpdateMyTutorProfileBodyDto } from './dto/update-my-tutor-profile.dto'
+import { UpdateTutorSetupChecklistBodyDto } from './dto/update-tutor-setup-checklist.dto'
 import { PrismaService } from '../../prisma/prisma.service'
 
 @Controller('tutor-profiles')
@@ -25,6 +29,7 @@ import { PrismaService } from '../../prisma/prisma.service'
 export class TutorProfileController {
   constructor(
     private readonly tutorProfileService: TutorProfileService,
+    private readonly tutorSetupChecklistService: TutorSetupChecklistService,
     private readonly prisma: PrismaService
   ) {}
 
@@ -63,6 +68,26 @@ export class TutorProfileController {
       body as UpdateMyTutorProfileDto
     )
     return { success: true }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/setup-checklist')
+  async getMySetupChecklist(@Req() req: Request): Promise<TutorSetupChecklistDto> {
+    const user = req.user as AuthUserPayload
+    return this.tutorSetupChecklistService.getByUserId(user.sub)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/setup-checklist')
+  async patchMySetupChecklist(
+    @Req() req: Request,
+    @Body() body: UpdateTutorSetupChecklistBodyDto,
+  ): Promise<TutorSetupChecklistDto> {
+    const user = req.user as AuthUserPayload
+    return this.tutorSetupChecklistService.updateByUserId(
+      user.sub,
+      body as UpdateTutorSetupChecklistDto,
+    )
   }
 
   @Get('verified')

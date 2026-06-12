@@ -37,6 +37,45 @@
         "popupBlocked": "Allow pop-ups for this site to continue with Mezon."
       }
     },
+    "tutorSetupChecklist": {
+      "title": "Mezon setup",
+      "subtitle": "Complete 3 steps to get ready for students.",
+      "progress": "Progress",
+      "progressCount": "{completed}/{total}",
+      "autoVerified": "Auto-verified",
+      "actions": {
+        "openMezon": "Open Mezon",
+        "inviteBot": "Invite Mezonly Bot",
+        "addApps": "Add Channel App",
+        "guide": "View guide"
+      },
+      "items": {
+        "createMezonClan": {
+          "label": "Create Mezon Clan",
+          "description": "Create a Clan on Mezon as your official teaching space."
+        },
+        "setupMezonClan": {
+          "label": "Setup Mezon Clan",
+          "description": "Invite Mezonly Bot to your Clan and run *mezonly setup — this step completes automatically on success."
+        },
+        "channelApps": {
+          "label": "Add Channel Apps",
+          "description": "Invite Mezonly Channel Apps into your Clan for quick student access."
+        }
+      },
+      "channelApps": {
+        "homeLink": "Home page",
+        "walletLink": "Wallet",
+        "myLessonsLink": "My lesson",
+        "myScheduleLink": "My schedule"
+      },
+      "widget": {
+        "triggerTitle": "Mezon setup",
+        "triggerSubtitle": "{remaining} steps left — tap to view",
+        "open": "Open Mezon setup checklist",
+        "close": "Close checklist"
+      }
+    },
     "bookingRequests": {
       "eyebrow": "Tutor workspace",
       "title": "Trial bookings",

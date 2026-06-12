@@ -16,6 +16,8 @@ import {
   TutorResourcesDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
+  UpdateTutorSetupChecklistDto,
+  TutorSetupChecklistDto,
   VerificationStatus,
 } from "@mezon-tutors/shared";
 
@@ -101,6 +103,19 @@ export const tutorProfileApi = {
         profile: any;
       }
     >("/tutor-profiles/me");
+  },
+
+  getMySetupChecklist(): Promise<TutorSetupChecklistDto> {
+    return apiClient.get<ApiResponse<TutorSetupChecklistDto>, TutorSetupChecklistDto>(
+      "/tutor-profiles/me/setup-checklist",
+    );
+  },
+
+  updateMySetupChecklist(payload: UpdateTutorSetupChecklistDto): Promise<TutorSetupChecklistDto> {
+    return apiClient.patch<ApiResponse<TutorSetupChecklistDto>, TutorSetupChecklistDto>(
+      "/tutor-profiles/me/setup-checklist",
+      payload,
+    );
   },
 };
 
@@ -189,6 +204,27 @@ const useGetMyProfile = (options?: { enabled?: boolean }) => {
   });
 };
 
+const useGetMySetupChecklist = (options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.mySetupChecklist(),
+    queryFn: () => tutorProfileApi.getMySetupChecklist(),
+    staleTime: 30 * 1000,
+    enabled: options?.enabled ?? true,
+  });
+};
+
+const useUpdateMySetupChecklistMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateTutorSetupChecklistDto) =>
+      tutorProfileApi.updateMySetupChecklist(payload),
+    onSuccess: (data) => {
+      queryClient.setQueryData(tutorProfileQueryKey.mySetupChecklist(), data);
+    },
+  });
+};
+
 export {
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
@@ -198,4 +234,6 @@ export {
   useSubmitTutorProfileMutation,
   useUpdateMyTutorProfileMutation,
   useGetMyProfile,
+  useGetMySetupChecklist,
+  useUpdateMySetupChecklistMutation,
 };
