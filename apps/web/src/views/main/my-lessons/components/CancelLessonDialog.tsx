@@ -157,6 +157,10 @@ export function CancelLessonDialog({
         { value: "scheduleConflict", label: tTutorReasons("scheduleConflict") },
         { value: "personalEmergency", label: tTutorReasons("personalEmergency") },
         { value: "studentUnavailable", label: tTutorReasons("studentUnavailable") },
+        { value: "networkPowerOutage", label: tTutorReasons("networkPowerOutage") },
+        { value: "equipmentFailure", label: tTutorReasons("equipmentFailure") },
+        { value: "tutorSickLostVoice", label: tTutorReasons("tutorSickLostVoice") },
+        { value: "unexpectedFamilyMatter", label: tTutorReasons("unexpectedFamilyMatter") },
         { value: "other", label: tTutorReasons("other") },
       ];
     }

@@ -25,6 +25,10 @@ export function getTutorRescheduleReasonLabel(
     scheduleConflict: t("reasons.scheduleConflict"),
     personalEmergency: t("reasons.personalEmergency"),
     studentUnavailable: t("reasons.studentUnavailable"),
+    networkPowerOutage: t("reasons.networkPowerOutage"),
+    equipmentFailure: t("reasons.equipmentFailure"),
+    tutorSickLostVoice: t("reasons.tutorSickLostVoice"),
+    unexpectedFamilyMatter: t("reasons.unexpectedFamilyMatter"),
     other: t("reasons.other"),
   };
   return labels[reasonKey] ?? reasonKey;
