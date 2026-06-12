@@ -211,7 +211,6 @@
         "tutorSection": "Your tutor",
         "studentSection": "Booked as",
         "durationLabel": "{minutes} min trial",
-        "lessonTimezoneCaption": "Displayed in your tutor’s timezone ({timezone}).",
         "amountPaid": "Amount paid",
         "paidAt": "Paid at",
         "pendingPaymentHint": "Payment is still processing — this usually updates within a minute after your bank confirms.",

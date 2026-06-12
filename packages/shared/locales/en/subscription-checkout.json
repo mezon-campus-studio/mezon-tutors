@@ -142,8 +142,6 @@
         "lessonsPerWeekLabel": "{n} sessions per week",
         "lessonSection": "Weekly schedule",
         "scheduleSection": "Weekly schedule",
-        "lessonTimezoneCaption": "Displayed in your tutor's timezone ({timezone}).",
-        "scheduleTimezoneCaption": "Displayed in your tutor's timezone ({timezone}).",
         "durationLabel": "{minutes} min per session",
         "studentSection": "Subscribed as",
         "tipsTitle": "Before your lessons",

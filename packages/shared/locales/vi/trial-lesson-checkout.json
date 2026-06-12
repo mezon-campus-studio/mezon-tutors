@@ -211,7 +211,6 @@
         "tutorSection": "Gia sư của bạn",
         "studentSection": "Đặt với tài khoản",
         "durationLabel": "Học thử {minutes} phút",
-        "lessonTimezoneCaption": "Hiển thị theo múi giờ của gia sư ({timezone}).",
         "amountPaid": "Số tiền thanh toán",
         "paidAt": "Thời điểm thanh toán",
         "pendingPaymentHint": "Giao dịch có thể đang xử lý — thường cập nhật trong vòng một phút sau khi ngân hàng xác nhận.",

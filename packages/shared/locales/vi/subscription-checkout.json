@@ -142,8 +142,6 @@
         "lessonsPerWeekLabel": "{n} buổi mỗi tuần",
         "lessonSection": "Lịch học hàng tuần",
         "scheduleSection": "Lịch học hàng tuần",
-        "lessonTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
-        "scheduleTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
         "durationLabel": "{minutes} phút mỗi buổi",
         "studentSection": "Đăng ký với tài khoản",
         "tipsTitle": "Trước các buổi học",
