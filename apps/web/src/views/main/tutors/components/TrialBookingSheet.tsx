@@ -18,7 +18,7 @@ import { useAtomValue } from "jotai";
 import { CalendarClock, Clock, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import {
   ScheduleSelection,
@@ -26,6 +26,11 @@ import {
 } from "@/components/common/ScheduleSelection";
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Separator,
   Sheet,
   SheetContent,
@@ -37,7 +42,6 @@ import {
 import { useCurrency, useUserTimezone } from "@/hooks";
 import {
   formatWallClockTime12h,
-  formatWeekdayShort,
   getWeekStartMondayInTimezone,
   parseYmdInTimezone,
   startOfTodayInTimezone,
@@ -108,6 +112,43 @@ const DURATION_OPTIONS = [30, 60];
 const DAYS_IN_WEEK = 7;
 const SLOT_INTERVAL_MINUTES = 30;
 
+function capitalizeFirstLetter(value: string): string {
+  if (!value) {
+    return value;
+  }
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatLocalizedLessonTimeLabel(
+  start: dayjs.Dayjs,
+  endTime: string,
+  locale: string,
+): string {
+  const timeRange = `${start.format("HH:mm")} - ${endTime}`;
+  const weekday = capitalizeFirstLetter(start.format("dddd"));
+  const dateLabel = start.format("DD/MM");
+
+  if (locale.startsWith("vi")) {
+    return `${weekday}, ngày ${dateLabel} : ${timeRange}`;
+  }
+
+  return `${weekday}, ${dateLabel} : ${timeRange}`;
+}
+
+function formatRescheduleConfirmTimeLabel(
+  startAtIso: string,
+  durationMinutes: number,
+  timezoneName: string,
+  locale: string,
+): string {
+  const start = dayjs(startAtIso).tz(timezoneName).locale(locale);
+  if (!start.isValid()) {
+    return "—";
+  }
+  const end = start.add(durationMinutes, "minute");
+  return formatLocalizedLessonTimeLabel(start, end.format("HH:mm"), locale);
+}
+
 export function TrialBookingSheet({
   open,
   onOpenChange,
@@ -120,6 +161,8 @@ export function TrialBookingSheet({
   tutor,
 }: TrialBookingSheetProps) {
   const t = useTranslations("Tutors.TrialBookingSheet");
+  const tConfirm = useTranslations("Tutors.TrialBookingSheet.rescheduleConfirmDialog");
+  const locale = useLocale();
   const isReschedule = mode === "reschedule";
   const router = useRouter();
   const { currency } = useCurrency();
@@ -130,6 +173,9 @@ export function TrialBookingSheet({
   );
   const [timeId, setTimeId] = useState<string>("");
   const [weekOffset, setWeekOffset] = useState<number>(0);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<TrialBookingPayload | null>(null);
+  const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
 
   const { data: schedule, isPending: isAvailabilityPending } =
     useGetTutorAvailability(tutor.id, open && Boolean(tutor.id));
@@ -389,6 +435,14 @@ export function TrialBookingSheet({
   }, [open, initialDurationMinutes]);
 
   useEffect(() => {
+    if (!open) {
+      setConfirmDialogOpen(false);
+      setPendingPayload(null);
+      setIsSubmittingReschedule(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (!timeId || !selectedDateString) {
       return;
     }
@@ -460,13 +514,66 @@ export function TrialBookingSheet({
     if (!selectedTime) {
       return t("noTimeSet");
     }
-    const dayLabel = formatWeekdayShort(selectedDateString, userTimezone);
+    const start = dayjs
+      .tz(`${selectedDateString} ${selectedTime.startTime}`, userTimezone)
+      .locale(locale);
+    if (!start.isValid()) {
+      return t("noTimeSet");
+    }
     const endMinutes = timeToMinutes(selectedTime.startTime) + duration;
     const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, "0")}:${String(
       endMinutes % 60,
     ).padStart(2, "0")}`;
-    return `${dayLabel} · ${selectedTime.startTime} - ${endTime}`;
-  }, [duration, selectedDateString, selectedTime, t, userTimezone]);
+    return formatLocalizedLessonTimeLabel(start, endTime, locale);
+  }, [duration, locale, selectedDateString, selectedTime, t, userTimezone]);
+
+  const buildPayload = (): TrialBookingPayload | null => {
+    if (!selectedTime) {
+      return null;
+    }
+
+    const startAt = dayjs(`${selectedDateString} ${selectedTime.startTime}`)
+      .tz(userTimezone, true)
+      .utc()
+      .format();
+
+    return {
+      duration,
+      startAt,
+      dayOfWeek: dbDayOfWeek,
+      time: selectedTime as TrialTimeSlot,
+    };
+  };
+
+  const originalTimeLabel = useMemo(() => {
+    if (!rescheduleOriginalStartAt) {
+      return "—";
+    }
+    return formatRescheduleConfirmTimeLabel(
+      rescheduleOriginalStartAt,
+      initialDurationMinutes ?? duration,
+      userTimezone,
+      locale,
+    );
+  }, [
+    rescheduleOriginalStartAt,
+    initialDurationMinutes,
+    duration,
+    userTimezone,
+    locale,
+  ]);
+
+  const pendingNewTimeLabel = useMemo(() => {
+    if (!pendingPayload) {
+      return "—";
+    }
+    return formatRescheduleConfirmTimeLabel(
+      pendingPayload.startAt,
+      pendingPayload.duration,
+      userTimezone,
+      locale,
+    );
+  }, [pendingPayload, userTimezone, locale]);
 
   const handleConfirm = async () => {
     if (!selectedTime || isBookingLocked) {
@@ -479,17 +586,16 @@ export function TrialBookingSheet({
       return;
     }
 
-    const clientTimezone = userTimezone;
-    const startAt = dayjs(`${selectedDateString} ${selectedTime.startTime}`)
-      .tz(clientTimezone, true)
-      .utc()
-      .format();
-    const payload: TrialBookingPayload = {
-      duration,
-      startAt,
-      dayOfWeek: dbDayOfWeek,
-      time: selectedTime as TrialTimeSlot,
-    };
+    const payload = buildPayload();
+    if (!payload) {
+      return;
+    }
+
+    if (isReschedule && onConfirm) {
+      setPendingPayload(payload);
+      setConfirmDialogOpen(true);
+      return;
+    }
 
     if (onConfirm) {
       await onConfirm(payload);
@@ -505,6 +611,24 @@ export function TrialBookingSheet({
     });
     onOpenChange(false);
     router.push(`/checkout/trial-lesson?${query.toString()}`);
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!pendingPayload || !onConfirm) {
+      return;
+    }
+
+    try {
+      setIsSubmittingReschedule(true);
+      await onConfirm(pendingPayload);
+      setConfirmDialogOpen(false);
+      setPendingPayload(null);
+      onOpenChange(false);
+    } catch {
+      // Parent shows error toast; keep dialog open for retry.
+    } finally {
+      setIsSubmittingReschedule(false);
+    }
   };
 
   const isConfirmDisabled =
@@ -584,14 +708,24 @@ export function TrialBookingSheet({
 
           <div className="shrink-0 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] px-3 py-3 sm:px-6 sm:py-4">
             <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={`flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center ${
+                  isReschedule ? "sm:flex-nowrap sm:gap-2" : "sm:flex-wrap"
+                }`}
+              >
+                <div
+                  className={`flex min-w-0 items-center gap-3 ${
+                    isReschedule ? "shrink sm:max-w-[9.5rem] md:max-w-[11rem] lg:max-w-[13rem]" : ""
+                  }`}
+                >
                   <Image
                     src={tutor.avatar}
                     alt={tutor.name}
                     width={56}
                     height={56}
-                    className="size-12 shrink-0 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-violet-200/40 sm:size-14"
+                    className={`shrink-0 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-violet-200/40 ${
+                      isReschedule ? "size-10 sm:size-11" : "size-12 sm:size-14"
+                    }`}
                   />
                   <div className="min-w-0">
                     <p className="truncate text-base font-extrabold text-slate-900 sm:text-lg">
@@ -613,7 +747,7 @@ export function TrialBookingSheet({
                 <div
                   className={`relative inline-flex w-full max-w-full shrink-0 items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto ${
                     lockDuration ? "pointer-events-none opacity-60" : ""
-                  }`}
+                  } ${isReschedule ? "sm:shrink-0" : ""}`}
                 >
                   <span
                     aria-hidden
@@ -640,31 +774,47 @@ export function TrialBookingSheet({
                   ))}
                 </div>
 
-                <span
-                  className={`inline-flex w-full max-w-full min-w-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:w-auto sm:px-4 sm:text-sm ${
-                    selectedTime
-                      ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-200"
-                      : "bg-slate-50 text-slate-500 ring-1 ring-slate-200"
-                  }`}
+                <div
+                  className={
+                    isReschedule ? "flex w-full justify-center sm:contents" : undefined
+                  }
                 >
-                  <CalendarClock
-                    className={`size-3.5 shrink-0 ${selectedTime ? "text-violet-600" : "text-slate-400"}`}
-                  />
-                  <span className="min-w-0 truncate">{footerTimeLabel}</span>
-                  {selectedTime ? (
-                    <button
-                      type="button"
-                      className="ml-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full bg-violet-100 text-violet-600 transition-colors hover:bg-violet-200"
-                      onClick={() => setTimeId("")}
-                      aria-label={t("clearSelectedTime")}
-                    >
-                      <XIcon className="size-3" />
-                    </button>
-                  ) : null}
-                </span>
+                  <span
+                    className={`inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-colors sm:px-3 sm:py-2 sm:text-xs ${
+                      isReschedule
+                        ? "w-auto max-w-[17rem] shrink sm:max-w-[15rem] md:max-w-[18rem]"
+                        : "w-full max-w-full sm:w-auto sm:px-4 sm:text-sm"
+                    } ${
+                      selectedTime
+                        ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-200"
+                        : "bg-slate-50 text-slate-500 ring-1 ring-slate-200"
+                    }`}
+                  >
+                    <CalendarClock
+                      className={`size-3.5 shrink-0 ${selectedTime ? "text-violet-600" : "text-slate-400"}`}
+                    />
+                    <span className="min-w-0 truncate">{footerTimeLabel}</span>
+                    {selectedTime ? (
+                      <button
+                        type="button"
+                        className="ml-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full bg-violet-100 text-violet-600 transition-colors hover:bg-violet-200"
+                        onClick={() => setTimeId("")}
+                        aria-label={t("clearSelectedTime")}
+                      >
+                        <XIcon className="size-3" />
+                      </button>
+                    ) : null}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between lg:w-auto lg:justify-end lg:shrink-0">
+              <div
+                className={`flex w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:w-auto lg:shrink-0 ${
+                  isReschedule
+                    ? "sm:justify-end sm:gap-2"
+                    : "sm:justify-between lg:justify-end"
+                }`}
+              >
                 {!isReschedule ? (
                   <div className="flex flex-col items-start sm:items-end">
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
@@ -675,7 +825,7 @@ export function TrialBookingSheet({
                     </p>
                   </div>
                 ) : (
-                  <p className="max-w-xs text-xs leading-relaxed text-slate-500 sm:text-sm">
+                  <p className="w-full text-xs leading-relaxed text-slate-500 sm:max-w-[7.5rem] sm:shrink-0 sm:text-[11px] md:max-w-[8.5rem] lg:line-clamp-3">
                     {t("rescheduleHint")}
                   </p>
                 )}
@@ -694,6 +844,106 @@ export function TrialBookingSheet({
           </div>
         </div>
       </SheetContent>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!isSubmittingReschedule) {
+            setConfirmDialogOpen(nextOpen);
+            if (!nextOpen) {
+              setPendingPayload(null);
+            }
+          }
+        }}
+      >
+        <DialogContent className="max-w-[460px] gap-0 overflow-hidden border-violet-100 p-0 shadow-xl shadow-violet-200/40">
+          <DialogHeader className="border-b border-violet-50 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4">
+            <DialogTitle className="font-heading text-lg font-extrabold text-slate-900">
+              {tConfirm("title")}
+            </DialogTitle>
+            <p className="text-sm leading-relaxed text-slate-500">
+              {tConfirm("description")}
+            </p>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 px-6 py-5">
+            <div className="flex items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50/40 px-4 py-3">
+              <Image
+                src={tutor.avatar}
+                alt={tutor.name}
+                width={48}
+                height={48}
+                className="size-12 shrink-0 rounded-xl object-cover ring-2 ring-white shadow-sm"
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-extrabold text-slate-900">
+                  {tutor.name}
+                </p>
+                <p className="truncate text-xs text-slate-500">{tutor.title}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  {tConfirm("oldTimeLabel")}
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-700">
+                  {originalTimeLabel}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-violet-200 bg-[linear-gradient(180deg,#faf5ff,#fdf2f8)] px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-500">
+                  {tConfirm("newTimeLabel")}
+                </p>
+                <p className="mt-1 text-sm font-bold text-violet-800">
+                  {pendingNewTimeLabel}
+                </p>
+              </div>
+            </div>
+
+            {isSubmittingReschedule ? (
+              <div className="flex items-center justify-center gap-2 rounded-2xl border border-violet-100 bg-violet-50/60 px-4 py-3">
+                <Spinner className="size-4 text-violet-600" />
+                <p className="text-sm font-medium text-violet-700">
+                  {tConfirm("submitting")}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 border-t border-violet-50 bg-slate-50/50 px-6 py-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 w-full rounded-full border-slate-200 px-6 text-sm font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:w-auto"
+              disabled={isSubmittingReschedule}
+              onClick={() => {
+                setConfirmDialogOpen(false);
+                setPendingPayload(null);
+              }}
+            >
+              {tConfirm("cancel")}
+            </Button>
+            <Button
+              type="button"
+              className="h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 disabled:opacity-70 sm:w-auto"
+              disabled={isSubmittingReschedule}
+              onClick={() => void handleConfirmReschedule()}
+            >
+              {isSubmittingReschedule ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="size-4" />
+                  {tConfirm("submitting")}
+                </span>
+              ) : (
+                tConfirm("confirm")
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

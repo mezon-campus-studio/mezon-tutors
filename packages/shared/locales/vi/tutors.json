@@ -77,7 +77,16 @@
     "confirmBooking": "Xác nhận đặt lịch",
     "rescheduleTitle": "Đổi lịch buổi học thử",
     "confirmReschedule": "Xác nhận giờ học mới",
-    "rescheduleHint": "Chọn giờ học mới cách thời điểm hiện tại ít nhất 12 tiếng. Bạn không cần thanh toán thêm.",
+    "rescheduleHint": "Chọn giờ học mới cách thời điểm hiện tại ít nhất 12 tiếng.",
+    "rescheduleConfirmDialog": {
+      "title": "Xác nhận đổi lịch",
+      "description": "Vui lòng kiểm tra lại giờ học cũ và giờ học mới trước khi xác nhận.",
+      "oldTimeLabel": "Giờ học hiện tại",
+      "newTimeLabel": "Giờ học mới",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận đổi lịch",
+      "submitting": "Đang cập nhật lại lịch mới..."
+    },
     "selectScheduleFirst": "Vui lòng chọn lịch trước",
     "requestSentWait": "Yêu cầu đã được gửi, vui lòng chờ",
     "alreadyBookedConfirmed": "Bạn đã đặt gia sư này rồi",

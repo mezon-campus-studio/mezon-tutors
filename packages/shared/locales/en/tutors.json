@@ -77,7 +77,16 @@
     "confirmBooking": "Confirm Booking",
     "rescheduleTitle": "Reschedule trial lesson",
     "confirmReschedule": "Confirm new time",
-    "rescheduleHint": "Choose a new time at least 12 hours from now. Your payment stays the same.",
+    "rescheduleHint": "Choose a new time at least 12 hours from now.",
+    "rescheduleConfirmDialog": {
+      "title": "Confirm reschedule",
+      "description": "Please review your current and new lesson times before confirming.",
+      "oldTimeLabel": "Current time",
+      "newTimeLabel": "New time",
+      "cancel": "Cancel",
+      "confirm": "Confirm reschedule",
+      "submitting": "Updating to your new schedule..."
+    },
     "selectScheduleFirst": "Select a schedule first",
     "requestSentWait": "Request sent, please wait",
     "alreadyBookedConfirmed": "You already booked this tutor",

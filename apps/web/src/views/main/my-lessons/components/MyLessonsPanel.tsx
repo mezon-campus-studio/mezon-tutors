@@ -907,9 +907,24 @@ export default function MyLessonsPanel({
       });
       await queryClient.invalidateQueries({ queryKey: ["my-lessons"] });
 
+      toast.success(t("panels.lessons.reschedule.success"));
+      setRescheduleLesson(null);
+
       if (originalStartAt && rescheduleLesson.tutorMezonUserId) {
-        try {
-          const dmContent = buildStudentLessonRescheduledDmContent({
+        const lessonForDm = rescheduleLesson;
+        void sendStudentLessonDmToTutor({
+          lightClient,
+          setLightClient,
+          senderId,
+          senderMezonUserId,
+          recipientId: lessonForDm.tutorUserId,
+          recipientMezonUserId: lessonForDm.tutorMezonUserId ?? "",
+          refetchDmChannel: async () => {
+            const r = await refetchDmChannel();
+            return { data: r.data ?? null };
+          },
+          createDmChannelMutation,
+          content: buildStudentLessonRescheduledDmContent({
             lessonKind: "trial",
             originalLabel: formatLessonRangeInTimezone(
               originalStartAt,
@@ -925,34 +940,18 @@ export default function MyLessonsPanel({
             ),
             locale,
             senderAvatarUrl: currentUser?.avatar,
-          });
-          await sendStudentLessonDmToTutor({
-            lightClient,
-            setLightClient,
-            senderId,
-            senderMezonUserId,
-            recipientId: rescheduleLesson.tutorUserId,
-            recipientMezonUserId: rescheduleLesson.tutorMezonUserId ?? "",
-            refetchDmChannel: async () => {
-              const r = await refetchDmChannel();
-              return { data: r.data ?? null };
-            },
-            createDmChannelMutation,
-            content: dmContent,
-          });
-        } catch (dmError) {
+          }),
+        }).catch((dmError) => {
           console.error("DM Error:", dmError);
           toast.error(t("panels.lessons.cancellation.dialog.messageFailed"));
-        }
+        });
       }
-
-      toast.success(t("panels.lessons.reschedule.success"));
-      setRescheduleLesson(null);
     } catch (error) {
       console.error(error);
       toast.error(
         error instanceof Error ? error.message : t("panels.lessons.reschedule.failed"),
       );
+      throw error;
     } finally {
       setIsRescheduling(false);
     }
