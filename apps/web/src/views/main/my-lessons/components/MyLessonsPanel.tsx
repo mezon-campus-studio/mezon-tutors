@@ -12,7 +12,6 @@ import {
   MessageCircle,
   Trash2,
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -21,7 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { userAtom } from "@/store/auth.atom";
 import { useMezonLight } from "@/providers";
-import { Badge, Button, toast } from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import { cn } from "@/lib/utils";
 import { ActionMenu } from "@/components/common/ActionMenu";
@@ -225,16 +224,21 @@ function LessonStatusBadge({
 }
 
 function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "T";
+
   return (
-    <div className="size-14 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40">
-      <Image
-        src={avatar}
-        alt={name}
-        width={56}
-        height={56}
-        className="size-full object-cover"
-      />
-    </div>
+    <Avatar className="size-14 shrink-0 rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40">
+      {avatar ? <AvatarImage src={avatar} alt={name} className="object-cover" /> : null}
+      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 

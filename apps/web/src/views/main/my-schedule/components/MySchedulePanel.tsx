@@ -13,13 +13,12 @@ import {
   Sparkles,
   Trash2,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { ActionMenu } from '@/components/common/ActionMenu';
 import { formatLessonDateLabel } from '@/components/calendar/utils/format-locale';
-import { Badge, Button } from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
 import type { TrialLessonBookingRequestItem } from '@/services';
@@ -113,21 +112,12 @@ function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
       .join('') || 'S';
 
   return (
-    <div className="size-14 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40">
-      {avatar ? (
-        <Image
-          src={avatar}
-          alt={name}
-          width={56}
-          height={56}
-          className="size-full object-cover"
-        />
-      ) : (
-        <div className="flex size-full items-center justify-center bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
-          {initials}
-        </div>
-      )}
-    </div>
+    <Avatar className="size-14 shrink-0 rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40">
+      {avatar ? <AvatarImage src={avatar} alt={name} className="object-cover" /> : null}
+      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+        {initials}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
