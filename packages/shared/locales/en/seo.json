@@ -1,11 +1,11 @@
 {
   "siteName": "Mezonly",
   "default": {
-    "title": "Mezonly — Online tutoring on Mezon",
-    "description": "Mezonly connects learners with vetted tutors. Book 1-on-1 lessons, chat, and study live on Mezon — on your schedule."
+    "title": "Mezonly - Online tutoring on Mezon",
+    "description": "Mezonly connects learners with vetted tutors. Book 1-on-1 lessons, chat, and study live on Mezon - on your schedule."
   },
   "home": {
-    "title": "Mezonly — Online tutoring on Mezon",
+    "title": "Mezonly - Online tutoring on Mezon",
     "description": "Find the right tutor for languages, school subjects, and skills. Book a trial lesson, subscribe monthly, and learn live on Mezon."
   },
   "tutors": {
@@ -13,7 +13,7 @@
     "description": "Browse verified tutors on Mezonly. Filter by subject, price, and ratings to find your match."
   },
   "tutorDetail": {
-    "title": "{name} — {subject} tutor | Mezonly",
+    "title": "{name} - {subject} tutor | Mezonly",
     "description": "{snippet}",
     "fallbackTitle": "Tutor profile | Mezonly",
     "fallbackDescription": "View tutor profile, schedule, and reviews on Mezonly."
@@ -72,11 +72,11 @@
   },
   "onboarding": {
     "title": "Getting started with Mezonly",
-    "description": "Explore Mezonly step by step — a guided walkthrough for students and tutors."
+    "description": "Explore Mezonly step by step - a guided walkthrough for students and tutors."
   },
   "legalCenter": {
     "title": "Legal center | Mezonly",
-    "description": "Browse Mezonly legal documents — Terms of Service, Privacy Policy, Refund Policy, and Tutor Policy."
+    "description": "Browse Mezonly legal documents - Terms of Service, Privacy Policy, Refund Policy, and Tutor Policy."
   },
   "termsOfService": {
     "title": "Terms of Service | Mezonly",
@@ -92,6 +92,6 @@
   },
   "tutorPolicy": {
     "title": "Tutor Policy | Mezonly",
-    "description": "Guidelines for tutors on Mezonly — profile standards, Mezon setup, scheduling, lesson quality, and payouts."
+    "description": "Guidelines for tutors on Mezonly - profile standards, Mezon setup, scheduling, lesson quality, and payouts."
   }
 }

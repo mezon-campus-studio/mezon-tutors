@@ -51,6 +51,17 @@ export class AuthController {
     return this.getCrossSiteCookieOptions(REFRESH_TOKEN_MAX_AGE);
   }
 
+  private clearRefreshCookie(res: Response) {
+    const opts = this.getRefreshCookieOptions();
+    res.clearCookie('refresh_token', {
+      path: opts.path ?? '/',
+      httpOnly: opts.httpOnly,
+      secure: opts.secure,
+      sameSite: opts.sameSite,
+      partitioned: opts.partitioned,
+    });
+  }
+
   private getOAuthStateCookieOptions(): CookieOptions {
     return this.getCrossSiteCookieOptions(OAUTH_STATE_MAX_AGE);
   }
@@ -223,20 +234,13 @@ export class AuthController {
     return this.authService.getCurrentUserForMe(jwtUser.sub, jwtUser.idToken);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies.refresh_token;
+    const refreshToken = req.cookies.refresh_token as string | undefined;
 
     await this.authService.revokeRefreshToken(refreshToken);
 
-    const opts = this.getRefreshCookieOptions();
-    res.clearCookie('refresh_token', {
-      path: opts.path ?? '/',
-      httpOnly: opts.httpOnly,
-      secure: opts.secure,
-      sameSite: opts.sameSite,
-    });
+    this.clearRefreshCookie(res);
 
     return {
       success: true,

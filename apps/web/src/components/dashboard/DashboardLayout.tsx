@@ -1,12 +1,10 @@
 "use client";
 
 import { isDashboardRole } from "@mezon-tutors/shared";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { usePathname } from "next/navigation";
+import { useAtomValue } from "jotai";
 import { useTranslations } from "next-intl";
-import { authService } from "@/services";
-import { dashboardMobileDrawerAtom, userAtom } from "@/store";
-import DashboardMobileDrawer from "./DashboardMobileDrawer";
+import { Spinner } from "@/components/ui";
+import { isLoadingAtom, userAtom } from "@/store";
 import DashboardSidebar from "./DashboardSidebar";
 
 type DashboardLayoutProps = {
@@ -15,20 +13,16 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const user = useAtomValue(userAtom);
-  const setUser = useSetAtom(userAtom);
-  const pathname = usePathname();
+  const isAuthLoading = useAtomValue(isLoadingAtom);
   const t = useTranslations("Dashboard");
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useAtom(
-    dashboardMobileDrawerAtom,
-  );
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      setUser(null);
-    }
-  };
+  if (isAuthLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <Spinner className="h-8 w-8 text-primary" />
+      </div>
+    );
+  }
 
   if (!user || !isDashboardRole(user.role)) {
     return (
@@ -50,13 +44,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="absolute -top-40 left-1/2 size-[44rem] max-w-[100vw] -translate-x-1/2 rounded-full bg-violet-300/15 blur-[140px]" />
       </div>
       <DashboardSidebar userRole={user.role} />
-      <DashboardMobileDrawer
-        isOpen={isMobileDrawerOpen}
-        onCloseAction={() => setIsMobileDrawerOpen(false)}
-        userRole={user.role}
-        pathname={pathname}
-        onLogoutAction={handleLogout}
-      />
 
       <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto md:ml-64">{children}</main>
     </div>

@@ -25,6 +25,43 @@ export async function createMezonLightDM(client: LightClient, userId: string) {
   return client.createDM(userId);
 }
 
+const CREATE_DM_MAX_ATTEMPTS = 3;
+const CREATE_DM_RETRY_DELAY_MS = 400;
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function createMezonLightDMWithRetry(
+  client: LightClient,
+  userId: string,
+  maxAttempts = CREATE_DM_MAX_ATTEMPTS,
+) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const dmChannel = await createMezonLightDM(client, userId);
+      if (dmChannel?.channel_id) {
+        return dmChannel;
+      }
+      lastError = new Error("DM channel response missing channel_id");
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (attempt < maxAttempts) {
+      await refreshMezonLightSession(client);
+      releaseMezonLightSocket();
+      await wait(CREATE_DM_RETRY_DELAY_MS * attempt);
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Could not create DM channel.");
+}
+
 export async function createMezonLightGroupDM(client: LightClient, userIds: string[]) {
   return client.createGroupDM(userIds);
 }

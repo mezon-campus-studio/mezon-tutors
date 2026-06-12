@@ -7,14 +7,17 @@ import {
   type DashboardMenuItem,
   type DashboardRole,
   getDashboardMenuItemsByRole,
+  isDashboardRole,
   isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogOut, MessageSquareWarning, Scale, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
+import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, MessageSquareWarning, Scale, Search, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
+import { redirectToMezonOAuthLogin } from "@/lib/mezon-oauth-redirect";
+import { detectBrowserTimezone } from "@/lib/timezone";
 import { MezonSyncButton } from "./MezonSyncButton";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { userAtom } from "@/store/auth.atom";
@@ -36,6 +39,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   events: CalendarDays,
   adminPanel: ShieldCheck,
   onboarding: Sparkles,
+  becomeTutor: GraduationCap,
   tutorPolicy: Scale,
   settings: Settings,
 };
@@ -57,6 +61,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
   onboarding: "from-violet-500 to-fuchsia-500",
+  becomeTutor: "from-violet-500 to-fuchsia-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
 };
@@ -66,7 +71,7 @@ type DashboardMobileDrawerProps = {
   onCloseAction: () => void;
   userRole: string | null | undefined;
   pathname: string;
-  onLogoutAction: () => void;
+  onLogoutAction: () => void | Promise<void>;
 };
 
 export default function DashboardMobileDrawer({
@@ -77,14 +82,22 @@ export default function DashboardMobileDrawer({
   onLogoutAction,
 }: DashboardMobileDrawerProps) {
   const t = useTranslations("Dashboard");
+  const tHeader = useTranslations("Common.Header");
   const user = useAtomValue(userAtom);
+  const isAuthenticated = isDashboardRole(userRole);
   const menuItems = getDashboardMenuItemsByRole(userRole);
+  const guestNavItems = [
+    { label: tHeader("findTutors"), href: ROUTES.TUTOR.INDEX, icon: Search },
+    { label: tHeader("becomeTutor"), href: ROUTES.BECOME_TUTOR.INDEX, icon: GraduationCap },
+  ];
   const navItems = menuItems.filter(
     (item) =>
       item.key !== "logout" &&
+      item.key !== "become-tutor" &&
       item.key !== "onboarding" &&
       item.key !== "tutor-policy",
   );
+  const becomeTutorItem = menuItems.find((item) => item.key === "become-tutor");
   const onboardingItem = menuItems.find((item) => item.key === "onboarding");
   const tutorPolicyItem = menuItems.find((item) => item.key === "tutor-policy");
   const logoutItem = menuItems.find((item) => item.key === "logout");
@@ -104,11 +117,13 @@ export default function DashboardMobileDrawer({
 
   if (!isOpen) return null;
 
-  const handleItemClick = (item: DashboardMenuItem) => {
-    if (item.type === "action") {
-      onLogoutAction();
-    }
+  const handleItemClick = () => {
     onCloseAction();
+  };
+
+  const handleLogoutClick = async () => {
+    onCloseAction();
+    await onLogoutAction();
   };
 
   const isActive = (item: DashboardMenuItem) =>
@@ -181,6 +196,59 @@ export default function DashboardMobileDrawer({
         ) : null}
 
         <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-4">
+          {!isAuthenticated ? (
+            <div className="space-y-1.5">
+              {guestNavItems.map((item) => {
+                const Icon = item.icon;
+                const active =
+                  pathname === item.href || Boolean(pathname?.startsWith(item.href));
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block"
+                    onClick={onCloseAction}
+                  >
+                    <Button
+                      variant="ghost"
+                      className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
+                        active
+                          ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                          : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"
+                      }`}
+                    >
+                      <span
+                        className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-all ${
+                          active
+                            ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-sm shadow-violet-300/40"
+                            : "bg-slate-100 text-slate-500 group-hover:bg-violet-100 group-hover:text-violet-700"
+                        }`}
+                      >
+                        <Icon className="size-3.5" />
+                      </span>
+                      <span className="truncate">{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+
+              <div className="pt-4">
+                <Button
+                  variant="gradient"
+                  className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
+                  onClick={() => {
+                    onCloseAction();
+                    redirectToMezonOAuthLogin(detectBrowserTimezone());
+                  }}
+                >
+                  <LogIn className="mr-2 size-4" />
+                  {tHeader("login")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = ICON_MAP[item.iconKey];
@@ -198,7 +266,7 @@ export default function DashboardMobileDrawer({
                       ? "text-rose-600 hover:bg-rose-50"
                       : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"
                 }`}
-                onClick={() => handleItemClick(item)}
+                onClick={handleItemClick}
               >
                 <span
                   className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-all ${
@@ -233,6 +301,22 @@ export default function DashboardMobileDrawer({
           </div>
 
           <div className="mt-auto space-y-2 pt-4">
+            {becomeTutorItem?.href ? (
+              <Link
+                href={becomeTutorItem.href}
+                className="block"
+                onClick={onCloseAction}
+              >
+                <Button
+                  variant="gradient"
+                  className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
+                >
+                  <GraduationCap className="mr-2 size-4" />
+                  {t(`sidebar.${becomeTutorItem.labelKey}`)}
+                </Button>
+              </Link>
+            ) : null}
+
             {onboardingItem?.href ? (
               <Link
                 href={onboardingItem.href}
@@ -281,7 +365,7 @@ export default function DashboardMobileDrawer({
               <Button
                 variant="ghost"
                 className="group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold text-rose-600 transition-all duration-200 hover:bg-rose-50"
-                onClick={() => handleItemClick(logoutItem)}
+                onClick={() => void handleLogoutClick()}
               >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition-all group-hover:bg-rose-200">
                   <LogOut className="size-3.5" />
@@ -290,6 +374,8 @@ export default function DashboardMobileDrawer({
               </Button>
             ) : null}
           </div>
+          </>
+          )}
         </nav>
       </aside>
     </>

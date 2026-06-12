@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -86,7 +86,7 @@ export default async function RootLayout({
       className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="flex min-h-full w-full flex-col bg-white text-slate-900">
+      <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AppProvider>
             <Header />
