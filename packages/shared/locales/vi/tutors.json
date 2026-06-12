@@ -32,7 +32,7 @@
     "perLesson": "/ buổi học",
     "bookTrial": "Đặt buổi học thử",
     "subscribeMonthly": "Đăng ký theo tháng",
-    "continuePayment": "Tiếp tục thanh toán",
+    "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "messageModal": {
@@ -338,7 +338,7 @@
     "perLesson": "/ 60 phút",
     "bookTrial": "Đặt buổi học thử",
     "subscribeMonthly": "Đăng ký học theo tháng",
-    "continuePayment": "Tiếp tục thanh toán",
+    "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "bookedLast48h": "{count} buổi được đặt trong 48h qua",

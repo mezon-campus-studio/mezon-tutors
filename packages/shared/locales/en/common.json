@@ -62,7 +62,7 @@
   "PaymentMethodSelection": {
     "title": "Payment Method",
     "methodUnavailable": "Temporarily unavailable",
-    "continuePayment": "Continue payment",
+    "continuePayment": "Pay now",
     "bookAndPay": "Book and Pay ({amount})",
     "payWithWallet": "Pay with wallet ({amount})",
     "bookLesson": "Book Lesson",

@@ -32,7 +32,7 @@
     "perLesson": "/ lesson",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
-    "continuePayment": "Continue payment",
+    "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "messageModal": {
@@ -338,7 +338,7 @@
     "perLesson": "/ 60-min lesson",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
-    "continuePayment": "Continue payment",
+    "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "bookedLast48h": "{count} lessons booked in the last 48h",
