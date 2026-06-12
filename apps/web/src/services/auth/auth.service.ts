@@ -4,6 +4,7 @@ import {
   apiClient,
   credentialsApiClient,
   refreshAccessTokenWithLock,
+  resetRefreshTokenLock,
 } from "@/services/api-client";
 import { accessTokenAtom } from "@/store/token.atom";
 import { storage } from "../storage/storage.service";
@@ -62,7 +63,10 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       await credentialsApiClient.post("/auth/logout");
+    } catch {
+      console.error("Failed to logout");
     } finally {
+      resetRefreshTokenLock();
       this.store.set(accessTokenAtom, null);
       await storage.clearMezonLightSession();
     }

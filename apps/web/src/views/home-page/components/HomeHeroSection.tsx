@@ -75,18 +75,18 @@ export default function HomeHeroSection() {
   }, [isPaused]);
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+    <section className="relative w-full max-w-full overflow-x-clip pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-x-clip">
         <div className="absolute inset-0 bg-[linear-gradient(165deg,#f5f0ff_0%,#faf8ff_35%,#ffffff_72%,#fffdfd_100%)]" />
         <div
-          className="absolute -top-44 left-1/2 size-[46rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/45 via-fuchsia-300/35 to-transparent blur-[130px] motion-reduce:animate-none [animation:hero-blob-drift_22s_ease-in-out_infinite]"
+          className="absolute -top-44 left-1/2 size-[min(46rem,100vw)] max-w-[100vw] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/45 via-fuchsia-300/35 to-transparent blur-[130px] motion-reduce:animate-none [animation:hero-blob-drift_22s_ease-in-out_infinite]"
           style={{ animationDelay: "-4s" }}
         />
         <div
-          className="absolute -top-16 -right-24 size-[36rem] rounded-full bg-gradient-to-bl from-rose-300/35 via-fuchsia-200/40 to-transparent blur-[110px] motion-reduce:animate-none [animation:hero-blob-drift_18s_ease-in-out_infinite]"
+          className="absolute -top-16 right-0 size-[min(36rem,100vw)] max-w-[100vw] rounded-full bg-gradient-to-bl from-rose-300/35 via-fuchsia-200/40 to-transparent blur-[110px] motion-reduce:animate-none [animation:hero-blob-drift_18s_ease-in-out_infinite] sm:-right-24"
           style={{ animationDelay: "-2s" }}
         />
-        <div className="absolute top-1/4 -left-32 size-[30rem] rounded-full bg-gradient-to-tr from-indigo-300/40 via-violet-200/35 to-transparent blur-[100px] motion-reduce:animate-none [animation:hero-blob-drift_20s_ease-in-out_infinite]" />
+        <div className="absolute top-1/4 left-0 size-[min(30rem,100vw)] max-w-[100vw] rounded-full bg-gradient-to-tr from-indigo-300/40 via-violet-200/35 to-transparent blur-[100px] motion-reduce:animate-none [animation:hero-blob-drift_20s_ease-in-out_infinite] sm:-left-32" />
         <div className="absolute -bottom-24 right-1/4 size-72 rounded-full bg-violet-400/20 blur-[90px] motion-reduce:animate-none [animation:hero-badge-shimmer_14s_ease-in-out_infinite]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-300/40 to-transparent" />
         <div
@@ -101,7 +101,7 @@ export default function HomeHeroSection() {
         />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
+      <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
         <div className="space-y-8">
           <Badge className="relative h-auto overflow-hidden rounded-full border border-violet-200/80 bg-white/80 px-4 py-1.5 text-xs font-semibold text-violet-800 shadow-md shadow-violet-200/25 ring-1 ring-white/80 backdrop-blur-md animate-in fade-in slide-in-from-bottom-3 duration-700">
             <Sparkles className="relative mr-1.5 size-3.5 shrink-0 text-violet-600" />
@@ -276,7 +276,7 @@ export default function HomeHeroSection() {
           ) : null}
         </div>
 
-        <div className="relative mx-auto w-full max-w-[26rem] motion-reduce:animate-none lg:mx-0 lg:max-w-none animate-in fade-in slide-in-from-bottom-6 duration-1000 [animation-delay:120ms] [animation-fill-mode:both] motion-safe:[animation:hero-card-float_10s_ease-in-out_infinite]">
+        <div className="relative mx-auto w-full min-w-0 max-w-[26rem] overflow-x-clip motion-reduce:animate-none lg:mx-0 lg:max-w-none animate-in fade-in slide-in-from-bottom-6 duration-1000 [animation-delay:120ms] [animation-fill-mode:both] motion-safe:[animation:hero-card-float_10s_ease-in-out_infinite]">
           <div className="pointer-events-none absolute -left-6 top-[18%] z-0 hidden h-52 w-40 -rotate-6 overflow-hidden rounded-2xl border-2 border-white shadow-[0_24px_60px_-16px_rgba(91,33,182,0.35)] lg:block">
             <Image
               src="/images/teach.jpg"
@@ -329,7 +329,7 @@ function HeroCarousel({
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: carousel pause-on-hover is an enhancement; keyboard users pause via focus on dot buttons
     <div
-      className="relative mx-auto w-full max-w-[26rem] lg:max-w-none"
+      className="relative mx-auto w-full min-w-0 max-w-[26rem] overflow-x-clip lg:max-w-none"
       onMouseEnter={onPause}
       onMouseLeave={onResume}
       onFocus={onPause}
@@ -340,9 +340,9 @@ function HeroCarousel({
         <div className="absolute inset-x-12 bottom-0 h-72 rounded-full bg-[radial-gradient(circle_at_70%_70%,rgba(236,72,153,0.15),transparent_70%)] blur-3xl" />
       </div>
 
-      <div className="relative overflow-hidden rounded-[1.75rem] border border-slate-200/60 bg-white/95 shadow-[0_25px_70px_-24px_rgba(91,33,182,0.28),0_0_0_1px_rgba(255,255,255,0.9)_inset] ring-1 ring-violet-200/25 backdrop-blur-[2px]">
+      <div className="relative w-full min-w-0 overflow-hidden rounded-[1.75rem] border border-slate-200/60 bg-white/95 shadow-[0_25px_70px_-24px_rgba(91,33,182,0.28),0_0_0_1px_rgba(255,255,255,0.9)_inset] ring-1 ring-violet-200/25 backdrop-blur-[2px]">
         <div
-          className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="flex w-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{ transform: `translateX(-${activeSlide * 100}%)` }}
           aria-live="polite"
         >

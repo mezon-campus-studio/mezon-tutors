@@ -309,7 +309,11 @@ export class AuthService {
     }
   }
 
-  async revokeRefreshToken(token: string): Promise<void> {
+  async revokeRefreshToken(token: string | undefined): Promise<void> {
+    if (!token?.trim()) {
+      return;
+    }
+
     try {
       await this.prisma.refreshToken.updateMany({
         where: {

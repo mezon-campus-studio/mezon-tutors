@@ -33,8 +33,8 @@ export class NotificationReminderService {
   async notifyUpcomingLessons() {
     const now = new Date();
 
-    const from = addMinutes(now, 9);
-    const to = addMinutes(now, 10);
+    const from = addMinutes(now, 14);
+    const to = addMinutes(now, 15);
 
 
     const upcomingBookings = await this.prisma.trialLessonBooking.findMany({
@@ -82,7 +82,7 @@ export class NotificationReminderService {
             [booking.studentId, booking.tutor.userId],
             {
               title: 'Lesson starting soon',
-              content: 'Your lesson will start in about 10 minutes.',
+              content: 'Your lesson will start in about 15 minutes.',
               type: ENotificationType.LESSON_STARTING_SOON,
               i18nKey: NOTIFICATION_META.LESSON_STARTING_SOON.templateKey ?? undefined,
               i18nParams: {},

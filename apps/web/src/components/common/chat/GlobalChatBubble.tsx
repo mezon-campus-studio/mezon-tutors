@@ -4,7 +4,7 @@ import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
 import { ExternalLinkIcon, InfoIcon, MessageCircleMoreIcon, SendIcon } from 'lucide-react';
-import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL, MEZON_URL } from '@mezon-tutors/shared';
+import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL } from '@mezon-tutors/shared';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { userAtom } from '@/store/auth.atom';
@@ -403,7 +403,7 @@ export default function GlobalChatBubble() {
                       <span>
                         {t('noticePrefix')}{' '}
                         <a
-                          href={MEZON_URL}
+                          href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
                           target="_blank"
                           rel="noreferrer"
                           className="font-medium text-violet-700 hover:underline"

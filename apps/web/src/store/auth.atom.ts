@@ -2,6 +2,15 @@ import { atom } from "jotai";
 import { authService } from "@/services";
 import { accessTokenAtom } from "./token.atom";
 
+function isUnauthorizedError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as { status: unknown }).status === 401
+  );
+}
+
 export type AuthUser = {
   id: string;
   mezonUserId: string;
@@ -48,12 +57,6 @@ export const isAuthenticatedAtom = atom((get) => {
 });
 
 export const initAuthAtom = atom(null, async (get, set) => {
-  const token = get(accessTokenAtom);
-  if (!token) {
-    set(userAtom, null);
-    set(isLoadingAtom, false);
-    return;
-  }
   if (loadUserInFlight) {
     await loadUserInFlight;
     return;
@@ -61,14 +64,36 @@ export const initAuthAtom = atom(null, async (get, set) => {
   loadUserInFlight = (async () => {
     set(isLoadingAtom, true);
     try {
-      const data = await authService.getMe();
-      if (!get(accessTokenAtom)) {
-        return;
+      let token = get(accessTokenAtom);
+
+      if (!token) {
+        try {
+          ({ accessToken: token } = await authService.refreshToken());
+        } catch (error) {
+          if (isUnauthorizedError(error)) {
+            set(accessTokenAtom, null);
+            set(userAtom, null);
+          } else {
+            set(userAtom, null);
+          }
+          return;
+        }
       }
-      set(userAtom, toAuthUser(data));
-    } catch {
-      set(accessTokenAtom, null);
-      set(userAtom, null);
+
+      try {
+        const data = await authService.getMe();
+        if (!get(accessTokenAtom)) {
+          return;
+        }
+        set(userAtom, toAuthUser(data));
+      } catch (error) {
+        if (isUnauthorizedError(error)) {
+          set(accessTokenAtom, null);
+          set(userAtom, null);
+        } else {
+          set(userAtom, null);
+        }
+      }
     } finally {
       set(isLoadingAtom, false);
       loadUserInFlight = null;

@@ -121,10 +121,12 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
+    setDashboardMobileDrawer(false);
     try {
       await authService.logout();
     } finally {
       setUser(null);
+      router.push(ROUTES.HOME.index);
     }
   };
 
@@ -149,7 +151,7 @@ export default function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+        className={`sticky top-0 z-50 w-full max-w-full overflow-x-clip transition-all duration-500 ${
           isEventHeroOverlay
             ? "border-transparent bg-transparent shadow-none"
             : scrolled

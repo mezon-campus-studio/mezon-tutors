@@ -2,7 +2,7 @@ import type { LightClient } from "mezon-light-sdk";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { restoreMezonLightClientFromStorage } from "@/services/mezon-light/mezon-light.client";
 import {
-  createMezonLightDM,
+  createMezonLightDMWithRetry,
   refreshMezonLightSession,
 } from "@/services/mezon-light/mezon-light.service";
 
@@ -61,7 +61,7 @@ export async function ensureMezonDmChannel(
     await refreshMezonLightSession(client);
   }
 
-  const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
+  const dmChannel = await createMezonLightDMWithRetry(client, recipientMezonUserId);
   const channelId = dmChannel?.channel_id;
   if (!channelId) {
     throw new Error("Could not create DM channel.");

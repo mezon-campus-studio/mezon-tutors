@@ -173,12 +173,16 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-
   html {
     @apply font-sans;
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: clip;
+    max-width: 100%;
   }
 }
 

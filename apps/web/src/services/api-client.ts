@@ -23,6 +23,10 @@ export class ApiError extends Error {
 let refreshPromise: Promise<string> | null = null;
 const store = getDefaultStore();
 
+export function resetRefreshTokenLock(): void {
+  refreshPromise = null;
+}
+
 /** Cookie-based auth endpoints only (refresh, logout, login). */
 export const credentialsApiClient = axios.create({
   baseURL: BASE_URL,

@@ -9,7 +9,7 @@ import HomeWhyUsSection from "./components/HomeWhyUsSection";
 
 export default function HomePage() {
   return (
-    <main className="bg-white text-slate-900">
+    <main className="w-full max-w-full overflow-x-clip bg-white text-slate-900">
       <HomeHeroSection />
       <HomeHowItWorksSection />
       <HomeEventsSection />

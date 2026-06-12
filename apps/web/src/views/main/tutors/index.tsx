@@ -2,6 +2,7 @@
 
 import {
   ECountry,
+  ECurrency,
   ESubject,
   ETutorSortBy,
   MAX_PRICE,
@@ -35,6 +36,38 @@ import TutorsPagination from "./components/TutorsPagination";
 const DEFAULT_LIMIT = 10;
 const DEFAULT_PAGE = 1;
 const PREVIEW_ANIM_MS = 500;
+
+function parseTutorsSearchParams(
+  searchParams: URLSearchParams,
+  currency: ECurrency,
+) {
+  return {
+    page: parseIntParam(searchParams.get("page"), DEFAULT_PAGE),
+    subject: parseEnumParam(
+      searchParams.get("subject"),
+      Object.values(ESubject),
+      ESubject.ANY_SUBJECT,
+    ),
+    country: parseEnumParam(
+      searchParams.get("country"),
+      Object.values(ECountry),
+      ECountry.ANY_COUNTRY,
+    ),
+    minPrice: parseIntParam(
+      searchParams.get("minPrice"),
+      MIN_PRICE[currency],
+    ),
+    maxPrice: parseIntParam(
+      searchParams.get("maxPrice"),
+      MAX_PRICE[currency],
+    ),
+    sortBy: parseEnumParam(
+      searchParams.get("sortBy"),
+      Object.values(ETutorSortBy),
+      ETutorSortBy.POPULARITY,
+    ),
+  };
+}
 
 function LoadingTutorCards() {
   return (
@@ -90,12 +123,14 @@ export default function TutorsPage() {
   const currentSearchParams = searchParams ?? new URLSearchParams();
   const t = useTranslations("Tutors");
   const { currency } = useCurrency();
-  const [page, setPage] = useState(DEFAULT_PAGE);
-  const [subject, setSubject] = useState<ESubject>(ESubject.ANY_SUBJECT);
-  const [country, setCountry] = useState<ECountry>(ECountry.ANY_COUNTRY);
-  const [minPrice, setMinPrice] = useState<number>(MIN_PRICE[currency]);
-  const [maxPrice, setMaxPrice] = useState<number>(MAX_PRICE[currency]);
-  const [sortBy, setSortBy] = useState<ETutorSortBy>(ETutorSortBy.POPULARITY);
+  const initialQuery = parseTutorsSearchParams(currentSearchParams, currency);
+  const [page, setPage] = useState(initialQuery.page);
+  const [subject, setSubject] = useState<ESubject>(initialQuery.subject);
+  const [country, setCountry] = useState<ECountry>(initialQuery.country);
+  const [minPrice, setMinPrice] = useState<number>(initialQuery.minPrice);
+  const [maxPrice, setMaxPrice] = useState<number>(initialQuery.maxPrice);
+  const [sortBy, setSortBy] = useState<ETutorSortBy>(initialQuery.sortBy);
+  const isInitialCurrencyMount = useRef(true);
   const [previewTutor, setPreviewTutor] =
     useState<VerifiedTutorProfileDto | null>(null);
   const [previewOffsetY, setPreviewOffsetY] = useState(0);
@@ -145,54 +180,29 @@ export default function TutorsPage() {
   );
 
   const parsedQuery = useMemo(
-    () => ({
-      page: parseIntParam(currentSearchParams.get("page"), DEFAULT_PAGE),
-      subject: parseEnumParam(
-        currentSearchParams.get("subject"),
-        Object.values(ESubject),
-        ESubject.ANY_SUBJECT,
-      ),
-      country: parseEnumParam(
-        currentSearchParams.get("country"),
-        Object.values(ECountry),
-        ECountry.ANY_COUNTRY,
-      ),
-      minPrice: parseIntParam(
-        currentSearchParams.get("minPrice"),
-        MIN_PRICE[currency],
-      ),
-      maxPrice: parseIntParam(
-        currentSearchParams.get("maxPrice"),
-        MAX_PRICE[currency],
-      ),
-      sortBy: parseEnumParam(
-        currentSearchParams.get("sortBy"),
-        Object.values(ETutorSortBy),
-        ETutorSortBy.POPULARITY,
-      ),
-    }),
-    [currentSearchParams],
+    () => parseTutorsSearchParams(currentSearchParams, currency),
+    [currentSearchParams, currency],
   );
 
   useEffect(() => {
+    if (isInitialCurrencyMount.current) {
+      isInitialCurrencyMount.current = false;
+      return;
+    }
+
     const nextMinPrice = MIN_PRICE[currency];
     const nextMaxPrice = MAX_PRICE[currency];
-    const nextEffectiveMinPrice =
-      nextMinPrice === MIN_PRICE[currency] ? null : nextMinPrice;
-    const nextEffectiveMaxPrice =
-      nextMaxPrice === MAX_PRICE[currency] ? null : nextMaxPrice;
 
     setMinPrice(nextMinPrice);
     setMaxPrice(nextMaxPrice);
     setPage(DEFAULT_PAGE);
 
     replaceQuery({
-      minPrice: nextEffectiveMinPrice,
-      maxPrice: nextEffectiveMaxPrice,
-      page: DEFAULT_PAGE,
+      minPrice: null,
+      maxPrice: null,
+      page: null,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currency]);
+  }, [currency, replaceQuery]);
 
   useEffect(() => {
     if (page !== parsedQuery.page) setPage(parsedQuery.page);
@@ -342,7 +352,9 @@ export default function TutorsPage() {
     (nextPage: number) => {
       const clamped = Math.max(1, Math.min(totalPages, nextPage));
       setPage(clamped);
-      replaceQuery({ page: clamped });
+      replaceQuery({
+        page: clamped === DEFAULT_PAGE ? null : clamped,
+      });
     },
     [replaceQuery, totalPages],
   );

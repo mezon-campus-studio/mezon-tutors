@@ -47,6 +47,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   events: CalendarDays,
   adminPanel: ShieldCheck,
   onboarding: Sparkles,
+  becomeTutor: GraduationCap,
   tutorPolicy: Scale,
   settings: Settings,
 };
@@ -68,6 +69,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   events: "from-violet-500 to-fuchsia-500",
   adminPanel: "from-sky-500 to-indigo-500",
   onboarding: "from-violet-500 to-fuchsia-500",
+  becomeTutor: "from-violet-500 to-fuchsia-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
 };
@@ -87,9 +89,11 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const navItems = menuItems.filter(
     (item) =>
       item.key !== "logout" &&
+      item.key !== "become-tutor" &&
       item.key !== "onboarding" &&
       item.key !== "tutor-policy",
   );
+  const becomeTutorItem = menuItems.find((item) => item.key === "become-tutor");
   const onboardingItem = menuItems.find((item) => item.key === "onboarding");
   const tutorPolicyItem = menuItems.find((item) => item.key === "tutor-policy");
   const logoutItem = menuItems.find((item) => item.key === "logout");
@@ -126,7 +130,7 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
     isDashboardSidebarLinkActive(item, pathname);
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 z-40 hidden w-64 min-w-64 flex-col border-r border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] md:flex">
+    <aside className="fixed left-0 top-16 bottom-0 z-40 hidden w-64 min-w-0 flex-col border-r border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] md:flex">
       <div className="border-b border-violet-100 px-5 py-5">
         <div className="flex items-center gap-3 rounded-2xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-100/40">
           <Avatar className="size-11 rounded-xl border-2 border-white ring-2 ring-violet-100">
@@ -205,6 +209,18 @@ export default function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         </div>
 
         <div className="mt-auto space-y-2 pt-4">
+          {becomeTutorItem?.href ? (
+            <Link href={becomeTutorItem.href} className="block">
+              <Button
+                variant="gradient"
+                className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-violet-300/30"
+              >
+                <GraduationCap className="mr-2 size-4" />
+                {t(`sidebar.${becomeTutorItem.labelKey}`)}
+              </Button>
+            </Link>
+          ) : null}
+
           {onboardingItem?.href ? (
             <Link href={onboardingItem.href} className="block">
               <Button

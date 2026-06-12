@@ -1,11 +1,11 @@
 {
   "siteName": "Mezonly",
   "default": {
-    "title": "Mezonly — Học gia sư trực tuyến trên Mezon",
-    "description": "Mezonly kết nối học viên với gia sư đã được kiểm duyệt. Đặt lịch 1-1, chat và học trực tiếp trên Mezon — linh hoạt theo thời gian của bạn."
+    "title": "Mezonly - Học gia sư trực tuyến trên Mezon",
+    "description": "Mezonly kết nối học viên với gia sư đã được kiểm duyệt. Đặt lịch 1-1, chat và học trực tiếp trên Mezon - linh hoạt theo thời gian của bạn."
   },
   "home": {
-    "title": "Mezonly — Học gia sư trực tuyến trên Mezon",
+    "title": "Mezonly - Học gia sư trực tuyến trên Mezon",
     "description": "Tìm gia sư phù hợp cho ngoại ngữ, môn học và kỹ năng. Đặt buổi học thử, đăng ký theo tháng và học trực tiếp trên Mezon."
   },
   "tutors": {
@@ -13,7 +13,7 @@
     "description": "Khám phá danh sách gia sư đã xác minh trên Mezonly. Lọc theo môn học, giá và đánh giá để chọn gia sư phù hợp."
   },
   "tutorDetail": {
-    "title": "{name} — Gia sư {subject} | Mezonly",
+    "title": "{name} - Gia sư {subject} | Mezonly",
     "description": "{snippet}",
     "fallbackTitle": "Hồ sơ gia sư | Mezonly",
     "fallbackDescription": "Xem hồ sơ, lịch dạy và đánh giá của gia sư trên Mezonly."
@@ -72,11 +72,11 @@
   },
   "onboarding": {
     "title": "Hướng dẫn sử dụng Mezonly",
-    "description": "Khám phá Mezonly theo từng bước — hướng dẫn chi tiết cho học viên và gia sư."
+    "description": "Khám phá Mezonly theo từng bước - hướng dẫn chi tiết cho học viên và gia sư."
   },
   "legalCenter": {
     "title": "Trung tâm pháp lý | Mezonly",
-    "description": "Xem các tài liệu pháp lý của Mezonly — Điều khoản dịch vụ, Chính sách quyền riêng tư, Chính sách hoàn tiền và Chính sách gia sư."
+    "description": "Xem các tài liệu pháp lý của Mezonly - Điều khoản dịch vụ, Chính sách quyền riêng tư, Chính sách hoàn tiền và Chính sách gia sư."
   },
   "termsOfService": {
     "title": "Điều khoản dịch vụ | Mezonly",
@@ -92,6 +92,6 @@
   },
   "tutorPolicy": {
     "title": "Chính sách gia sư | Mezonly",
-    "description": "Hướng dẫn dành cho gia sư trên Mezonly — hồ sơ, thiết lập Mezon, lịch dạy, chất lượng buổi học và chi trả."
+    "description": "Hướng dẫn dành cho gia sư trên Mezonly - hồ sơ, thiết lập Mezon, lịch dạy, chất lượng buổi học và chi trả."
   }
 }

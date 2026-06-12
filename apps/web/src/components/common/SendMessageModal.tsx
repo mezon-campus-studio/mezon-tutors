@@ -11,9 +11,9 @@ import {
   DialogTitle,
   Textarea,
 } from "@/components/ui";
+import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
 import { useMezonLight } from "@/providers";
 import {
-  createMezonLightDM,
   persistMezonLightSession,
   refreshMezonLightSession,
   restoreMezonLightClientFromStorage,
@@ -101,20 +101,16 @@ export function SendMessageModal({
         await persistMezonLightSession(client);
       }
 
-      let channelId = (await refetchDmChannel()).data?.channelId;
-      if (!channelId) {
-        const dmChannel = await createMezonLightDM(client, recipientMezonUserId);
-        channelId = dmChannel?.channel_id;
-        if (!channelId) {
-          throw new Error(t("messageModal.errors.missingChannelId"));
-        }
-
-        await createDmChannelMutation.mutateAsync({
-          senderId,
-          recipientId,
-          channelId,
-        });
-      }
+      const channelId = await ensureMezonDmChannel({
+        lightClient: client,
+        setLightClient,
+        senderId,
+        senderMezonUserId,
+        recipientId,
+        recipientMezonUserId,
+        existingChannelId: (await refetchDmChannel()).data?.channelId,
+        createDmChannelMutation,
+      });
 
       await sendMezonLightDMWithRefreshFallback(client, channelId, content);
       setMessageContent("");
