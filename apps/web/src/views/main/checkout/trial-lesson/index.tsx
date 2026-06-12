@@ -206,13 +206,8 @@ export default function TrialLessonCheckoutPage() {
       sepay: async () => {
         await submitBooking(useWalletBalance, EPaymentProvider.SEPAY);
       },
-      paypal: async () => {
-        toast.error(t("toast.paypalUnavailableTitle"), {
-          description: t("toast.paypalUnavailableDescription"),
-        });
-      },
     }),
-    [submitBooking, useWalletBalance, t],
+    [submitBooking, useWalletBalance],
   );
 
   const handlePay = useCallback(

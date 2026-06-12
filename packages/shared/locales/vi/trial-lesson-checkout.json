@@ -26,8 +26,6 @@
         "slotUnavailableDescription": "Có người khác vừa giữ hoặc đặt khung giờ này. Vui lòng chọn lịch khác.",
         "popupBlockedTitle": "Không mở được cửa sổ thanh toán",
         "popupBlockedDescription": "Vui lòng cho phép popup và thử lại.",
-        "paypalUnavailableTitle": "PayPal chưa khả dụng",
-        "paypalUnavailableDescription": "PayPal chưa được cấu hình. Vui lòng chọn VNPAY.",
         "walletPaymentComingSoonTitle": "Thanh toán ví sắp ra mắt",
         "walletPaymentComingSoonDescription": "Tính năng thanh toán bằng số dư ví đang được phát triển. Vui lòng thử lại sau."
       },
@@ -50,10 +48,6 @@
         "sepay": {
           "title": "SePay",
           "subtitle": "Chuyển khoản VietQR, Napas"
-        },
-        "paypal": {
-          "title": "PayPal",
-          "subtitle": "Thẻ quốc tế và số dư PayPal"
         }
       }
     },
@@ -217,7 +211,6 @@
         "tutorSection": "Gia sư của bạn",
         "studentSection": "Đặt với tài khoản",
         "durationLabel": "Học thử {minutes} phút",
-        "lessonTimezoneCaption": "Hiển thị theo múi giờ của gia sư ({timezone}).",
         "amountPaid": "Số tiền thanh toán",
         "paidAt": "Thời điểm thanh toán",
         "pendingPaymentHint": "Giao dịch có thể đang xử lý — thường cập nhật trong vòng một phút sau khi ngân hàng xác nhận.",

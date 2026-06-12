@@ -105,8 +105,6 @@
       "toastSuccessDescription": "Đăng ký đang chờ thanh toán.",
       "toastErrorTitle": "Lỗi",
       "toastErrorFallback": "Không thể gửi.",
-      "paypalUnavailableTitle": "PayPal chưa khả dụng",
-      "paypalUnavailableDescription": "PayPal chưa được cấu hình. Vui lòng chọn phương thức thanh toán khác.",
       "toast": {
         "slotUnavailableTitle": "Khung giờ không còn trống",
         "slotUnavailableDescription": "Có người khác vừa giữ hoặc đặt khung giờ này. Vui lòng chọn lịch khác."
@@ -144,8 +142,6 @@
         "lessonsPerWeekLabel": "{n} buổi mỗi tuần",
         "lessonSection": "Lịch học hàng tuần",
         "scheduleSection": "Lịch học hàng tuần",
-        "lessonTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
-        "scheduleTimezoneCaption": "Hiển thị theo múi giờ gia sư ({timezone}).",
         "durationLabel": "{minutes} phút mỗi buổi",
         "studentSection": "Đăng ký với tài khoản",
         "tipsTitle": "Trước các buổi học",

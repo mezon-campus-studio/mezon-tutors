@@ -178,23 +178,7 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-violet-200 bg-[linear-gradient(135deg,#faf5ff,#fdf2f8)] p-5">
-          <div className="pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.25),transparent_70%)] blur-2xl" />
-          <div className="relative space-y-3">
-            <div className="inline-flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
-              <Sparkles className="size-4" />
-            </div>
-            <h3 className="text-base font-extrabold text-slate-900">
-              {t("promoTitle")}
-            </h3>
-            <p className="text-xs leading-5 text-slate-600">
-              {t("promoDescription")}
-            </p>
-            <Button className="group h-9 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50">
-              {t("promoAction")}
-            </Button>
-          </div>
-        </div>
+        
       </div>
 
       <SendMessageModal

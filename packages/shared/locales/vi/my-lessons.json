@@ -55,7 +55,8 @@
         "emptyDescription": "Đừng để mục tiêu bị gián đoạn! Hãy đặt lịch buổi học tiếp theo ngay để tiếp tục tiến bộ.",
         "scheduleNow": "Đặt lịch ngay",
         "rescheduleOrCancel": "Đổi lịch/Hủy",
-        "joinLesson": "Vào lớp",
+        "joinLesson": "Tham gia ngay",
+        "joinNowFailed": "Không thể mở cuộc trò chuyện buổi học. Vui lòng thử lại.",
         "statusCancelled": "Đã hủy",
         "rescheduleNotice": "Buổi học sắp diễn ra trong vòng 12 tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần."
       },

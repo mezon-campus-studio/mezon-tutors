@@ -314,9 +314,6 @@ export default function SubscriptionSuccessContent({ enrollmentId }: { enrollmen
                   {' · '}
                   {t('durationLabel', { minutes: slotDurationMinutes })}
                 </p>
-                <CardDescription className="mt-5 text-xs leading-relaxed text-slate-500">
-                  {t('lessonTimezoneCaption', { timezone: displayTimezone })}
-                </CardDescription>
               </div>
 
               <div className="space-y-0 bg-violet-50/30 p-5 sm:p-6">

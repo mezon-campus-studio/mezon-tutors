@@ -32,7 +32,7 @@
     "perLesson": "/ buổi học",
     "bookTrial": "Đặt buổi học thử",
     "subscribeMonthly": "Đăng ký theo tháng",
-    "continuePayment": "Tiếp tục thanh toán",
+    "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "messageModal": {
@@ -77,7 +77,16 @@
     "confirmBooking": "Xác nhận đặt lịch",
     "rescheduleTitle": "Đổi lịch buổi học thử",
     "confirmReschedule": "Xác nhận giờ học mới",
-    "rescheduleHint": "Chọn giờ học mới cách thời điểm hiện tại ít nhất 12 tiếng. Bạn không cần thanh toán thêm.",
+    "rescheduleHint": "Chọn giờ học mới cách thời điểm hiện tại ít nhất 12 tiếng.",
+    "rescheduleConfirmDialog": {
+      "title": "Xác nhận đổi lịch",
+      "description": "Vui lòng kiểm tra lại giờ học cũ và giờ học mới trước khi xác nhận.",
+      "oldTimeLabel": "Giờ học hiện tại",
+      "newTimeLabel": "Giờ học mới",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận đổi lịch",
+      "submitting": "Đang cập nhật lại lịch mới..."
+    },
     "selectScheduleFirst": "Vui lòng chọn lịch trước",
     "requestSentWait": "Yêu cầu đã được gửi, vui lòng chờ",
     "alreadyBookedConfirmed": "Bạn đã đặt gia sư này rồi",
@@ -338,7 +347,7 @@
     "perLesson": "/ 60 phút",
     "bookTrial": "Đặt buổi học thử",
     "subscribeMonthly": "Đăng ký học theo tháng",
-    "continuePayment": "Tiếp tục thanh toán",
+    "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
     "sendMessage": "Gửi tin nhắn",
     "bookedLast48h": "{count} buổi được đặt trong 48h qua",
@@ -376,7 +385,6 @@
       "preparation": "Chuẩn bị"
     },
     "resourceTypeVideo": "Video bài học",
-    "promoTitle": "Mới đến TutorMatch?",
     "promoDescription": "Nhận ưu đãi 15% cho 10 buổi đầu với mã LEARN15.",
     "promoAction": "Áp dụng ngay",
     "reviewRecentLabel": "2 ngày trước",

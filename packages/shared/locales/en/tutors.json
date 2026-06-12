@@ -32,7 +32,7 @@
     "perLesson": "/ lesson",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
-    "continuePayment": "Continue payment",
+    "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "messageModal": {
@@ -77,7 +77,16 @@
     "confirmBooking": "Confirm Booking",
     "rescheduleTitle": "Reschedule trial lesson",
     "confirmReschedule": "Confirm new time",
-    "rescheduleHint": "Choose a new time at least 12 hours from now. Your payment stays the same.",
+    "rescheduleHint": "Choose a new time at least 12 hours from now.",
+    "rescheduleConfirmDialog": {
+      "title": "Confirm reschedule",
+      "description": "Please review your current and new lesson times before confirming.",
+      "oldTimeLabel": "Current time",
+      "newTimeLabel": "New time",
+      "cancel": "Cancel",
+      "confirm": "Confirm reschedule",
+      "submitting": "Updating to your new schedule..."
+    },
     "selectScheduleFirst": "Select a schedule first",
     "requestSentWait": "Request sent, please wait",
     "alreadyBookedConfirmed": "You already booked this tutor",
@@ -338,7 +347,7 @@
     "perLesson": "/ 60-min lesson",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
-    "continuePayment": "Continue payment",
+    "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",
     "bookedLast48h": "{count} lessons booked in the last 48h",
@@ -376,7 +385,6 @@
       "preparation": "Preparation"
     },
     "resourceTypeVideo": "Video lesson",
-    "promoTitle": "New to TutorMatch?",
     "promoDescription": "Get 15% off your first 10 lessons with this tutor using code LEARN15.",
     "promoAction": "Apply now",
     "reviewRecentLabel": "2 days ago",

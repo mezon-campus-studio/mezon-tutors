@@ -101,7 +101,6 @@ function GuideHighlightCard({ item }: { item: GuideHighlight }) {
           >
             {t(item.tagKey)}
           </span>
-          <ArrowRight className="size-4 text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-violet-600" />
         </div>
       </div>
     </div>

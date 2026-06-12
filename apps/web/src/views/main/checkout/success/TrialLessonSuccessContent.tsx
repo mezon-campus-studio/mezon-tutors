@@ -318,9 +318,6 @@ export default function TrialLessonSuccessContent({ bookingId }: { bookingId: st
                 <p className="mt-4 text-sm font-medium text-slate-700">
                   {t('durationLabel', { minutes: data.durationMinutes })}
                 </p>
-                <CardDescription className="mt-5 text-xs leading-relaxed text-slate-500">
-                  {t('lessonTimezoneCaption', { timezone: data.tutor.timezone || 'UTC' })}
-                </CardDescription>
               </div>
 
               <div className="space-y-0 bg-violet-50/30 p-5 sm:p-6">

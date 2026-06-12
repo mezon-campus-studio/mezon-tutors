@@ -62,7 +62,7 @@
   "PaymentMethodSelection": {
     "title": "Phương thức thanh toán",
     "methodUnavailable": "Tạm thời không khả dụng",
-    "continuePayment": "Tiếp tục thanh toán",
+    "continuePayment": "Thanh toán ngay",
     "bookAndPay": "Đặt và thanh toán ({amount})",
     "payWithWallet": "Thanh toán bằng ví ({amount})",
     "bookLesson": "Đặt lớp học",

@@ -188,6 +188,10 @@
           "scheduleConflict": "Schedule conflict",
           "personalEmergency": "Personal emergency",
           "studentUnavailable": "Student is unavailable",
+          "networkPowerOutage": "Network issue / Power outage",
+          "equipmentFailure": "Equipment failure (computer, mic)",
+          "tutorSickLostVoice": "Tutor is sick / Lost voice",
+          "unexpectedFamilyMatter": "Unexpected family matter",
           "other": "Other"
         }
       },

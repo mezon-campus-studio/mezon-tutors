@@ -107,11 +107,13 @@ export function ReviewsSection({
         </h2>
         {showPostReviewButton && (
           <Button
+            size="sm"
+            variant="outline"
             onClick={() => setIsPostReviewOpen(true)}
-            className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg px-4 py-2"
+            className="rounded-full border-violet-200 text-violet-700 hover:bg-violet-50"
           >
             {myReviewFromList ? t("editReview") : t("postReview")}
-          </Button>
+          </Button> 
         )}
       </div>
 

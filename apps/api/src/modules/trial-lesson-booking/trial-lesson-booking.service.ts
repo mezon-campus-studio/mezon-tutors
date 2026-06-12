@@ -1831,17 +1831,20 @@ export class TrialLessonBookingService {
     dto: RescheduleTrialLessonBookingDto,
     timezoneName: string
   ) {
-    const booking = await this.prisma.trialLessonBooking.findUnique({
-      where: { id: bookingId },
-      include: {
-        tutor: {
-          select: {
-            id: true,
-            user: { select: { timezone: true } },
+    const [booking, { lessonChangePeriodHours }] = await Promise.all([
+      this.prisma.trialLessonBooking.findUnique({
+        where: { id: bookingId },
+        include: {
+          tutor: {
+            select: {
+              id: true,
+              user: { select: { timezone: true } },
+            },
           },
         },
-      },
-    })
+      }),
+      this.appSettingsService.getSettings(),
+    ])
 
     if (!booking) {
       throw new NotFoundException('Booking not found')
@@ -1854,8 +1857,6 @@ export class TrialLessonBookingService {
     if (booking.status !== ETrialLessonStatus.CONFIRMED) {
       throw new BadRequestException('Only confirmed lessons can be rescheduled')
     }
-
-    const { lessonChangePeriodHours } = await this.appSettingsService.getSettings()
     const hoursUntilStart = dayjs(booking.startAt).utc().diff(dayjs().utc(), 'hour', true)
     if (hoursUntilStart <= lessonChangePeriodHours) {
       throw new BadRequestException(
@@ -1879,20 +1880,22 @@ export class TrialLessonBookingService {
     }
 
     const tz = timezoneName?.trim() || booking.tutor.user?.timezone || 'UTC'
-    await this.assertTrialSlotAvailableForTutor(
-      booking.tutorId,
-      startAt,
-      dto.durationMinutes,
-      tz,
-      { excludeTrialBookingId: booking.id }
-    )
-    await this.assertStudentSlotAvailable(
-      studentUserId,
-      startAt.toISOString(),
-      dto.durationMinutes,
-      tz,
-      { excludeTrialBookingId: booking.id }
-    )
+    await Promise.all([
+      this.assertTrialSlotAvailableForTutor(
+        booking.tutorId,
+        startAt,
+        dto.durationMinutes,
+        tz,
+        { excludeTrialBookingId: booking.id }
+      ),
+      this.assertStudentSlotAvailable(
+        studentUserId,
+        startAt.toISOString(),
+        dto.durationMinutes,
+        tz,
+        { excludeTrialBookingId: booking.id }
+      ),
+    ])
 
     const originalStartAt = booking.startAt
 
