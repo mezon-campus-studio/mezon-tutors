@@ -37,6 +37,45 @@
         "popupBlocked": "Hãy cho phép cửa sổ pop-up trên trang này để tiếp tục với Mezon."
       }
     },
+    "tutorSetupChecklist": {
+      "title": "Thiết lập Mezon",
+      "subtitle": "Hoàn thành 3 bước để sẵn sàng nhận học viên.",
+      "progress": "Tiến độ",
+      "progressCount": "{completed}/{total}",
+      "autoVerified": "Đã xác nhận tự động",
+      "actions": {
+        "openMezon": "Mở Mezon",
+        "inviteBot": "Mời Mezonly Bot",
+        "addApps": "Thêm Channel App",
+        "guide": "Xem hướng dẫn"
+      },
+      "items": {
+        "createMezonClan": {
+          "label": "Tạo Mezon Clan",
+          "description": "Tạo Clan trên Mezon làm không gian dạy học chính thức của bạn."
+        },
+        "setupMezonClan": {
+          "label": "Setup Mezon Clan",
+          "description": "Mời Mezonly Bot vào Clan và chạy lệnh *mezonly setup — bước này tự hoàn thành khi setup thành công."
+        },
+        "channelApps": {
+          "label": "Thêm Channel App",
+          "description": "Mời các Channel App Mezonly vào Clan để học viên truy cập nhanh."
+        }
+      },
+      "channelApps": {
+        "homeLink": "Home page",
+        "walletLink": "Wallet",
+        "myLessonsLink": "My lesson",
+        "myScheduleLink": "My schedule"
+      },
+      "widget": {
+        "triggerTitle": "Thiết lập Mezon",
+        "triggerSubtitle": "Còn {remaining} bước — bấm để xem",
+        "open": "Mở checklist thiết lập Mezon",
+        "close": "Đóng checklist"
+      }
+    },
     "bookingRequests": {
       "eyebrow": "Khu vực gia sư",
       "title": "Buổi học thử",

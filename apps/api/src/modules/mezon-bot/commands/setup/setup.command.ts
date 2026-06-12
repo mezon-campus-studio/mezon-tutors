@@ -51,6 +51,11 @@ export class SetupCommand implements BotCommand {
                 data: { mezonClanId: clanId },
             });
 
+            await this.prisma.tutorSetupChecklist.updateMany({
+                where: { tutorId: profile.id },
+                data: { setupMezonClanComplete: true },
+            });
+
             await this.mezonBotService.replyMessage(channelId, messageId, {
                 t: '✔️ Clan setup successful! The Mezon clan of your account has been linked to the tutor profile.',
             });

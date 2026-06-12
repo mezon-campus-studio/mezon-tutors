@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui";
 import { isLoadingAtom, userAtom } from "@/store";
 import DashboardSidebar from "./DashboardSidebar";
+import { TutorSetupChecklistWidget } from "./TutorSetupChecklistWidget";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -46,6 +47,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <DashboardSidebar userRole={user.role} />
 
       <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto md:ml-64">{children}</main>
+
+      {user.role === "TUTOR" ? <TutorSetupChecklistWidget /> : null}
     </div>
   );
 }

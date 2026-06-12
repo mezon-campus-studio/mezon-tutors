@@ -294,8 +294,23 @@ model TutorProfile {
   adminNotes            TutorAdminNote[]
   professionalDocuments ProfessionalDocument[]
   identityVerification  IdentityVerification?
+  setupChecklist        TutorSetupChecklist?
 
   @@map("tutor_profiles")
+}
+
+model TutorSetupChecklist {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tutorId                 String   @unique @map("tutor_id") @db.Uuid
+  createMezonClanComplete Boolean  @default(false) @map("create_mezon_clan_complete")
+  setupMezonClanComplete  Boolean  @default(false) @map("setup_mezon_clan_complete")
+  channelAppsComplete     Boolean  @default(false) @map("channel_apps_complete")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  tutor TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@map("tutor_setup_checklists")
 }
 
 model TrialLessonPrice {
