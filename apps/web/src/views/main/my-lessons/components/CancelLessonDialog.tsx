@@ -237,9 +237,9 @@ export function CancelLessonDialog({
               {isTutor ? (
                 <div className="flex gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                    <Info className="size-4" />
+                    <AlertTriangle className="size-4 text-amber-500" />
                   </div>
-                  <p className="min-w-0 flex-1 text-xs leading-relaxed text-slate-600">
+                  <p className="min-w-0 flex-1 text-xs leading-relaxed text-amber-900">
                     {tTutor("policyHint")}
                   </p>
                 </div>

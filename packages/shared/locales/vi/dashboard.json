@@ -122,7 +122,7 @@
           "reasonPlaceholder": "Chọn lý do",
           "messageLabel": "Tin nhắn cho {student} (tùy chọn)",
           "messagePlaceholder": "Giải thích lý do bạn hủy buổi học...",
-          "policyHint": "Buổi học sẽ được hủy ngay. Học sinh sẽ được hoàn tiền về ví và nhận tin nhắn thông báo."
+          "policyHint": "Buổi học sẽ được hủy ngay. Bạn sẽ bị trừ tiền, học sinh sẽ được hoàn tiền về ví và nhận tin nhắn thông báo."
         }
       },
       "reschedule": {
