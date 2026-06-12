@@ -9,12 +9,11 @@ import {
   Star,
 } from "lucide-react";
 import { useAtomValue } from "jotai";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
-import { Button } from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { userAtom } from "@/store/auth.atom";
 import { formatTutorNextLessonLabel } from "@/components/calendar/utils/format-locale";
 import { useUserTimezone } from "@/hooks";
@@ -34,6 +33,13 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
   const senderId = currentUser?.id ?? "";
   const senderMezonUserId = currentUser?.mezonUserId ?? "";
   const tutorFirstName = tutor.name.trim().split(/\s+/)[0] ?? tutor.name;
+  const tutorInitials =
+    tutor.name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "T";
   const displayNextLesson = tutor.nextLessonAt
     ? formatTutorNextLessonLabel(
         tutor.nextLessonLabel,
@@ -53,15 +59,14 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
         onClick={() => onOpenTutor(tutor.id)}
         className="flex flex-1 cursor-pointer items-start gap-4 text-left"
       >
-        <div className="relative shrink-0">
-          <Image
-            src={tutor.avatar}
-            alt={tutor.name}
-            width={80}
-            height={80}
-            className="size-16 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-violet-200/40 sm:size-20"
-          />
-        </div>
+        <Avatar className="size-16 shrink-0 rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40 sm:size-20">
+          {tutor.avatar ? (
+            <AvatarImage src={tutor.avatar} alt={tutor.name} className="object-cover" />
+          ) : null}
+          <AvatarFallback className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+            {tutorInitials}
+          </AvatarFallback>
+        </Avatar>
 
         <div className="min-w-0 flex-1 space-y-2">
           <div>
