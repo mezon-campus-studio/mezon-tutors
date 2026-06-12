@@ -468,7 +468,7 @@ export default function FlashcardModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="mt-4 rounded-full"
+              className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
             >
               {t("backToVocabulary")}
             </Button>
@@ -481,7 +481,7 @@ export default function FlashcardModal({
             <Button
               type="button"
               onClick={onClose}
-              className="mt-6 rounded-full bg-violet-600 px-6 hover:bg-violet-700"
+              className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-sm font-semibold text-violet-700 shadow-sm shadow-violet-100/50 transition hover:border-violet-300 hover:bg-violet-50 sm:h-10 sm:w-auto"
             >
               {t("backToVocabulary")}
             </Button>

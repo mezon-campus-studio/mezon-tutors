@@ -57,7 +57,7 @@ export function TrialLessonDetailsCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-px bg-violet-100/70 sm:grid-cols-4">
+      <div className="grid grid-cols-3 gap-px bg-violet-100/70 sm:grid-cols-3">
         <DetailCell
           icon={CalendarDays}
           label={t("date")}
@@ -75,13 +75,6 @@ export function TrialLessonDetailsCard({
           label={t("duration")}
           value={durationLabel}
           accent="from-fuchsia-500 to-rose-500"
-        />
-        <DetailCell
-          icon={Shield}
-          label={t("policy")}
-          value={t("freeCancellation")}
-          accent="from-emerald-500 to-teal-500"
-          highlight
         />
       </div>
     </div>

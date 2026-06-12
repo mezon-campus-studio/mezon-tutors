@@ -11,15 +11,12 @@ export type PaymentMethodOption = {
   subtitle: string;
   disabled?: boolean;
 };
-export type PaymentMethodId = "sepay" | "paypal";
+export type PaymentMethodId = "sepay";
 
-const PAYMENT_METHOD_IDS: PaymentMethodId[] = ["sepay", "paypal"];
-
-const DISABLED_PAYMENT_METHOD_IDS = new Set<PaymentMethodId>(["paypal"]);
+const PAYMENT_METHOD_IDS: PaymentMethodId[] = ["sepay"];
 
 const METHOD_ACCENT: Record<PaymentMethodId, string> = {
   sepay: "from-sky-500 to-blue-500",
-  paypal: "from-purple-500 to-fuchsia-500",
 };
 
 type PaymentMethodSelectionProps = {
@@ -60,7 +57,6 @@ export function PaymentMethodSelection({
         id: methodId,
         title: t(`paymentMethods.${methodId}.title`),
         subtitle: t(`paymentMethods.${methodId}.subtitle`),
-        disabled: DISABLED_PAYMENT_METHOD_IDS.has(methodId),
       })),
     [t],
   );

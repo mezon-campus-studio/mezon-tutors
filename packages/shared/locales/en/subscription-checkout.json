@@ -105,8 +105,6 @@
       "toastSuccessDescription": "Your subscription is pending payment.",
       "toastErrorTitle": "Error",
       "toastErrorFallback": "Could not submit.",
-      "paypalUnavailableTitle": "PayPal is not available",
-      "paypalUnavailableDescription": "PayPal is not configured yet. Please choose another payment method.",
       "toast": {
         "slotUnavailableTitle": "Time slot no longer available",
         "slotUnavailableDescription": "Someone else booked this time while you were checking out. Please choose another slot."

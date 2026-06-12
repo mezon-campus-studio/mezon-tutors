@@ -413,13 +413,8 @@ export default function SubscriptionPlanSchedulePage() {
       sepay: async () => {
         await submitEnrollment(useWalletBalance, EPaymentProvider.SEPAY);
       },
-      paypal: async () => {
-        toast.error(t("toast.paypalUnavailableTitle"), {
-          description: t("toast.paypalUnavailableDescription"),
-        });
-      },
     }),
-    [submitEnrollment, useWalletBalance, t],
+    [submitEnrollment, useWalletBalance],
   );
 
   const handlePay = useCallback(

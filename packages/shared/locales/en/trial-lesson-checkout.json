@@ -26,8 +26,6 @@
         "slotUnavailableDescription": "Someone else booked this time while you were checking out. Please choose another slot.",
         "popupBlockedTitle": "Unable to open payment window",
         "popupBlockedDescription": "Please allow popups and try again.",
-        "paypalUnavailableTitle": "PayPal is not available",
-        "paypalUnavailableDescription": "PayPal is not configured yet. Please choose VNPAY.",
         "walletPaymentComingSoonTitle": "Wallet payment coming soon",
         "walletPaymentComingSoonDescription": "Paying with wallet balance is under development. Please try again later."
       },
@@ -50,10 +48,6 @@
         "sepay": {
           "title": "SePay",
           "subtitle": "VietQR bank transfer, Napas"
-        },
-        "paypal": {
-          "title": "PayPal",
-          "subtitle": "International cards and PayPal balance"
         }
       }
     },
