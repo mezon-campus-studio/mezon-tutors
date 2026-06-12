@@ -117,6 +117,7 @@ export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {
   tutor?: {
     id: string;
     username: string;
+    displayName: string;
     email: string | null;
   };
 };

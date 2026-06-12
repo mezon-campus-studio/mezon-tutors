@@ -134,7 +134,7 @@ export default function WithdrawalsTable({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {withdrawals.map((item) => {
-              const tutorName = item.tutor?.username || t("unknownTutor");
+              const tutorName = item.tutor?.displayName || item.tutor?.username || t("unknownTutor");
               const canApprove = ACTIVE_WITHDRAWAL_STATUSES.includes(item.status);
               const isActionDisabled =
                 !canApprove || approveMutation.isPending || rejectMutation.isPending;
@@ -237,7 +237,10 @@ export default function WithdrawalsTable({
             bankName: approvingWithdrawal.bankName,
             bankAccountNumber: approvingWithdrawal.bankAccountNumber,
             bankAccountName: approvingWithdrawal.bankAccountName,
-            tutorName: approvingWithdrawal.tutor?.username || t("unknownTutor"),
+            tutorName:
+              approvingWithdrawal.tutor?.displayName ||
+              approvingWithdrawal.tutor?.username ||
+              t("unknownTutor"),
           }}
           reviewLabels={{
             title: t("approveDialog.title"),
@@ -278,7 +281,10 @@ export default function WithdrawalsTable({
           maxAmount={rejectingWithdrawal.amount}
           reviewDetails={{
             amount: rejectingWithdrawal.amount,
-            tutorName: rejectingWithdrawal.tutor?.username || t("unknownTutor"),
+            tutorName:
+              rejectingWithdrawal.tutor?.displayName ||
+              rejectingWithdrawal.tutor?.username ||
+              t("unknownTutor"),
           }}
           reviewLabels={{
             title: t("rejectDialog.title"),
@@ -315,7 +321,10 @@ export default function WithdrawalsTable({
             bankName: detailWithdrawal.bankName,
             bankAccountNumber: detailWithdrawal.bankAccountNumber,
             bankAccountName: detailWithdrawal.bankAccountName,
-            tutorName: detailWithdrawal.tutor?.username || t("unknownTutor"),
+            tutorName:
+              detailWithdrawal.tutor?.displayName ||
+              detailWithdrawal.tutor?.username ||
+              t("unknownTutor"),
             paymentProofUrl: detailWithdrawal.paymentProofUrl,
             adminNote: detailWithdrawal.adminNote,
             processedAt: detailWithdrawal.processedAt,

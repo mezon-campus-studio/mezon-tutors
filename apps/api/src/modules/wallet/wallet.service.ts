@@ -39,11 +39,26 @@ import {
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
   subscriptionSlotTutorAmount,
+  formatTutorDisplayName,
 } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
+
+const WALLET_TUTOR_PROFILE_SELECT = {
+  firstName: true,
+  lastName: true,
+  avatar: true,
+  user: { select: { username: true, avatar: true } },
+} as const;
+
+type WalletTutorProfileSnapshot = {
+  firstName?: string | null;
+  lastName?: string | null;
+  avatar?: string | null;
+  user?: { username?: string | null; avatar?: string | null } | null;
+};
 
 @Injectable()
 export class WalletService {
@@ -93,6 +108,21 @@ export class WalletService {
       hasNext: page < totalPages,
       hasPrev: page > 1,
     };
+  }
+
+  private formatWalletTutorName(tutor?: WalletTutorProfileSnapshot | null): string {
+    if (!tutor) {
+      return 'Tutor';
+    }
+    return formatTutorDisplayName({
+      firstName: tutor.firstName,
+      lastName: tutor.lastName,
+      username: tutor.user?.username,
+    });
+  }
+
+  private formatWalletTutorAvatar(tutor?: WalletTutorProfileSnapshot | null): string | null {
+    return tutor?.avatar ?? tutor?.user?.avatar ?? null;
   }
 
   private parseWeeklySlots(value: Prisma.JsonValue): SubscriptionWeeklySlotDto[] {
@@ -529,7 +559,7 @@ export class WalletService {
           createdAt: true,
           updatedAt: true,
           student: { select: { username: true, avatar: true } },
-          tutor: { select: { user: { select: { username: true, avatar: true } } } },
+          tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
         },
       }),
       this.prisma.subscriptionEnrollment.findMany({
@@ -543,7 +573,7 @@ export class WalletService {
           createdAt: true,
           updatedAt: true,
           student: { select: { username: true, avatar: true } },
-          tutor: { select: { user: { select: { username: true, avatar: true } } } },
+          tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
         },
       }),
       wallet
@@ -556,14 +586,14 @@ export class WalletService {
                   startAt: true,
                   durationMinutes: true,
                   student: { select: { username: true, avatar: true } },
-                  tutor: { select: { user: { select: { username: true, avatar: true } } } },
+                  tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
                 },
               },
               subscriptionEnrollment: {
                 select: {
                   weeklySlots: true,
                   student: { select: { username: true, avatar: true } },
-                  tutor: { select: { user: { select: { username: true, avatar: true } } } },
+                  tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
                 },
               },
             },
@@ -583,7 +613,7 @@ export class WalletService {
         amount: Number(vnpayAmount),
         description: null,
         createdAt: (b.paidAt ?? b.updatedAt ?? b.createdAt).toISOString(),
-        referenceLabel: b.tutor.user.username ? `Trial · ${b.tutor.user.username}` : 'Trial lesson',
+        referenceLabel: `Trial · ${this.formatWalletTutorName(b.tutor)}`,
       });
     }
 
@@ -597,21 +627,22 @@ export class WalletService {
         amount: Number(vnpayAmount),
         description: null,
         createdAt: (e.paidAt ?? e.updatedAt ?? e.createdAt).toISOString(),
-        referenceLabel: e.tutor.user.username ? `Plan · ${e.tutor.user.username}` : 'Subscription plan',
+        referenceLabel: `Plan · ${this.formatWalletTutorName(e.tutor)}`,
       });
     }
 
     const walletItems: WalletTransactionApiItem[] = walletRows.map((row) => {
-      const tutorName =
-        row.booking?.tutor.user.username ?? row.subscriptionEnrollment?.tutor.user.username;
+      const tutorProfile =
+        row.booking?.tutor ?? row.subscriptionEnrollment?.tutor ?? null;
+      const tutorName = this.formatWalletTutorName(tutorProfile);
       let lessonDetail: WalletTransactionLessonDetail | null = null;
       if (row.booking) {
         lessonDetail = {
           lessonKind: 'trial',
           studentName: row.booking.student?.username ?? 'Student',
           studentAvatarUrl: row.booking.student?.avatar ?? null,
-          tutorName: row.booking.tutor.user.username ?? 'Tutor',
-          tutorAvatarUrl: row.booking.tutor.user.avatar ?? null,
+          tutorName,
+          tutorAvatarUrl: this.formatWalletTutorAvatar(row.booking.tutor),
           startAt: row.booking.startAt.toISOString(),
           durationMinutes: row.booking.durationMinutes,
         };
@@ -626,8 +657,8 @@ export class WalletService {
             lessonKind: 'subscription',
             studentName: row.subscriptionEnrollment.student?.username ?? 'Student',
             studentAvatarUrl: row.subscriptionEnrollment.student?.avatar ?? null,
-            tutorName: row.subscriptionEnrollment.tutor.user.username ?? 'Tutor',
-            tutorAvatarUrl: row.subscriptionEnrollment.tutor.user.avatar ?? null,
+            tutorName,
+            tutorAvatarUrl: this.formatWalletTutorAvatar(row.subscriptionEnrollment.tutor),
             startAt: (occurrence?.startAt ?? row.createdAt).toISOString(),
             durationMinutes: slot.durationMinutes,
             slotIndex: row.subscriptionSlotIndex,
@@ -660,8 +691,8 @@ export class WalletService {
             lessonKind: 'trial',
             studentName: booking.student?.username ?? 'Student',
             studentAvatarUrl: booking.student?.avatar ?? null,
-            tutorName: booking.tutor.user.username ?? 'Tutor',
-            tutorAvatarUrl: booking.tutor.user.avatar ?? null,
+            tutorName: this.formatWalletTutorName(booking.tutor),
+            tutorAvatarUrl: this.formatWalletTutorAvatar(booking.tutor),
             startAt: booking.startAt.toISOString(),
             durationMinutes: booking.durationMinutes,
           };
@@ -679,8 +710,8 @@ export class WalletService {
               lessonKind: 'subscription',
               studentName: enrollment.student?.username ?? 'Student',
               studentAvatarUrl: enrollment.student?.avatar ?? null,
-              tutorName: enrollment.tutor.user.username ?? 'Tutor',
-              tutorAvatarUrl: enrollment.tutor.user.avatar ?? null,
+              tutorName: this.formatWalletTutorName(enrollment.tutor),
+              tutorAvatarUrl: this.formatWalletTutorAvatar(enrollment.tutor),
               startAt: (firstOccurrence?.startAt ?? enrollment.createdAt).toISOString(),
               durationMinutes: slot.durationMinutes,
               slotIndex: firstOccurrence?.slotIndex ?? 0,
@@ -796,6 +827,8 @@ export class WalletService {
           tutor: {
             select: {
               userId: true,
+              firstName: true,
+              lastName: true,
               user: { select: { username: true } },
             },
           },
@@ -817,7 +850,7 @@ export class WalletService {
         throw new BadRequestException('Invalid refund amount for this booking');
       }
 
-      const tutorLabel = booking.tutor.user.username ?? 'tutor';
+      const tutorLabel = this.formatWalletTutorName(booking.tutor);
       const refundDescription =
         options?.refundDescription ?? `Refund for trial lesson with ${tutorLabel}`;
 
@@ -999,7 +1032,7 @@ export class WalletService {
         studentId: true,
         grossAmount: true,
         paymentStatus: true,
-        tutor: { select: { user: { select: { username: true } } } },
+        tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
       },
     });
 
@@ -1010,7 +1043,7 @@ export class WalletService {
       throw new BadRequestException('Only succeeded payments can be refunded to wallet');
     }
 
-    const tutorLabel = enrollment.tutor.user.username ?? 'tutor';
+    const tutorLabel = this.formatWalletTutorName(enrollment.tutor);
 
     await this.creditStudentRefund({
       studentUserId: enrollment.studentId,
@@ -1067,6 +1100,7 @@ export class WalletService {
               id: true,
               username: true,
               email: true,
+              tutorProfile: { select: { firstName: true, lastName: true } },
             },
           },
         },
@@ -1082,6 +1116,11 @@ export class WalletService {
         ? {
             id: row.tutor.id,
             username: row.tutor.username,
+            displayName: formatTutorDisplayName({
+              firstName: row.tutor.tutorProfile?.firstName,
+              lastName: row.tutor.tutorProfile?.lastName,
+              username: row.tutor.username,
+            }),
             email: row.tutor.email,
           }
         : undefined,
@@ -1166,9 +1205,17 @@ export class WalletService {
 
     const tutor = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { username: true, avatar: true },
+      select: {
+        username: true,
+        avatar: true,
+        tutorProfile: { select: { firstName: true, lastName: true } },
+      },
     });
-    const tutorName = tutor?.username ?? 'A tutor';
+    const tutorName = formatTutorDisplayName({
+      firstName: tutor?.tutorProfile?.firstName,
+      lastName: tutor?.tutorProfile?.lastName,
+      username: tutor?.username,
+    });
     const amountFormatted = formatToCurrency(SharedCurrency.VND, Number(created.amount));
 
     try {
