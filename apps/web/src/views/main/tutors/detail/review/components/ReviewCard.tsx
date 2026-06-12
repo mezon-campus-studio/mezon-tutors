@@ -1,16 +1,28 @@
 "use client";
 
-import {
-  formatDateDMY,
-  REVIEW_AVATAR,
-  REVIEW_DISPLAY_CONFIG,
-} from "@mezon-tutors/shared";
+import { formatDateDMY, REVIEW_DISPLAY_CONFIG } from "@mezon-tutors/shared";
 import { Edit2 } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { Button } from "@/components/ui";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+} from "@/components/ui";
 import { ReviewStarRating } from "./ReviewStarRating";
+
+function initials(name?: string) {
+  if (!name?.trim()) return "S";
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "S"
+  );
+}
 
 interface ReviewCardProps {
   review: {
@@ -47,7 +59,7 @@ export function ReviewCard({
       : review.comment.slice(0, REVIEW_DISPLAY_CONFIG.COMMENT_PREVIEW_LENGTH) +
         (shouldTruncate ? "..." : "");
 
-  const avatarUrl = review.reviewerAvatar || REVIEW_AVATAR.DEFAULT_URL;
+  const reviewerAvatarUrl = review.reviewerAvatar?.trim() || null;
   const isEdited = review.updatedAt && review.updatedAt !== review.createdAt;
 
   return (
@@ -55,14 +67,18 @@ export function ReviewCard({
       className={`bg-white border border-gray-200 rounded-xl p-4 ${compact ? "" : "min-h-[180px]"}`}
     >
       <div className={`flex gap-3 items-start ${compact ? "" : "h-full"}`}>
-        <div className="relative w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
-          <Image
-            src={avatarUrl}
-            alt={review.reviewerName}
-            fill
-            className="object-cover"
-          />
-        </div>
+        <Avatar className="size-11 shrink-0 rounded-full border border-gray-100 shadow-sm">
+          {reviewerAvatarUrl ? (
+            <AvatarImage
+              src={reviewerAvatarUrl}
+              alt={review.reviewerName}
+              className="object-cover"
+            />
+          ) : null}
+          <AvatarFallback className="rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+            {initials(review.reviewerName)}
+          </AvatarFallback>
+        </Avatar>
 
         <div
           className={`flex-1 flex flex-col gap-2 ${compact ? "" : "h-full"}`}
