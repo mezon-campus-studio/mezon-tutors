@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import TutorsPagination from '@/views/main/tutors/components/TutorsPagination';
 import WalletWithdrawDialog from '@/views/main/wallet/components/WalletWithdrawDialog';
 import WalletEarningDetailDialog from '@/views/main/wallet/components/WalletEarningDetailDialog';
+import WalletTransactionPlatformFeeLine from '@/views/main/wallet/components/WalletTransactionPlatformFeeLine';
 
 type TabKey = 'transactions' | 'payouts';
 
@@ -91,14 +92,20 @@ export default function TutorWalletActivitySection({
     RELEASE: tWallet('types.RELEASE'),
     WITHDRAWAL: tWallet('types.WITHDRAWAL'),
     REFUND: tWallet('types.REFUND'),
+    CANCELLATION_REFUND: tWallet('types.CANCELLATION_REFUND'),
     PLATFORM_FEE: tWallet('types.PLATFORM_FEE'),
   };
+
+  const resolveTxLabel = (item: WalletTransactionApiItem) =>
+    item.type === 'REFUND' && item.direction === 'DEBIT'
+      ? typeLabels.CANCELLATION_REFUND
+      : (typeLabels[item.type] ?? item.type);
 
   const filteredTx = useMemo(() => {
     const q = search.trim().toLowerCase();
     return transactions.filter((item) => {
       if (!q) return true;
-      const label = typeLabels[item.type] ?? item.type;
+      const label = resolveTxLabel(item);
       return (
         label.toLowerCase().includes(q) ||
         (item.referenceLabel ?? '').toLowerCase().includes(q) ||
@@ -227,7 +234,7 @@ export default function TutorWalletActivitySection({
                       const isWithdrawal = item.type === 'WITHDRAWAL';
                       const isPending = item.type === 'RELEASE' && isCredit;
                       const Icon = isCredit ? ArrowDownLeft : ArrowUpRight;
-                      const label = typeLabels[item.type] ?? item.type;
+                      const label = resolveTxLabel(item);
                       const dateLabel = dayjs(item.createdAt).locale(locale).format('HH:mm');
                       const iconClass = isWithdrawal
                         ? 'bg-orange-100 text-orange-700'
@@ -267,10 +274,13 @@ export default function TutorWalletActivitySection({
                             </div>
                           </div>
                           <div className="flex w-full items-center justify-between gap-2.5 border-t border-slate-100 pt-3 sm:w-auto sm:shrink-0 sm:border-0 sm:pt-0">
-                            <p className={cn('text-base font-extrabold tabular-nums', amountClass)}>
-                              {isCredit ? '+' : '−'}
-                              {formatToCurrency(ECurrency.VND, item.amount)}
-                            </p>
+                            <div className="flex flex-col items-end gap-0.5">
+                              <p className={cn('text-base font-extrabold tabular-nums', amountClass)}>
+                                {isCredit ? '+' : '−'}
+                                {formatToCurrency(ECurrency.VND, item.amount)}
+                              </p>
+                              <WalletTransactionPlatformFeeLine item={item} variant="compact" />
+                            </div>
                             {item.lessonDetail ? (
                               <button
                                 type="button"

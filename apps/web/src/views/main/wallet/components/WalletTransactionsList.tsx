@@ -187,10 +187,16 @@ export default function WalletTransactionsList({
     RELEASE: t('types.RELEASE'),
     WITHDRAWAL: t('types.WITHDRAWAL'),
     REFUND: t('types.REFUND'),
+    CANCELLATION_REFUND: t('types.CANCELLATION_REFUND'),
     PLATFORM_FEE: t('types.PLATFORM_FEE'),
     LESSON_PAYMENT: t('types.LESSON_PAYMENT'),
     SUBSCRIPTION_PAYMENT: t('types.SUBSCRIPTION_PAYMENT'),
   };
+
+  const resolveLabel = (item: WalletTransactionApiItem) =>
+    item.type === 'REFUND' && item.direction === 'DEBIT'
+      ? typeLabels.CANCELLATION_REFUND
+      : (typeLabels[item.type] ?? item.type);
 
   if (variant === 'ledger') {
     return (
@@ -198,7 +204,7 @@ export default function WalletTransactionsList({
         <div className="divide-y divide-slate-100">
           {items.map((item) => {
             const isCredit = item.direction === 'CREDIT';
-            const label = typeLabels[item.type] ?? item.type;
+            const label = resolveLabel(item);
             const dateLabel = dayjs(item.createdAt).locale(locale).format('DD MMM YYYY · HH:mm');
 
             return (
@@ -238,7 +244,7 @@ export default function WalletTransactionsList({
       <div className="space-y-3">
         {items.map((item) => {
           const isCredit = item.direction === 'CREDIT';
-          const label = typeLabels[item.type] ?? item.type;
+          const label = resolveLabel(item);
           const dateLabel = dayjs(item.createdAt).locale(locale).format('DD MMM YYYY · HH:mm');
 
           return (

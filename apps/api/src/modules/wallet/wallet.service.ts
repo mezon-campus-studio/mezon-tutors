@@ -148,6 +148,42 @@ export class WalletService {
     return value as unknown as SubscriptionWeeklySlotDto[];
   }
 
+  private resolveTransactionPlatformFee(params: {
+    booking: { platformFee: bigint } | null;
+    subscriptionEnrollment: {
+      platformFee: bigint;
+      weeklySlots: Prisma.JsonValue;
+    } | null;
+    subscriptionSlotIndex: number | null;
+  }): number | null {
+    if (params.booking) {
+      const fee = params.booking.platformFee;
+      return fee > 0n ? Number(fee) : null;
+    }
+
+    if (params.subscriptionEnrollment) {
+      const feeTotal = params.subscriptionEnrollment.platformFee;
+      if (feeTotal <= 0n) {
+        return null;
+      }
+      if (params.subscriptionSlotIndex == null) {
+        return Number(feeTotal);
+      }
+      const slots = this.parseWeeklySlots(params.subscriptionEnrollment.weeklySlots);
+      if (slots.length === 0) {
+        return Number(feeTotal);
+      }
+      const slotFee = subscriptionSlotTutorAmount(
+        feeTotal,
+        slots.length,
+        params.subscriptionSlotIndex,
+      );
+      return slotFee > 0n ? Number(slotFee) : null;
+    }
+
+    return null;
+  }
+
   private assertWalletRole(role: Role) {
     if (role !== Role.TUTOR && role !== Role.STUDENT) {
       throw new ForbiddenException('Wallet is only available for students and tutors');
@@ -486,6 +522,7 @@ export class WalletService {
               id: true,
               startAt: true,
               durationMinutes: true,
+              platformFee: true,
               student: { select: { username: true, avatar: true } },
             },
           },
@@ -493,6 +530,7 @@ export class WalletService {
             select: {
               id: true,
               weeklySlots: true,
+              platformFee: true,
               student: { select: { username: true, avatar: true } },
             },
           },
@@ -505,9 +543,12 @@ export class WalletService {
         row.direction === EWalletTransactionDirection.CREDIT &&
         (row.type === EWalletTransactionType.RELEASE ||
           row.type === EWalletTransactionType.BOOKING_PAYMENT);
+      const isCancellationDeduction =
+        row.direction === EWalletTransactionDirection.DEBIT &&
+        row.type === EWalletTransactionType.REFUND;
 
       let lessonDetail: WalletTransactionLessonDetail | null = null;
-      if (isIncome) {
+      if (isIncome || isCancellationDeduction) {
         if (row.booking) {
           lessonDetail = {
             lessonKind: 'trial',
@@ -536,11 +577,22 @@ export class WalletService {
         }
       }
 
+      const isStudentLessonPayment =
+        row.type === EWalletTransactionType.BOOKING_PAYMENT &&
+        row.direction === EWalletTransactionDirection.CREDIT;
+
       return {
         id: row.id,
         type: row.type,
         direction: row.direction,
         amount: Number(row.amount),
+        platformFee: isStudentLessonPayment
+          ? this.resolveTransactionPlatformFee({
+              booking: row.booking,
+              subscriptionEnrollment: row.subscriptionEnrollment,
+              subscriptionSlotIndex: row.subscriptionSlotIndex,
+            })
+          : null,
         description: row.description,
         createdAt: row.createdAt.toISOString(),
         referenceLabel: row.bookingId
@@ -750,6 +802,58 @@ export class WalletService {
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
 
+  private async debitTutorForStudentLessonRefund(
+    tx: Prisma.TransactionClient,
+    params: {
+      tutorUserId: string;
+      tutorAmount: bigint;
+      bookingId?: string;
+      subscriptionEnrollmentId?: string;
+      subscriptionSlotIndex?: number;
+      description: string;
+    },
+  ): Promise<void> {
+    if (params.tutorAmount <= 0n) {
+      return;
+    }
+
+    const tutorWallet = await tx.wallet.findUnique({
+      where: { userId: params.tutorUserId },
+    });
+    if (!tutorWallet) {
+      return;
+    }
+
+    const pendingDecrement =
+      tutorWallet.pendingBalance >= params.tutorAmount
+        ? params.tutorAmount
+        : tutorWallet.pendingBalance;
+    if (pendingDecrement <= 0n) {
+      return;
+    }
+
+    await tx.wallet.update({
+      where: { id: tutorWallet.id },
+      data: {
+        pendingBalance: { decrement: pendingDecrement },
+        totalEarned: { decrement: pendingDecrement },
+      },
+    });
+
+    await tx.transaction.create({
+      data: {
+        walletId: tutorWallet.id,
+        bookingId: params.bookingId,
+        subscriptionEnrollmentId: params.subscriptionEnrollmentId,
+        subscriptionSlotIndex: params.subscriptionSlotIndex,
+        type: EWalletTransactionType.REFUND,
+        direction: EWalletTransactionDirection.DEBIT,
+        amount: pendingDecrement,
+        description: params.description,
+      },
+    });
+  }
+
   async creditStudentRefund(params: {
     studentUserId: string;
     amount: bigint;
@@ -899,24 +1003,12 @@ export class WalletService {
         },
       });
 
-      const tutorWallet = await tx.wallet.findUnique({
-        where: { userId: booking.tutor.userId },
+      await this.debitTutorForStudentLessonRefund(tx, {
+        tutorUserId: booking.tutor.userId,
+        tutorAmount: booking.tutorAmount,
+        bookingId: booking.id,
+        description: `Deduction for cancelled trial lesson refund to student`,
       });
-      if (tutorWallet && booking.tutorAmount > 0n) {
-        const pendingDecrement =
-          tutorWallet.pendingBalance >= booking.tutorAmount
-            ? booking.tutorAmount
-            : tutorWallet.pendingBalance;
-        if (pendingDecrement > 0n) {
-          await tx.wallet.update({
-            where: { id: tutorWallet.id },
-            data: {
-              pendingBalance: { decrement: pendingDecrement },
-              totalEarned: { decrement: pendingDecrement },
-            },
-          });
-        }
-      }
 
       await tx.trialLessonBooking.update({
         where: { id: booking.id },
@@ -1010,26 +1102,16 @@ export class WalletService {
         },
       });
 
-      if (tutorPendingDecrement > 0n) {
-        const tutorWallet = await tx.wallet.findUnique({
-          where: { userId: params.tutorUserId },
-        });
-        if (tutorWallet) {
-          const pendingDecrement =
-            tutorWallet.pendingBalance >= tutorPendingDecrement
-              ? tutorPendingDecrement
-              : tutorWallet.pendingBalance;
-          if (pendingDecrement > 0n) {
-            await tx.wallet.update({
-              where: { id: tutorWallet.id },
-              data: {
-                pendingBalance: { decrement: pendingDecrement },
-                totalEarned: { decrement: pendingDecrement },
-              },
-            });
-          }
-        }
-      }
+      await this.debitTutorForStudentLessonRefund(tx, {
+        tutorUserId: params.tutorUserId,
+        tutorAmount: tutorPendingDecrement,
+        subscriptionEnrollmentId: params.enrollmentId,
+        subscriptionSlotIndex: params.slotIndex,
+        description:
+          params.description != null
+            ? `Tutor deduction: ${params.description}`
+            : 'Deduction for cancelled subscription lesson refund to student',
+      });
 
       const updatedSlots = slots.map((s, i) =>
         i === params.slotIndex ? { ...s, status: ESubscriptionLessonSlotStatus.REFUNDED } : s
