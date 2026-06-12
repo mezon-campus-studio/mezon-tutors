@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
-import { cookies } from "next/headers";
+import { Suspense } from "react";
+import { IntlServerProvider } from "@/components/providers/IntlServerProvider";
 import { DEFAULT_LOCALE } from "@/i18n/request";
 import {
   createRootMetadata,
@@ -71,29 +70,27 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
-  const locale =
-    cookieLocale === "vi" || cookieLocale === "en" ? cookieLocale : DEFAULT_LOCALE;
-  const messages = await getMessages();
   return (
     <html
-      lang={locale}
+      lang={DEFAULT_LOCALE}
       className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <AppProvider>
-            <Header />
-            {children}
-            <Footer />
-          </AppProvider>
-        </NextIntlClientProvider>
+        <Suspense fallback={null}>
+          <IntlServerProvider>
+            <AppProvider>
+              <Header />
+              {children}
+              <Footer />
+            </AppProvider>
+          </IntlServerProvider>
+        </Suspense>
       </body>
     </html>
   );

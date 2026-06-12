@@ -224,6 +224,12 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={pathname !== item.href}
+                  onMouseEnter={() => {
+                    if (pathname !== item.href) {
+                      router.prefetch(item.href);
+                    }
+                  }}
                   className={`group relative rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                     isEventHeroOverlay
                       ? isActive

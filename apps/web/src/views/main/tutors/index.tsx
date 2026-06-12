@@ -120,10 +120,13 @@ export default function TutorsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentPathname = pathname ?? "";
-  const currentSearchParams = searchParams ?? new URLSearchParams();
+  const searchParamsString = searchParams?.toString() ?? "";
   const t = useTranslations("Tutors");
   const { currency } = useCurrency();
-  const initialQuery = parseTutorsSearchParams(currentSearchParams, currency);
+  const initialQuery = parseTutorsSearchParams(
+    new URLSearchParams(searchParamsString),
+    currency,
+  );
   const [page, setPage] = useState(initialQuery.page);
   const [subject, setSubject] = useState<ESubject>(initialQuery.subject);
   const [country, setCountry] = useState<ECountry>(initialQuery.country);
@@ -165,7 +168,7 @@ export default function TutorsPage() {
 
   const replaceQuery = useCallback(
     (next: Record<string, string | number | null | undefined>) => {
-      const sp = new URLSearchParams(currentSearchParams.toString());
+      const sp = new URLSearchParams(searchParamsString);
       for (const [key, value] of Object.entries(next)) {
         if (value === null || value === undefined || value === "") {
           sp.delete(key);
@@ -174,14 +177,25 @@ export default function TutorsPage() {
         }
       }
       const qs = sp.toString();
-      router.replace(qs ? `${currentPathname}?${qs}` : currentPathname);
+      const nextUrl = qs ? `${currentPathname}?${qs}` : currentPathname;
+      const currentUrl = searchParamsString
+        ? `${currentPathname}?${searchParamsString}`
+        : currentPathname;
+      if (nextUrl === currentUrl) {
+        return;
+      }
+      router.replace(nextUrl);
     },
-    [currentPathname, currentSearchParams, router],
+    [currentPathname, searchParamsString, router],
   );
 
   const parsedQuery = useMemo(
-    () => parseTutorsSearchParams(currentSearchParams, currency),
-    [currentSearchParams, currency],
+    () =>
+      parseTutorsSearchParams(
+        new URLSearchParams(searchParamsString),
+        currency,
+      ),
+    [searchParamsString, currency],
   );
 
   useEffect(() => {
