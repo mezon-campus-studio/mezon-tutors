@@ -23,6 +23,9 @@ const DAY_COUNT = CALENDAR_CONFIG.DAYS_PER_WEEK;
 const MINUTES_PER_DAY = 24 * 60;
 const DEFAULT_TIMEZONE = 'UTC';
 
+const COMPACT_GRID_COLS =
+  'grid-cols-[52px_repeat(7,minmax(0,1fr))] sm:grid-cols-[72px_repeat(7,minmax(0,1fr))] lg:grid-cols-[100px_repeat(7,minmax(0,1fr))]';
+
 /** Wall-clock slot in `timezone` (YYYY-MM-DD + HH:mm), not UTC. */
 export type ScheduleSlotInput = {
   date: string;
@@ -210,20 +213,20 @@ export function ScheduleViewer({
 
   return (
     <>
-      <div className={cn('space-y-4 rounded-2xl bg-background p-4 sm:p-2', className)}>
+      <div className={cn('space-y-4 rounded-2xl bg-background py-3 px-0 sm:p-2', className)}>
         <div className="overflow-auto rounded-xl border">
-          <div className="min-w-[700px]">
-            <div className="sticky top-0 z-20 grid grid-cols-[100px_repeat(7,minmax(0,1fr))] border-b bg-background">
-              <div className="sticky left-0 z-30 flex items-center justify-center border-r bg-background px-2 py-3 text-xs font-semibold text-muted-foreground break-words text-center leading-tight">
+          <div className="min-w-[640px] sm:min-w-[700px]">
+            <div className={cn('sticky top-0 z-20 grid border-b bg-background', COMPACT_GRID_COLS)}>
+              <div className="sticky left-0 z-30 flex items-center justify-center border-r bg-background px-0.5 py-2 text-[10px] font-semibold text-muted-foreground break-words text-center leading-tight sm:px-2 sm:py-3 sm:text-xs">
                 {formattedTimezone}
               </div>
               {weekDates.map((day) => (
                 <div
                   key={day.id}
-                  className="border-r px-2 py-3 text-center last:border-r-0"
+                  className="border-r px-1 py-2 text-center last:border-r-0 sm:px-2 sm:py-3"
                 >
-                  <p className="text-xs font-bold text-primary">{day.shortWeekdayLabel}</p>
-                  <p className="text-base font-semibold">{day.dayNumberLabel}</p>
+                  <p className="text-[10px] font-bold text-primary sm:text-xs">{day.shortWeekdayLabel}</p>
+                  <p className="text-sm font-semibold sm:text-base">{day.dayNumberLabel}</p>
                 </div>
               ))}
             </div>
@@ -231,9 +234,9 @@ export function ScheduleViewer({
             {timeBlocks.map((block) => (
               <div
                 key={block.label}
-                className="grid grid-cols-[100px_repeat(7,minmax(0,1fr))] border-b last:border-b-0"
+                className={cn('grid border-b last:border-b-0', COMPACT_GRID_COLS)}
               >
-                <div className="sticky left-0 z-10 flex items-center justify-center border-r bg-background px-2 py-4 text-sm text-muted-foreground">
+                <div className="sticky left-0 z-10 flex items-center justify-center border-r bg-background px-0.5 py-3 text-[10px] leading-tight text-muted-foreground sm:px-2 sm:py-4 sm:text-sm">
                   {block.label}
                 </div>
                 {weekDates.map((day) => {
