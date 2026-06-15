@@ -55,6 +55,12 @@ class AuthService {
     return apiClient.get<MeResponse>("/auth/me");
   }
 
+  async updateTimezone(timezone: string): Promise<{ timezone: string | null }> {
+    return apiClient.put<{ timezone: string | null }>("/auth/me/timezone", {
+      timezone,
+    });
+  }
+
   async refreshToken(): Promise<{ accessToken: string }> {
     const accessToken = await refreshAccessTokenWithLock();
     return { accessToken };

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Put,
   Post,
   Query,
   Req,
@@ -18,6 +19,8 @@ import { AuthService } from './auth.service';
 import { MezonCallbackQueryDto } from './dto/mezon-callback-query.dto';
 import { MezonChannelAppLoginDto } from './dto/mezon-channel-app-login.dto';
 import { MezonChannelAppService } from './services/mezon-channel-app.service';
+import { UpdateUserTimezoneDto } from './dto/update-user-timezone.dto';
+import type { AuthUserPayload } from './interfaces/auth.interfaces';
 
 const REFRESH_TOKEN_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 const OAUTH_STATE_COOKIE = 'oauth_state';
@@ -234,6 +237,14 @@ export class AuthController {
     return this.authService.getCurrentUserForMe(jwtUser.sub, jwtUser.idToken);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Put('me/timezone')
+  async updateTimezone(@Req() req: Request, @Body() body: UpdateUserTimezoneDto) {
+    const user = req.user as AuthUserPayload;
+    return this.authService.updateUserTimezone(user.sub, body.timezone);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token as string | undefined;
