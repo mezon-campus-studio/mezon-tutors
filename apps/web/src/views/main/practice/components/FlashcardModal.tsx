@@ -464,7 +464,7 @@ export default function FlashcardModal({
         </button>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 py-4 sm:justify-center sm:py-8">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-4 sm:py-8">
         {deck.length === 0 ? (
           <div className="text-center">
             <p className="text-slate-600">{t("noCards")}</p>
