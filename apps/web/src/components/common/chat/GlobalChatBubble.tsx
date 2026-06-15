@@ -3,10 +3,14 @@
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
-import { ExternalLinkIcon, InfoIcon, MessageCircleMoreIcon, SendIcon } from 'lucide-react';
+import { ExternalLinkIcon, InfoIcon, MessageCircleMoreIcon, SendIcon, AlertCircle } from 'lucide-react';
 import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL } from '@mezon-tutors/shared';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import {
+  MezonSendMessageError,
+  resolveMezonSendMessageError,
+} from '@/lib/mezon-send-message-errors';
 import { userAtom } from '@/store/auth.atom';
 import {
   appendGlobalChatMessageAtom,
@@ -66,12 +70,14 @@ function ChatMessageBubble({
 
 export default function GlobalChatBubble() {
   const t = useTranslations('GlobalChat');
+  const tSendErrors = useTranslations('GlobalChat.sendErrors');
   const currentUser = useAtomValue(userAtom);
   const { lightClient, setLightClient } = useMezonLight();
   const [open, setOpen] = useAtom(globalChatOpenAtom);
   const [selectedChannelId, setSelectedChannelId] = useAtom(globalChatSelectedChannelIdAtom);
   const [fakeSetIndex, setFakeSetIndex] = useState(0);
   const [messageContent, setMessageContent] = useState('');
+  const [messageError, setMessageError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesByChannel = useAtomValue(globalChatMessagesByChannelAtom);
   const unreadChannelIds = useAtomValue(globalChatUnreadChannelIdsAtom);
@@ -134,27 +140,37 @@ export default function GlobalChatBubble() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversationMessages.length, open, selectedChannel?.channelId]);
 
+  useEffect(() => {
+    setMessageError('');
+  }, [selectedChannel?.channelId]);
+
   const handleSend = async () => {
     const content = messageContent.trim();
     if (!content || !selectedChannel || !currentUser) {
       return;
     }
 
+    setMessageError('');
     setIsSending(true);
     try {
       let client = lightClient;
       if (!client) {
         client = await restoreMezonLightClientFromStorage();
         if (!client) {
-          throw new Error(t('restoreError'));
+          throw new MezonSendMessageError('RESTORE_SESSION_FAILED');
         }
         setLightClient(client);
       }
 
       const isSessionExpired = await client.isSessionExpired();
       if (isSessionExpired) {
-        await refreshMezonLightSession(client);
-        await persistMezonLightSession(client);
+        try {
+          await refreshMezonLightSession(client);
+          await persistMezonLightSession(client);
+        } catch (error) {
+          console.error('[GlobalChatBubble] refresh session failed', error);
+          throw new MezonSendMessageError('REFRESH_SESSION_FAILED');
+        }
       }
 
       await sendMezonLightDMWithRefreshFallback(client, selectedChannel.channelId, content);
@@ -175,6 +191,7 @@ export default function GlobalChatBubble() {
         el.focus();
       });
     } catch (error) {
+      setMessageError(resolveMezonSendMessageError(error, tSendErrors));
       console.error(error);
     } finally {
       setIsSending(false);
@@ -188,6 +205,9 @@ export default function GlobalChatBubble() {
     }
 
     setMessageContent(event.target.value);
+    if (messageError) {
+      setMessageError('');
+    }
     el.style.height = 'auto';
 
     const lineHeight = 20;
@@ -401,17 +421,27 @@ export default function GlobalChatBubble() {
                     <p className="flex items-start gap-2 text-xs leading-relaxed text-slate-500">
                       <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-violet-500" />
                       <span>
-                        {t('noticePrefix')}{' '}
-                        <a
-                          href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium text-violet-700 hover:underline"
-                        >
-                          {t('noticeLink')}
-                        </a>
+                        {t.rich('noticeMezonChat', {
+                          link: (chunks) => (
+                            <a
+                              href={MEZON_DIRECT_MESSAGE_URL(selectedChannel.channelId)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-medium text-violet-700 hover:underline"
+                            >
+                              {chunks}
+                            </a>
+                          ),
+                        })}
                       </span>
                     </p>
+
+                    {messageError ? (
+                      <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2.5">
+                        <AlertCircle className="mt-0.5 size-4 shrink-0 text-rose-500" />
+                        <p className="text-xs leading-5 text-rose-700">{messageError}</p>
+                      </div>
+                    ) : null}
 
                     <div className="flex items-end gap-2 rounded-2xl border border-violet-100 bg-slate-50/80 p-2 ring-1 ring-violet-50">
                       <textarea
