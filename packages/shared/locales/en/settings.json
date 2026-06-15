@@ -3,7 +3,26 @@
     "title": "Settings",
     "subtitle": "Manage integrations and account preferences.",
     "tabs": {
+      "globalSettings": "Global settings",
       "googleCalendar": "Google Calendar"
+    },
+    "globalSettings": {
+      "title": "Global settings",
+      "subtitle": "Manage preferences that apply across Mezonly.",
+      "timezone": {
+        "label": "Timezone",
+        "description": "Lesson times, calendars, and reminders will display in this timezone.",
+        "placeholder": "Select a timezone",
+        "useBrowser": "Use browser timezone",
+        "save": "Save timezone",
+        "saving": "Saving…"
+      },
+      "toast": {
+        "saveSuccessTitle": "Timezone updated",
+        "saveSuccessDescription": "Your timezone preference has been saved.",
+        "saveFailedTitle": "Could not save timezone",
+        "saveFailedDescription": "Please try again in a moment."
+      }
     },
     "googleCalendar": {
       "title": "Connect Google Calendar",

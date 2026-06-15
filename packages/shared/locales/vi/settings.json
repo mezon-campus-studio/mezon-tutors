@@ -3,7 +3,26 @@
     "title": "Cài đặt",
     "subtitle": "Quản lý tích hợp và tùy chọn tài khoản.",
     "tabs": {
+      "globalSettings": "Cài đặt chung",
       "googleCalendar": "Google Calendar"
+    },
+    "globalSettings": {
+      "title": "Cài đặt chung",
+      "subtitle": "Quản lý các tùy chọn áp dụng trên toàn bộ Mezonly.",
+      "timezone": {
+        "label": "Múi giờ",
+        "description": "Giờ học, lịch và nhắc nhở sẽ hiển thị theo múi giờ này.",
+        "placeholder": "Chọn múi giờ",
+        "useBrowser": "Dùng múi giờ trình duyệt",
+        "save": "Lưu múi giờ",
+        "saving": "Đang lưu…"
+      },
+      "toast": {
+        "saveSuccessTitle": "Đã cập nhật múi giờ",
+        "saveSuccessDescription": "Tùy chọn múi giờ của bạn đã được lưu.",
+        "saveFailedTitle": "Không lưu được múi giờ",
+        "saveFailedDescription": "Vui lòng thử lại sau."
+      }
     },
     "googleCalendar": {
       "title": "Kết nối Google Calendar",

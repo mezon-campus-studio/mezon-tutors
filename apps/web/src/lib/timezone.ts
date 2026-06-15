@@ -100,9 +100,12 @@ export function convertWallClockSlotBetweenTimezones(
   };
 }
 
+export function getTimezoneUtcOffsetMinutes(timezoneName: string): number {
+  return dayjs().tz(timezoneName).utcOffset();
+}
+
 export function formatUtcOffsetLabel(timezoneName: string): string {
-  const now = dayjs().tz(timezoneName);
-  const offsetMinutes = now.utcOffset();
+  const offsetMinutes = getTimezoneUtcOffsetMinutes(timezoneName);
   if (offsetMinutes === 0) return "UTC";
   const sign = offsetMinutes >= 0 ? "+" : "-";
   const abs = Math.abs(offsetMinutes);
