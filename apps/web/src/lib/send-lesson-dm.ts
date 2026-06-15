@@ -2,6 +2,7 @@ import type { MezonDirectMessageContent } from "@mezon-tutors/shared";
 import type { LightClient } from "mezon-light-sdk";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
+import { MezonSendMessageError } from "@/lib/mezon-send-message-errors";
 import { sendMezonLightDMWithRefreshFallback } from "@/services/mezon-light/mezon-light.service";
 import { restoreMezonLightClientFromStorage } from "@/services/mezon-light/mezon-light.client";
 import { refreshMezonLightSession } from "@/services/mezon-light/mezon-light.service";
@@ -51,7 +52,7 @@ export async function sendLessonDmToPeer(params: SendLessonDmParams): Promise<vo
   if (!client) {
     client = await restoreMezonLightClientFromStorage();
     if (!client) {
-      throw new Error("Cannot restore Mezon client. Please login again.");
+      throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
     }
     setLightClient(client);
   }

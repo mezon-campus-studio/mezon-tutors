@@ -46,9 +46,7 @@
         "missingStudentMezonUserId": "Cannot send message: student Mezon user ID is required.",
         "missingTutorMezonUserId": "Cannot send message: tutor Mezon user ID is required.",
         "missingTutorId": "Cannot send message: tutor ID is required.",
-        "emptyContent": "Please enter the message content.",
-        "missingChannelId": "Cannot send message: channel ID is required.",
-        "sendFailed": "Cannot send message."
+        "emptyContent": "Please enter the message content."
       }
     },
     "proficiency": {

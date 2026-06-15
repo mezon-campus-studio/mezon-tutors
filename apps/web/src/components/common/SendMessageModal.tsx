@@ -12,6 +12,10 @@ import {
   Textarea,
 } from "@/components/ui";
 import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
+import {
+  MezonSendMessageError,
+  resolveMezonSendMessageError,
+} from "@/lib/mezon-send-message-errors";
 import { useMezonLight } from "@/providers";
 import {
   persistMezonLightSession,
@@ -42,6 +46,7 @@ export function SendMessageModal({
   onOpenChangeAction,
 }: SendMessageModalProps) {
   const t = useTranslations("Tutors.TutorCard");
+  const tSendErrors = useTranslations("GlobalChat.sendErrors");
   const [messageContent, setMessageContent] = useState("");
   const [messageError, setMessageError] = useState("");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
@@ -88,17 +93,20 @@ export function SendMessageModal({
       if (!client) {
         client = await restoreMezonLightClientFromStorage();
         if (!client) {
-          throw new Error(
-            "Cannot restore Mezon client from storage. Please login again.",
-          );
+          throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
         }
         setLightClient(client);
       }
 
       const isSessionExpired = await client.isSessionExpired();
       if (isSessionExpired) {
-        await refreshMezonLightSession(client);
-        await persistMezonLightSession(client);
+        try {
+          await refreshMezonLightSession(client);
+          await persistMezonLightSession(client);
+        } catch (error) {
+          console.error("[SendMessageModal] refresh session failed", error);
+          throw new MezonSendMessageError("REFRESH_SESSION_FAILED");
+        }
       }
 
       const channelId = await ensureMezonDmChannel({
@@ -117,11 +125,7 @@ export function SendMessageModal({
       setMessageError("");
       onOpenChangeAction(false);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : t("messageModal.errors.sendFailed");
-      setMessageError(message);
+      setMessageError(resolveMezonSendMessageError(error, tSendErrors));
       console.error(error);
     } finally {
       setIsSendingMessage(false);

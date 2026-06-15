@@ -9,14 +9,20 @@
   "inputPlaceholder": "Nhập tin nhắn...",
   "send": "Gửi",
   "sending": "Đang gửi...",
-  "restoreError": "Không thể khôi phục phiên chat. Vui lòng đăng nhập lại.",
+  "sendErrors": {
+    "restoreSessionFailed": "Không thể khôi phục phiên chat. Vui lòng đăng nhập lại.",
+    "refreshSessionFailed": "Phiên chat đã hết hạn. Vui lòng đăng nhập lại.",
+    "missingUserInfo": "Thiếu thông tin người dùng để mở cuộc trò chuyện.",
+    "createDmChannelFailed": "Không thể tạo kênh chat. Vui lòng thử lại sau.",
+    "saveDmChannelFailed": "Không thể lưu kênh chat. Vui lòng thử lại sau.",
+    "sendMessageFailed": "Không thể gửi tin nhắn. Vui lòng thử lại sau.",
+    "sendFailed": "Có lỗi khi gửi tin nhắn. Vui lòng thử lại sau."
+  },
   "supportChat": {
     "missingSession": "Vui lòng đăng nhập Mezon để liên hệ hỗ trợ.",
     "failed": "Không mở được chat hỗ trợ. Vui lòng thử lại."
   },
-  "noticeTitle": "HƯỚNG DẪN CHAT",
-  "noticePrefix": "Để xem lịch sử chat và lịch sử giao dịch lâu dài, vui lòng truy cập ",
-  "noticeLink": "Mezon.",
+  "noticeMezonChat": "Để xem đầy đủ lịch sử tin nhắn và chi tiết cuộc trò chuyện, hãy mở <link>đoạn chat trên Mezon</link>.",
   "fakeSets": {
     "set1": [
       "Chào {peerName}, mình muốn đặt một buổi học thử trong tuần này.",

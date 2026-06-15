@@ -5,6 +5,7 @@ import {
   createMezonLightDMWithRetry,
   refreshMezonLightSession,
 } from "@/services/mezon-light/mezon-light.service";
+import { MezonSendMessageError } from "@/lib/mezon-send-message-errors";
 
 type CreateDmChannelMutation = Pick<
   UseMutationResult<
@@ -41,7 +42,7 @@ export async function ensureMezonDmChannel(
   } = params;
 
   if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-    throw new Error("Missing user information to open chat.");
+    throw new MezonSendMessageError("MISSING_USER_INFO");
   }
 
   if (existingChannelId) {
@@ -52,26 +53,36 @@ export async function ensureMezonDmChannel(
   if (!client) {
     client = await restoreMezonLightClientFromStorage();
     if (!client) {
-      throw new Error("Cannot restore Mezon client. Please login again.");
+      throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
     }
     setLightClient(client);
   }
 
   if (await client.isSessionExpired()) {
-    await refreshMezonLightSession(client);
+    try {
+      await refreshMezonLightSession(client);
+    } catch (error) {
+      console.error("[ensureMezonDmChannel] refresh session failed", error);
+      throw new MezonSendMessageError("REFRESH_SESSION_FAILED");
+    }
   }
 
   const dmChannel = await createMezonLightDMWithRetry(client, recipientMezonUserId);
   const channelId = dmChannel?.channel_id;
   if (!channelId) {
-    throw new Error("Could not create DM channel.");
+    throw new MezonSendMessageError("CREATE_DM_CHANNEL_FAILED");
   }
 
-  await createDmChannelMutation.mutateAsync({
-    senderId,
-    recipientId,
-    channelId,
-  });
+  try {
+    await createDmChannelMutation.mutateAsync({
+      senderId,
+      recipientId,
+      channelId,
+    });
+  } catch (error) {
+    console.error("[ensureMezonDmChannel] save DM channel failed", error);
+    throw new MezonSendMessageError("SAVE_DM_CHANNEL_FAILED");
+  }
 
   return channelId;
 }
