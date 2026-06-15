@@ -244,7 +244,6 @@ export class AuthController {
     return this.authService.updateUserTimezone(user.sub, body.timezone);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refresh_token as string | undefined;

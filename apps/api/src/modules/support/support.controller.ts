@@ -14,4 +14,9 @@ export class SupportController {
   getAdminContact(): Promise<SupportAdminContact> {
     return this.supportService.getAdminContact();
   }
+
+  @Get('bot-contact')
+  getBotContact(): Promise<SupportAdminContact> {
+    return this.supportService.getBotContact();
+  }
 }
