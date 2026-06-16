@@ -68,7 +68,6 @@ export const useAdminTutorApplications = (enabled = true) => {
     queryKey: adminTutorApplicationQueryKey.list(),
     queryFn: () => adminTutorApplicationApi.list(),
     enabled,
-    staleTime: 30 * 1000,
   });
 };
 
@@ -77,7 +76,6 @@ export const useAdminTutorApplicationMetrics = (enabled = true) => {
     queryKey: adminTutorApplicationQueryKey.metrics(),
     queryFn: () => adminTutorApplicationApi.metrics(),
     enabled,
-    staleTime: 60 * 1000,
   });
 };
 
@@ -97,7 +95,6 @@ export const useAdminTutorLessonChangeHistory = (
     queryKey: adminTutorApplicationQueryKey.lessonChangeHistory(tutorId),
     queryFn: () => adminTutorApplicationApi.lessonChangeHistory(tutorId),
     enabled: enabled && !!tutorId,
-    staleTime: 30 * 1000,
   });
 };
 

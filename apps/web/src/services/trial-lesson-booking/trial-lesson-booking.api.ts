@@ -426,7 +426,6 @@ export function useGetOccupiedTrialLessonSlotsForWeek(
       ),
     enabled:
       Boolean(tutorId) && Boolean(weekStartDate) && Boolean(timezone) && enabled,
-    staleTime: 15 * 1000,
     placeholderData: keepPreviousData,
   });
 }
@@ -456,7 +455,6 @@ export function useGetStudentOccupiedSlotsForWeek(
         options,
       ),
     enabled: Boolean(weekStartDate) && Boolean(timezone) && enabled,
-    staleTime: 15 * 1000,
     placeholderData: keepPreviousData,
   });
 }
@@ -574,6 +572,7 @@ export function useGetMyTrialLessonBookingRequests(
     queryFn: () =>
       trialLessonBookingApi.getMyTrialLessonBookingRequests(params),
     enabled,
+    staleTime: 30 * 1000,
   });
 }
 

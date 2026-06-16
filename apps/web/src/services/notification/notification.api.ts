@@ -92,6 +92,7 @@ export function useInfiniteNotifications(take = 20, enabled = true) {
       return lastPage.pagination.nextSkip;
     },
     enabled,
+    staleTime: 30_000,
   });
 }
 
@@ -102,7 +103,6 @@ export function useUnreadNotificationCount(enabled = true) {
     enabled,
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
-    staleTime: 30_000,
   });
 }
 

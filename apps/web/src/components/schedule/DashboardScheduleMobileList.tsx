@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type {
   DashboardScheduleCalendarEvent,
   DashboardScheduleWeekDay,
-} from './types';
+} from "./types";
 
 type DashboardScheduleMobileListProps<T extends DashboardScheduleCalendarEvent> = {
   weekDays: DashboardScheduleWeekDay[];
@@ -40,6 +40,16 @@ export default function DashboardScheduleMobileList<
     [events, selectedDayIndex],
   );
 
+  const eventCountsByDay = useMemo(() => {
+    const counts = Array.from({ length: weekDays.length }, () => 0);
+    for (const event of events) {
+      if (event.dayIndex >= 0 && event.dayIndex < counts.length) {
+        counts[event.dayIndex] += 1;
+      }
+    }
+    return counts;
+  }, [events, weekDays.length]);
+
   const handleEventClick = (event: T) => {
     if (!onEventClick) return;
     const el = cardRefs.current.get(event.id);
@@ -52,6 +62,7 @@ export default function DashboardScheduleMobileList<
         {weekDays.map((day, index) => {
           const isActive = selectedDayIndex === index;
           const isToday = currentDayIndex === index;
+          const eventCount = eventCountsByDay[index] ?? 0;
 
           return (
             <button
@@ -59,7 +70,7 @@ export default function DashboardScheduleMobileList<
               type="button"
               onClick={() => onSelectDay(index)}
               className={cn(
-                'flex min-h-11 flex-col items-center justify-center rounded-2xl px-1 py-2 transition-colors',
+                'relative flex min-h-14 flex-col items-center justify-center rounded-2xl px-1 pb-2 pt-4 transition-colors',
                 isActive
                   ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-sm shadow-violet-300/40'
                   : isToday
@@ -67,6 +78,20 @@ export default function DashboardScheduleMobileList<
                     : 'text-slate-600 hover:bg-violet-50',
               )}
             >
+              {eventCount > 0 ? (
+                <span
+                  className={cn(
+                    "absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold leading-4 shadow-sm",
+                    isActive
+                      ? "bg-white text-violet-700"
+                      : isToday
+                        ? "bg-violet-600 text-white"
+                        : "bg-violet-100 text-violet-700",
+                  )}
+                >
+                  {eventCount}
+                </span>
+              ) : null}
               <span
                 className={cn(
                   'text-[9px] font-bold uppercase leading-none tracking-wide sm:text-[10px]',

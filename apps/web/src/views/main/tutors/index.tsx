@@ -216,7 +216,7 @@ export default function TutorsPage() {
       maxPrice: null,
       page: null,
     });
-  }, [currency, replaceQuery]);
+  }, [currency]);
 
   useEffect(() => {
     if (page !== parsedQuery.page) setPage(parsedQuery.page);

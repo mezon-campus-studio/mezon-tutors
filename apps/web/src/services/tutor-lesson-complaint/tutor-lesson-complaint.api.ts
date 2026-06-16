@@ -34,7 +34,6 @@ export const useTutorLessonComplaints = (enabled = true) => {
     queryKey: tutorLessonComplaintQueryKey.list(),
     queryFn: () => tutorLessonComplaintApi.list(),
     enabled,
-    staleTime: 30 * 1000,
   });
 };
 
