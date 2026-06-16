@@ -54,6 +54,10 @@ export type MyLessonApiItem = {
   can_complain?: boolean
   /** PENDING | APPROVED | REJECTED when a complaint exists. */
   complaint_status?: string
+  /** Name of the group if this lesson is part of a group subscription. */
+  group_name?: string
+  /** True if the current user is the one who paid for this lesson (leader in group sub). */
+  is_payer?: boolean
 }
 
 export type MyLessonTutorApiItem = {
@@ -68,6 +72,8 @@ export type MyLessonTutorApiItem = {
   next_lesson_label: string
   /** ISO-8601 start of next lesson; format on client with viewer timezone when set. */
   next_lesson_at?: string | null
+  /** Name of the group if the next lesson is a group lesson. */
+  next_lesson_group_name?: string
   rating_average: number
   review_count: number
 }

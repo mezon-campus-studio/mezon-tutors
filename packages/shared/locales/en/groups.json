@@ -1,0 +1,65 @@
+{
+  "Groups": {
+    "title": "Study Groups",
+    "description": "Manage your collaborative circles and book new focused learning sprints.",
+    "createNew": "Create New Group",
+    "creating": "Creating...",
+    "groupStudyPrefix": "Group study",
+    "newGroupPlaceholder": "Group Name",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "groups": "Groups"
+    },
+    "card": {
+      "leader": "Leader",
+      "member": "Member",
+      "membersCount": "{count} Members",
+      "selectForBooking": "Select for Booking",
+      "viewDetails": "View Details",
+      "minMembersWarning": "⚠️ At least 2 members are required to book."
+    },
+    "detail": {
+      "backToList": "Back to Groups",
+      "shareInvite": "Share Join Link",
+      "members": "Members",
+      "inviteSuccess": "Invite link copied to clipboard!",
+      "updateNameSuccess": "Group name updated",
+      "updateNameError": "Failed to update group name",
+      "loadError": "Could not load group details",
+      "notFound": "Group not found",
+      "addMembers": "Add Members",
+      "addMembersDesc": "Search for colleagues or students by name or email address to invite them to this cohort.",
+      "searchPlaceholder": "Search by name, email...",
+      "suggested": "Suggested for you",
+      "add": "ADD",
+      "analytics": {
+        "title": "Group Analytics",
+        "activityIncrease": "Activity has increased by 15% this week.",
+        "sessions": "Sessions",
+        "resources": "Resources"
+      },
+      "noEmail": "No email shared",
+      "allMembers": "View All Members"
+    },
+    "invite": {
+      "confirming": "Confirming Invitation...",
+      "invalid": {
+        "title": "Invalid Invite",
+        "desc": "This invitation link might have expired or the group no longer exists.",
+        "backHome": "Return to Home"
+      },
+      "active": "Invitation Link Active",
+      "members": "Members",
+      "membersInGroup": "Who's already in",
+      "andMore": "And {count} more...",
+      "joinGroup": "Join This Group",
+      "joining": "Joining...",
+      "joinSuccess": "Successfully joined the group!",
+      "joinError": "Failed to join group. Please try again.",
+      "viewDetails": "View Group Details",
+      "wrongGroup": "Wrong group?",
+      "searchOthers": "Search for other cohorts",
+      "privacyNote": "By joining, you agree to share your learning progress with other members of this cohort."
+    }
+  }
+}

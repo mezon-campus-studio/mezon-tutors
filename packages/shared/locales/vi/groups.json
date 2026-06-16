@@ -1,0 +1,65 @@
+{
+  "Groups": {
+    "title": "Nhóm học",
+    "description": "Quản lý các nhóm học và đặt lịch học nhóm với gia sư.",
+    "createNew": "Tạo nhóm mới",
+    "creating": "Đang tạo...",
+    "groupStudyPrefix": "Học nhóm",
+    "newGroupPlaceholder": "Tên nhóm",
+    "breadcrumb": {
+      "dashboard": "Trang chủ",
+      "groups": "Nhóm học"
+    },
+    "card": {
+      "leader": "Trưởng nhóm",
+      "member": "Thành viên",
+      "membersCount": "{count} thành viên",
+      "selectForBooking": "Chọn để đặt lịch",
+      "viewDetails": "Xem chi tiết",
+      "minMembersWarning": "⚠️ Nhóm cần có ít nhất 2 thành viên để đăng ký học."
+    },
+    "detail": {
+      "backToList": "Quay lại danh sách nhóm",
+      "shareInvite": "Chia sẻ link tham gia",
+      "members": "Thành viên",
+      "inviteSuccess": "Đã sao chép liên kết mời vào bộ nhớ tạm!",
+      "updateNameSuccess": "Đã cập nhật tên nhóm",
+      "updateNameError": "Cập nhật tên nhóm thất bại",
+      "loadError": "Không thể tải thông tin nhóm",
+      "notFound": "Không tìm thấy nhóm",
+      "addMembers": "Thêm thành viên",
+      "addMembersDesc": "Tìm kiếm bạn bè hoặc học sinh bằng tên hoặc địa chỉ email để mời họ vào nhóm.",
+      "searchPlaceholder": "Tìm theo tên, email...",
+      "suggested": "Gợi ý cho bạn",
+      "add": "THÊM",
+      "analytics": {
+        "title": "Phân tích nhóm",
+        "activityIncrease": "Hoạt động đã tăng 15% trong tuần này.",
+        "sessions": "Buổi học",
+        "resources": "Tài liệu"
+      },
+      "noEmail": "Chưa chia sẻ email",
+      "allMembers": "Xem tất cả thành viên"
+    },
+    "invite": {
+      "confirming": "Đang xác nhận lời mời...",
+      "invalid": {
+        "title": "Lời mời không hợp lệ",
+        "desc": "Liên kết mời này có thể đã hết hạn hoặc nhóm không còn tồn tại.",
+        "backHome": "Về trang chủ"
+      },
+      "active": "Lời mời đang hoạt động",
+      "members": "Thành viên",
+      "membersInGroup": "Thành viên trong nhóm",
+      "andMore": "Và {count} người khác...",
+      "joinGroup": "Tham gia nhóm",
+      "joining": "Đang tham gia...",
+      "joinSuccess": "Tham gia nhóm thành công!",
+      "joinError": "Không thể tham gia nhóm. Vui lòng thử lại.",
+      "viewDetails": "Xem chi tiết nhóm",
+      "wrongGroup": "Nhầm nhóm?",
+      "searchOthers": "Xem các nhóm khác",
+      "privacyNote": "Khi tham gia, bạn đồng ý chia sẻ tiến độ học tập với các thành viên khác trong nhóm."
+    }
+  }
+}

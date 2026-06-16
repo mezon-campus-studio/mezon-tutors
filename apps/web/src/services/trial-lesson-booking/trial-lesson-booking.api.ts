@@ -124,6 +124,7 @@ export type TrialLessonBookingRequestItem = {
   scheduleKind?: "subscription";
   subscriptionEnrollmentId?: string;
   subscriptionSlotIndex?: number;
+  groupName?: string;
 };
 
 export type TrialLessonBookingRequestsResponse =

@@ -188,6 +188,10 @@ function canShowRescheduleOrCancelMenu(lesson: LessonItem): boolean {
   if (isCancelledTrialLesson(lesson)) {
     return false;
   }
+  // Group members who are not the payer (leader) cannot reschedule or cancel
+  if (lesson.groupName && lesson.isPayer === false) {
+    return false;
+  }
   if (lesson.source === "trial" && lesson.trialBookingStatus === "confirmed") {
     return true;
   }
@@ -286,12 +290,18 @@ function PastLessonListItem({
   const cancelled = isCancelledTrialLesson(lesson);
   const complaintStatus = lesson.complaintStatus?.toUpperCase();
   const showComplaintStatus = hasLessonComplaintStatus(lesson);
+  const tGroups = useTranslations('Groups');
 
   return (
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-4 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
         <div className="min-w-0 flex flex-col gap-0.5">
+          {lesson.groupName && (
+            <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-600">
+               {tGroups('groupStudyPrefix')}: {lesson.groupName}
+            </p>
+          )}
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(lesson.dateLabel, locale)}
           </p>
@@ -422,6 +432,7 @@ function UpcomingLessonItem({
   const { lightClient, setLightClient } = useMezonLight();
   const { refetch: refetchDmChannel } = useGetDmChannel(senderId, lesson.tutorUserId, false);
   const createDmChannelMutation = useCreateDmChannelMutation();
+  const tGroups = useTranslations('Groups');
   const cancelled = isCancelledTrialLesson(lesson);
   const isInProgress = isLessonInProgress(lesson, now);
 
@@ -516,6 +527,11 @@ function UpcomingLessonItem({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
           <div className="min-w-0 flex flex-col gap-0.5">
+            {lesson.groupName && (
+              <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-600">
+                {tGroups('groupStudyPrefix')}: {lesson.groupName}
+              </p>
+            )}
             <p className="text-xs font-semibold text-violet-600">
               {formatLessonDateLabel(lesson.dateLabel, locale)}
             </p>

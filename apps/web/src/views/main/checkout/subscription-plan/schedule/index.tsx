@@ -361,12 +361,14 @@ export default function SubscriptionPlanSchedulePage() {
       if (!canSubmit || !plan) {
         return;
       }
+      const groupId = searchParams.get("groupId") ?? undefined;
       const enrollment = await createEnrollment.mutateAsync({
         tutorId,
         lessonsPerWeek: plan.lessonsPerWeek,
         currency,
         useWalletBalance: withWallet && showWalletRow,
         paymentProvider,
+        groupId,
         slots: selectedSlots.map((s) =>
           convertWallClockSlotBetweenTimezones(
             s.date,
@@ -391,6 +393,7 @@ export default function SubscriptionPlanSchedulePage() {
       plan,
       redirectToPaymentGateway,
       router,
+      searchParams,
       selectedSlots,
       showWalletRow,
       t,

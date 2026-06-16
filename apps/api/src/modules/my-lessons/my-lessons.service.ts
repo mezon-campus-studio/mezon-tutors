@@ -154,13 +154,23 @@ export class MyLessonsService {
       })
       .filter((item): item is MyLessonApiItem => item !== null);
 
+    const studentGroups = await this.prisma.groupMember.findMany({
+      where: { userId: studentId },
+      select: { groupId: true },
+    });
+    const groupIds = studentGroups.map((g) => g.groupId);
+
     const enrollments = await this.prisma.subscriptionEnrollment.findMany({
       where: {
-        studentId,
+        OR: [
+          { studentId },
+          { groupId: { in: groupIds } },
+        ],
         status: ESubscriptionEnrollmentStatus.ACTIVE,
         paymentStatus: EPaymentStatus.SUCCEEDED,
       },
       include: {
+        group: true,
         tutor: {
           include: {
             user: true,
@@ -205,7 +215,8 @@ export class MyLessonsService {
             range.endAt,
             occ.slotIndex,
             calendarStatus,
-            timezoneName
+            timezoneName,
+            studentId
           ),
           range.startAt,
           weekStartDateObj,
@@ -237,7 +248,8 @@ export class MyLessonsService {
           occ.endAt,
           occ.slotIndex,
           lessonStatus,
-          timezoneName
+          timezoneName,
+          studentId
         );
         if (lessonStatus === 'upcoming') {
           subscriptionUpcomingItems.push(item);
@@ -526,12 +538,15 @@ export class MyLessonsService {
       currency: string | null;
       weeklySlots: Prisma.JsonValue;
       tutor: TrialLessonBookingWithTutor['tutor'];
+      group?: { name: string } | null;
+      studentId: string;
     },
     startAt: Date,
     endAt: Date,
     slotIdx: number,
     calendarStatus: MyLessonApiItem['status'],
-    timezoneName: string
+    timezoneName: string,
+    viewerStudentId: string
   ): MyLessonApiItem {
     const ymd = dayjs.utc(startAt).format('YYYY-MM-DD');
     const subj = enrollment.tutor.subject?.trim();
@@ -566,6 +581,8 @@ export class MyLessonsService {
       enrollment_payment_status: enrollment.paymentStatus,
       gross_amount: Number(slotRefundAmount),
       currency: enrollment.currency ?? undefined,
+      group_name: enrollment.group?.name,
+      is_payer: enrollment.studentId === viewerStudentId,
     };
   }
 
@@ -658,6 +675,7 @@ export class MyLessonsService {
       currency: lesson.currency,
       trial_booking_status: trialBookingStatus,
       trial_payment_status: lesson.paymentStatus,
+      is_payer: true,
     };
   }
 

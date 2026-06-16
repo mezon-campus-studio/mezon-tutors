@@ -50,6 +50,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Onboarding", file: "onboarding" },
   { messageKey: "Legal", file: "legal" },
   { messageKey: "Practice", file: "practice" },
+  { messageKey: "Groups", file: "groups", pick: (payload) => payload.Groups },
 ];
 
 const loadMessage = async (locale: string, file: string) => {

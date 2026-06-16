@@ -4,17 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   Plus, 
-  Terminal, 
-  Palette, 
-  Brain, 
-  Languages, 
   ChevronRight, 
-  Video,
-  MessageSquare,
   Loader2
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAtomValue } from 'jotai';
+import { useTranslations } from 'next-intl';
 import { userAtom } from '@/store/auth.atom';
 import { studyGroupApi } from '@/services/study-group/study-group.api';
 import { ROUTES } from '@mezon-tutors/shared';
@@ -27,7 +22,6 @@ import {
   AvatarGroup,
   AvatarGroupCount,
   Badge,
-  Separator
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +31,7 @@ interface GroupCardProps {
   membersCount: number;
   members: any[];
   role: string;
+  tutorId?: string | null;
 }
 
 const GroupCard = ({ 
@@ -44,9 +39,22 @@ const GroupCard = ({
   title, 
   membersCount, 
   members,
-  role
+  role,
+  tutorId
 }: GroupCardProps) => {
+  const t = useTranslations('Groups.card');
   const router = useRouter();
+  const isLeader = role === 'Leader';
+  const canBook = isLeader && !!tutorId && membersCount >= 2;
+  const showBookingButton = isLeader && !!tutorId;
+
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canBook) {
+      router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${tutorId}&groupId=${id}`);
+    }
+  };
+
   return (
     <Card 
       onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`)}
@@ -58,12 +66,12 @@ const GroupCard = ({
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl font-bold text-gray-900 truncate flex-1">{title}</h3>
           <Badge variant="secondary" className="bg-gray-50 text-gray-500 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border-none shrink-0">
-            {role}
+            {role === 'Leader' ? t('leader') : t('member')}
           </Badge>
         </div>
         <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
           <Users className="w-4 h-4" />
-          <span>{membersCount} Members</span>
+          <span>{t('membersCount', { count: membersCount })}</span>
         </div>
       </div>
 
@@ -82,17 +90,45 @@ const GroupCard = ({
           )}
         </AvatarGroup>
         
-        <button className="text-primary font-bold text-sm flex items-center gap-1.5 transition-all hover:gap-2.5 group-hover:translate-x-1">
-          Select for Booking
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        {showBookingButton ? (
+          <button 
+            onClick={handleSelect}
+            disabled={!canBook}
+            className={cn(
+              "font-bold text-sm flex items-center gap-1.5 transition-all",
+              canBook
+                ? "text-primary hover:gap-2.5 group-hover:translate-x-1"
+                : "text-gray-400 cursor-not-allowed"
+            )}
+          >
+            {t('selectForBooking')}
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <button 
+            onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`); }}
+            className="text-gray-500 font-bold text-sm flex items-center gap-1.5 transition-all hover:gap-2.5 hover:text-primary"
+          >
+            {t('viewDetails')}
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
+
+      {showBookingButton && membersCount < 2 && (
+        <p className="mt-3 text-xs font-medium text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+          {t('minMembersWarning')}
+        </p>
+      )}
     </Card>
   );
 };
 
 export const StudyGroupsView = () => {
+  const t = useTranslations('Groups');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tutorId = searchParams.get('tutorId');
   const user = useAtomValue(userAtom);
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +153,7 @@ export const StudyGroupsView = () => {
     if (isCreating) return;
     setIsCreating(true);
     try {
-      const newGroup = await studyGroupApi.create('Tên nhóm');
+      const newGroup = await studyGroupApi.create(t('newGroupPlaceholder'));
       router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}`);
     } catch (error) {
       console.error('Failed to create group:', error);
@@ -126,22 +162,22 @@ export const StudyGroupsView = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 space-y-12 animate-in fade-in duration-700">
+    <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 space-y-12">
       {/* Breadcrumb & Header */}
       <div className="space-y-4">
         <nav className="flex items-center gap-2 text-sm font-medium text-gray-500">
-          <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => router.push(ROUTES.DASHBOARD.INDEX)}>Dashboard</span>
+          <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => router.push(ROUTES.DASHBOARD.INDEX)}>{t('breadcrumb.dashboard')}</span>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900">Groups</span>
+          <span className="text-gray-900">{t('breadcrumb.groups')}</span>
         </nav>
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl space-y-2">
             <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 lg:text-5xl">
-              Study Groups
+              {t('title')}
             </h1>
             <p className="text-lg text-gray-500 font-medium">
-              Manage your collaborative circles and book new focused learning sprints.
+              {t('description')}
             </p>
           </div>
           
@@ -155,7 +191,7 @@ export const StudyGroupsView = () => {
             ) : (
               <Plus className="w-5 h-5" />
             )}
-            {isCreating ? 'Creating...' : 'Create New Group'}
+            {isCreating ? t('creating') : t('createNew')}
           </Button>
         </div>
       </div>
@@ -177,6 +213,7 @@ export const StudyGroupsView = () => {
               membersCount={group.members?.length || 0}
               members={group.members || []}
               role={group.leaderId === user?.id ? 'Leader' : 'Member'}
+              tutorId={tutorId}
             />
           ))}
 
@@ -187,53 +224,10 @@ export const StudyGroupsView = () => {
             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Plus className="w-6 h-6 text-gray-400 group-hover:text-primary" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">New Study Circle</h3>
-            <p className="text-gray-500 text-xs font-medium">Start a fresh collaboration</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">{t('createNew')}</h3>
+            <p className="text-gray-500 text-xs font-medium">{t('description')}</p>
           </Card>
         </div>
-      )}
-
-      {/* Recent Updates Section - Simplified or Hidden if no groups */}
-      {!isLoading && groups.length > 0 && (
-        <section className="space-y-6 pt-6">
-          <h2 className="text-2xl font-extrabold text-gray-900">Recent Group Updates</h2>
-          
-          <div className="space-y-3">
-            {[
-              {
-                user: "System",
-                action: "welcomed you to",
-                target: groups[0]?.name || "your workspace",
-                time: "Just now",
-                icon: <MessageSquare className="w-4 h-4 text-blue-500" />,
-                avatar: "https://i.pravatar.cc/150?u=system"
-              }
-            ].map((update, i) => (
-              <div 
-                key={i} 
-                className="group flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <Avatar className="w-10 h-10 ring-2 ring-white shadow-sm">
-                      <AvatarImage src={update.avatar} />
-                    </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
-                      {update.icon}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      <span className="font-bold text-primary">{update.user}</span> {update.action} <span className="font-bold text-indigo-600">{update.target}</span>
-                    </p>
-                    <p className="text-xs text-gray-500 font-medium">{update.time}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors" />
-              </div>
-            ))}
-          </div>
-        </section>
       )}
     </div>
   );

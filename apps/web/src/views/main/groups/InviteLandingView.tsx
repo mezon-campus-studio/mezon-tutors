@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, 
-  Calendar, 
   BookOpen, 
   ChevronRight, 
   ShieldCheck,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
+import { useTranslations } from 'next-intl';
 import { 
   Button, 
   Card, 
@@ -20,7 +20,6 @@ import {
   AvatarImage,
   AvatarFallback,
   Badge,
-  Separator,
   AvatarGroupCount
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -35,6 +34,7 @@ interface InviteLandingViewProps {
 }
 
 export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
+  const t = useTranslations('Groups.invite');
   const router = useRouter();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [group, setGroup] = useState<StudyGroup | null>(null);
@@ -58,7 +58,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
       }
     } catch (error) {
       console.error('Failed to fetch invite details:', error);
-      toast.error('Invitation link might be invalid or expired');
+      toast.error(t('invalid.title'));
     } finally {
       setIsLoading(false);
     }
@@ -78,11 +78,11 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
     setIsJoining(true);
     try {
       await studyGroupApi.join(inviteId);
-      toast.success('Successfully joined the group!');
+      toast.success(t('joinSuccess'));
       router.push(ROUTES.DASHBOARD.MY_LESSONS);
     } catch (error) {
       console.error('Failed to join group:', error);
-      toast.error('Failed to join group. Please try again.');
+      toast.error(t('joinError'));
       setIsJoining(false);
     }
   };
@@ -96,7 +96,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
             <div className="w-8 h-8 bg-white rounded-full" />
           </div>
         </div>
-        <p className="mt-4 text-gray-500 font-bold animate-pulse">Confirming Invitation...</p>
+        <p className="mt-4 text-gray-500 font-bold animate-pulse">{t('confirming')}</p>
       </div>
     );
   }
@@ -107,15 +107,15 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
           <X className="w-10 h-10 text-red-500" />
         </div>
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Invalid Invite</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900 mb-2">{t('invalid.title')}</h2>
         <p className="text-gray-500 text-center max-w-sm mb-8">
-          This invitation link might have expired or the group no longer exists.
+          {t('invalid.desc')}
         </p>
         <Button 
           onClick={() => router.push('/')}
           className="rounded-full bg-indigo-600 px-8"
         >
-          Return to Home
+          {t('invalid.backHome')}
         </Button>
       </div>
     );
@@ -128,7 +128,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
           <BookOpen className="w-6 h-6 text-white" />
         </div>
-        <span className="text-2xl font-black text-gray-900 tracking-tight">Luminous Learn</span>
+        <span className="text-2xl font-black text-gray-900 tracking-tight">Mezon Tutors</span>
       </div>
 
       {/* Main Card */}
@@ -138,39 +138,30 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
           <div className="flex justify-center">
             <Badge className="bg-indigo-50 text-indigo-600 border-none px-4 py-1.5 rounded-full flex gap-2 items-center text-[10px] font-black uppercase tracking-widest">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Invitation Link Active
+              {t('active')}
             </Badge>
           </div>
 
-          {/* Group Title & Desc */}
+          {/* Group Title */}
           <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
               {group.name}
             </h1>
-            <p className="text-gray-500 font-medium leading-relaxed max-w-[440px] mx-auto">
-              A dedicated workspace for advanced quantum mechanics research and peer review sessions for the upcoming finals.
-            </p>
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Members', value: '14' },
-              { label: 'Sessions', value: '24' },
-              { label: 'Resources', value: '112' }
-            ].map((stat, i) => (
-              <div key={i} className="p-4 bg-[#F8FAFC] rounded-[24px] border border-gray-100/50">
-                <p className="text-2xl font-black text-gray-900">{stat.value}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{stat.label}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-3">
+            <div className="p-4 bg-[#F8FAFC] rounded-[24px] border border-gray-100/50">
+              <p className="text-2xl font-black text-gray-900">{group.members?.length || 0}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{t('members')}</p>
+            </div>
           </div>
 
           {/* Who's Already In Section */}
           <div className="bg-[#F8FAFC] rounded-[32px] p-6 text-left space-y-4 border border-gray-100/50">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-4 h-4 text-gray-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Who's already in</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('membersInGroup')}</span>
             </div>
             
             <div className="space-y-4">
@@ -187,7 +178,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{member.user.username}</p>
                       <p className="text-xs text-gray-500 font-medium">
-                        {member.userId === group.leaderId ? 'Group Leader' : 'Active Student'}
+                        {member.userId === group.leaderId ? t('card.leader') : t('card.member')}
                       </p>
                     </div>
                   </div>
@@ -195,7 +186,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                     "border-none font-black text-[9px] uppercase tracking-wider px-3",
                     member.userId === group.leaderId ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
                   )}>
-                    {member.userId === group.leaderId ? 'Leader' : 'Student'}
+                    {member.userId === group.leaderId ? t('card.leader') : t('card.member')}
                   </Badge>
                 </div>
               ))}
@@ -203,7 +194,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
               {(group.members?.length ?? 0) > 2 && (
                 <div className="flex justify-end pr-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-gray-400">And {(group.members?.length ?? 0) - 2} more...</span>
+                    <span className="text-[10px] font-bold text-gray-400">{t('andMore', { count: (group.members?.length ?? 0) - 2 })}</span>
                     <AvatarGroupCount className="bg-gray-100 text-gray-500 text-[10px] h-8 w-8 ring-4 ring-white">
                       +{(group.members?.length ?? 0) - 2}
                     </AvatarGroupCount>
@@ -218,13 +209,13 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
             <Button 
               onClick={handleJoin}
               disabled={isJoining}
-              className="w-full h-16 rounded-3xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg gap-3 shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="group h-16 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-lg font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-3"
             >
               {isJoining ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Join This Group
+                  {t('joinGroup')}
                   <ChevronRight className="w-6 h-6" />
                 </>
               )}
@@ -236,7 +227,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                 onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${group.id}`)}
                 className="flex-1 h-16 rounded-3xl border border-gray-100 bg-white hover:bg-gray-50 text-gray-600 font-bold"
               >
-                View Group Details
+                {t('viewDetails')}
               </Button>
               <button 
                 onClick={() => setGroup(null)}
@@ -251,7 +242,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
           <div className="flex gap-3 text-left">
             <Info className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
             <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-              By joining, you agree to share your learning progress with other members of this cohort. <span className="text-indigo-600 font-bold cursor-pointer hover:underline">Privacy Policy</span>
+              {t('privacyNote')}
             </p>
           </div>
         </div>
@@ -261,7 +252,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
       </Card>
 
       <p className="mt-8 text-sm text-gray-500 font-medium">
-        Wrong group? <span className="text-indigo-600 font-bold cursor-pointer hover:underline">Search for other cohorts</span>
+        {t('wrongGroup')} <span className="text-indigo-600 font-bold cursor-pointer hover:underline" onClick={() => router.push(ROUTES.DASHBOARD.GROUPS)}>{t('searchOthers')}</span>
       </p>
     </div>
   );

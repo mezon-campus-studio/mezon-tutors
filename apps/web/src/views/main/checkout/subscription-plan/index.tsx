@@ -83,11 +83,15 @@ export default function SubscriptionPlanCheckoutPage() {
     if (!tutorId || !selectedPlanId) {
       return;
     }
+    const groupId = searchParams.get("groupId");
     const query = new URLSearchParams({
       tutorId,
       lessonsPerWeek: selectedPlanId,
       timezone: userTimezone,
     });
+    if (groupId) {
+      query.set("groupId", groupId);
+    }
     router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN_SCHEDULE}?${query.toString()}`);
   };
 

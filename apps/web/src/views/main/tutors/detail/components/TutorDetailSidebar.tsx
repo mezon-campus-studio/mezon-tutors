@@ -142,7 +142,7 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
                   {t("subscribeMonthly")}
                 </Link>
                 <Link
-                  href={ROUTES.DASHBOARD.GROUPS}
+                  href={`${ROUTES.DASHBOARD.GROUPS}?tutorId=${tutor.id}`}
                   className={cn(
                     buttonVariants({ variant: "outline" }),
                     "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",

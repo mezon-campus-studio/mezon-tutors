@@ -56,4 +56,8 @@ export class CreateSubscriptionEnrollmentBodyDto {
   @IsOptional()
   @IsEnum(EPaymentProvider)
   paymentProvider?: EPaymentProvider
+
+  @IsOptional()
+  @IsUUID()
+  groupId?: string
 }
