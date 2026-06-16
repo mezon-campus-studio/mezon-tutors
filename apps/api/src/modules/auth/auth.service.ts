@@ -406,6 +406,13 @@ export class AuthService {
     };
   }
 
+  async updateUserTimezone(userId: string, timezone: string) {
+    const user = await this.userService.updateTimezone(userId, timezone);
+    return {
+      timezone: user.timezone ?? null,
+    };
+  }
+
   async handleMezonCallback(code: string, state?: string, timezone?: string) {
     const tokenData = await this.exchangeCodeForToken(code, state);
     const mezonUser = await this.fetchMezonUserInfo(tokenData.access_token);

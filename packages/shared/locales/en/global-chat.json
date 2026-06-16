@@ -9,14 +9,20 @@
   "inputPlaceholder": "Type a message...",
   "send": "Send",
   "sending": "Sending...",
-  "restoreError": "Cannot restore chat session. Please log in again.",
+  "sendErrors": {
+    "restoreSessionFailed": "Cannot restore chat session. Please log in again.",
+    "refreshSessionFailed": "Chat session has expired. Please log in again.",
+    "missingUserInfo": "Missing user information to open a conversation.",
+    "createDmChannelFailed": "Could not create chat channel. Please try again later.",
+    "saveDmChannelFailed": "Could not save chat channel. Please try again later.",
+    "sendMessageFailed": "Could not send message. Please try again later.",
+    "sendFailed": "An error occurred while sending the message. Please try again later."
+  },
   "supportChat": {
     "missingSession": "Please sign in with Mezon to contact support.",
     "failed": "Could not open support chat. Please try again."
   },
-  "noticeTitle": "CHAT GUIDANCE",
-  "noticePrefix": "To access your permanent chat logs and transaction history, please refer to ",
-  "noticeLink": "Mezon.",
+  "noticeMezonChat": "To view the full message history and conversation details, open <link>this chat on Mezon</link>.",
   "fakeSets": {
     "set1": [
       "Hi {peerName}, I want to book a trial lesson this week.",

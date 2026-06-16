@@ -1,8 +1,9 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
 import {
   ONBOARDING_ACTION_ROUTES_BY_ROLE,
@@ -32,6 +33,9 @@ export default function OnboardingView() {
   const { openAdminSupportChat, isOpening } = useOpenAdminSupportChat();
   const { data: publicSettings } = usePublicAppSettings();
 
+  const searchParams = useSearchParams();
+  const deepLinkApplied = useRef(false);
+
   const [section, setSection] = useState<OnboardingSection>("roleGuide");
   const [profileRole, setProfileRole] = useState<OnboardingProfileRole>("student");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -55,8 +59,35 @@ export default function OnboardingView() {
   }, []);
 
   useEffect(() => {
+    if (deepLinkApplied.current) return;
     resetToStart();
   }, [role, resetToStart]);
+
+  useEffect(() => {
+    if (deepLinkApplied.current) return;
+
+    const sectionParam = searchParams?.get("section");
+    const stepParam = searchParams?.get("step");
+    if (!sectionParam || !stepParam) return;
+
+    if (ONBOARDING_SECTIONS.includes(sectionParam as OnboardingSection)) {
+      setSection(sectionParam as OnboardingSection);
+    }
+
+    if (sectionParam === "roleGuide") {
+      setProfileRole("tutor");
+    }
+
+    const resolvedRole: OnboardingRole =
+      sectionParam === "utilities" ? "utilities" : "tutor";
+    const resolvedSteps = ONBOARDING_STEPS_BY_ROLE[resolvedRole];
+    const idx = resolvedSteps.findIndex((s) => s.id === stepParam);
+    if (idx >= 0) {
+      setActiveIndex(idx);
+    }
+
+    deepLinkApplied.current = true;
+  }, [searchParams]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

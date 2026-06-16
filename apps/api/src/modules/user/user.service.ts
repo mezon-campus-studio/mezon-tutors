@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Role, VerificationStatus, type User } from '@mezon-tutors/db';
 import type { TrustShowcaseDto } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,6 +25,24 @@ export class UserService {
   findByMezonUserId(mezonUserId: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { mezonUserId },
+    });
+  }
+
+  private assertValidIanaTimezone(timezone: string): void {
+    try {
+      Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(new Date());
+    } catch {
+      throw new BadRequestException('Invalid timezone');
+    }
+  }
+
+  async updateTimezone(userId: string, timezone: string): Promise<User> {
+    const trimmed = timezone.trim();
+    this.assertValidIanaTimezone(trimmed);
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { timezone: trimmed },
     });
   }
 

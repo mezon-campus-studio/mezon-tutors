@@ -76,7 +76,11 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
         </p>
       </div>
 
-      <ScheduleViewer availableSlots={availableSlots} timezone={viewerTimezone} />
+      <ScheduleViewer
+        availableSlots={availableSlots}
+        timezone={viewerTimezone}
+        className="-mx-2 sm:mx-0"
+      />
     </div>
   );
 }

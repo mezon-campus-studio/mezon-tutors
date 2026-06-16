@@ -1,20 +1,24 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Settings } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import SettingsTabs, { type SettingsTab } from './components/SettingsTabs';
+import GlobalSettingsTab from './components/GlobalSettingsTab';
 import GoogleCalendarTab from './components/GoogleCalendarTab';
 import SettingsOAuthHandler from './components/SettingsOAuthHandler';
+import { warmupTimezoneOptions } from '@/lib/timezone-options';
 
-const DEFAULT_TAB: SettingsTab = 'googleCalendar';
+const DEFAULT_TAB: SettingsTab = 'globalSettings';
 
 const TAB_PARAM_MAP: Record<string, SettingsTab> = {
+  'global-settings': 'globalSettings',
   'google-calendar': 'googleCalendar',
 };
 
 const TAB_TO_PARAM: Record<SettingsTab, string> = {
+  globalSettings: 'global-settings',
   googleCalendar: 'google-calendar',
 };
 
@@ -25,7 +29,7 @@ export default function SettingsView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const activeTab = useMemo(() => {
+  const urlTab = useMemo(() => {
     const param = searchParams.get('tab');
     if (param && param in TAB_PARAM_MAP) {
       return TAB_PARAM_MAP[param];
@@ -33,8 +37,37 @@ export default function SettingsView() {
     return DEFAULT_TAB;
   }, [searchParams]);
 
+  const [activeTab, setActiveTab] = useState<SettingsTab>(urlTab);
+  const [mountedTabs, setMountedTabs] = useState<Set<SettingsTab>>(
+    () => new Set([urlTab]),
+  );
+
+  useEffect(() => {
+    setActiveTab(urlTab);
+  }, [urlTab]);
+
+  useEffect(() => {
+    setMountedTabs((current) => {
+      if (current.has(activeTab)) return current;
+      const next = new Set(current);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
+  useEffect(() => {
+    const warmup = () => warmupTimezoneOptions();
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(warmup);
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(warmup, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
   const handleTabChange = useCallback(
     (tab: SettingsTab) => {
+      setActiveTab(tab);
       const params = new URLSearchParams(searchParams.toString());
       params.set('tab', TAB_TO_PARAM[tab]);
       params.delete('gcal');
@@ -64,7 +97,16 @@ export default function SettingsView() {
         <SettingsTabs activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
 
-      {activeTab === 'googleCalendar' ? <GoogleCalendarTab locale={locale} /> : null}
+      {mountedTabs.has('globalSettings') ? (
+        <div hidden={activeTab !== 'globalSettings'}>
+          <GlobalSettingsTab locale={locale} />
+        </div>
+      ) : null}
+      {mountedTabs.has('googleCalendar') ? (
+        <div hidden={activeTab !== 'googleCalendar'}>
+          <GoogleCalendarTab locale={locale} />
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,14 +1,15 @@
 'use client';
 
-import { CalendarSync } from 'lucide-react';
+import { CalendarSync, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import DashboardViewTabs from '@/components/dashboard/DashboardViewTabs';
 
-export type SettingsTab = 'googleCalendar';
+export type SettingsTab = 'globalSettings' | 'googleCalendar';
 
-const TABS: SettingsTab[] = ['googleCalendar'];
+const TABS: SettingsTab[] = ['globalSettings', 'googleCalendar'];
 
 const TAB_ICONS = {
+  globalSettings: Globe,
   googleCalendar: CalendarSync,
 } as const;
 
