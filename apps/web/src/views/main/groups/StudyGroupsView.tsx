@@ -1,0 +1,240 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Users, 
+  Plus, 
+  Terminal, 
+  Palette, 
+  Brain, 
+  Languages, 
+  ChevronRight, 
+  Video,
+  MessageSquare,
+  Loader2
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/store/auth.atom';
+import { studyGroupApi } from '@/services/study-group/study-group.api';
+import { ROUTES } from '@mezon-tutors/shared';
+import { 
+  Button, 
+  Card, 
+  Avatar, 
+  AvatarImage,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  Badge,
+  Separator
+} from '@/components/ui';
+import { cn } from '@/lib/utils';
+
+interface GroupCardProps {
+  id: string;
+  title: string;
+  membersCount: number;
+  members: any[];
+  role: string;
+}
+
+const GroupCard = ({ 
+  id,
+  title, 
+  membersCount, 
+  members,
+  role
+}: GroupCardProps) => {
+  const router = useRouter();
+  return (
+    <Card 
+      onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`)}
+      className="relative p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border-border/50 overflow-hidden rounded-3xl cursor-pointer"
+    >
+      <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/10 group-hover:bg-primary transition-colors duration-300" />
+      
+      <div className="mb-6">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-xl font-bold text-gray-900 truncate flex-1">{title}</h3>
+          <Badge variant="secondary" className="bg-gray-50 text-gray-500 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border-none shrink-0">
+            {role}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
+          <Users className="w-4 h-4" />
+          <span>{membersCount} Members</span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+        <AvatarGroup>
+          {members.slice(0, 3).map((member, i) => (
+            <Avatar key={i} className="border-2 border-white">
+              <AvatarImage src={member.user?.avatar} alt={member.user?.username} />
+              <AvatarFallback>{member.user?.username?.charAt(0) || '?'}</AvatarFallback>
+            </Avatar>
+          ))}
+          {membersCount > 3 && (
+            <AvatarGroupCount className="text-[10px]">
+              +{membersCount - 3}
+            </AvatarGroupCount>
+          )}
+        </AvatarGroup>
+        
+        <button className="text-primary font-bold text-sm flex items-center gap-1.5 transition-all hover:gap-2.5 group-hover:translate-x-1">
+          Select for Booking
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </Card>
+  );
+};
+
+export const StudyGroupsView = () => {
+  const router = useRouter();
+  const user = useAtomValue(userAtom);
+  const [groups, setGroups] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  const fetchGroups = async () => {
+    try {
+      const data = await studyGroupApi.list();
+      setGroups(data);
+    } catch (error) {
+      console.error('Failed to fetch groups:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateGroup = async () => {
+    if (isCreating) return;
+    setIsCreating(true);
+    try {
+      const newGroup = await studyGroupApi.create('Tên nhóm');
+      router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}`);
+    } catch (error) {
+      console.error('Failed to create group:', error);
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 space-y-12 animate-in fade-in duration-700">
+      {/* Breadcrumb & Header */}
+      <div className="space-y-4">
+        <nav className="flex items-center gap-2 text-sm font-medium text-gray-500">
+          <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => router.push(ROUTES.DASHBOARD.INDEX)}>Dashboard</span>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-gray-900">Groups</span>
+        </nav>
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl space-y-2">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 lg:text-5xl">
+              Study Groups
+            </h1>
+            <p className="text-lg text-gray-500 font-medium">
+              Manage your collaborative circles and book new focused learning sprints.
+            </p>
+          </div>
+          
+          <Button 
+            onClick={handleCreateGroup}
+            disabled={isCreating}
+            className="group h-12 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-2"
+          >
+            {isCreating ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Plus className="w-5 h-5" />
+            )}
+            {isCreating ? 'Creating...' : 'Create New Group'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="h-[200px] bg-gray-50 animate-pulse rounded-3xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {groups.map((group) => (
+            <GroupCard 
+              key={group.id}
+              id={group.id}
+              title={group.name}
+              membersCount={group.members?.length || 0}
+              members={group.members || []}
+              role={group.leaderId === user?.id ? 'Leader' : 'Member'}
+            />
+          ))}
+
+          <Card 
+            onClick={handleCreateGroup}
+            className="border-2 border-dashed border-gray-200 bg-gray-50/50 p-8 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 rounded-3xl min-h-[180px]"
+          >
+            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Plus className="w-6 h-6 text-gray-400 group-hover:text-primary" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">New Study Circle</h3>
+            <p className="text-gray-500 text-xs font-medium">Start a fresh collaboration</p>
+          </Card>
+        </div>
+      )}
+
+      {/* Recent Updates Section - Simplified or Hidden if no groups */}
+      {!isLoading && groups.length > 0 && (
+        <section className="space-y-6 pt-6">
+          <h2 className="text-2xl font-extrabold text-gray-900">Recent Group Updates</h2>
+          
+          <div className="space-y-3">
+            {[
+              {
+                user: "System",
+                action: "welcomed you to",
+                target: groups[0]?.name || "your workspace",
+                time: "Just now",
+                icon: <MessageSquare className="w-4 h-4 text-blue-500" />,
+                avatar: "https://i.pravatar.cc/150?u=system"
+              }
+            ].map((update, i) => (
+              <div 
+                key={i} 
+                className="group flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Avatar className="w-10 h-10 ring-2 ring-white shadow-sm">
+                      <AvatarImage src={update.avatar} />
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      {update.icon}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      <span className="font-bold text-primary">{update.user}</span> {update.action} <span className="font-bold text-indigo-600">{update.target}</span>
+                    </p>
+                    <p className="text-xs text-gray-500 font-medium">{update.time}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
