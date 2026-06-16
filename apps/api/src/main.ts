@@ -10,13 +10,17 @@ import {
   buildAllowedCorsOrigins,
   createCorsOriginDelegate,
 } from './common/utils/cors-origin.util';
+import { stripCorsResponseHeadersMiddleware } from './common/middleware/strip-cors-headers.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', 1);
   const configService = app.get(AppConfigService);
 
-  if (!configService.corsDelegateToProxy) {
+  if (configService.corsDelegateToProxy) {
+    app.use(stripCorsResponseHeadersMiddleware);
+    console.info('[CORS] Delegating to reverse proxy (NestJS CORS disabled)');
+  } else {
     const allowedOrigins = buildAllowedCorsOrigins(
       configService.corsOrigins,
       configService.frontendUrl
@@ -38,6 +42,11 @@ async function bootstrap() {
         'X-Requested-With',
       ],
     });
+    console.info(
+      `[CORS] NestJS handling CORS for origins: ${JSON.stringify(
+        buildAllowedCorsOrigins(configService.corsOrigins, configService.frontendUrl)
+      )}`
+    );
   }
 
   app.use(

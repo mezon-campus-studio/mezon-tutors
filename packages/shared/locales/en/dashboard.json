@@ -314,6 +314,8 @@
             "statusCancelled": "Cancelled",
             "reschedule": "Request reschedule",
             "cancel": "Cancel lesson",
+            "joinLesson": "Join now",
+            "joinNowFailed": "Could not open the lesson chat. Please try again.",
             "rescheduleNotice": "This lesson starts in less than {hours} hours and can no longer be rescheduled. You can still cancel if needed.",
             "reschedulePendingNotice": "Your reschedule request has been submitted and is awaiting review.",
             "cancellationPendingNotice": "This lesson was cancelled."

@@ -2,22 +2,43 @@ function normalizeOrigin(origin: string): string {
   return origin.trim().replace(/\/$/, '');
 }
 
+function expandWwwVariants(origin: string): string[] {
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+    const variants = [origin];
+
+    if (host.startsWith('www.')) {
+      const withoutWww = `${url.protocol}//${host.slice(4)}${url.port ? `:${url.port}` : ''}`;
+      variants.push(normalizeOrigin(withoutWww));
+    } else if (!host.includes('localhost') && host.split('.').length >= 2) {
+      const withWww = `${url.protocol}//www.${host}${url.port ? `:${url.port}` : ''}`;
+      variants.push(normalizeOrigin(withWww));
+    }
+
+    return variants;
+  } catch {
+    return [origin];
+  }
+}
+
 export function buildAllowedCorsOrigins(
   corsOrigins: string | undefined,
   frontendUrl: string
 ): string[] {
   const frontendOrigin = normalizeOrigin(frontendUrl);
+  const frontendVariants = expandWwwVariants(frontendOrigin);
   const fromEnv =
     corsOrigins
       ?.split(',')
-      .map((o) => normalizeOrigin(o))
+      .flatMap((o) => expandWwwVariants(normalizeOrigin(o)))
       .filter(Boolean) ?? [];
 
   if (fromEnv.length > 0) {
-    return [...new Set([...fromEnv, frontendOrigin])];
+    return [...new Set([...fromEnv, ...frontendVariants])];
   }
 
-  return [frontendOrigin];
+  return [...new Set(frontendVariants)];
 }
 
 export function createCorsOriginDelegate(allowedOrigins: string[]) {

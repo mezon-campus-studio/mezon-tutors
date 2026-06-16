@@ -56,6 +56,7 @@ import {
   useGetDmChannel,
   useCreateDmChannelMutation,
   usePublicAppSettings,
+  useGetSupportBotContact,
 } from "@/services";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { ComplainLessonDialog } from "./ComplainLessonDialog";
@@ -430,7 +431,8 @@ function UpcomingLessonItem({
   const t = useTranslations("MyLessons.panels.lessons.cancellation.options");
   const tUpcoming = useTranslations("MyLessons.panels.lessons.upcoming");
   const { lightClient, setLightClient } = useMezonLight();
-  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, lesson.tutorUserId, false);
+  const { data: botContact } = useGetSupportBotContact();
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, botContact?.id ?? '', false);
   const createDmChannelMutation = useCreateDmChannelMutation();
   const tGroups = useTranslations('Groups');
   const cancelled = isCancelledTrialLesson(lesson);
@@ -473,6 +475,10 @@ function UpcomingLessonItem({
   ];
 
   const handleJoinNow = async () => {
+    if (!botContact) {
+      toast.error("Bot contact is not loaded yet.");
+      return;
+    }
     try {
       setIsJoining(true);
       const existingChannelId = (await refetchDmChannel()).data?.channelId;
@@ -481,8 +487,8 @@ function UpcomingLessonItem({
         setLightClient,
         senderId,
         senderMezonUserId,
-        recipientId: lesson.tutorUserId,
-        recipientMezonUserId: lesson.tutorMezonUserId ?? "",
+        recipientId: botContact.id,
+        recipientMezonUserId: botContact.mezonUserId,
         existingChannelId,
         createDmChannelMutation,
       });

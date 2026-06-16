@@ -46,9 +46,7 @@
         "missingStudentMezonUserId": "Không thể gửi tin nhắn: thiếu Mezon user ID của học viên.",
         "missingTutorMezonUserId": "Không thể gửi tin nhắn: thiếu Mezon user ID của gia sư.",
         "missingTutorId": "Không thể gửi tin nhắn: thiếu ID gia sư.",
-        "emptyContent": "Vui lòng nhập nội dung tin nhắn.",
-        "missingChannelId": "Không thể gửi tin nhắn: thiếu channel ID.",
-        "sendFailed": "Không thể gửi tin nhắn."
+        "emptyContent": "Vui lòng nhập nội dung tin nhắn."
       }
     },
     "proficiency": {

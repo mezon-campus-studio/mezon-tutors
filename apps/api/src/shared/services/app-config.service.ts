@@ -11,10 +11,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGINS: z.string().optional(),
-  CORS_DELEGATE_TO_PROXY: z
-    .string()
-    .default('false')
-    .transform((value) => value === 'true'),
+  /** When unset, production defaults to true (nginx owns CORS on the VPS). */
+  CORS_DELEGATE_TO_PROXY: z.string().optional(),
 
   // Frontend
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
@@ -181,7 +179,10 @@ export class AppConfigService {
   }
 
   get corsDelegateToProxy(): boolean {
-    return this.env.CORS_DELEGATE_TO_PROXY;
+    const raw = this.configService.get<string>('CORS_DELEGATE_TO_PROXY');
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    return this.env.NODE_ENV === 'production';
   }
 
   get frontendUrl(): string {

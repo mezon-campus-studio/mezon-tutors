@@ -4,6 +4,7 @@ import {
   TUTOR_SETUP_CHECKLIST_ACTION_HREFS,
   TUTOR_SETUP_CHECKLIST_GUIDE_HREF,
   TUTOR_SETUP_CHECKLIST_ITEM_IDS,
+  ROUTES,
   buildUtilitiesChannelAppTipLinks,
   type TutorSetupChecklistItemId,
 } from "@mezon-tutors/shared";
@@ -33,6 +34,15 @@ const ITEM_ICON_MAP: Record<
   createMezonClan: Users,
   setupMezonClan: Bot,
   channelApps: AppWindow,
+};
+
+const CHECKLIST_TO_ONBOARDING_STEP: Record<
+  TutorSetupChecklistItemId,
+  { section: string; step: string }
+> = {
+  createMezonClan: { section: "roleGuide", step: "createClan" },
+  setupMezonClan: { section: "roleGuide", step: "inviteBot" },
+  channelApps: { section: "utilities", step: "channelApps" },
 };
 
 export function TutorSetupChecklistWidget() {
@@ -84,6 +94,11 @@ export function TutorSetupChecklistWidget() {
       return t("actions.inviteBot");
     }
     return t("actions.openMezon");
+  };
+
+  const getGuideHref = (itemId: TutorSetupChecklistItemId) => {
+    const mapping = CHECKLIST_TO_ONBOARDING_STEP[itemId];
+    return `${ROUTES.SUPPORT.ONBOARDING}?section=${mapping.section}&step=${mapping.step}`;
   };
 
   if (isLoading || !isVisible) {
@@ -267,7 +282,7 @@ export function TutorSetupChecklistWidget() {
                                 </a>
                               ) : null}
                               <Link
-                                href={TUTOR_SETUP_CHECKLIST_GUIDE_HREF}
+                                href={getGuideHref(itemId)}
                                 className="cursor-pointer text-xs font-semibold text-slate-500 hover:text-violet-700"
                                 onClick={close}
                               >

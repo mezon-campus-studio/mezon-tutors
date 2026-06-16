@@ -210,7 +210,7 @@ export default function Header() {
                   isEventHeroOverlay ? "text-white/45" : "text-slate-400"
                 }`}
               >
-                Tutor Matching
+                Tutor Search
               </span>
             </div>
           </Link>
