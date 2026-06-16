@@ -77,12 +77,24 @@ const GroupCard = ({
 
       <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
         <AvatarGroup>
-          {members.slice(0, 3).map((member, i) => (
-            <Avatar key={i} className="border-2 border-white">
-              <AvatarImage src={member.user?.avatar} alt={member.user?.username} />
-              <AvatarFallback>{member.user?.username?.charAt(0) || '?'}</AvatarFallback>
-            </Avatar>
-          ))}
+          {members.slice(0, 3).map((member, i) => {
+            const name = member.user?.username || '?';
+            const initials = name
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part: string) => part[0]?.toUpperCase())
+              .join("") || "?";
+            
+            return (
+              <Avatar key={i} className="border-2 border-white">
+                <AvatarImage src={member.user?.avatar} alt={name} />
+                <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-[10px] font-bold text-white">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            );
+          })}
           {membersCount > 3 && (
             <AvatarGroupCount className="text-[10px]">
               +{membersCount - 3}

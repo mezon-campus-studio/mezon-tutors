@@ -33,6 +33,7 @@ interface GroupDetailViewProps {
 
 export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
   const t = useTranslations('Groups.detail');
+  const tGroups = useTranslations('Groups');
   const router = useRouter();
   const [group, setGroup] = useState<StudyGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -185,7 +186,14 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                   <div className="flex items-center gap-4">
                     <Avatar className="w-12 h-12 ring-2 ring-transparent group-hover/item:ring-indigo-100 transition-all">
                       <AvatarImage src={member.user.avatar} />
-                      <AvatarFallback>{member.user.username.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+                        {(member.user.username || "?")
+                          .split(" ")
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part: string) => part[0]?.toUpperCase())
+                          .join("") || "?"}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-bold text-gray-900">{member.user.username}</p>
@@ -194,7 +202,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge variant="secondary" className="bg-gray-50 text-gray-500 text-[10px] font-black uppercase tracking-wider px-3 py-1 border-none">
-                      {member.userId === group.leaderId ? t('card.leader') : t('card.member')}
+                      {member.userId === group.leaderId ? tGroups('card.leader') : tGroups('card.member')}
                     </Badge>
                     <button className="p-1 text-gray-300 hover:text-gray-900 transition-colors">
                       <MoreVertical className="w-5 h-5" />

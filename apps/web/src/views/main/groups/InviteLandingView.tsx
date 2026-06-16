@@ -35,6 +35,7 @@ interface InviteLandingViewProps {
 
 export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   const t = useTranslations('Groups.invite');
+  const tGroups = useTranslations('Groups');
   const router = useRouter();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [group, setGroup] = useState<StudyGroup | null>(null);
@@ -171,14 +172,21 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                     <div className="relative">
                       <Avatar className="w-12 h-12 ring-4 ring-white shadow-sm">
                         <AvatarImage src={member.user.avatar} />
-                        <AvatarFallback>{member.user.username?.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+                          {(member.user.username || "?")
+                            .split(" ")
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((part: string) => part[0]?.toUpperCase())
+                            .join("") || "?"}
+                        </AvatarFallback>
                       </Avatar>
                       <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white" />
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{member.user.username}</p>
                       <p className="text-xs text-gray-500 font-medium">
-                        {member.userId === group.leaderId ? t('card.leader') : t('card.member')}
+                        {member.userId === group.leaderId ? tGroups('card.leader') : tGroups('card.member')}
                       </p>
                     </div>
                   </div>
@@ -186,7 +194,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                     "border-none font-black text-[9px] uppercase tracking-wider px-3",
                     member.userId === group.leaderId ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
                   )}>
-                    {member.userId === group.leaderId ? t('card.leader') : t('card.member')}
+                    {member.userId === group.leaderId ? tGroups('card.leader') : tGroups('card.member')}
                   </Badge>
                 </div>
               ))}
