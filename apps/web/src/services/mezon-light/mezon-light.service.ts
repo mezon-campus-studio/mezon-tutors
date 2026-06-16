@@ -1,5 +1,6 @@
 import type { MezonDirectMessageContent } from "@mezon-tutors/shared";
 import { LightClient, LightSocket } from "mezon-light-sdk";
+import { MezonSendMessageError } from "@/lib/mezon-send-message-errors";
 import { persistMezonLightSession } from "./mezon-light.client";
 
 export type MezonLightDmContent = string | MezonDirectMessageContent;
@@ -37,29 +38,29 @@ export async function createMezonLightDMWithRetry(
   userId: string,
   maxAttempts = CREATE_DM_MAX_ATTEMPTS,
 ) {
-  let lastError: unknown;
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const dmChannel = await createMezonLightDM(client, userId);
       if (dmChannel?.channel_id) {
         return dmChannel;
       }
-      lastError = new Error("DM channel response missing channel_id");
+      console.error("[createMezonLightDMWithRetry] DM response missing channel_id", dmChannel);
     } catch (error) {
-      lastError = error;
+      console.error("[createMezonLightDMWithRetry] create DM failed", error);
     }
 
     if (attempt < maxAttempts) {
-      await refreshMezonLightSession(client);
+      try {
+        await refreshMezonLightSession(client);
+      } catch (error) {
+        console.error("[createMezonLightDMWithRetry] refresh session failed", error);
+      }
       releaseMezonLightSocket();
       await wait(CREATE_DM_RETRY_DELAY_MS * attempt);
     }
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Could not create DM channel.");
+  throw new MezonSendMessageError("CREATE_DM_CHANNEL_FAILED");
 }
 
 export async function createMezonLightGroupDM(client: LightClient, userIds: string[]) {
@@ -113,10 +114,21 @@ export async function sendMezonLightDMWithRefreshFallback(
 ) {
   try {
     await sendMezonLightDM(client, channelId, content);
-  } catch {
-    await refreshMezonLightSession(client);
+  } catch (error) {
+    console.error("[sendMezonLightDMWithRefreshFallback] first send failed, retrying", error);
+    try {
+      await refreshMezonLightSession(client);
+    } catch (refreshError) {
+      console.error("[sendMezonLightDMWithRefreshFallback] refresh session failed", refreshError);
+      throw new MezonSendMessageError("REFRESH_SESSION_FAILED");
+    }
     releaseMezonLightSocket();
-    await sendMezonLightDM(client, channelId, content);
+    try {
+      await sendMezonLightDM(client, channelId, content);
+    } catch (retryError) {
+      console.error("[sendMezonLightDMWithRefreshFallback] retry send failed", retryError);
+      throw new MezonSendMessageError("SEND_MESSAGE_FAILED");
+    }
   }
 }
 

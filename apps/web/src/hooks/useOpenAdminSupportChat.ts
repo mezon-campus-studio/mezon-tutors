@@ -6,6 +6,7 @@ import { useSetAtom, useAtomValue } from "jotai";
 import { useTranslations } from "next-intl";
 import { toast } from "@/components/ui";
 import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
+import { resolveMezonSendMessageError } from "@/lib/mezon-send-message-errors";
 import { useMezonLight } from "@/providers";
 import { userAtom } from "@/store/auth.atom";
 import {
@@ -20,6 +21,7 @@ import type { DmChannelRecord } from "@/services/dm-channel/dm-channel.api";
 
 export function useOpenAdminSupportChat() {
   const t = useTranslations("GlobalChat.supportChat");
+  const tSendErrors = useTranslations("GlobalChat.sendErrors");
   const currentUser = useAtomValue(userAtom);
   const { lightClient, setLightClient } = useMezonLight();
   const queryClient = useQueryClient();
@@ -74,9 +76,7 @@ export function useOpenAdminSupportChat() {
       setChatOpen(true);
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : t("failed"),
-      );
+      toast.error(resolveMezonSendMessageError(error, tSendErrors));
     } finally {
       setIsOpening(false);
     }
@@ -89,6 +89,7 @@ export function useOpenAdminSupportChat() {
     setLightClient,
     setSelectedChannelId,
     t,
+    tSendErrors,
   ]);
 
   return { openAdminSupportChat, isOpening };
