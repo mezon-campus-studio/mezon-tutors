@@ -2,10 +2,10 @@
   "Home": {
     "Hero": {
       "badge": "Học gia sư trực tuyến trên Mezonly",
-      "title": "Học đúng điều bạn cần",
-      "titleHighlightLead": "lúc nào cũng được,",
-      "titleHighlightTail": "theo cách của bạn",
-      "description": "Mezonly kết nối học viên với gia sư đã được kiểm duyệt — từ ngoại ngữ, môn học đến nhiều kỹ năng khác. Đặt lịch 1-1, chat và vào phòng học trực tiếp trên Mezon, học vào thời điểm phù hợp với bạn trong ngày.",
+      "title": "Tìm gia sư 1-1",
+      "titleHighlightLead": "đúng mục tiêu học,",
+      "titleHighlightTail": "đúng lịch của bạn",
+      "description": "Tự lọc theo môn học, lịch rảnh, ngân sách và đánh giá thật. Xem hồ sơ gia sư đã xác minh, chọn người phù hợp rồi đặt buổi học thử trực tiếp trên Mezon.",
       "startNow": "Tìm gia sư ngay",
       "match": "Phù hợp",
       "profile": "Xem hồ sơ",
@@ -14,6 +14,59 @@
         "label": "Tôi muốn học",
         "placeholder": "Toán, tiếng Anh, lập trình, IELTS...",
         "submit": "Tìm gia sư"
+      },
+      "subjects": {
+        "ielts": "IELTS Speaking",
+        "math": "Toán phổ thông",
+        "coding": "Lập trình",
+        "business": "Business English"
+      },
+      "proof": {
+        "verified": {
+          "value": "100%",
+          "label": "Gia sư xác minh"
+        },
+        "rating": {
+          "label": "Đánh giá trung bình"
+        },
+        "response": {
+          "value": "< 5 phút",
+          "label": "Phản hồi nhanh"
+        }
+      },
+      "searchPanel": {
+        "title": "Tự tìm gia sư phù hợp",
+        "kicker": "Tìm kiếm chủ động",
+        "query": "IELTS Speaking",
+        "mediaLabel": "Học trực tuyến",
+        "mediaTitle": "Chọn lịch rồi vào lớp trên Mezon",
+        "filters": {
+          "subject": {
+            "label": "Môn học",
+            "value": "IELTS"
+          },
+          "time": {
+            "label": "Thời gian",
+            "value": "Tối nay"
+          },
+          "budget": {
+            "label": "Ngân sách",
+            "value": "Theo buổi"
+          }
+        },
+        "resultTitle": "Danh sách gia sư đã xác minh",
+        "resultDescription": "So sánh hồ sơ, lịch trống, giá buổi học và đánh giá trước khi đặt.",
+        "viewTutors": "Xem gia sư",
+        "summary": {
+          "verified": "Hồ sơ xác minh",
+          "schedule": "Lịch học rõ ràng",
+          "reviews": "Đánh giá thật"
+        },
+        "steps": {
+          "filter": "Lọc theo nhu cầu",
+          "compare": "So sánh hồ sơ",
+          "book": "Đặt lịch học thử"
+        }
       },
       "trust": "Được tin dùng bởi học viên và gia sư trên khắp Việt Nam",
       "stats": {
@@ -60,7 +113,7 @@
     },
     "Stats": {
       "title": "Xây dựng cho người không có thời gian để lãng phí",
-      "description": "Nền tảng ghép gia sư cho lịch thật của bạn — học khi nào thuận tiện.",
+      "description": "Nền tảng tìm gia sư cho lịch thật của bạn — học khi nào thuận tiện.",
       "items": {
         "tutors": {
           "value": "1,200+",
@@ -188,7 +241,7 @@
         },
         "personalized": {
           "title": "Lộ trình cá nhân hóa",
-          "description": "Cho chúng tôi biết mục tiêu — thi cử, ngoại ngữ, STEM hay kỹ năng công việc — để ghép gia sư chuyên đúng mảng đó."
+          "description": "Lọc theo mục tiêu — thi cử, ngoại ngữ, STEM hay kỹ năng công việc — rồi tự chọn gia sư chuyên đúng mảng đó."
         },
         "moneyBack": {
           "title": "Hoàn tiền buổi thử",
@@ -199,7 +252,7 @@
     "MezonShowcase": {
       "badge": "Powered by Mezon",
       "title": "Lớp học của bạn ở ngay trên Mezon",
-      "description": "Mezonly lo phần matching, đặt lịch và thanh toán. Mezon lo phần học thật sự — chat, voice và phòng học video trực tiếp với gia sư, tất cả trong một nơi.",
+      "description": "Mezonly lo phần tìm kiếm, đặt lịch và thanh toán. Mezon lo phần học thật sự — chat, voice và phòng học video trực tiếp với gia sư, tất cả trong một nơi.",
       "features": {
         "chat": {
           "title": "Chat mọi lúc",

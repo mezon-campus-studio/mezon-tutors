@@ -2,10 +2,10 @@
   "Home": {
     "Hero": {
       "badge": "Online tutoring on Mezonly",
-      "title": "Learn what matters to you",
-      "titleHighlightLead": "whenever you're ready,",
-      "titleHighlightTail": "on your terms",
-      "description": "Mezonly connects learners with vetted tutors across languages, school subjects, and more. Book 1-on-1 lessons, chat, and join live rooms directly on Mezon — study whenever it fits your day.",
+      "title": "Find a 1-on-1 tutor",
+      "titleHighlightLead": "for your exact goal,",
+      "titleHighlightTail": "on your schedule",
+      "description": "Filter by subject, availability, budget, and real reviews. Compare verified tutor profiles, choose the right person, then book a trial lesson directly on Mezon.",
       "startNow": "Find your tutor",
       "match": "Match",
       "profile": "View profile",
@@ -14,6 +14,59 @@
         "label": "I want to learn",
         "placeholder": "Math, English, coding, IELTS...",
         "submit": "Search tutors"
+      },
+      "subjects": {
+        "ielts": "IELTS Speaking",
+        "math": "School Math",
+        "coding": "Coding",
+        "business": "Business English"
+      },
+      "proof": {
+        "verified": {
+          "value": "100%",
+          "label": "Verified tutors"
+        },
+        "rating": {
+          "label": "Average rating"
+        },
+        "response": {
+          "value": "< 5 min",
+          "label": "Fast response"
+        }
+      },
+      "searchPanel": {
+        "title": "Search for the right tutor",
+        "kicker": "Self-guided search",
+        "query": "IELTS Speaking",
+        "mediaLabel": "Online learning",
+        "mediaTitle": "Pick a schedule and join on Mezon",
+        "filters": {
+          "subject": {
+            "label": "Subject",
+            "value": "IELTS"
+          },
+          "time": {
+            "label": "Time",
+            "value": "Tonight"
+          },
+          "budget": {
+            "label": "Budget",
+            "value": "Per lesson"
+          }
+        },
+        "resultTitle": "Verified tutor directory",
+        "resultDescription": "Compare profiles, availability, lesson prices, and reviews before booking.",
+        "viewTutors": "View tutors",
+        "summary": {
+          "verified": "Verified profiles",
+          "schedule": "Clear schedules",
+          "reviews": "Real reviews"
+        },
+        "steps": {
+          "filter": "Filter by need",
+          "compare": "Compare profiles",
+          "book": "Book a trial"
+        }
       },
       "trust": "Trusted by learners and tutors across Vietnam",
       "stats": {
@@ -60,7 +113,7 @@
     },
     "Stats": {
       "title": "Built for learners who don't waste time",
-      "description": "A tutor matching platform built for real schedules — learn when it works for you.",
+      "description": "A tutor search platform built for real schedules — learn when it works for you.",
       "items": {
         "tutors": {
           "value": "1,200+",
@@ -188,7 +241,7 @@
         },
         "personalized": {
           "title": "Personalized roadmap",
-          "description": "Tell us your goal — exams, languages, STEM, or skills for work — and we match you with tutors who specialize in it."
+          "description": "Filter by your goal — exams, languages, STEM, or work skills — then choose a tutor who specializes in it."
         },
         "moneyBack": {
           "title": "Trial money-back",
@@ -199,7 +252,7 @@
     "MezonShowcase": {
       "badge": "Powered by Mezon",
       "title": "Your classroom lives on Mezon",
-      "description": "Mezonly handles matching, booking and payments. Mezon handles real conversation — chat, voice and live video rooms with your tutor, all in one place.",
+      "description": "Mezonly handles search, booking and payments. Mezon handles real conversation — chat, voice and live video rooms with your tutor, all in one place.",
       "features": {
         "chat": {
           "title": "Chat anytime",
