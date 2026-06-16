@@ -314,6 +314,8 @@
             "statusCancelled": "Đã hủy",
             "reschedule": "Yêu cầu đổi lịch",
             "cancel": "Hủy buổi học",
+            "joinLesson": "Tham gia ngay",
+            "joinNowFailed": "Không thể mở cuộc trò chuyện buổi học. Vui lòng thử lại.",
             "rescheduleNotice": "Buổi học sắp diễn ra trong vòng {hours} tiếng và không thể đổi lịch nữa. Bạn vẫn có thể hủy nếu cần.",
             "reschedulePendingNotice": "Yêu cầu đổi lịch đã được gửi và đang chờ xử lý.",
             "cancellationPendingNotice": "Buổi học này đã được hủy."

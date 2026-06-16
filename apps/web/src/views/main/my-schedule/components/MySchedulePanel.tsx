@@ -1,6 +1,11 @@
 'use client';
 
-import { ROUTES, isTrialLessonRescheduleEligible } from '@mezon-tutors/shared';
+import {
+  getLessonEndAt,
+  MEZON_DIRECT_MESSAGE_URL,
+  ROUTES,
+  isTrialLessonRescheduleEligible,
+} from '@mezon-tutors/shared';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -8,6 +13,7 @@ import {
   CalendarClock,
   CalendarPlus,
   CalendarX,
+  ExternalLink,
   History,
   Info,
   Sparkles,
@@ -16,12 +22,22 @@ import {
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useAtomValue } from 'jotai';
 import { ActionMenu } from '@/components/common/ActionMenu';
 import { formatLessonDateLabel } from '@/components/calendar/utils/format-locale';
-import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button, toast } from '@/components/ui';
+import { ensureMezonDmChannel } from '@/lib/ensure-mezon-dm-channel';
 import { cn } from '@/lib/utils';
 import { mapTutorBookingStatusToUi } from '@/lib/trial-booking-status';
-import type { TrialLessonBookingRequestItem } from '@/services';
+import { useMezonLight } from '@/providers';
+import {
+  useGetDmChannel,
+  useCreateDmChannelMutation,
+  useGetSupportBotContact,
+  type TrialLessonBookingRequestItem,
+} from '@/services';
+import { userAtom } from '@/store/auth.atom';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -125,6 +141,21 @@ function isTrialLessonItem(item: TrialLessonBookingRequestItem): boolean {
   return item.scheduleKind !== 'subscription';
 }
 
+function isScheduleLessonInProgress(
+  item: TrialLessonBookingRequestItem,
+  now: Date = new Date(),
+): boolean {
+  if (!item.startAt || mapTutorBookingStatusToUi(item.status) === 'cancelled') {
+    return false;
+  }
+
+  const start = dayjs(item.startAt).utc();
+  const end = dayjs(getLessonEndAt(item.startAt, item.durationMinutes)).utc();
+  const nowUtc = dayjs(now).utc();
+
+  return !nowUtc.isBefore(start) && nowUtc.isBefore(end);
+}
+
 type UpcomingScheduleLessonItemProps = {
   item: TrialLessonBookingRequestItem;
   timezoneName: string;
@@ -149,6 +180,15 @@ function UpcomingScheduleLessonItem({
   const t = useTranslations('Dashboard.mySchedule');
   const tPanels = useTranslations('Dashboard.mySchedule.panels.lessons');
   const locale = useLocale();
+  const currentUser = useAtomValue(userAtom);
+  const [now, setNow] = useState(() => new Date());
+  const [isJoining, setIsJoining] = useState(false);
+  const senderId = currentUser?.id ?? '';
+  const senderMezonUserId = currentUser?.mezonUserId ?? '';
+  const { lightClient, setLightClient } = useMezonLight();
+  const { data: botContact } = useGetSupportBotContact();
+  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, botContact?.id ?? '', false);
+  const createDmChannelMutation = useCreateDmChannelMutation();
   const nowInTimezone = dayjs().tz(timezoneName);
 
   const isSubscription = item.scheduleKind === 'subscription';
@@ -156,9 +196,15 @@ function UpcomingScheduleLessonItem({
   const end = start.add(item.durationMinutes, 'minute');
   const uiStatus = mapTutorBookingStatusToUi(item.status);
   const isCancelled = uiStatus === 'cancelled';
+  const isInProgress = isScheduleLessonInProgress(item, now);
   const lessonTypeLabel = isSubscription ? t('lessonTypePlan') : t('lessonTypeTrial');
   const timeLabel = `${start.format('HH:mm')} - ${end.format('HH:mm')}`;
   const canManageLesson = !isCancelled && onRescheduleLesson != null && onCancelLesson != null;
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const withinChangePeriod =
     lessonChangePeriodHours != null &&
@@ -173,7 +219,10 @@ function UpcomingScheduleLessonItem({
     canManageLesson && !withinChangePeriod && !item.rescheduleRequestSubmitted;
 
   const showRescheduleNotice =
-    canManageLesson && !item.rescheduleRequestSubmitted && withinChangePeriod;
+    canManageLesson &&
+    !isInProgress &&
+    !item.rescheduleRequestSubmitted &&
+    withinChangePeriod;
 
   const actionItems = [
     {
@@ -189,6 +238,47 @@ function UpcomingScheduleLessonItem({
       variant: 'destructive' as const,
     },
   ];
+
+  const handleJoinNow = async () => {
+    if (!botContact) {
+      toast.error("Bot contact is not loaded yet.");
+      return;
+    }
+    try {
+      setIsJoining(true);
+      const existingChannelId = (await refetchDmChannel()).data?.channelId;
+      const channelId = await ensureMezonDmChannel({
+        lightClient,
+        setLightClient,
+        senderId,
+        senderMezonUserId,
+        recipientId: botContact.id,
+        recipientMezonUserId: botContact.mezonUserId,
+        existingChannelId,
+        createDmChannelMutation,
+      });
+      window.open(MEZON_DIRECT_MESSAGE_URL(channelId), '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : tPanels('upcoming.joinNowFailed'),
+      );
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const joinNowButton = (
+    <Button
+      variant="gradient"
+      className="h-11 w-full rounded-full px-4 text-xs font-semibold text-white sm:h-9 sm:w-auto sm:min-w-28"
+      onClick={() => void handleJoinNow()}
+      disabled={isJoining}
+    >
+      <ExternalLink className="mr-1 size-3.5" />
+      {tPanels('upcoming.joinLesson')}
+    </Button>
+  );
 
   return (
     <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
@@ -213,18 +303,21 @@ function UpcomingScheduleLessonItem({
             <LessonStatusBadge label={cancelledLabel} tone="neutral" />
           ) : canManageLesson ? (
             <>
-              <ActionMenu
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
-                  >
-                    {rescheduleOrCancelLabel}
-                  </Button>
-                }
-                items={actionItems}
-              />
-              {isTrialLessonItem(item) ? (
+              {isInProgress ? joinNowButton : null}
+              {!isInProgress ? (
+                <ActionMenu
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="h-11 w-full rounded-full border-slate-200 px-4 text-xs font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:h-9 sm:w-auto"
+                    >
+                      {rescheduleOrCancelLabel}
+                    </Button>
+                  }
+                  items={actionItems}
+                />
+              ) : null}
+              {!isInProgress && isTrialLessonItem(item) ? (
                 <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING_DETAIL(item.id)} className="w-full sm:w-auto">
                   <Button
                     variant="outline"

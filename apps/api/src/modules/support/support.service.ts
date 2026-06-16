@@ -53,6 +53,34 @@ export class SupportService {
     return contact;
   }
 
+  async getBotContact(): Promise<SupportAdminContact> {
+    const botMezonId = this.appConfig.mezonBotConfig.botId;
+    if (!botMezonId) {
+      throw new NotFoundException('Mezon Bot ID is not configured.');
+    }
+
+    const botUser = await this.prisma.user.upsert({
+      where: { mezonUserId: botMezonId },
+      update: {
+        username: 'mezonly_bot',
+      },
+      create: {
+        mezonUserId: botMezonId,
+        username: 'mezonly_bot',
+        avatar: 'https://cdn.mezon.vn/1840668623337689088/2047567692088479744.png',
+        role: Role.ADMIN,
+      },
+      select: supportAdminSelect,
+    });
+
+    const contact = this.toContact(botUser);
+    if (!contact) {
+      throw new NotFoundException('Could not resolve bot contact.');
+    }
+
+    return contact;
+  }
+
   private toContact(user: {
     id: string;
     username: string;
