@@ -203,8 +203,10 @@ export class TutorApplicationService {
         where: { id: profile.userId },
         data: { role: Role.TUTOR },
       }),
-      this.prisma.tutorSetupChecklist.create({
-        data: { tutorId: profile.id },
+      this.prisma.tutorSetupChecklist.upsert({
+        where: { tutorId: profile.id },
+        update: {},
+        create: { tutorId: profile.id },
       }),
     ]);
 
