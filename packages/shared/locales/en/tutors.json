@@ -345,6 +345,7 @@
     "perLesson": "/ 60-min lesson",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
+    "subscribeGroup": "Subscribe as Group",
     "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "sendMessage": "Send message",

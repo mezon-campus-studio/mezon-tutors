@@ -78,6 +78,8 @@ export type LessonItem = {
   rescheduleRequestSubmitted?: boolean;
   canComplain?: boolean;
   complaintStatus?: string;
+  groupName?: string;
+  isPayer?: boolean;
 };
 
 export type TutorItem = {
@@ -91,6 +93,7 @@ export type TutorItem = {
   completedLessons: number;
   nextLessonLabel: string;
   nextLessonAt?: string | null;
+  nextLessonGroupName?: string;
   ratingAverage: number;
   reviewCount: number;
 };
@@ -239,6 +242,8 @@ const mapLesson = (
     rescheduleRequestSubmitted: item.reschedule_request_submitted ?? false,
     canComplain,
     complaintStatus,
+    groupName: item.group_name,
+    isPayer: item.is_payer,
   };
 };
 
@@ -255,6 +260,7 @@ const mapTutor = (item: MyLessonTutorApiItem, timezoneName: string): TutorItem =
     ? dayjs.utc(item.next_lesson_at).tz(timezoneName).format("ddd, h:mm A")
     : "",
   nextLessonAt: item.next_lesson_at ?? null,
+  nextLessonGroupName: item.next_lesson_group_name,
   ratingAverage: item.rating_average,
   reviewCount: item.review_count,
 });

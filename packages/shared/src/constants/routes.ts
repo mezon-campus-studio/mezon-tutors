@@ -53,6 +53,7 @@ export const ROUTES = {
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
     MY_EVENTS: '/dashboard/events',
+    GROUPS: '/dashboard/groups',
     SETTINGS: '/dashboard/settings',
   },
   SUPPORT: {

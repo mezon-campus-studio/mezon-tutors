@@ -33,6 +33,7 @@ import { EventModule } from './modules/event/event.module';
 import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { CommonModule } from './common/common.module';
+import { StudyGroupModule } from './modules/study-group/study-group.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { CommonModule } from './common/common.module';
     EventModule,
     GoogleCalendarModule,
     VocabularyModule,
+    StudyGroupModule,
   ],
   controllers: [HealthController],
   providers: [

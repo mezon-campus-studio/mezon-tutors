@@ -134,6 +134,7 @@ function subscriptionOccurrenceToRequestItem(
     subscriptionSlotIndex: o.slotIndex,
     rescheduleRequestSubmitted: o.rescheduleRequestSubmitted ?? false,
     cancellationRequestSubmitted: o.cancellationRequestSubmitted ?? false,
+    groupName: o.groupName,
   };
 }
 

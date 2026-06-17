@@ -26,6 +26,7 @@ type TutorCardProps = {
 
 function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
   const t = useTranslations("MyLessons");
+  const tGroups = useTranslations("Groups");
   const locale = useLocale();
   const userTimezone = useUserTimezone();
   const currentUser = useAtomValue(userAtom);
@@ -103,6 +104,11 @@ function TutorCard({ tutor, onOpenTutor }: TutorCardProps) {
                 <p className="truncate text-[10px] font-extrabold text-violet-900 sm:overflow-visible sm:whitespace-normal sm:text-xs">
                   {displayNextLesson}
                 </p>
+                {tutor.nextLessonGroupName && (
+                  <p className="mt-0.5 text-[10px] font-bold text-indigo-600">
+                    {tGroups('groupStudyPrefix')}: {tutor.nextLessonGroupName}
+                  </p>
+                )}
               </div>
             </div>
           </div>

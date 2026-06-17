@@ -50,6 +50,7 @@ export interface CreateSubscriptionEnrollmentDto {
   slots: CreateSubscriptionEnrollmentSlotDto[]
   useWalletBalance?: boolean
   paymentProvider?: EPaymentProvider
+  groupId?: string
 }
 
 export interface SubscriptionEnrollmentDto {
@@ -89,6 +90,7 @@ export interface TutorSubscriptionWeekOccurrenceDto {
   durationMinutes: number
   rescheduleRequestSubmitted?: boolean
   cancellationRequestSubmitted?: boolean
+  groupName?: string
 }
 
 export type TutorSubscriptionSlotRescheduleRequestResult = {

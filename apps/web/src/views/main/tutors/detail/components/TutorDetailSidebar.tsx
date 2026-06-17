@@ -130,16 +130,28 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
             ) : null}
 
             {showSubscribe ? (
-              <Link
-                href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
-                )}
-              >
-                <CalendarRange className="mr-1.5 size-4" />
-                {t("subscribeMonthly")}
-              </Link>
+              <>
+                <Link
+                  href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
+                  )}
+                >
+                  <CalendarRange className="mr-1.5 size-4" />
+                  {t("subscribeMonthly")}
+                </Link>
+                <Link
+                  href={`${ROUTES.DASHBOARD.GROUPS}?tutorId=${tutor.id}`}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
+                  )}
+                >
+                  <Users className="mr-1.5 size-4" />
+                  {t("subscribeGroup")}
+                </Link>
+              </>
             ) : null}
 
             <Button

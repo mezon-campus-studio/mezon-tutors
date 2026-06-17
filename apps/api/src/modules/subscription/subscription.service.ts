@@ -613,8 +613,24 @@ export class SubscriptionService {
     }
 
     const selectedCurrency = dto.currency;
-    const grossAmount = this.subscriptionMonthlyGross(planPrice, selectedCurrency);
     const settings = await this.appSettingsService.getSettings();
+
+    // Check group membership for multiplier
+    let memberCount = 1;
+    if (dto.groupId) {
+      const group = await this.prisma.group.findUnique({
+        where: { id: dto.groupId },
+        include: { members: true },
+      });
+      if (!group) {
+        throw new NotFoundException('Group not found');
+      }
+      memberCount = group.members.length;
+    }
+
+    const baseGrossAmount = this.subscriptionMonthlyGross(planPrice, selectedCurrency);
+    const grossAmount = baseGrossAmount * BigInt(memberCount);
+
     const { platformFee, tutorAmount } = calculatePlatformFeeAmounts(
       grossAmount,
       settings.platformFeePercentage,
@@ -662,6 +678,7 @@ export class SubscriptionService {
         tutorAmount,
         deductAmount,
         currency: selectedCurrency,
+        groupId: dto.groupId,
       });
     }
 
@@ -678,6 +695,7 @@ export class SubscriptionService {
         tutorAmount,
         deductAmount,
         paymentStatus: EPaymentStatus.PENDING,
+        groupId: dto.groupId,
       },
       select: { id: true },
     });
@@ -732,6 +750,7 @@ export class SubscriptionService {
     tutorAmount: bigint;
     deductAmount: bigint;
     currency: PrismaCurrency;
+    groupId?: string;
   }): Promise<SubscriptionEnrollmentDto> {
     const now = new Date();
 
@@ -750,6 +769,7 @@ export class SubscriptionService {
           deductAmount: params.deductAmount,
           paymentStatus: EPaymentStatus.SUCCEEDED,
           paidAt: now,
+          groupId: params.groupId,
         },
       });
 
@@ -810,6 +830,7 @@ export class SubscriptionService {
             mezonUserId: true,
           },
         },
+        group: true,
       },
     });
     const viewerTimezone = timezoneName?.trim() || DEFAULT_TIMEZONE;
@@ -846,6 +867,7 @@ export class SubscriptionService {
           tutorProfileId: tutor.id,
           startAt: t.startAt.toISOString(),
           durationMinutes: slot.durationMinutes,
+          groupName: e.group?.name,
         });
       }
     }
@@ -973,6 +995,7 @@ export class SubscriptionService {
             mezonUserId: true,
           },
         },
+        group: true,
       },
     });
     const enrollmentById = new Map(enrollments.map((e) => [e.id, e]));
@@ -1000,6 +1023,7 @@ export class SubscriptionService {
         tutorProfileId: tutor.id,
         startAt: startAt.toISOString(),
         durationMinutes: row.originalDurationMinutes ?? SUBSCRIPTION_SLOT_DURATION_MINUTES,
+        groupName: enrollment.group?.name,
       });
     }
 

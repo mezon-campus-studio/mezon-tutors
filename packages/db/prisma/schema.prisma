@@ -176,6 +176,8 @@ model User {
   reviewedEvents                   Event[]                  @relation("EventReviewedBy")
   googleCalendarConnection         GoogleCalendarConnection?
   vocabularyWords                  VocabularyWord[]
+  groupsLed                        Group[]                 @relation("GroupLeader")
+  groupMemberships                 GroupMember[]
 
   @@map("users")
 }
@@ -353,6 +355,8 @@ model SubscriptionEnrollment {
   walletTransactions  Transaction[]
   cancelRescheduleReasons CancelRescheduleReason[]
   lessonComplaints    LessonComplaint[]
+  groupId             String?           @map("group_id") @db.Uuid
+  group               Group?            @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@index([studentId, tutorId])
   @@index([paymentRef])
@@ -827,4 +831,31 @@ model EventStat {
 
   @@index([eventId])
   @@map("event_stats")
+}
+
+model Group {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  inviteId  String   @unique @map("invite_id")
+  leaderId  String   @map("leader_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  leader      User                     @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  enrollments SubscriptionEnrollment[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId  String   @map("group_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@map("group_members")
 }

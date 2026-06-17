@@ -22,6 +22,7 @@ export type DashboardMenuIconKey =
   | 'settings';
 export type DashboardMenuLabelKey =
   | 'myLessons'
+  | 'myGroups'
   | 'pendingBookings'
   | 'complaints'
   | 'lessonComplaints'
@@ -68,6 +69,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     iconKey: 'document',
     href: ROUTES.DASHBOARD.MY_LESSONS,
     roles: ['STUDENT', 'ADMIN'],
+  },
+  {
+    key: 'my-groups',
+    type: 'link',
+    labelKey: 'myGroups',
+    iconKey: 'students',
+    href: ROUTES.DASHBOARD.GROUPS,
+    roles: ['STUDENT'],
   },
   {
     key: 'pending-bookings',
@@ -227,6 +236,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-lessons') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_LESSONS);
+  }
+  if (item.key === 'my-groups') {
+    return pathname.startsWith(ROUTES.DASHBOARD.GROUPS);
   }
   if (item.key === 'pending-bookings') {
     return pathname.startsWith(ROUTES.DASHBOARD.PENDING_BOOKINGS);

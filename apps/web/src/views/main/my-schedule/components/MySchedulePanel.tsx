@@ -180,6 +180,7 @@ function UpcomingScheduleLessonItem({
   const t = useTranslations('Dashboard.mySchedule');
   const tPanels = useTranslations('Dashboard.mySchedule.panels.lessons');
   const locale = useLocale();
+  const tGroups = useTranslations('Groups');
   const currentUser = useAtomValue(userAtom);
   const [now, setNow] = useState(() => new Date());
   const [isJoining, setIsJoining] = useState(false);
@@ -286,10 +287,16 @@ function UpcomingScheduleLessonItem({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <LessonPersonBadge name={item.studentName} avatar={item.studentAvatarUrl} />
           <div className="min-w-0 flex flex-col gap-0.5">
+            {item.groupName && (
+              <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">
+                {tGroups('groupStudyPrefix')}: {item.groupName}
+              </p>
+            )}
             <p className="text-xs font-semibold text-violet-600">
               {formatLessonDateLabel(start.format('ddd, MMM DD'), locale)}
             </p>
             <p className="text-lg font-extrabold leading-none text-slate-900">{timeLabel}</p>
+            
             <p className="mt-1 text-xs text-slate-600">
               <span className="font-semibold text-violet-700">{lessonTypeLabel}</span>
               <span className="mx-1.5 text-slate-300">·</span>
@@ -365,6 +372,7 @@ function PastScheduleLessonItem({
   viewDetailLabel,
 }: PastScheduleLessonItemProps) {
   const t = useTranslations('Dashboard.mySchedule');
+  const tGroups = useTranslations('Groups');
   const locale = useLocale();
 
   const isSubscription = item.scheduleKind === 'subscription';
@@ -380,10 +388,16 @@ function PastScheduleLessonItem({
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <LessonPersonBadge name={item.studentName} avatar={item.studentAvatarUrl} />
         <div className="min-w-0 flex flex-col gap-0.5">
+          {item.groupName && (
+            <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">
+              {tGroups('groupStudyPrefix')}: {item.groupName}
+            </p>
+          )}
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(start.format('ddd, MMM DD'), locale)}
           </p>
           <p className="text-lg font-extrabold leading-none text-slate-900">{timeLabel}</p>
+          
           <p className="mt-1 text-xs text-slate-600">
             <span className="font-semibold text-violet-700">{lessonTypeLabel}</span>
             <span className="mx-1.5 text-slate-300">·</span>
