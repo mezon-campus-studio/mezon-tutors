@@ -12,6 +12,7 @@
       "students": "Học viên",
       "earnings": "Thu nhập",
       "myLessons": "Buổi học của tôi",
+      "savedTutors": "Gia sư đã lưu",
       "myGroups": "Nhóm của tôi",
       "pendingBookings": "Chờ thanh toán",
       "complaints": "Khiếu nại",
@@ -492,6 +493,23 @@
       "planWith": "Gói tháng với {tutor}",
       "lessonsPerWeek": "{n} buổi / tuần",
       "duration": "{minutes} phút"
+    },
+    "savedTutors": {
+      "eyebrow": "Không gian học viên",
+      "title": "Gia sư đã lưu",
+      "subtitle": "Lưu lại những gia sư bạn muốn so sánh, nhắn tin hoặc đặt lịch sau.",
+      "browseTutors": "Danh sách gia sư",
+      "loadError": "Không tải được danh sách gia sư đã lưu.",
+      "listEyebrow": "Danh sách chọn lọc",
+      "listTitle": "{count} gia sư đã lưu",
+      "listHint": "Mở hồ sơ để so sánh lịch dạy, đánh giá và gói học.",
+      "emptyTitle": "Chưa lưu gia sư nào",
+      "emptyDescription": "Lưu gia sư từ trang tìm kiếm hoặc hồ sơ gia sư, danh sách sẽ hiện ở đây.",
+      "metrics": {
+        "total": "Đã lưu",
+        "topRated": "Đánh giá cao",
+        "professional": "Chuyên nghiệp"
+      }
     },
     "events": {
       "eyebrow": "Cộng đồng",

@@ -26,6 +26,10 @@
     "title": "My lessons | Mezonly",
     "description": "Track upcoming and past lessons on Mezonly."
   },
+  "savedTutors": {
+    "title": "Saved tutors | Mezonly",
+    "description": "Review tutors you saved and quickly return to their profiles on Mezonly."
+  },
   "practice": {
     "title": "Vocabulary practice | Mezonly",
     "description": "Practice and manage your English vocabulary on Mezonly."

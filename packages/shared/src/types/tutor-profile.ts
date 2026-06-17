@@ -264,6 +264,11 @@ export interface VerifiedTutorProfileDto {
   ratingAverage: number
   timezone: string
   languages: TutorLanguageDto[]
+  isSaved?: boolean
+}
+
+export interface SavedTutorDto extends VerifiedTutorProfileDto {
+  savedAt: string
 }
 
 export interface TutorReviewDto {

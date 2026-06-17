@@ -23,6 +23,11 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "SaveTutor": {
+    "save": "Save",
+    "saved": "Saved",
+    "loginHint": "Log in as a student to save tutors"
+  },
   "TutorCard": {
     "professional": "PROFESSIONAL",
     "teaches": "Teaches {subject}",
