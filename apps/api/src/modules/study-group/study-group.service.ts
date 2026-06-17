@@ -73,6 +73,37 @@ export class StudyGroupService {
     });
   }
 
+  async updateGroupChatChannel(userId: string, groupId: string, channelId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        members: {
+          where: { userId },
+          select: { userId: true },
+        },
+      },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+    if (group.members.length === 0) throw new ForbiddenException('Only group members can create group chat');
+
+    if (group.groupChatChannelId) {
+      return this.findOne(groupId);
+    }
+
+    return this.prisma.group.update({
+      where: { id: groupId },
+      data: { groupChatChannelId: channelId },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+  }
+
   async findOne(groupId: string) {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },

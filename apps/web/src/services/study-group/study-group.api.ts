@@ -7,6 +7,7 @@ export interface GroupMember {
     username: string;
     avatar: string;
     email?: string;
+    mezonUserId?: string | null;
   };
 }
 
@@ -15,6 +16,7 @@ export interface StudyGroup {
   name: string;
   inviteId: string;
   leaderId: string;
+  groupChatChannelId?: string | null;
   createdAt: string;
   members: GroupMember[];
 }
@@ -27,11 +29,20 @@ export const studyGroupApi = {
   create: (name: string): Promise<StudyGroup> => {
     return apiClient.post('/study-groups', { name });
   },
-  
+
   updateName: (id: string, name: string): Promise<StudyGroup> => {
     return apiClient.patch(`/study-groups/${id}`, { name });
   },
-  
+
+  updateGroupChatChannel: (
+    id: string,
+    channelId: string,
+  ): Promise<StudyGroup> => {
+    return apiClient.patch(`/study-groups/${id}/group-chat-channel`, {
+      channelId,
+    });
+  },
+
   getDetail: (id: string): Promise<StudyGroup> => {
     return apiClient.get(`/study-groups/${id}`);
   },

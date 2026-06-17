@@ -14,6 +14,7 @@
     "refreshSessionFailed": "Chat session has expired. Please log in again.",
     "missingUserInfo": "Missing user information to open a conversation.",
     "createDmChannelFailed": "Could not create chat channel. Please try again later.",
+    "createGroupDmChannelFailed": "Could not create group chat channel. Please try again later.",
     "saveDmChannelFailed": "Could not save chat channel. Please try again later.",
     "sendMessageFailed": "Could not send message. Please try again later.",
     "sendFailed": "An error occurred while sending the message. Please try again later."

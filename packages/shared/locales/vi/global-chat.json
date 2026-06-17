@@ -14,6 +14,7 @@
     "refreshSessionFailed": "Phiên chat đã hết hạn. Vui lòng đăng nhập lại.",
     "missingUserInfo": "Thiếu thông tin người dùng để mở cuộc trò chuyện.",
     "createDmChannelFailed": "Không thể tạo kênh chat. Vui lòng thử lại sau.",
+    "createGroupDmChannelFailed": "Không thể tạo kênh chat nhóm. Vui lòng thử lại sau.",
     "saveDmChannelFailed": "Không thể lưu kênh chat. Vui lòng thử lại sau.",
     "sendMessageFailed": "Không thể gửi tin nhắn. Vui lòng thử lại sau.",
     "sendFailed": "Có lỗi khi gửi tin nhắn. Vui lòng thử lại sau."

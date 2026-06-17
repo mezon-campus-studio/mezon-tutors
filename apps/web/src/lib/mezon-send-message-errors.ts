@@ -3,6 +3,7 @@ export const MEZON_SEND_MESSAGE_ERROR_CODES = {
   REFRESH_SESSION_FAILED: "REFRESH_SESSION_FAILED",
   MISSING_USER_INFO: "MISSING_USER_INFO",
   CREATE_DM_CHANNEL_FAILED: "CREATE_DM_CHANNEL_FAILED",
+  CREATE_GROUP_DM_CHANNEL_FAILED: "CREATE_GROUP_DM_CHANNEL_FAILED",
   SAVE_DM_CHANNEL_FAILED: "SAVE_DM_CHANNEL_FAILED",
   SEND_MESSAGE_FAILED: "SEND_MESSAGE_FAILED",
 } as const;
@@ -15,6 +16,7 @@ export type MezonSendMessageErrorI18nKey =
   | "refreshSessionFailed"
   | "missingUserInfo"
   | "createDmChannelFailed"
+  | "createGroupDmChannelFailed"
   | "saveDmChannelFailed"
   | "sendMessageFailed"
   | "sendFailed";
@@ -24,6 +26,7 @@ const CODE_TO_I18N_KEY: Record<MezonSendMessageErrorCode, MezonSendMessageErrorI
   REFRESH_SESSION_FAILED: "refreshSessionFailed",
   MISSING_USER_INFO: "missingUserInfo",
   CREATE_DM_CHANNEL_FAILED: "createDmChannelFailed",
+  CREATE_GROUP_DM_CHANNEL_FAILED: "createGroupDmChannelFailed",
   SAVE_DM_CHANNEL_FAILED: "saveDmChannelFailed",
   SEND_MESSAGE_FAILED: "sendMessageFailed",
 };

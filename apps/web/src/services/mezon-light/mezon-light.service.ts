@@ -63,6 +63,36 @@ export async function createMezonLightDMWithRetry(
   throw new MezonSendMessageError("CREATE_DM_CHANNEL_FAILED");
 }
 
+export async function createMezonLightGroupDMWithRetry(
+  client: LightClient,
+  userIds: string[],
+  maxAttempts = CREATE_DM_MAX_ATTEMPTS,
+) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const dmChannel = await createMezonLightGroupDM(client, userIds);
+      if (dmChannel) {
+        return dmChannel;
+      }
+      console.error("[createMezonLightGroupDMWithRetry] DM response missing channel_id", dmChannel);
+    } catch (error) {
+      console.error("[createMezonLightGroupDMWithRetry] create DM failed", error);
+    }
+
+    if (attempt < maxAttempts) {
+      try {
+        await refreshMezonLightSession(client);
+      } catch (error) {
+        console.error("[createMezonLightGroupDMWithRetry] refresh session failed", error);
+      }
+      releaseMezonLightSocket();
+      await wait(CREATE_DM_RETRY_DELAY_MS * attempt);
+    }
+  }
+
+  throw new MezonSendMessageError("CREATE_GROUP_DM_CHANNEL_FAILED");
+}
+
 export async function createMezonLightGroupDM(client: LightClient, userIds: string[]) {
   return client.createGroupDM(userIds);
 }
