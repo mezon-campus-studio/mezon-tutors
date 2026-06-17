@@ -1,9 +1,7 @@
-import { SUBSCRIPTION_GROUP_DISCOUNT_RATE } from '../constants/subscription';
-
 export interface GroupPricingInput {
   baseMonthlyPrice: number;
   memberCount: number;
-  groupDiscountRate?: number;
+  groupDiscountRate: number;
   platformFeeRate: number;
 }
 
@@ -21,12 +19,12 @@ export function calculateGroupSubscriptionPrice(input: GroupPricingInput): Group
   const {
     baseMonthlyPrice,
     memberCount,
-    groupDiscountRate = SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+    groupDiscountRate,
     platformFeeRate,
   } = input;
 
   const isGroupBooking = memberCount >= 2;
-  
+
   // Formula: gross_amount = baseMonthlyPrice * memberCount * groupDiscountRate
   const grossAmount = Math.round(
     isGroupBooking

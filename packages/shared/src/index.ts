@@ -70,7 +70,6 @@ export * from './constants/lesson-complaint';
 export * from './constants/app-settings';
 export * from './constants/contact';
 export * from './constants/tutor-withdrawal';
-export * from './constants/subscription';
 // Utils
 export * from './utils/utils';
 export * from './utils/enum';

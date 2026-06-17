@@ -50,7 +50,6 @@ import {
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   isTrialLessonPaymentHoldActive,
   trialLessonPaymentHoldExpiresAt,
-  SUBSCRIPTION_GROUP_DISCOUNT_RATE,
   calculateGroupSubscriptionPrice,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -623,7 +622,7 @@ export class SubscriptionService {
     const pricingResult = calculateGroupSubscriptionPrice({
       baseMonthlyPrice,
       memberCount,
-      groupDiscountRate: SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+      groupDiscountRate: settings.subscriptionGroupDiscountRate,
       platformFeeRate: settings.platformFeePercentage,
     });
 

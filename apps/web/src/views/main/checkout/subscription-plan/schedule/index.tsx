@@ -10,7 +10,6 @@ import {
   expandCalendarSlotToSteps,
   getWeekMondayInTimezone,
   calculateGroupSubscriptionPrice,
-  SUBSCRIPTION_GROUP_DISCOUNT_RATE,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -200,7 +199,7 @@ export default function SubscriptionPlanSchedulePage() {
     return calculateGroupSubscriptionPrice({
       baseMonthlyPrice: v,
       memberCount: canApplyGroupBooking ? groupMemberCount : 1,
-      groupDiscountRate: SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+      groupDiscountRate: appSettings.subscriptionGroupDiscountRate,
       platformFeeRate: appSettings.platformFeePercentage,
     });
   }, [

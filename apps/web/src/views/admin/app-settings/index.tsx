@@ -27,6 +27,9 @@ const limits = APP_SETTINGS_LIMITS;
 function toFormState(settings: AppSettings): AppSettingsFormValues {
   return {
     platformFeePercent: String(Math.round(settings.platformFeePercentage * 10_000) / 100),
+    subscriptionGroupDiscountPercent: String(
+      Math.round((1 - settings.subscriptionGroupDiscountRate) * 100),
+    ),
     settlementPeriodHours: String(settings.settlementPeriodHours),
     disputePeriodHours: String(settings.disputePeriodHours),
     lessonChangePeriodHours: String(settings.lessonChangePeriodHours),
@@ -175,6 +178,13 @@ export default function AdminAppSettingsView() {
           min: limits.minWithdrawalAmountPhp.min,
           max: limits.minWithdrawalAmountPhp.max,
         }),
+        subscriptionGroupDiscountPercentRange: tValidation(
+          "subscriptionGroupDiscountPercentRange",
+          {
+            min: limits.subscriptionGroupDiscountPercent.min,
+            max: limits.subscriptionGroupDiscountPercent.max,
+          },
+        ),
         invalidUrl: tValidation("invalidUrl"),
       }),
     [tValidation],
@@ -275,7 +285,7 @@ export default function AdminAppSettingsView() {
             title={t("sections.fees.title")}
             description={t("sections.fees.description")}
           >
-            <div className="max-w-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
               <NumberField
                 id="platformFeePercent"
                 label={t("fields.platformFeePercentage")}
@@ -286,6 +296,17 @@ export default function AdminAppSettingsView() {
                 min={limits.platformFeePercent.min}
                 max={limits.platformFeePercent.max}
                 step="0.01"
+              />
+              <NumberField
+                id="subscriptionGroupDiscountPercent"
+                label={t("fields.subscriptionGroupDiscountPercent")}
+                hint={t("fields.subscriptionGroupDiscountPercentHint")}
+                error={errors.subscriptionGroupDiscountPercent}
+                value={form.subscriptionGroupDiscountPercent}
+                onChange={(v) => setField("subscriptionGroupDiscountPercent", v)}
+                min={limits.subscriptionGroupDiscountPercent.min}
+                max={limits.subscriptionGroupDiscountPercent.max}
+                step="1"
               />
             </div>
           </SettingsSection>

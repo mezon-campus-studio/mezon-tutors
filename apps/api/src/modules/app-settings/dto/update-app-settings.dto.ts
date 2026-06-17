@@ -47,6 +47,12 @@ export class UpdateAppSettingsDto {
   @Max(limits.minWithdrawalAmountPhp.max)
   minWithdrawalAmountPhp!: number;
 
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(limits.subscriptionGroupDiscountRate.min)
+  @Max(limits.subscriptionGroupDiscountRate.max)
+  subscriptionGroupDiscountRate!: number;
+
   @IsOptional()
   @IsObject()
   mezonLinks?: MezonLinks | null;

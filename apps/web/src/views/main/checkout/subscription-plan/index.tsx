@@ -5,7 +5,6 @@ import {
   ECurrency,
   formatToCurrency,
   ROUTES,
-  SUBSCRIPTION_GROUP_DISCOUNT_RATE,
   type TutorSubscriptionPlanDto,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
@@ -31,6 +30,7 @@ import {
   useGetSubscriptionEligibility,
   useGetSubscriptionPlansByTutor,
   useGetVerifiedTutorAbout,
+  usePublicAppSettings,
 } from "@/services";
 import { isAuthenticatedAtom, userAtom } from "@/store/auth.atom";
 
@@ -67,8 +67,11 @@ export default function SubscriptionPlanCheckoutPage() {
     groupId ?? "",
     Boolean(groupId) && isAuth,
   );
+  const { data: appSettings, isPending: isAppSettingsPending } =
+    usePublicAppSettings();
 
   const groupMemberCount = group?.members?.length ?? 1;
+  const groupDiscountRate = appSettings?.subscriptionGroupDiscountRate ?? 1;
   const canApplyGroupBooking = Boolean(
     groupId &&
       group &&
@@ -76,15 +79,14 @@ export default function SubscriptionPlanCheckoutPage() {
       group.leaderId === currentUser.id &&
       groupMemberCount >= 2,
   );
-  const groupDiscountPercent = Math.round(
-    (1 - SUBSCRIPTION_GROUP_DISCOUNT_RATE) * 100,
-  );
+  const groupDiscountPercent = Math.round((1 - groupDiscountRate) * 100);
 
   const isPending =
     isTutorPending ||
     isPlansPending ||
     (isAuth && isEligPending) ||
-    (Boolean(groupId) && isAuth && isGroupPending);
+    (Boolean(groupId) && isAuth && isGroupPending) ||
+    (canApplyGroupBooking && isAppSettingsPending);
   const canSubscribe = Boolean(isAuth && eligibility?.eligible);
   const selectedPlan = useMemo(
     () => plans?.find((p) => p.id === selectedPlanId) ?? null,
@@ -112,7 +114,7 @@ export default function SubscriptionPlanCheckoutPage() {
     const pricing = calculateGroupSubscriptionPrice({
       baseMonthlyPrice,
       memberCount: groupMemberCount,
-      groupDiscountRate: SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+      groupDiscountRate,
       platformFeeRate: 0,
     });
     const fullGroupPrice = baseMonthlyPrice * groupMemberCount;
