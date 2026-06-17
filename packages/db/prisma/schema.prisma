@@ -349,13 +349,15 @@ model SubscriptionEnrollment {
   failedAt         DateTime?                      @map("failed_at")
   createdAt        DateTime                       @default(now()) @map("created_at")
   updatedAt        DateTime                       @updatedAt @map("updated_at")
-
+ 
   student             User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
   tutor               TutorProfile      @relation(fields: [tutorId], references: [id], onDelete: Cascade)
   walletTransactions  Transaction[]
   cancelRescheduleReasons CancelRescheduleReason[]
   lessonComplaints    LessonComplaint[]
   groupId             String?           @map("group_id") @db.Uuid
+  memberCount         Int?              @map("member_count")
+  groupDiscountRate   Decimal?          @map("group_discount_rate") @db.Decimal(4, 2)
   group               Group?            @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@index([studentId, tutorId])

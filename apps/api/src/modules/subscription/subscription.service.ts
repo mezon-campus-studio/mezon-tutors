@@ -23,7 +23,6 @@ import {
   formatTutorDisplayName,
   inferPaymentProviderFromUrl,
   LESSON_AUTO_COMPLETE_GRACE_MINUTES,
-  calculatePlatformFeeAmounts,
   buildMonthlySubscriptionSlotJson,
   DEFAULT_TIMEZONE,
   expandCalendarSlotToSteps,
@@ -51,6 +50,8 @@ import {
   TRIAL_LESSON_PAYMENT_HOLD_MS,
   isTrialLessonPaymentHoldActive,
   trialLessonPaymentHoldExpiresAt,
+  SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+  calculateGroupSubscriptionPrice,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
@@ -71,7 +72,6 @@ import timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const SUBSCRIPTION_MONTHLY_WEEKS = 4;
 const PRESET_LESSONS_MIN = 1;
 const PRESET_LESSONS_MAX = 7;
 const SUBSCRIPTION_SLOT_DURATION_MINUTES = 60;
@@ -93,6 +93,9 @@ type SubscriptionEnrollmentSerializeRow = {
   paymentRef: string | null;
   paymentUrl: string | null;
   paidAt: Date | null;
+  groupId: string | null;
+  memberCount: number | null;
+  groupDiscountRate: Prisma.Decimal | null;
 };
 
 function trialToPresetMonthlyPriceRow(
@@ -104,7 +107,7 @@ function trialToPresetMonthlyPriceRow(
   },
   lessonsPerWeek: number
 ): { baseCurrency: PrismaCurrency; usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } {
-  const sessionsPerMonth = lessonsPerWeek * SUBSCRIPTION_MONTHLY_WEEKS;
+  const sessionsPerMonth = lessonsPerWeek * 4;
   return {
     baseCurrency: trial.baseCurrency,
     usd: new Prisma.Decimal((Number(trial.usd) * sessionsPerMonth).toFixed(6)),
@@ -421,30 +424,6 @@ export class SubscriptionService {
     return value as unknown as SubscriptionWeeklySlotDto[];
   }
 
-  private subscriptionMonthlyGross(
-    price: { vnd: bigint; usd: Prisma.Decimal; php: Prisma.Decimal },
-    currency: PrismaCurrency
-  ): bigint {
-    if (currency === PrismaCurrency.VND) {
-      if (price.vnd <= 0n) {
-        throw new BadRequestException('Invalid plan price');
-      }
-      return price.vnd;
-    }
-    if (currency === PrismaCurrency.USD) {
-      const v = Number(price.usd);
-      if (!Number.isFinite(v) || v <= 0) {
-        throw new BadRequestException('Invalid plan price');
-      }
-      return BigInt(Math.max(1, Math.round(v)));
-    }
-    const v = Number(price.php);
-    if (!Number.isFinite(v) || v <= 0) {
-      throw new BadRequestException('Invalid plan price');
-    }
-    return BigInt(Math.max(1, Math.round(v)));
-  }
-
   private serializeEnrollmentRow(
     row: SubscriptionEnrollmentSerializeRow,
     weeklySlots: SubscriptionWeeklySlotDto[],
@@ -467,6 +446,9 @@ export class SubscriptionService {
       paymentUrl: row.paymentUrl,
       paymentProvider,
       paidAt: row.paidAt?.toISOString() ?? null,
+      groupId: row.groupId,
+      memberCount: row.memberCount ?? undefined,
+      groupDiscountRate: row.groupDiscountRate ? Number(row.groupDiscountRate) : undefined,
     };
   }
 
@@ -615,26 +597,39 @@ export class SubscriptionService {
     const selectedCurrency = dto.currency;
     const settings = await this.appSettingsService.getSettings();
 
-    // Check group membership for multiplier
+    let effectiveGroupId: string | undefined;
     let memberCount = 1;
     if (dto.groupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: dto.groupId },
-        include: { members: true },
+        select: {
+          leaderId: true,
+          members: { select: { userId: true } },
+        },
       });
-      if (!group) {
-        throw new NotFoundException('Group not found');
+      if (group && group.leaderId === studentUserId && group.members.length >= 2) {
+        effectiveGroupId = dto.groupId;
+        memberCount = group.members.length;
       }
-      memberCount = group.members.length;
     }
 
-    const baseGrossAmount = this.subscriptionMonthlyGross(planPrice, selectedCurrency);
-    const grossAmount = baseGrossAmount * BigInt(memberCount);
+    let baseMonthlyPrice = Number(planPrice.vnd);
+    if (selectedCurrency === ECurrency.USD) {
+      baseMonthlyPrice = Number(planPrice.usd);
+    } else if (selectedCurrency === ECurrency.PHP) {
+      baseMonthlyPrice = Number(planPrice.php);
+    }
 
-    const { platformFee, tutorAmount } = calculatePlatformFeeAmounts(
-      grossAmount,
-      settings.platformFeePercentage,
-    );
+    const pricingResult = calculateGroupSubscriptionPrice({
+      baseMonthlyPrice,
+      memberCount,
+      groupDiscountRate: SUBSCRIPTION_GROUP_DISCOUNT_RATE,
+      platformFeeRate: settings.platformFeePercentage,
+    });
+
+    const grossAmount = BigInt(pricingResult.grossAmount);
+    const platformFee = BigInt(pricingResult.platformFee);
+    const tutorAmount = BigInt(pricingResult.tutorAmount);
 
     const walletBalance =
       await this.walletCheckoutService.getStudentWalletBalance(studentUserId);
@@ -662,7 +657,7 @@ export class SubscriptionService {
     const expandedSlots = buildMonthlySubscriptionSlotJson(
       dto.slots,
       normalized,
-      SUBSCRIPTION_MONTHLY_WEEKS,
+      4,
       DEFAULT_TIMEZONE,
     ) as SubscriptionWeeklySlotDto[];
 
@@ -678,7 +673,9 @@ export class SubscriptionService {
         tutorAmount,
         deductAmount,
         currency: selectedCurrency,
-        groupId: dto.groupId,
+        groupId: effectiveGroupId,
+        memberCount: pricingResult.memberCount,
+        groupDiscountRate: pricingResult.groupDiscountRate,
       });
     }
 
@@ -695,7 +692,9 @@ export class SubscriptionService {
         tutorAmount,
         deductAmount,
         paymentStatus: EPaymentStatus.PENDING,
-        groupId: dto.groupId,
+        groupId: effectiveGroupId,
+        memberCount: pricingResult.memberCount,
+        groupDiscountRate: pricingResult.groupDiscountRate,
       },
       select: { id: true },
     });
@@ -751,6 +750,8 @@ export class SubscriptionService {
     deductAmount: bigint;
     currency: PrismaCurrency;
     groupId?: string;
+    memberCount?: number;
+    groupDiscountRate?: number;
   }): Promise<SubscriptionEnrollmentDto> {
     const now = new Date();
 
@@ -770,6 +771,8 @@ export class SubscriptionService {
           paymentStatus: EPaymentStatus.SUCCEEDED,
           paidAt: now,
           groupId: params.groupId,
+          memberCount: params.memberCount,
+          groupDiscountRate: params.groupDiscountRate,
         },
       });
 
