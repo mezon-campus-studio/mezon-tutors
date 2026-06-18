@@ -51,7 +51,6 @@
       "noEmail": "No email shared",
       "allMembers": "View All Members",
       "groupChat": {
-        "createButton": "Create group chat",
         "openButton": "Open group chat",
         "confirmTitle": "Create group chat on Mezon?",
         "confirmDescription": "We will create the group chat with the members currently here and the Mezonly bot.",

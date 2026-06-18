@@ -276,10 +276,6 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                   ) : (
                     <MessageCircle className="w-4 h-4" />
                   )}
-
-                  {hasGroupChat
-                    ? t('groupChat.openButton')
-                    : t('groupChat.createButton')}
                 </Button>
               )}
             </div>
