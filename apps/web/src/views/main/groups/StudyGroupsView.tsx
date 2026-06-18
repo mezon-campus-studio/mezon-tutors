@@ -103,27 +103,26 @@ const GroupCard = ({
         </AvatarGroup>
         
         {showBookingButton ? (
-          <button 
+          <Button 
             onClick={handleSelect}
             disabled={!canBook}
             className={cn(
-              "font-bold text-sm flex items-center gap-1.5 transition-all",
-              canBook
-                ? "text-primary hover:gap-2.5 group-hover:translate-x-1"
-                : "text-gray-400 cursor-not-allowed"
+              "h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-xs font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-1.5",
+              !canBook && "opacity-50 grayscale cursor-not-allowed shadow-none"
             )}
           >
             {t('selectForBooking')}
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         ) : (
-          <button 
+          <Button 
+            variant="outline"
             onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`); }}
-            className="text-gray-500 font-bold text-sm flex items-center gap-1.5 transition-all hover:gap-2.5 hover:text-primary"
+            className="h-10 rounded-full px-6 text-xs font-bold gap-1.5 border-gray-200 text-gray-600 hover:text-primary hover:border-primary/50"
           >
             {t('viewDetails')}
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 
