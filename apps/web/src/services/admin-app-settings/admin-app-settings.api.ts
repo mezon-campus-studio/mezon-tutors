@@ -20,7 +20,6 @@ export const useAdminAppSettings = (enabled = true) => {
     queryKey: adminAppSettingsQueryKey.detail(),
     queryFn: () => adminAppSettingsApi.get(),
     enabled,
-    staleTime: 30 * 1000,
   });
 };
 

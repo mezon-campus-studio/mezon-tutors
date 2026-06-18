@@ -150,6 +150,7 @@ const useGetVerifiedTutors = (page: number, limit: number, filters: VerifiedTuto
     ),
     queryFn: () => tutorProfileApi.getVerifiedTutors(page, limit, filters),
     placeholderData: keepPreviousData,
+    staleTime: 30 * 1000,
   });
 };
 
@@ -224,7 +225,6 @@ const useGetMyProfile = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.myTutorProfile(),
     queryFn: () => tutorProfileApi.getMyProfile(),
-    staleTime: 60 * 1000,
     enabled: options?.enabled ?? true,
   });
 };
@@ -233,7 +233,6 @@ const useGetMySetupChecklist = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.mySetupChecklist(),
     queryFn: () => tutorProfileApi.getMySetupChecklist(),
-    staleTime: 30 * 1000,
     enabled: options?.enabled ?? true,
   });
 };

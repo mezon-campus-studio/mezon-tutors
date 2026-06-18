@@ -350,8 +350,6 @@ export const useGetMyLessonsOverview = (
     queryKey: myLessonsQueryKey.overview(weekStartDate, effectiveTimezone),
     queryFn: () => myLessonsApi.getOverview(weekStartDate, effectiveTimezone),
     enabled: isAuthenticated && Boolean(effectiveTimezone),
-    staleTime: 0,
-    gcTime: 1000 * 60 * 10,
     refetchOnMount: true,
   });
 };

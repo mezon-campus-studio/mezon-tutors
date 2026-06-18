@@ -19,8 +19,12 @@ import { walletQueryKey } from './wallet.qkey';
 const BASE = '/wallet';
 const PAGE_SIZE = 10;
 
-const walletQueryOptions = {
+const paginatedWalletQueryOptions = {
   staleTime: 60_000,
+  retry: 1,
+} as const;
+
+const walletQueryOptions = {
   retry: 1,
 } as const;
 
@@ -95,7 +99,7 @@ export function useWalletTransactions(page: number) {
     queryKey: walletQueryKey.transactions(page),
     queryFn: () => walletApi.getTransactions(page),
     enabled,
-    ...walletQueryOptions,
+    ...paginatedWalletQueryOptions,
   });
 }
 
@@ -105,7 +109,7 @@ export function useWalletWithdrawals(page: number, tabEnabled: boolean) {
     queryKey: walletQueryKey.withdrawals(page),
     queryFn: () => walletApi.getWithdrawals(page),
     enabled,
-    ...walletQueryOptions,
+    ...paginatedWalletQueryOptions,
   });
 }
 

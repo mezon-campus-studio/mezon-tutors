@@ -24,8 +24,6 @@ import { apiClient } from "../api-client";
 import { subscriptionQueryKey } from "./subscription.qkey";
 import { walletQueryKey } from "../wallet/wallet.qkey";
 
-const TUTOR_WEEK_OCCURRENCES_STALE_MS = 60_000;
-
 export type StudentPendingPaymentEnrollment = {
   id: string;
   tutorId: string;
@@ -56,7 +54,6 @@ function tutorWeekOccurrencesQueryOptions(
     queryFn: () =>
       subscriptionApi.getTutorWeekOccurrences(weekStartDate, timezone),
     enabled: enabled && Boolean(weekStartDate) && Boolean(timezone),
-    staleTime: TUTOR_WEEK_OCCURRENCES_STALE_MS,
   };
 }
 
@@ -299,7 +296,6 @@ export function useGetSubscriptionSlotRescheduleOptions(
       slotIndex >= 0 &&
       Boolean(weekStartDate) &&
       Boolean(timezone),
-    staleTime: 15 * 1000,
   });
 }
 
