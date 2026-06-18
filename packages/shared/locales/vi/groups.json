@@ -14,6 +14,7 @@
       "submit": "Tạo nhóm",
       "submitting": "Đang tạo..."
     },
+    "memberComplaintWarning": "Bạn đang tham gia với quyền thành viên, vui lòng liên hệ trưởng nhóm để được hỗ trợ khiếu nại.",
     "breadcrumb": {
       "dashboard": "Trang chủ",
       "groups": "Nhóm học"

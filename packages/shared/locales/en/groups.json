@@ -14,6 +14,7 @@
       "submit": "Create Group",
       "submitting": "Creating..."
     },
+    "memberComplaintWarning": "You are participating as a member. Please contact the group leader for assistance with complaints.",
     "breadcrumb": {
       "dashboard": "Dashboard",
       "groups": "Groups"
