@@ -271,11 +271,11 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
         aria-haspopup="dialog"
         aria-label={getLabel('openAria', 'Open notifications')}
         onClick={() => setOpen((v) => !v)}
-        className="relative h-11 min-h-11 min-w-11 rounded-full border-slate-200 bg-white px-3 text-slate-800 shadow-none transition-all duration-200 ease-out hover:-translate-y-px hover:border-violet-400 hover:bg-violet-50 md:h-9 md:min-h-0 md:min-w-0"
+        className="relative size-9 rounded-full border-violet-200 bg-white text-slate-800 shadow-none transition-all duration-200 ease-out hover:-translate-y-px hover:border-violet-400 hover:bg-violet-50"
       >
         <span className="relative inline-flex items-center justify-center">
           <Bell
-            className="size-4 text-slate-500"
+            className="size-4 text-violet-700"
             aria-hidden
           />
           {unreadCount > 0 ? (

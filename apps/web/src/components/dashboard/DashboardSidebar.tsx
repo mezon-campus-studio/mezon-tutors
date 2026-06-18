@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
-  Bookmark,
   Calendar,
   CalendarDays,
   Clock,
@@ -51,7 +50,6 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   becomeTutor: GraduationCap,
   tutorPolicy: Scale,
   settings: Settings,
-  bookmark: Bookmark,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -74,7 +72,6 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   becomeTutor: "from-violet-500 to-fuchsia-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
-  bookmark: "from-violet-500 to-fuchsia-500",
 };
 
 type DashboardSidebarProps = {

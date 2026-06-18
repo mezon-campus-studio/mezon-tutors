@@ -20,7 +20,6 @@ export type DashboardMenuIconKey =
   | 'becomeTutor'
   | 'tutorPolicy'
   | 'settings'
-  | 'bookmark';
 export type DashboardMenuLabelKey =
   | 'myLessons'
   | 'myGroups'
@@ -43,7 +42,6 @@ export type DashboardMenuLabelKey =
   | 'becomeTutor'
   | 'tutorPolicy'
   | 'settings'
-  | 'savedTutors';
 
 export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
@@ -78,14 +76,6 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'myGroups',
     iconKey: 'students',
     href: ROUTES.DASHBOARD.GROUPS,
-    roles: ['STUDENT'],
-  },
-  {
-    key: 'saved-tutors',
-    type: 'link',
-    labelKey: 'savedTutors',
-    iconKey: 'bookmark',
-    href: ROUTES.DASHBOARD.SAVED_TUTORS,
     roles: ['STUDENT'],
   },
   {
@@ -249,9 +239,6 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-groups') {
     return pathname.startsWith(ROUTES.DASHBOARD.GROUPS);
-  }
-  if (item.key === 'saved-tutors') {
-    return pathname.startsWith(ROUTES.DASHBOARD.SAVED_TUTORS);
   }
   if (item.key === 'pending-bookings') {
     return pathname.startsWith(ROUTES.DASHBOARD.PENDING_BOOKINGS);

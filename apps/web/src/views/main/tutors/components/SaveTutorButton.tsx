@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useAtomValue } from "jotai";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
@@ -62,7 +62,7 @@ export function SaveTutorButton({
         }
       }}
     >
-      <Bookmark className={cn("size-4", saved ? "fill-current" : "")} />
+      <Heart className={cn("size-4", saved ? "fill-current" : "")} />
       {iconOnly ? null : <span className="ml-1.5">{label}</span>}
     </Button>
   );
