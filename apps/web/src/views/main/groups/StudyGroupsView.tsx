@@ -68,7 +68,7 @@ const GroupCard = ({
 
   return (
     <Card 
-      onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`)}
+      onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}${tutorId ? `?tutorId=${tutorId}` : ''}`)}
       className="relative p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border-border/50 overflow-hidden rounded-3xl cursor-pointer"
     >
       <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/10 group-hover:bg-primary transition-colors duration-300" />
@@ -128,7 +128,7 @@ const GroupCard = ({
         ) : (
           <Button 
             variant="outline"
-            onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`); }}
+            onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}${tutorId ? `?tutorId=${tutorId}` : ''}`); }}
             className="h-10 rounded-full px-6 text-xs font-bold gap-1.5 border-gray-200 text-gray-600 hover:text-primary hover:border-primary/50"
           >
             {t('viewDetails')}
@@ -184,7 +184,7 @@ export const StudyGroupsView = () => {
     try {
       const newGroup = await studyGroupApi.create(newGroupName.trim());
       setIsCreateModalOpen(false);
-      router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}`);
+      router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}${tutorId ? `?tutorId=${tutorId}` : ''}`);
     } catch (error) {
       console.error('Failed to create group:', error);
       setIsCreating(false);
