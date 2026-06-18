@@ -5,6 +5,7 @@ import { createMezonLinksFormFieldsSchema, mapMezonLinksFormToStorage } from './
 
 export type AppSettingsFormValues = {
   platformFeePercent: string;
+  subscriptionGroupDiscountPercent: string;
   settlementPeriodHours: string;
   disputePeriodHours: string;
   lessonChangePeriodHours: string;
@@ -30,6 +31,7 @@ export type AppSettingsValidationMessages = {
   minWithdrawalAmountVndRange: string;
   minWithdrawalAmountUsdRange: string;
   minWithdrawalAmountPhpRange: string;
+  subscriptionGroupDiscountPercentRange: string;
 };
 
 const limits = APP_SETTINGS_LIMITS;
@@ -83,6 +85,12 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
             .min(limits.platformFeePercent.min, messages.platformFeePercentRange)
             .max(limits.platformFeePercent.max, messages.platformFeePercentRange),
         ),
+      subscriptionGroupDiscountPercent: requiredIntString(
+        messages,
+        messages.subscriptionGroupDiscountPercentRange,
+        limits.subscriptionGroupDiscountPercent.min,
+        limits.subscriptionGroupDiscountPercent.max,
+      ),
       settlementPeriodHours: requiredIntString(
         messages,
         messages.settlementPeriodHoursRange,
@@ -124,6 +132,8 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
     .transform(
       (values): UpdateAppSettingsBody => ({
         platformFeePercentage: values.platformFeePercent / 100,
+        subscriptionGroupDiscountRate:
+          1 - values.subscriptionGroupDiscountPercent / 100,
         settlementPeriodHours: values.settlementPeriodHours,
         disputePeriodHours: values.disputePeriodHours,
         lessonChangePeriodHours: values.lessonChangePeriodHours,

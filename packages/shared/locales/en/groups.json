@@ -48,7 +48,21 @@
         "resources": "Resources"
       },
       "noEmail": "No email shared",
-      "allMembers": "View All Members"
+      "allMembers": "View All Members",
+      "groupChat": {
+        "createButton": "Create group chat",
+        "openButton": "Open group chat",
+        "confirmTitle": "Create group chat on Mezon?",
+        "confirmDescription": "We will create the group chat with the members currently here and the Mezonly bot.",
+        "confirmNote": "If new members join this study group later, you will need to add them manually inside Mezon.",
+        "cancel": "Cancel",
+        "createAndOpen": "Create and open",
+        "created": "Group chat created on Mezon.",
+        "missingMezonAccount": "Missing Mezonly account information.",
+        "missingBotAccount": "Missing Mezonly bot account information.",
+        "notEnoughMembers": "At least 2 members in the group are required to create a group chat.",
+        "createError": "Could not create group chat on Mezon. Please try again."
+      }
     },
     "invite": {
       "confirming": "Confirming Invitation...",

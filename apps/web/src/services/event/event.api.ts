@@ -31,7 +31,6 @@ export const usePublishedEvents = (enabled = true) =>
     queryKey: eventQueryKey.list(),
     queryFn: () => eventApi.listPublished(),
     enabled,
-    staleTime: 30_000,
     refetchOnWindowFocus: true,
   });
 

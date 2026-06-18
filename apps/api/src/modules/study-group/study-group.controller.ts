@@ -30,6 +30,17 @@ export class StudyGroupController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch(':id/group-chat-channel')
+  async updateGroupChatChannel(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body('channelId') channelId: string,
+  ) {
+    const user = req.user as AuthUserPayload;
+    return this.studyGroupService.updateGroupChatChannel(user.sub, id, channelId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.studyGroupService.findOne(id);

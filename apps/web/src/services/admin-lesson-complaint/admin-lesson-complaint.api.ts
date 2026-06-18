@@ -63,7 +63,6 @@ export const useAdminLessonComplaints = (
     queryKey: adminLessonComplaintQueryKey.list(status),
     queryFn: () => adminLessonComplaintApi.list(status),
     enabled,
-    staleTime: 30 * 1000,
   });
 };
 
@@ -72,7 +71,6 @@ export const useAdminLessonComplaintMetrics = (enabled = true) => {
     queryKey: adminLessonComplaintQueryKey.metrics(),
     queryFn: () => adminLessonComplaintApi.metrics(),
     enabled,
-    staleTime: 60 * 1000,
   });
 };
 

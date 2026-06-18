@@ -23,7 +23,6 @@ export const useGetMyLessonComplaints = (enabled = true) => {
     queryKey: ["lesson-complaints", "my"],
     queryFn: () => lessonComplaintApi.listMine(),
     enabled,
-    staleTime: 30 * 1000,
   });
 };
 

@@ -51,7 +51,6 @@ export const useGetVocabulary = (enabled = true) =>
     queryKey: vocabularyQueryKey.list(),
     queryFn: () => vocabularyApi.getVocabulary(),
     enabled,
-    staleTime: 30 * 1000,
   });
 
 export const useAddWordMutation = () => {

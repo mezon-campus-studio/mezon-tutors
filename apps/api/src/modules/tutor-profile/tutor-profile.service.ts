@@ -9,6 +9,7 @@ import {
   MAX_PRICE,
   MIN_PRICE,
   PaginatedResponse,
+  SavedTutorDto,
   SubmitTutorProfileDto,
   TutorAvailabilitySlotDto,
   TutorLanguageDto,
@@ -819,7 +820,8 @@ export class TutorProfileService {
   }
 
   async getVerifiedTutors(
-    query: VerifiedTutorQueryDto
+    query: VerifiedTutorQueryDto,
+    studentId?: string
   ): Promise<PaginatedResponse<VerifiedTutorProfileDto>> {
     const {
       page,
@@ -965,11 +967,27 @@ export class TutorProfileService {
     const total = filtered.length
     const totalPages = Math.ceil(total / limit)
     const paged = filtered.slice((page - 1) * limit, page * limit)
+    const savedTutorIds = studentId
+      ? new Set(
+          (
+            await this.prisma.savedTutor.findMany({
+              where: {
+                studentId,
+                tutorId: { in: paged.map(({ tutor }) => tutor.id) },
+              },
+              select: { tutorId: true },
+            })
+          ).map((item) => item.tutorId),
+        )
+      : new Set<string>()
 
     return {
       data: {
         items: paged.map(({ tutor }) =>
-          toVerifiedTutorProfileDto(tutor as unknown as Parameters<typeof toVerifiedTutorProfileDto>[0])
+          toVerifiedTutorProfileDto(
+            tutor as unknown as Parameters<typeof toVerifiedTutorProfileDto>[0],
+            { isSaved: savedTutorIds.has(tutor.id) },
+          )
         ),
         meta: {
           page,
@@ -982,6 +1000,80 @@ export class TutorProfileService {
       },
       error: null,
     }
+  }
+
+  async getSavedTutors(studentId: string): Promise<SavedTutorDto[]> {
+    const savedTutors = await this.prisma.savedTutor.findMany({
+      where: {
+        studentId,
+        tutor: {
+          verificationStatus: VerificationStatus.APPROVED,
+        },
+      },
+      include: {
+        tutor: {
+          include: {
+            trialLessonPrice: true,
+            languages: true,
+            user: {
+              select: {
+                mezonUserId: true,
+                timezone: true,
+              },
+            },
+          } as unknown as Prisma.TutorProfileInclude,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return savedTutors.map((item) => ({
+      ...toVerifiedTutorProfileDto(
+        item.tutor as unknown as Parameters<typeof toVerifiedTutorProfileDto>[0],
+        { isSaved: true },
+      ),
+      savedAt: item.createdAt.toISOString(),
+    }))
+  }
+
+  async saveTutor(studentId: string, tutorId: string): Promise<{ success: true }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      select: { userId: true, verificationStatus: true },
+    })
+
+    if (!tutor || tutor.verificationStatus !== VerificationStatus.APPROVED) {
+      throw new NotFoundException(`Verified tutor with ID ${tutorId} not found`)
+    }
+
+    if (tutor.userId === studentId) {
+      throw new BadRequestException('You cannot save your own tutor profile')
+    }
+
+    await this.prisma.savedTutor.upsert({
+      where: {
+        studentId_tutorId: {
+          studentId,
+          tutorId,
+        },
+      },
+      update: {},
+      create: {
+        studentId,
+        tutorId,
+      },
+    })
+
+    return { success: true }
+  }
+
+  async unsaveTutor(studentId: string, tutorId: string): Promise<void> {
+    await this.prisma.savedTutor.deleteMany({
+      where: {
+        studentId,
+        tutorId,
+      },
+    })
   }
 
   async getVerifiedTutorAbout(id: string) {

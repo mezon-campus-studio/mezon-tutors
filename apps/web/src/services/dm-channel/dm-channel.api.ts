@@ -53,8 +53,6 @@ export function useGetDmChannel(userId: string, peerUserId: string, enabled = tr
     queryKey: dmChannelQueryKey.byParticipantPair(userId, peerUserId),
     queryFn: () => dmChannelApi.getBetweenUsers(userId, peerUserId),
     enabled: Boolean(userId) && Boolean(peerUserId) && enabled,
-    staleTime: 0,
-    gcTime: 0,
   });
 }
 

@@ -12,4 +12,6 @@ export const APP_SETTINGS_LIMITS = {
   minWithdrawalAmountVnd: { min: 1, max: 9_007_199_254_740_991 },
   minWithdrawalAmountUsd: { min: 0.01, max: 1_000_000 },
   minWithdrawalAmountPhp: { min: 0.01, max: 10_000_000 },
+  subscriptionGroupDiscountRate: { min: 0.01, max: 1 },
+  subscriptionGroupDiscountPercent: { min: 0, max: 99 },
 } as const;

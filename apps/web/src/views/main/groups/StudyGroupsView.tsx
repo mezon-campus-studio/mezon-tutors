@@ -56,9 +56,14 @@ const GroupCard = ({
 
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (canBook) {
-      router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${tutorId}&groupId=${id}`);
+    if (!canBook || !tutorId) {
+      return;
     }
+    const query = new URLSearchParams({
+      tutorId,
+      groupId: id,
+    });
+    router.push(`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?${query.toString()}`);
   };
 
   return (

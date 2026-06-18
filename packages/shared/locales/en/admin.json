@@ -270,6 +270,8 @@
       "fields": {
         "platformFeePercentage": "Platform fee (%)",
         "platformFeePercentageHint": "Example: 20 means 20% platform fee.",
+        "subscriptionGroupDiscountPercent": "Group subscription discount (%)",
+        "subscriptionGroupDiscountPercentHint": "Example: 25 means 25% off the total group tuition.",
         "settlementPeriodHours": "Settlement period (hours)",
         "settlementPeriodHoursHint": "Hours after lesson end before funds are released to the tutor.",
         "disputePeriodHours": "Dispute period (hours)",
@@ -299,6 +301,7 @@
         "minWithdrawalAmountVndRange": "Must be between {min} and {max} VND.",
         "minWithdrawalAmountUsdRange": "Must be between {min} and {max} USD.",
         "minWithdrawalAmountPhpRange": "Must be between {min} and {max} PHP.",
+        "subscriptionGroupDiscountPercentRange": "Must be between {min} and {max}%.",
         "summary": "Fix the highlighted fields before saving."
       }
     },

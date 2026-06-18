@@ -12,6 +12,8 @@
       "students": "Students",
       "earnings": "Earnings",
       "myLessons": "My Lessons",
+      "myGroups": "My Groups",
+      "savedTutors": "Saved Tutors",
       "pendingBookings": "Pending payment",
       "complaints": "Complaints",
       "lessonComplaints": "Lesson complaints",
@@ -491,6 +493,23 @@
       "planWith": "Monthly plan with {tutor}",
       "lessonsPerWeek": "{n} sessions / week",
       "duration": "{minutes} min"
+    },
+    "savedTutors": {
+      "eyebrow": "Student workspace",
+      "title": "Saved Tutors",
+      "subtitle": "Keep a shortlist of tutors you want to compare, message, or book later.",
+      "browseTutors": "Browse tutors",
+      "loadError": "Could not load saved tutors.",
+      "listEyebrow": "Shortlist",
+      "listTitle": "{count, plural, one {# tutor saved} other {# tutors saved}}",
+      "listHint": "Open a profile to compare schedule, reviews, and plans.",
+      "emptyTitle": "No saved tutors yet",
+      "emptyDescription": "Save tutors from the browse page or a tutor profile, and they will appear here.",
+      "metrics": {
+        "total": "Saved",
+        "topRated": "Top rated",
+        "professional": "Professional"
+      }
     },
     "events": {
       "eyebrow": "Community",

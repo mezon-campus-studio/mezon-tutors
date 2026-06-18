@@ -70,6 +70,9 @@ export interface SubscriptionEnrollmentDto {
   paymentUrl: string | null
   paymentProvider?: EPaymentProvider
   paidAt: string | null
+  groupId?: string | null
+  memberCount?: number
+  groupDiscountRate?: number
 }
 
 export interface SubscriptionEnrollmentDetailDto extends SubscriptionEnrollmentDto {

@@ -48,7 +48,21 @@
         "resources": "Tài liệu"
       },
       "noEmail": "Chưa chia sẻ email",
-      "allMembers": "Xem tất cả thành viên"
+      "allMembers": "Xem tất cả thành viên",
+      "groupChat": {
+        "createButton": "Tạo cuộc trò chuyện nhóm",
+        "openButton": "Mở cuộc trò chuyện nhóm",
+        "confirmTitle": "Tạo cuộc trò chuyện nhóm trên Mezon?",
+        "confirmDescription": "Hệ thống sẽ tạo cuộc trò chuyện nhóm với các thành viên hiện tại và Mezonly bot.",
+        "confirmNote": "Nếu sau này nhóm học có thêm thành viên mới, bạn cần tự thêm họ trong Mezon.",
+        "cancel": "Hủy",
+        "createAndOpen": "Tạo và mở",
+        "created": "Đã tạo cuộc trò chuyện nhóm trên Mezon.",
+        "missingMezonAccount": "Thiếu thông tin tài khoản Mezonly.",
+        "missingBotAccount": "Thiếu thông tin Mezonly bot.",
+        "notEnoughMembers": "Cần ít nhất 2 thành viên trong nhóm để tạo cuộc trò chuyện nhóm.",
+        "createError": "Không thể tạo cuộc trò chuyện nhóm trên Mezon. Vui lòng thử lại."
+      }
     },
     "invite": {
       "confirming": "Đang xác nhận lời mời...",

@@ -77,6 +77,15 @@
       "notEligibleGeneric": "Hiện không đủ điều kiện đăng ký.",
       "lessonsPerWeek": "{n} buổi / tuần",
       "perMonth": "mỗi tháng",
+      "groupBanner": {
+        "label": "Đang đăng ký học nhóm:",
+        "membersDiscount": "{count} thành viên · Ưu đãi –{percent}%"
+      },
+      "groupPricing": {
+        "perStudent": "1 học sinh: {price}",
+        "groupTotal": "Nhóm {count} người: {price}",
+        "savings": "(tiết kiệm {amount})"
+      },
       "emptyPlans": "Chưa có gói nào.",
       "back": "Quay lại",
       "continueSchedule": "Chọn lịch ({n} buổi)"
@@ -116,7 +125,16 @@
         "walletBalance": "Thanh toán từ ví: {balance}",
         "payViaWallet": "Thanh toán qua ví",
         "remainingViaVnpay": "Còn lại qua VNPay",
-        "vnpayMinWalletNote": "VNPay yêu cầu thanh toán tối thiểu {minAmount}. Nếu dùng hết số dư ví ({walletBalance}), phần còn lại qua VNPay sẽ thấp hơn mức này — vì vậy chỉ trừ {deductAmount} từ ví."
+        "vnpayMinWalletNote": "VNPay yêu cầu thanh toán tối thiểu {minAmount}. Nếu dùng hết số dư ví ({walletBalance}), phần còn lại qua VNPay sẽ thấp hơn mức này — vì vậy chỉ trừ {deductAmount} từ ví.",
+        "group": {
+          "title": "Đăng ký học nhóm: {name}",
+          "originalPrice": "Học phí gốc (1 học sinh):",
+          "memberCount": "Số thành viên:",
+          "totalGroupPrice": "Tổng học phí nhóm:",
+          "discountLabel": "Ưu đãi học nhóm (–{percent}%):",
+          "leaderNote": "Trưởng nhóm thanh toán toàn bộ.",
+          "memberNote": "{count} thành viên tham gia không cần trả thêm."
+        }
       }
     },
     "Result": {

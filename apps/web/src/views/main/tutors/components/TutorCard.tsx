@@ -35,6 +35,7 @@ import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "./TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { cn } from "@/lib/utils";
+import { SaveTutorButton } from "./SaveTutorButton";
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -135,10 +136,13 @@ export default function TutorCard({
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-              <div className="flex items-start gap-2">
+              <div className="flex items-start justify-between gap-2">
                 <h3 className="text-xl font-extrabold text-slate-900 transition-colors group-hover:text-violet-700 md:text-2xl">
                   {name}
                 </h3>
+                {!isOwnProfile ? (
+                  <SaveTutorButton tutorId={tutor.id} isSaved={tutor.isSaved} iconOnly />
+                ) : null}
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
