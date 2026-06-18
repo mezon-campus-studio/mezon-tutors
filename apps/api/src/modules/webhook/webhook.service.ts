@@ -24,6 +24,7 @@ import { PayosService } from '../payos/payos.service';
 import { SepayService } from '../sepay/sepay.service';
 import { VnpayService } from '../vnpay/vnpay.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
+import { transactionEconomicsFromGrossTutorFee } from '../wallet/transaction-economics';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sync.service';
 
@@ -357,7 +358,9 @@ export class WebhookService {
         tutorId: true,
         studentId: true,
         paymentStatus: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         tutor: {
           select: {
@@ -384,7 +387,9 @@ export class WebhookService {
         id: true,
         studentId: true,
         tutorId: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         paymentStatus: true,
         tutor: {
@@ -423,7 +428,9 @@ export class WebhookService {
         tutorId: true,
         studentId: true,
         paymentStatus: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         tutor: {
           select: {
@@ -450,7 +457,9 @@ export class WebhookService {
         id: true,
         studentId: true,
         tutorId: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         paymentStatus: true,
         tutor: {
@@ -491,7 +500,9 @@ export class WebhookService {
         tutorId: true,
         studentId: true,
         paymentStatus: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         tutor: {
           select: {
@@ -519,7 +530,9 @@ export class WebhookService {
         id: true,
         studentId: true,
         tutorId: true,
+        grossAmount: true,
         tutorAmount: true,
+        platformFee: true,
         deductAmount: true,
         paymentStatus: true,
         tutor: {
@@ -553,7 +566,9 @@ export class WebhookService {
       tutorId: string;
       studentId: string;
       paymentStatus: EPaymentStatus;
+      grossAmount: bigint;
       tutorAmount: bigint;
+      platformFee: bigint;
       deductAmount: bigint;
       tutor: { userId: string };
     };
@@ -630,17 +645,24 @@ export class WebhookService {
       const didUpdateBooking = updateBookingResult.count > 0;
 
       if (didUpdateBooking && isSucceeded && !slotConflictOnSuccess) {
+        const economics = transactionEconomicsFromGrossTutorFee(
+          booking.grossAmount,
+          booking.tutorAmount,
+          booking.platformFee,
+        );
         if (booking.deductAmount > 0n) {
           await this.walletCheckoutService.debitStudentForTrialBooking(tx, {
             studentUserId: booking.studentId,
             bookingId: booking.id,
             deductAmount: booking.deductAmount,
+            economics,
           });
         }
         await this.walletCheckoutService.creditTutorForTrialBooking(tx, {
           tutorUserId: booking.tutor.userId,
           bookingId: booking.id,
           tutorAmount: booking.tutorAmount,
+          economics,
         });
       }
 
@@ -719,7 +741,9 @@ export class WebhookService {
       id: string;
       studentId: string;
       tutorId: string;
+      grossAmount: bigint;
       tutorAmount: bigint;
+      platformFee: bigint;
       deductAmount: bigint;
       paymentStatus: EPaymentStatus;
       tutor: { userId: string };
@@ -802,17 +826,24 @@ export class WebhookService {
       const didUpdateEnrollment = updateEnrollmentResult.count > 0;
 
       if (didUpdateEnrollment && isSucceeded && !slotConflictOnSuccess) {
+        const economics = transactionEconomicsFromGrossTutorFee(
+          enrollment.grossAmount,
+          enrollment.tutorAmount,
+          enrollment.platformFee,
+        );
         if (enrollment.deductAmount > 0n) {
           await this.walletCheckoutService.debitStudentForSubscriptionEnrollment(tx, {
             studentUserId: enrollment.studentId,
             enrollmentId: enrollment.id,
             deductAmount: enrollment.deductAmount,
+            economics,
           });
         }
         await this.walletCheckoutService.creditTutorForSubscriptionEnrollment(tx, {
           tutorUserId: enrollment.tutor.userId,
           enrollmentId: enrollment.id,
           tutorAmount: enrollment.tutorAmount,
+          economics,
         });
       }
 

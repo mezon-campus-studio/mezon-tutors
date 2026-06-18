@@ -34,6 +34,7 @@ export const ROUTES = {
     LESSON_COMPLAINTS: '/admin/lesson-complaints',
     APP_SETTINGS: '/admin/app-settings',
     PAYMENTS: '/admin/payments',
+    TRANSACTIONS: '/admin/transactions',
     EVENTS: '/admin/events',
     EVENT_DETAIL: (id: string) => `/admin/events/${id}`,
   },

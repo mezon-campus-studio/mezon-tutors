@@ -58,6 +58,7 @@ import { GoogleCalendarSyncService } from '../google-calendar/google-calendar-sy
 import { NotificationService } from '../notification/notification.service';
 import { PaymentCheckoutService } from '../payment/payment-checkout.service';
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service';
+import { transactionEconomicsFromGrossTutorFee } from '../wallet/transaction-economics';
 import { WalletService } from '../wallet/wallet.service';
 import { TrialLessonBookingService } from '../trial-lesson-booking/trial-lesson-booking.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
@@ -779,11 +780,21 @@ export class SubscriptionService {
         studentUserId: params.studentUserId,
         enrollmentId: created.id,
         deductAmount: params.deductAmount,
+        economics: transactionEconomicsFromGrossTutorFee(
+          params.grossAmount,
+          params.tutorAmount,
+          params.platformFee,
+        ),
       });
       await this.walletCheckoutService.creditTutorForSubscriptionEnrollment(tx, {
         tutorUserId: params.tutorUserId,
         enrollmentId: created.id,
         tutorAmount: params.tutorAmount,
+        economics: transactionEconomicsFromGrossTutorFee(
+          params.grossAmount,
+          params.tutorAmount,
+          params.platformFee,
+        ),
       });
 
       return created;
@@ -1127,6 +1138,7 @@ export class SubscriptionService {
         tutorUserId: enrollment.tutor.userId,
         grossAmount: enrollment.grossAmount,
         tutorAmount: enrollment.tutorAmount,
+        platformFee: enrollment.platformFee,
         slotCount,
         description: `Refund for subscription lesson cancelled by tutor ${tutorLabel}`,
       });

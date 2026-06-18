@@ -62,6 +62,7 @@ import type { TutorTrialLessonBookingRequestDto } from './dto/tutor-trial-lesson
 import type { TrialLessonBookingDetailDto } from './dto/trial-lesson-booking-detail.dto'
 import { WalletService } from '../wallet/wallet.service'
 import { WalletCheckoutService } from '../wallet/wallet-checkout.service'
+import { transactionEconomicsFromGrossTutorFee } from '../wallet/transaction-economics'
 import { AppSettingsService } from '../app-settings/app-settings.service'
 import { NotificationService } from '../notification/notification.service'
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service'
@@ -1129,6 +1130,8 @@ export class TrialLessonBookingService {
         id: true,
         studentId: true,
         grossAmount: true,
+        tutorAmount: true,
+        platformFee: true,
         paymentStatus: true,
       },
     })
@@ -1147,6 +1150,11 @@ export class TrialLessonBookingService {
         subscriptionEnrollmentId: enrollment.id,
         amount: enrollment.grossAmount,
         description: 'Refund: lesson slots were no longer available after payment',
+        economics: transactionEconomicsFromGrossTutorFee(
+          enrollment.grossAmount,
+          enrollment.tutorAmount,
+          enrollment.platformFee,
+        ),
       })
     }
 
@@ -1170,6 +1178,8 @@ export class TrialLessonBookingService {
         id: true,
         studentId: true,
         grossAmount: true,
+        tutorAmount: true,
+        platformFee: true,
         paymentStatus: true,
       },
     })
@@ -1190,6 +1200,11 @@ export class TrialLessonBookingService {
         bookingId: booking.id,
         amount: booking.grossAmount,
         description: 'Refund: lesson slot was no longer available after payment',
+        economics: transactionEconomicsFromGrossTutorFee(
+          booking.grossAmount,
+          booking.tutorAmount,
+          booking.platformFee,
+        ),
       })
     }
 
@@ -1734,11 +1749,21 @@ export class TrialLessonBookingService {
         studentUserId: params.studentId,
         bookingId: created.id,
         deductAmount: params.deductAmount,
+        economics: transactionEconomicsFromGrossTutorFee(
+          params.grossAmount,
+          params.tutorAmount,
+          params.platformFee,
+        ),
       })
       await this.walletCheckoutService.creditTutorForTrialBooking(tx, {
         tutorUserId: params.tutorUserId,
         bookingId: created.id,
         tutorAmount: params.tutorAmount,
+        economics: transactionEconomicsFromGrossTutorFee(
+          params.grossAmount,
+          params.tutorAmount,
+          params.platformFee,
+        ),
       })
 
       return created

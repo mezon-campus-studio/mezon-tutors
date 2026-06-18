@@ -10,6 +10,7 @@
       "appSettings": "Cấu hình ứng dụng",
       "students": "Học viên",
       "payments": "Thanh toán",
+      "transactions": "Giao dịch",
       "reports": "Báo cáo",
       "logout": "Đăng xuất"
     },
@@ -236,6 +237,54 @@
           "copyProofSuccess": "Đã sao chép ảnh minh chứng.",
           "copyProofError": "Không thể sao chép ảnh. Vui lòng thử lại.",
           "close": "Đóng"
+        }
+      }
+    },
+    "Transactions": {
+      "title": "Giao dịch",
+      "description": "Theo dõi dòng tiền vào/ra trên toàn hệ thống ví.",
+      "metrics": {
+        "totalCredit": {
+          "title": "Tổng tiền vào",
+          "helper": "Tháng này: {amount}"
+        },
+        "totalDebit": {
+          "title": "Tổng tiền ra",
+          "helper": "Tháng này: {amount}"
+        },
+        "platformFee": {
+          "title": "Phí nền tảng",
+          "helper": "Tổng phí thu được từ các giao dịch"
+        },
+        "transactionCount": {
+          "title": "Số giao dịch",
+          "helper": "Tháng này: {count} giao dịch"
+        }
+      },
+      "filters": {
+        "allTypes": "Tất cả loại",
+        "allDirections": "Tất cả chiều"
+      },
+      "list": {
+        "title": "Lịch sử giao dịch",
+        "empty": "Không có giao dịch nào.",
+        "unknownUser": "Không rõ",
+        "roles": {
+          "STUDENT": "Học viên",
+          "TUTOR": "Gia sư"
+        },
+        "direction": {
+          "CREDIT": "Tiền vào",
+          "DEBIT": "Tiền ra"
+        },
+        "columns": {
+          "user": "Người dùng",
+          "type": "Loại",
+          "direction": "Chiều",
+          "amount": "Số tiền",
+          "gross": "Gross",
+          "reference": "Tham chiếu",
+          "createdAt": "Thời gian"
         }
       }
     },

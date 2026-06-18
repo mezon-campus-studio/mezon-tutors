@@ -7,6 +7,10 @@ import {
 } from '@mezon-tutors/db';
 import { computeWalletPaymentSplitBigInt } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  transactionEconomicsData,
+  type TransactionEconomicsFields,
+} from './transaction-economics';
 
 export type ResolvedWalletCheckoutSplit = {
   deductAmount: bigint;
@@ -64,6 +68,7 @@ export class WalletCheckoutService {
       studentUserId: string;
       bookingId: string;
       deductAmount: bigint;
+      economics: TransactionEconomicsFields;
     },
   ): Promise<void> {
     if (params.deductAmount <= 0n) {
@@ -89,6 +94,7 @@ export class WalletCheckoutService {
         type: EWalletTransactionType.BOOKING_PAYMENT,
         direction: EWalletTransactionDirection.DEBIT,
         amount: params.deductAmount,
+        ...transactionEconomicsData(params.economics),
         description: `Trial lesson payment from wallet for booking ${params.bookingId}`,
       },
     });
@@ -100,6 +106,7 @@ export class WalletCheckoutService {
       studentUserId: string;
       enrollmentId: string;
       deductAmount: bigint;
+      economics: TransactionEconomicsFields;
     },
   ): Promise<void> {
     if (params.deductAmount <= 0n) {
@@ -125,6 +132,7 @@ export class WalletCheckoutService {
         type: EWalletTransactionType.BOOKING_PAYMENT,
         direction: EWalletTransactionDirection.DEBIT,
         amount: params.deductAmount,
+        ...transactionEconomicsData(params.economics),
         description: `Subscription payment from wallet for enrollment ${params.enrollmentId}`,
       },
     });
@@ -136,6 +144,7 @@ export class WalletCheckoutService {
       tutorUserId: string;
       bookingId: string;
       tutorAmount: bigint;
+      economics: TransactionEconomicsFields;
     },
   ): Promise<void> {
     if (params.tutorAmount <= 0n) {
@@ -165,6 +174,7 @@ export class WalletCheckoutService {
         type: EWalletTransactionType.BOOKING_PAYMENT,
         direction: EWalletTransactionDirection.CREDIT,
         amount: params.tutorAmount,
+        ...transactionEconomicsData(params.economics),
         description: `Trial lesson payment settled for booking ${params.bookingId}`,
       },
     });
@@ -176,6 +186,7 @@ export class WalletCheckoutService {
       tutorUserId: string;
       enrollmentId: string;
       tutorAmount: bigint;
+      economics: TransactionEconomicsFields;
     },
   ): Promise<void> {
     if (params.tutorAmount <= 0n) {
@@ -205,6 +216,7 @@ export class WalletCheckoutService {
         type: EWalletTransactionType.BOOKING_PAYMENT,
         direction: EWalletTransactionDirection.CREDIT,
         amount: params.tutorAmount,
+        ...transactionEconomicsData(params.economics),
         description: `Subscription enrollment payment settled for ${params.enrollmentId}`,
       },
     });

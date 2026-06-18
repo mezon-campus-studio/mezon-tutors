@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
+  Receipt,
   Settings,
   ShieldCheck,
 } from "lucide-react";
@@ -49,6 +50,7 @@ const ICON_MAP: Record<
   appSettings: Settings,
   students: GraduationCap,
   payments: CreditCard,
+  transactions: Receipt,
   reports: LineChart,
 };
 

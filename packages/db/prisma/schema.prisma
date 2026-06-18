@@ -646,6 +646,9 @@ model Transaction {
   withdrawalId              String?                    @map("withdrawal_id") @db.Uuid
   type                      EWalletTransactionType
   amount                    BigInt
+  grossAmount               BigInt?                    @map("gross_amount")
+  tutorAmount               BigInt?                    @map("tutor_amount")
+  platformFee               BigInt?                    @map("platform_fee")
   direction                 EWalletTransactionDirection
   description               String?                    @db.Text
   createdAt                 DateTime                   @default(now()) @map("created_at")

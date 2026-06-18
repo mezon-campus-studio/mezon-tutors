@@ -126,6 +126,38 @@ export type AdminWalletWithdrawalApiItem = WalletWithdrawalApiItem & {
 
 export type AdminWalletWithdrawalsApiResponse = PaginatedData<AdminWalletWithdrawalApiItem>;
 
+export type AdminWalletTransactionApiItem = {
+  id: string;
+  type: WalletTransactionType;
+  direction: WalletTransactionDirection;
+  amount: number;
+  grossAmount: number | null;
+  tutorAmount: number | null;
+  platformFee: number | null;
+  description: string | null;
+  createdAt: string;
+  referenceLabel?: string | null;
+  user?: {
+    id: string;
+    username: string;
+    displayName: string;
+    email: string | null;
+    role: 'STUDENT' | 'TUTOR';
+  };
+};
+
+export type AdminWalletTransactionsApiResponse = PaginatedData<AdminWalletTransactionApiItem>;
+
+export type AdminWalletTransactionStatsApiResponse = {
+  totalCredit: number;
+  totalDebit: number;
+  totalPlatformFee: number;
+  monthCredit: number;
+  monthDebit: number;
+  transactionCount: number;
+  monthTransactionCount: number;
+};
+
 export type WalletTransactionsApiResponse = PaginatedData<WalletTransactionApiItem>;
 
 export type WalletWithdrawalsApiResponse = PaginatedData<WalletWithdrawalApiItem>;
