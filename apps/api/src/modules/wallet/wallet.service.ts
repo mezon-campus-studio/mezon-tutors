@@ -32,17 +32,26 @@ import {
   type WalletWithdrawalsApiResponse,
   type AdminWalletWithdrawalApiItem,
   type AdminWalletWithdrawalsApiResponse,
+  type AdminWalletTransactionApiItem,
+  type AdminWalletTransactionsApiResponse,
+  type AdminWalletTransactionStatsApiResponse,
   ECurrency as SharedCurrency,
   DEFAULT_TIMEZONE,
   WITHDRAWAL_WINDOW_CLOSED_CODE,
   isWithdrawalWindowOpen,
   subscriptionConcreteOccurrencesSorted,
   subscriptionSlotGrossAmount,
+  subscriptionSlotPlatformFee,
   subscriptionSlotTutorAmount,
   formatTutorDisplayName,
 } from '@mezon-tutors/shared';
 import dayjs = require('dayjs');
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  transactionEconomicsData,
+  transactionEconomicsFromAmount,
+  transactionEconomicsFromGrossTutorFee,
+} from './transaction-economics';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 
@@ -811,6 +820,11 @@ export class WalletService {
       subscriptionEnrollmentId?: string;
       subscriptionSlotIndex?: number;
       description: string;
+      economics: {
+        grossAmount: bigint;
+        tutorAmount: bigint;
+        platformFee: bigint;
+      };
     },
   ): Promise<void> {
     if (params.tutorAmount <= 0n) {
@@ -849,6 +863,7 @@ export class WalletService {
         type: EWalletTransactionType.REFUND,
         direction: EWalletTransactionDirection.DEBIT,
         amount: pendingDecrement,
+        ...transactionEconomicsData(params.economics),
         description: params.description,
       },
     });
@@ -860,6 +875,11 @@ export class WalletService {
     bookingId?: string;
     subscriptionEnrollmentId?: string;
     description?: string;
+    economics?: {
+      grossAmount: bigint;
+      tutorAmount: bigint;
+      platformFee: bigint;
+    };
   }): Promise<void> {
     if (params.amount <= 0n) {
       return;
@@ -913,6 +933,9 @@ export class WalletService {
           type: EWalletTransactionType.REFUND,
           direction: EWalletTransactionDirection.CREDIT,
           amount: params.amount,
+          ...transactionEconomicsData(
+            params.economics ?? transactionEconomicsFromAmount(params.amount),
+          ),
           description: params.description ?? 'Refund to wallet balance',
         },
       });
@@ -999,6 +1022,11 @@ export class WalletService {
           type: EWalletTransactionType.REFUND,
           direction: EWalletTransactionDirection.CREDIT,
           amount: booking.grossAmount,
+          ...transactionEconomicsFromGrossTutorFee(
+            booking.grossAmount,
+            booking.tutorAmount,
+            booking.platformFee,
+          ),
           description: refundDescription,
         },
       });
@@ -1008,6 +1036,11 @@ export class WalletService {
         tutorAmount: booking.tutorAmount,
         bookingId: booking.id,
         description: `Deduction for cancelled trial lesson refund to student`,
+        economics: transactionEconomicsFromGrossTutorFee(
+          booking.grossAmount,
+          booking.tutorAmount,
+          booking.platformFee,
+        ),
       });
 
       await tx.trialLessonBooking.update({
@@ -1029,6 +1062,7 @@ export class WalletService {
     tutorUserId: string;
     grossAmount: bigint;
     tutorAmount: bigint;
+    platformFee: bigint;
     slotCount: number;
     description?: string;
   }): Promise<boolean> {
@@ -1069,6 +1103,11 @@ export class WalletService {
       params.slotCount,
       params.slotIndex
     );
+    const slotEconomics = transactionEconomicsFromGrossTutorFee(
+      refundAmount,
+      tutorPendingDecrement,
+      subscriptionSlotPlatformFee(params.platformFee, params.slotCount, params.slotIndex),
+    );
 
     if (refundAmount <= 0n) {
       return false;
@@ -1098,6 +1137,7 @@ export class WalletService {
           type: EWalletTransactionType.REFUND,
           direction: EWalletTransactionDirection.CREDIT,
           amount: refundAmount,
+          ...transactionEconomicsData(slotEconomics),
           description: params.description ?? 'Refund for cancelled subscription lesson',
         },
       });
@@ -1111,6 +1151,7 @@ export class WalletService {
           params.description != null
             ? `Tutor deduction: ${params.description}`
             : 'Deduction for cancelled subscription lesson refund to student',
+        economics: slotEconomics,
       });
 
       const updatedSlots = slots.map((s, i) =>
@@ -1132,6 +1173,8 @@ export class WalletService {
         id: true,
         studentId: true,
         grossAmount: true,
+        tutorAmount: true,
+        platformFee: true,
         paymentStatus: true,
         tutor: { select: WALLET_TUTOR_PROFILE_SELECT },
       },
@@ -1151,6 +1194,11 @@ export class WalletService {
       amount: enrollment.grossAmount,
       subscriptionEnrollmentId: enrollment.id,
       description: `Refund for subscription plan with ${tutorLabel}`,
+      economics: transactionEconomicsFromGrossTutorFee(
+        enrollment.grossAmount,
+        enrollment.tutorAmount,
+        enrollment.platformFee,
+      ),
     });
 
     await this.prisma.subscriptionEnrollment.update({
@@ -1182,6 +1230,129 @@ export class WalletService {
     ]);
 
     const items: WalletWithdrawalApiItem[] = rows.map((row) => this.mapWithdrawalRow(row));
+
+    return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
+  async getAdminTransactionStats(): Promise<AdminWalletTransactionStatsApiResponse> {
+    const monthStart = this.monthStart();
+
+    const [
+      creditAgg,
+      debitAgg,
+      platformFeeAgg,
+      monthCreditAgg,
+      monthDebitAgg,
+      transactionCount,
+      monthTransactionCount,
+    ] = await Promise.all([
+      this.prisma.transaction.aggregate({
+        _sum: { grossAmount: true },
+        where: { direction: EWalletTransactionDirection.CREDIT },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { grossAmount: true },
+        where: { direction: EWalletTransactionDirection.DEBIT },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { platformFee: true },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { grossAmount: true },
+        where: {
+          direction: EWalletTransactionDirection.CREDIT,
+          createdAt: { gte: monthStart },
+        },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { grossAmount: true },
+        where: {
+          direction: EWalletTransactionDirection.DEBIT,
+          createdAt: { gte: monthStart },
+        },
+      }),
+      this.prisma.transaction.count(),
+      this.prisma.transaction.count({ where: { createdAt: { gte: monthStart } } }),
+    ]);
+
+    return {
+      totalCredit: Number(creditAgg._sum.grossAmount ?? 0n),
+      totalDebit: Number(debitAgg._sum.grossAmount ?? 0n),
+      totalPlatformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
+      monthCredit: Number(monthCreditAgg._sum.grossAmount ?? 0n),
+      monthDebit: Number(monthDebitAgg._sum.grossAmount ?? 0n),
+      transactionCount,
+      monthTransactionCount,
+    };
+  }
+
+  async getAllTransactions(
+    page = 1,
+    limit = 15,
+    type?: EWalletTransactionType,
+    direction?: EWalletTransactionDirection,
+  ): Promise<AdminWalletTransactionsApiResponse> {
+    const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
+
+    const where: Prisma.TransactionWhereInput = {
+      ...(type ? { type } : {}),
+      ...(direction ? { direction } : {}),
+    };
+
+    const [total, rows] = await Promise.all([
+      this.prisma.transaction.count({ where }),
+      this.prisma.transaction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: safeLimit,
+        include: {
+          wallet: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  email: true,
+                  role: true,
+                  tutorProfile: { select: { firstName: true, lastName: true } },
+                },
+              },
+            },
+          },
+          booking: { select: { id: true } },
+          subscriptionEnrollment: { select: { id: true } },
+        },
+      }),
+    ]);
+
+    const items: AdminWalletTransactionApiItem[] = rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      direction: row.direction,
+      amount: Number(row.amount),
+      grossAmount: row.grossAmount != null ? Number(row.grossAmount) : null,
+      tutorAmount: row.tutorAmount != null ? Number(row.tutorAmount) : null,
+      platformFee: row.platformFee != null ? Number(row.platformFee) : null,
+      description: row.description,
+      createdAt: row.createdAt.toISOString(),
+      referenceLabel: row.bookingId
+        ? `Booking ${row.bookingId.slice(0, 8)}`
+        : row.subscriptionEnrollmentId
+          ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
+          : row.withdrawalId
+            ? `Withdrawal ${row.withdrawalId.slice(0, 8)}`
+            : null,
+      user: row.wallet.user
+        ? {
+            id: row.wallet.user.id,
+            username: row.wallet.user.username,
+            displayName: this.formatWithdrawalRequesterName(row.wallet.user),
+            email: row.wallet.user.email,
+            role: row.wallet.user.role as 'STUDENT' | 'TUTOR',
+          }
+        : undefined,
+    }));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
@@ -1398,6 +1569,7 @@ export class WalletService {
           type: EWalletTransactionType.WITHDRAWAL,
           direction: EWalletTransactionDirection.DEBIT,
           amount: withdrawal.amount,
+          ...transactionEconomicsFromAmount(withdrawal.amount),
           description: `Withdrawal completed to ${withdrawal.bankName}`,
         },
       });

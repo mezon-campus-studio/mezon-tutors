@@ -44,3 +44,12 @@ export function subscriptionSlotGrossAmount(
 ): bigint {
   return subscriptionSlotTutorAmount(totalGrossAmount, slotCount, slotIndex);
 }
+
+/** Platform fee attributed to one subscription slot. */
+export function subscriptionSlotPlatformFee(
+  totalPlatformFee: bigint,
+  slotCount: number,
+  slotIndex: number
+): bigint {
+  return subscriptionSlotTutorAmount(totalPlatformFee, slotCount, slotIndex);
+}

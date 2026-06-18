@@ -5,6 +5,7 @@ import { AdminGuard } from '../../common/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { CreateWalletWithdrawalDto } from './dto/create-wallet-withdrawal.dto';
+import { GetAdminWalletTransactionsDto } from './dto/get-admin-wallet-transactions.dto';
 import { GetWalletTransactionsDto } from './dto/get-wallet-transactions.dto';
 import { GetWalletWithdrawalsDto } from './dto/get-wallet-withdrawals.dto';
 import {
@@ -61,6 +62,25 @@ export class WalletController {
   @ApiOperation({ summary: 'Admin: list all withdrawals (paginated)' })
   getAllWithdrawals(@Query() query: GetWalletWithdrawalsDto) {
     return this.walletService.getAllWithdrawals(query.page, query.limit);
+  }
+
+  @Get('admin/transactions/stats')
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Admin: wallet transaction statistics' })
+  getAdminTransactionStats() {
+    return this.walletService.getAdminTransactionStats();
+  }
+
+  @Get('admin/transactions')
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Admin: list all wallet transactions (paginated)' })
+  getAllTransactions(@Query() query: GetAdminWalletTransactionsDto) {
+    return this.walletService.getAllTransactions(
+      query.page,
+      query.limit,
+      query.type,
+      query.direction,
+    );
   }
 
   @Post('withdrawals')

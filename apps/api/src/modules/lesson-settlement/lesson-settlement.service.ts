@@ -16,6 +16,8 @@ import {
   ESubscriptionLessonSlotStatus,
   normalizeSubscriptionSlotStatus,
   subscriptionConcreteOccurrencesSorted,
+  subscriptionSlotGrossAmount,
+  subscriptionSlotPlatformFee,
   subscriptionSlotTutorAmount,
   type SubscriptionWeeklySlotDto,
 } from '@mezon-tutors/shared';
@@ -23,6 +25,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 import { LessonCompletionService } from './lesson-completion.service';
+import { transactionEconomicsFromGrossTutorFee } from '../wallet/transaction-economics';
 
 const MAX_SETTLEMENT_ATTEMPTS = 5;
 
@@ -326,6 +329,11 @@ export class LessonSettlementService {
           type: EWalletTransactionType.RELEASE,
           direction: EWalletTransactionDirection.CREDIT,
           amount: booking.tutorAmount,
+          ...transactionEconomicsFromGrossTutorFee(
+            booking.grossAmount,
+            booking.tutorAmount,
+            booking.platformFee,
+          ),
           description: `Trial lesson earnings released for booking ${booking.id}`,
         },
       });
@@ -426,6 +434,17 @@ export class LessonSettlementService {
         return { outcome: 'fail' as const, reason: 'Invalid slot release amount' };
       }
 
+      const slotGrossAmount = subscriptionSlotGrossAmount(
+        enrollment.grossAmount,
+        slots.length,
+        slotIndex,
+      );
+      const slotPlatformFee = subscriptionSlotPlatformFee(
+        enrollment.platformFee,
+        slots.length,
+        slotIndex,
+      );
+
       const existingRelease = await tx.transaction.findFirst({
         where: {
           subscriptionEnrollmentId: enrollment.id,
@@ -466,6 +485,11 @@ export class LessonSettlementService {
           type: EWalletTransactionType.RELEASE,
           direction: EWalletTransactionDirection.CREDIT,
           amount: releaseAmount,
+          ...transactionEconomicsFromGrossTutorFee(
+            slotGrossAmount,
+            releaseAmount,
+            slotPlatformFee,
+          ),
           description: `Subscription lesson ${slotIndex + 1} earnings released for ${enrollment.id}`,
         },
       });

@@ -7,6 +7,7 @@ export type AdminMenuKey =
   | 'appSettings'
   | 'students'
   | 'payments'
+  | 'transactions'
   | 'reports';
 
 export type AdminMenuItem = {
@@ -52,6 +53,12 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     labelKey: 'payments',
     iconKey: 'payments',
     href: ROUTES.ADMIN.PAYMENTS,
+  },
+  {
+    key: 'transactions',
+    labelKey: 'transactions',
+    iconKey: 'transactions',
+    href: ROUTES.ADMIN.TRANSACTIONS,
   },
   {
     key: 'reports',

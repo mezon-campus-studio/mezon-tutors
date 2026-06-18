@@ -10,6 +10,7 @@
       "appSettings": "App Settings",
       "students": "Students",
       "payments": "Payments",
+      "transactions": "Transactions",
       "reports": "Reports",
       "logout": "Logout"
     },
@@ -236,6 +237,54 @@
           "copyProofSuccess": "Payment proof copied.",
           "copyProofError": "Failed to copy image. Please try again.",
           "close": "Close"
+        }
+      }
+    },
+    "Transactions": {
+      "title": "Transactions",
+      "description": "Track money in and out across all platform wallets.",
+      "metrics": {
+        "totalCredit": {
+          "title": "Total money in",
+          "helper": "This month: {amount}"
+        },
+        "totalDebit": {
+          "title": "Total money out",
+          "helper": "This month: {amount}"
+        },
+        "platformFee": {
+          "title": "Platform fees",
+          "helper": "Total fees collected from transactions"
+        },
+        "transactionCount": {
+          "title": "Transactions",
+          "helper": "This month: {count} transactions"
+        }
+      },
+      "filters": {
+        "allTypes": "All types",
+        "allDirections": "All directions"
+      },
+      "list": {
+        "title": "Transaction history",
+        "empty": "No transactions found.",
+        "unknownUser": "Unknown",
+        "roles": {
+          "STUDENT": "Student",
+          "TUTOR": "Tutor"
+        },
+        "direction": {
+          "CREDIT": "Money in",
+          "DEBIT": "Money out"
+        },
+        "columns": {
+          "user": "User",
+          "type": "Type",
+          "direction": "Direction",
+          "amount": "Amount",
+          "gross": "Gross",
+          "reference": "Reference",
+          "createdAt": "Time"
         }
       }
     },

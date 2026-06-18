@@ -655,6 +655,7 @@ export class LessonComplaintService {
             studentId: true,
             grossAmount: true,
             tutorAmount: true,
+            platformFee: true,
             currency: true,
             weeklySlots: true,
             paymentStatus: true,
@@ -716,6 +717,7 @@ export class LessonComplaintService {
           tutorUserId: enrollment.tutor.userId,
           grossAmount: enrollment.grossAmount,
           tutorAmount: enrollment.tutorAmount,
+          platformFee: enrollment.platformFee,
           slotCount: slots.length,
           description: `Refund approved for subscription lesson complaint with ${tutorLabel}`,
         });
