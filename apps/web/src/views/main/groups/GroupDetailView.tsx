@@ -140,7 +140,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 lg:text-5xl">
+                  <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
                     {group.name}
                   </h1>
                   <button 
