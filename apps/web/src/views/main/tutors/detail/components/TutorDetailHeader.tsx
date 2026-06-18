@@ -1,25 +1,15 @@
 "use client";
 
-import {
-  TUTOR_DETAIL_TAB_KEYS,
-  type TutorAboutDto,
-  type TutorDetailTabKey,
-} from "@mezon-tutors/shared";
+import type { TutorAboutDto } from "@mezon-tutors/shared";
 import { BadgeCheck, GraduationCap, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 type TutorDetailHeaderProps = {
   tutor: TutorAboutDto;
-  activeTab: TutorDetailTabKey;
-  onTabChange: (tab: TutorDetailTabKey) => void;
 };
 
-export function TutorDetailHeader({
-  tutor,
-  activeTab,
-  onTabChange,
-}: TutorDetailHeaderProps) {
+export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
   const t = useTranslations("Tutors.Detail");
   const tSubject = useTranslations("Tutors.Filter.Subject");
   const tCountry = useTranslations("Tutors.Filter.Country");
@@ -27,7 +17,7 @@ export function TutorDetailHeader({
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
 
   return (
-    <div className="overflow-hidden rounded-t-3xl border border-violet-100 bg-white">
+    <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white">
       <div className="relative">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,#faf5ff_0%,transparent_100%)]" />
         <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-start">
@@ -79,38 +69,6 @@ export function TutorDetailHeader({
               </span>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="scrollbar-hide overflow-x-auto border-t border-violet-100 bg-white px-3">
-        <div className="flex items-center gap-1 py-1.5">
-          {TUTOR_DETAIL_TAB_KEYS.map((tab) => {
-            const isActive = tab === activeTab;
-            return (
-              <button
-                key={tab}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-controls={`tab-panel-${tab}`}
-                onClick={() => onTabChange(tab)}
-                className={`group relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                  isActive
-                    ? "text-violet-700"
-                    : "text-slate-600 hover:text-violet-700"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none absolute inset-0 -z-10 rounded-full bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] ring-1 ring-inset transition-all duration-300 ${
-                    isActive
-                      ? "scale-100 opacity-100 ring-violet-100"
-                      : "scale-90 opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
-                  }`}
-                />
-                <span className="relative">{t(`tabs.${tab}`)}</span>
-              </button>
-            );
-          })}
         </div>
       </div>
     </div>
