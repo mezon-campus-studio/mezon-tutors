@@ -9,6 +9,7 @@ import {
   utcWeeklySlotsToCalendarInstances,
   expandCalendarSlotToSteps,
   getWeekMondayInTimezone,
+  calculateGroupSubscriptionPrice,
 } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -62,6 +63,8 @@ import {
   useGetSubscriptionPlansByTutor,
   useGetTutorAvailability,
   useWalletDetails,
+  useGetStudyGroup,
+  usePublicAppSettings,
 } from "@/services";
 import { isAuthenticatedAtom, userAtom } from "@/store/auth.atom";
 import { SubscriptionPaymentSummaryCard } from "../components/SubscriptionPaymentSummaryCard";
@@ -125,8 +128,17 @@ export default function SubscriptionPlanSchedulePage() {
   const { data: plans, isPending: isPlansLoading } =
     useGetSubscriptionPlansByTutor(tutorId, Boolean(tutorId));
   const plan = useMemo(
-    () => plans?.find((p) => p.lessonsPerWeek === lessonsPerWeek) ?? null,
-    [plans, lessonsPerWeek],
+    () =>
+      plans?.find((p) => p.id === lessonsPerWeekRaw) ??
+      plans?.find((p) => p.lessonsPerWeek === lessonsPerWeek) ??
+      null,
+    [plans, lessonsPerWeek, lessonsPerWeekRaw],
+  );
+
+  const groupId = searchParams.get("groupId") ?? undefined;
+  const { data: group, isPending: isGroupPending } = useGetStudyGroup(
+    groupId ?? "",
+    !!groupId,
   );
 
   const { data: schedule } = useGetTutorAvailability(tutorId, Boolean(tutorId));
@@ -163,21 +175,51 @@ export default function SubscriptionPlanSchedulePage() {
 
   const createEnrollment = useCreateSubscriptionEnrollmentMutation();
   const { data: walletDetails } = useWalletDetails();
+  const { data: appSettings } = usePublicAppSettings();
+  const groupMemberCount = group?.members?.length ?? 1;
+  const canApplyGroupBooking = Boolean(
+    groupId &&
+      group &&
+      currentUser?.id &&
+      group.leaderId === currentUser.id &&
+      groupMemberCount >= 2,
+  );
+  const effectiveGroupId = canApplyGroupBooking ? groupId : undefined;
 
-  const planPrice = useMemo(() => {
-    if (!plan) {
-      return 0;
-    }
-    if (currency === ECurrency.USD) {
-      return plan.price.usd;
-    }
-    if (currency === ECurrency.PHP) {
-      return plan.price.php;
-    }
-    return plan.price.vnd;
-  }, [plan, currency]);
+  const pricingBreakdown = useMemo(() => {
+    if (!plan || !appSettings) return null;
+    if (groupId && isGroupPending) return null;
+    const v =
+      currency === ECurrency.USD
+        ? plan.price.usd
+        : currency === ECurrency.PHP
+          ? plan.price.php
+          : plan.price.vnd;
 
-  const totalDisplay = plan ? formatToCurrency(currency, planPrice) : undefined;
+    return calculateGroupSubscriptionPrice({
+      baseMonthlyPrice: v,
+      memberCount: canApplyGroupBooking ? groupMemberCount : 1,
+      groupDiscountRate: appSettings.subscriptionGroupDiscountRate,
+      platformFeeRate: appSettings.platformFeePercentage,
+    });
+  }, [
+    plan,
+    appSettings,
+    groupId,
+    isGroupPending,
+    currency,
+    canApplyGroupBooking,
+    groupMemberCount,
+  ]);
+
+  const planPrice = useMemo(
+    () => pricingBreakdown?.grossAmount ?? 0,
+    [pricingBreakdown],
+  );
+
+  const totalDisplay = pricingBreakdown
+    ? formatToCurrency(currency, planPrice)
+    : undefined;
 
   const walletBalance = useMemo(
     () =>
@@ -353,6 +395,8 @@ export default function SubscriptionPlanSchedulePage() {
     isAuth &&
       eligibility?.eligible &&
       plan &&
+      pricingBreakdown &&
+      !(groupId && isGroupPending) &&
       selectedSlots.length === lessonsPerWeek,
   );
 
@@ -361,14 +405,13 @@ export default function SubscriptionPlanSchedulePage() {
       if (!canSubmit || !plan) {
         return;
       }
-      const groupId = searchParams.get("groupId") ?? undefined;
       const enrollment = await createEnrollment.mutateAsync({
         tutorId,
         lessonsPerWeek: plan.lessonsPerWeek,
         currency,
         useWalletBalance: withWallet && showWalletRow,
         paymentProvider,
-        groupId,
+        groupId: effectiveGroupId ?? undefined,
         slots: selectedSlots.map((s) =>
           convertWallClockSlotBetweenTimezones(
             s.date,
@@ -390,10 +433,10 @@ export default function SubscriptionPlanSchedulePage() {
       canSubmit,
       createEnrollment,
       currency,
+      effectiveGroupId,
       plan,
       redirectToPaymentGateway,
       router,
-      searchParams,
       selectedSlots,
       showWalletRow,
       t,
@@ -575,6 +618,12 @@ export default function SubscriptionPlanSchedulePage() {
                 onUseWalletBalanceChange={setUseWalletBalance}
                 deductFromWallet={walletPayment.deductFromWallet}
                 vnpayAmount={walletPayment.vnpayAmount}
+                groupId={effectiveGroupId}
+                groupName={group?.name}
+                memberCount={pricingBreakdown?.memberCount}
+                groupDiscountRate={pricingBreakdown?.groupDiscountRate}
+                originalPricePerStudent={pricingBreakdown?.baseMonthlyPrice}
+                currency={currency}
               />
             ) : null}
           </div>

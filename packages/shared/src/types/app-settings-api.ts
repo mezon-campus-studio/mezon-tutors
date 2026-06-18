@@ -19,6 +19,7 @@ export type AppSettings = {
   minWithdrawalAmountVnd: number;
   minWithdrawalAmountUsd: number;
   minWithdrawalAmountPhp: number;
+  subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
   updatedByUserId: string | null;
   updatedBy: {
@@ -36,6 +37,7 @@ export type PublicAppSettings = {
   minWithdrawalAmountVnd: number;
   minWithdrawalAmountUsd: number;
   minWithdrawalAmountPhp: number;
+  subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
 };
 
@@ -47,5 +49,6 @@ export type UpdateAppSettingsBody = {
   minWithdrawalAmountVnd?: number;
   minWithdrawalAmountUsd?: number;
   minWithdrawalAmountPhp?: number;
+  subscriptionGroupDiscountRate?: number;
   mezonLinks?: MezonLinks | null;
 };
