@@ -6,6 +6,14 @@
     "creating": "Đang tạo...",
     "groupStudyPrefix": "Học nhóm",
     "newGroupPlaceholder": "Tên nhóm",
+    "createDialog": {
+      "title": "Tạo nhóm mới",
+      "prompt": "Vui lòng nhập tên nhóm bạn muốn tạo",
+      "placeholder": "Tên nhóm mới...",
+      "cancel": "Hủy",
+      "submit": "Tạo nhóm",
+      "submitting": "Đang tạo..."
+    },
     "breadcrumb": {
       "dashboard": "Trang chủ",
       "groups": "Nhóm học"

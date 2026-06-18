@@ -6,6 +6,14 @@
     "creating": "Creating...",
     "groupStudyPrefix": "Group study",
     "newGroupPlaceholder": "Group Name",
+    "createDialog": {
+      "title": "Create New Group",
+      "prompt": "Please enter the name of the group you want to create",
+      "placeholder": "New group name...",
+      "cancel": "Cancel",
+      "submit": "Create Group",
+      "submitting": "Creating..."
+    },
     "breadcrumb": {
       "dashboard": "Dashboard",
       "groups": "Groups"
