@@ -12,7 +12,7 @@ import {
   ExternalLink,
   Sparkles
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAtomValue } from 'jotai';
 import { 
@@ -47,6 +47,8 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
   const t = useTranslations('Groups.detail');
   const tGroups = useTranslations('Groups');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tutorId = searchParams.get('tutorId');
   const currentUser = useAtomValue(userAtom);
   const { lightClient, setLightClient } = useMezonLight();
   const { data: botContact } = useGetSupportBotContact();
@@ -179,7 +181,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
         <h2 className="text-2xl font-bold text-gray-900">{t('notFound')}</h2>
         <Button 
           variant="link" 
-          onClick={() => router.push(ROUTES.DASHBOARD.GROUPS)}
+          onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}${tutorId ? `?tutorId=${tutorId}` : ''}`)}
           className="mt-4"
         >
           {t('backToList')}
@@ -198,7 +200,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
       {/* Header Section */}
       <div className="space-y-6">
         <button 
-          onClick={() => router.push(ROUTES.DASHBOARD.GROUPS)}
+          onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}${tutorId ? `?tutorId=${tutorId}` : ''}`)}
           className="flex cursor-pointer items-center gap-2 text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -223,7 +225,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 lg:text-5xl">
+                  <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
                     {group.name}
                   </h1>
                   <button 
@@ -274,10 +276,6 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                   ) : (
                     <MessageCircle className="w-4 h-4" />
                   )}
-
-                  {hasGroupChat
-                    ? t('groupChat.openButton')
-                    : t('groupChat.createButton')}
                 </Button>
               )}
             </div>

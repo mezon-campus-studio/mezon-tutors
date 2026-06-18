@@ -39,9 +39,8 @@
   },
   "templates": {
     "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
-    "bookingConfirmed": "Your booking with {tutorName} has been confirmed.",
     "bookingCancelled": "Your booking has been cancelled.",
-    "subscriptionEnrollmentConfirmed": "Your subscription with {tutorName} ({planLabel}) is now active.",
+    "subscriptionEnrollmentConfirmed": "Your subscription with {tutorName} ({planLabel}) is now active.{hasGroup, select, yes { Group Study: {groupName}. Members: {membersCount}.} other {}}",
     "subscriptionEnrollmentCreated": "{studentName} enrolled in your {planLabel} plan.",
     "welcomeLinked": "Welcome, {displayName}! Your Mezon account is linked. Explore tutors and book your first lesson.",
     "paymentSucceeded": "Your payment for booking {bookingCode} was successful.",

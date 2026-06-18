@@ -6,6 +6,16 @@
     "creating": "Đang tạo...",
     "groupStudyPrefix": "Học nhóm",
     "newGroupPlaceholder": "Tên nhóm",
+    "createDialog": {
+      "title": "Tạo nhóm mới",
+      "prompt": "Vui lòng nhập tên nhóm bạn muốn tạo",
+      "placeholder": "Tên nhóm mới...",
+      "cancel": "Hủy",
+      "submit": "Tạo nhóm",
+      "submitting": "Đang tạo..."
+    },
+    "memberComplaintWarning": "Bạn đang tham gia với quyền thành viên, vui lòng liên hệ trưởng nhóm để được hỗ trợ khiếu nại.",
+    "notAllowedRole": "Bạn không có quyền tham gia nhóm với vai trò Gia sư hoặc Quản trị viên.",
     "breadcrumb": {
       "dashboard": "Trang chủ",
       "groups": "Nhóm học"
@@ -41,7 +51,6 @@
       "noEmail": "Chưa chia sẻ email",
       "allMembers": "Xem tất cả thành viên",
       "groupChat": {
-        "createButton": "Tạo cuộc trò chuyện nhóm",
         "openButton": "Mở cuộc trò chuyện nhóm",
         "confirmTitle": "Tạo cuộc trò chuyện nhóm trên Mezon?",
         "confirmDescription": "Hệ thống sẽ tạo cuộc trò chuyện nhóm với các thành viên hiện tại và Mezonly bot.",

@@ -205,6 +205,8 @@ export const subscriptionEnrollmentConfirmedEmbed = (
     planLabel: string;
     amountFormatted: string;
     enrollmentUrl?: string;
+    groupName?: string;
+    membersCount?: number;
   } & SenderAvatarParams
 ): IInteractiveMessageProps => ({
   color: MEZON_EMBED_COLORS.success,
@@ -214,6 +216,8 @@ export const subscriptionEnrollmentConfirmedEmbed = (
     { name: 'Tutor', value: params.tutorName, inline: true },
     { name: 'Plan', value: params.planLabel, inline: true },
     { name: 'Paid', value: params.amountFormatted, inline: true },
+    ...(params.groupName ? [{ name: 'Group Study', value: params.groupName, inline: true }] : []),
+    ...(params.membersCount ? [{ name: 'Members', value: params.membersCount.toString(), inline: true }] : []),
   ],
   url: params.enrollmentUrl,
   ...embedSenderThumbnail(params.senderAvatarUrl),

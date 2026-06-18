@@ -25,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { studyGroupApi, StudyGroup } from '@/services/study-group/study-group.api';
 import { ROUTES } from '@mezon-tutors/shared';
-import { isAuthenticatedAtom } from '@/store/auth.atom';
+import { isAuthenticatedAtom, userAtom } from '@/store/auth.atom';
 import { BASE_URL } from '@/services/api-client';
 import { toast } from 'sonner';
 
@@ -38,6 +38,8 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   const tGroups = useTranslations('Groups');
   const router = useRouter();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const user = useAtomValue(userAtom);
+  const isTutorOrAdmin = user?.role === 'TUTOR' || user?.role === 'ADMIN';
   const [group, setGroup] = useState<StudyGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -68,6 +70,11 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   const handleJoin = async () => {
     if (isJoining) return;
     
+    if (isTutorOrAdmin) {
+      toast.error(tGroups('notAllowedRole'));
+      return;
+    }
+
     if (!isAuthenticated) {
       // Remember intent and redirect to Mezon login
       localStorage.setItem('pending_group_join', inviteId);
@@ -123,17 +130,11 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center py-12 px-4">
-      {/* Brand Logo Header */}
-      <div className="flex items-center gap-3 mb-12">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-          <BookOpen className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-2xl font-black text-gray-900 tracking-tight">Mezon Tutors</span>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center py-4 px-4">
+      
 
       {/* Main Card */}
-      <Card className="w-full max-w-[600px] p-8 md:p-12 rounded-[48px] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] bg-white relative overflow-hidden">
+      <Card className="w-full max-w-[600px] p-4 md:p-8 rounded-[48px] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] bg-white relative overflow-hidden">
         <div className="space-y-8 text-center relative z-10">
           {/* Status Badge */}
           <div className="flex justify-center">
@@ -145,7 +146,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
 
           {/* Group Title */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
               {group.name}
             </h1>
           </div>
@@ -216,8 +217,13 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
           <div className="space-y-4">
             <Button 
               onClick={handleJoin}
-              disabled={isJoining}
-              className="group h-16 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-lg font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-3"
+              disabled={isJoining || isTutorOrAdmin}
+              className={cn(
+                "group h-16 rounded-full px-8 text-lg font-bold shadow-md transition-all gap-3",
+                isTutorOrAdmin 
+                  ? "bg-gray-200 text-gray-500 shadow-none cursor-not-allowed"
+                  : "bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+              )}
             >
               {isJoining ? (
                 <Loader2 className="w-6 h-6 animate-spin" />

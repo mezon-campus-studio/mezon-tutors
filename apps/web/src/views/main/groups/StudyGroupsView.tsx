@@ -22,6 +22,12 @@ import {
   AvatarGroup,
   AvatarGroupCount,
   Badge,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Input,
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -62,7 +68,7 @@ const GroupCard = ({
 
   return (
     <Card 
-      onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`)}
+      onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}${tutorId ? `?tutorId=${tutorId}` : ''}`)}
       className="relative p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border-border/50 overflow-hidden rounded-3xl cursor-pointer"
     >
       <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/10 group-hover:bg-primary transition-colors duration-300" />
@@ -108,27 +114,26 @@ const GroupCard = ({
         </AvatarGroup>
         
         {showBookingButton ? (
-          <button 
+          <Button 
             onClick={handleSelect}
             disabled={!canBook}
             className={cn(
-              "font-bold text-sm flex items-center gap-1.5 transition-all",
-              canBook
-                ? "text-primary hover:gap-2.5 group-hover:translate-x-1"
-                : "text-gray-400 cursor-not-allowed"
+              "h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-xs font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-1.5",
+              !canBook && "opacity-50 grayscale cursor-not-allowed shadow-none"
             )}
           >
             {t('selectForBooking')}
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         ) : (
-          <button 
-            onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}`); }}
-            className="text-gray-500 font-bold text-sm flex items-center gap-1.5 transition-all hover:gap-2.5 hover:text-primary"
+          <Button 
+            variant="outline"
+            onClick={(e) => { e.stopPropagation(); router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}${tutorId ? `?tutorId=${tutorId}` : ''}`); }}
+            className="h-10 rounded-full px-6 text-xs font-bold gap-1.5 border-gray-200 text-gray-600 hover:text-primary hover:border-primary/50"
           >
             {t('viewDetails')}
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -150,6 +155,8 @@ export const StudyGroupsView = () => {
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
 
   useEffect(() => {
     fetchGroups();
@@ -166,12 +173,18 @@ export const StudyGroupsView = () => {
     }
   };
 
-  const handleCreateGroup = async () => {
-    if (isCreating) return;
+  const handleCreateGroup = () => {
+    setNewGroupName('');
+    setIsCreateModalOpen(true);
+  };
+
+  const submitCreateGroup = async () => {
+    if (isCreating || !newGroupName.trim()) return;
     setIsCreating(true);
     try {
-      const newGroup = await studyGroupApi.create(t('newGroupPlaceholder'));
-      router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}`);
+      const newGroup = await studyGroupApi.create(newGroupName.trim());
+      setIsCreateModalOpen(false);
+      router.push(`${ROUTES.DASHBOARD.GROUPS}/${newGroup.id}${tutorId ? `?tutorId=${tutorId}` : ''}`);
     } catch (error) {
       console.error('Failed to create group:', error);
       setIsCreating(false);
@@ -180,17 +193,10 @@ export const StudyGroupsView = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:px-8 space-y-12">
-      {/* Breadcrumb & Header */}
       <div className="space-y-4">
-        <nav className="flex items-center gap-2 text-sm font-medium text-gray-500">
-          <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => router.push(ROUTES.DASHBOARD.INDEX)}>{t('breadcrumb.dashboard')}</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900">{t('breadcrumb.groups')}</span>
-        </nav>
-        
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl space-y-2">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 lg:text-5xl">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
               {t('title')}
             </h1>
             <p className="text-lg text-gray-500 font-medium">
@@ -246,6 +252,52 @@ export const StudyGroupsView = () => {
           </Card>
         </div>
       )}
+
+      {/* Create Group Dialog */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{t('createDialog.title')}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-500 mb-2 font-medium">{t('createDialog.prompt')}</p>
+            <Input
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder={t('createDialog.placeholder')}
+              className="col-span-3 rounded-xl border-gray-200 focus-visible:ring-primary h-12 px-4"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') submitCreateGroup();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="rounded-full h-11 px-6 font-bold"
+              disabled={isCreating}
+            >
+              {t('createDialog.cancel')}
+            </Button>
+            <Button 
+              onClick={submitCreateGroup}
+              disabled={isCreating || !newGroupName.trim()}
+              className="rounded-full h-11 px-6 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white font-bold disabled:opacity-50"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('createDialog.submitting')}
+                </>
+              ) : (
+                t('createDialog.submit')
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

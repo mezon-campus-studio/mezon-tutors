@@ -133,6 +133,8 @@ export class MezonMessageService {
       planLabel: string;
       amountFormatted: string;
       enrollmentId: string;
+      groupName?: string;
+      membersCount?: number;
     } & SenderAvatarParams
   ): ChannelMessageContent {
     return this.toChannelMessage(

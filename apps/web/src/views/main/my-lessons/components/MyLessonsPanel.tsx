@@ -365,7 +365,13 @@ function PastLessonListItem({
               <Button
                 variant="outline"
                 className="h-9 rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
-                onClick={() => onComplain(lesson)}
+                onClick={() => {
+                  if (lesson.groupName && lesson.isPayer === false) {
+                    toast.warning(tGroups('memberComplaintWarning'));
+                    return;
+                  }
+                  onComplain(lesson);
+                }}
               >
                 {complainLabel}
               </Button>
