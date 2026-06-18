@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return createNoIndexMetadata({
     title: seo.savedTutors.title,
     description: seo.savedTutors.description,
-    path: ROUTES.DASHBOARD.SAVED_TUTORS,
+    path: ROUTES.SAVED_TUTORS,
   });
 }
 

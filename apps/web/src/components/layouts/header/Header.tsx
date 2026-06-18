@@ -2,7 +2,7 @@
 
 import { HEADER_LOCALES, ROUTES } from "@mezon-tutors/shared";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Check, ChevronDown, Globe, Menu } from "lucide-react";
+import { Check, ChevronDown, Globe, Heart, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -289,7 +289,19 @@ export default function Header() {
               </>
             ) : null}
             {mounted && isAuthenticated ? (
-              <HeaderNotification enabled={isAuthenticated} />
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label={"saved-tutors"}
+                  className="size-9 rounded-full flex shrink-0 text-xs font-semibold border-violet-200 bg-white text-violet-700 hover:bg-violet-50 hover:text-violet-800"
+                  onClick={() => router.push(ROUTES.SAVED_TUTORS)}
+                >
+                  <Heart className="size-4" />
+                </Button>
+                <HeaderNotification enabled={isAuthenticated} />
+              </>
             ) : null}
             {mounted ? <LoginButton label={t("login")} /> : null}
             {mounted && isAuthenticated && (
