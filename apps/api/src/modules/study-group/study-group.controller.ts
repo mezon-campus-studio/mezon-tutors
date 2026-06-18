@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Req, UseGuards, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StudyGroupService } from './study-group.service';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
@@ -55,6 +55,9 @@ export class StudyGroupController {
   @Post('join/:inviteId')
   async join(@Req() req: Request, @Param('inviteId') inviteId: string) {
     const user = req.user as AuthUserPayload;
+    if (user.role === 'TUTOR' || user.role === 'ADMIN') {
+      throw new ForbiddenException('Tutors and Admins are not allowed to join study groups.');
+    }
     return this.studyGroupService.join(user.sub, inviteId);
   }
 }

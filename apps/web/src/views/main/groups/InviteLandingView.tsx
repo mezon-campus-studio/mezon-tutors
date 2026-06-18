@@ -25,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { studyGroupApi, StudyGroup } from '@/services/study-group/study-group.api';
 import { ROUTES } from '@mezon-tutors/shared';
-import { isAuthenticatedAtom } from '@/store/auth.atom';
+import { isAuthenticatedAtom, userAtom } from '@/store/auth.atom';
 import { BASE_URL } from '@/services/api-client';
 import { toast } from 'sonner';
 
@@ -38,6 +38,8 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   const tGroups = useTranslations('Groups');
   const router = useRouter();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const user = useAtomValue(userAtom);
+  const isTutorOrAdmin = user?.role === 'TUTOR' || user?.role === 'ADMIN';
   const [group, setGroup] = useState<StudyGroup | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -68,6 +70,11 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   const handleJoin = async () => {
     if (isJoining) return;
     
+    if (isTutorOrAdmin) {
+      toast.error(tGroups('notAllowedRole'));
+      return;
+    }
+
     if (!isAuthenticated) {
       // Remember intent and redirect to Mezon login
       localStorage.setItem('pending_group_join', inviteId);
@@ -210,8 +217,13 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
           <div className="space-y-4">
             <Button 
               onClick={handleJoin}
-              disabled={isJoining}
-              className="group h-16 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-lg font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-3"
+              disabled={isJoining || isTutorOrAdmin}
+              className={cn(
+                "group h-16 rounded-full px-8 text-lg font-bold shadow-md transition-all gap-3",
+                isTutorOrAdmin 
+                  ? "bg-gray-200 text-gray-500 shadow-none cursor-not-allowed"
+                  : "bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+              )}
             >
               {isJoining ? (
                 <Loader2 className="w-6 h-6 animate-spin" />

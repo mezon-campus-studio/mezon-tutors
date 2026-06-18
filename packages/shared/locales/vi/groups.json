@@ -15,6 +15,7 @@
       "submitting": "Đang tạo..."
     },
     "memberComplaintWarning": "Bạn đang tham gia với quyền thành viên, vui lòng liên hệ trưởng nhóm để được hỗ trợ khiếu nại.",
+    "notAllowedRole": "Bạn không có quyền tham gia nhóm với vai trò Gia sư hoặc Quản trị viên.",
     "breadcrumb": {
       "dashboard": "Trang chủ",
       "groups": "Nhóm học"

@@ -15,6 +15,7 @@
       "submitting": "Creating..."
     },
     "memberComplaintWarning": "You are participating as a member. Please contact the group leader for assistance with complaints.",
+    "notAllowedRole": "You do not have permission to join groups as a Tutor or Admin.",
     "breadcrumb": {
       "dashboard": "Dashboard",
       "groups": "Groups"
