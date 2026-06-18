@@ -854,12 +854,13 @@ model EventStat {
 }
 
 model Group {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  inviteId  String   @unique @map("invite_id")
-  leaderId  String   @map("leader_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  inviteId           String   @unique @map("invite_id")
+  leaderId           String   @map("leader_id") @db.Uuid
+  groupChatChannelId String?  @map("group_chat_channel_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   leader      User                     @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: Cascade)
   members     GroupMember[]
