@@ -13,7 +13,6 @@ import {
   type CheckCircle2,
   CreditCard,
   MessageCircle,
-  Sparkles,
   Users,
   Video,
 } from "lucide-react";
@@ -33,6 +32,7 @@ import { userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "../../components/TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { cn } from "@/lib/utils";
+import { SaveTutorButton } from "../../components/SaveTutorButton";
 
 type TutorDetailSidebarProps = {
   tutor: TutorAboutDto;
@@ -109,6 +109,14 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
           </div>
 
           <div className="space-y-2.5 p-5">
+            {!isOwnProfile ? (
+              <SaveTutorButton
+                tutorId={tutor.id}
+                isSaved={tutor.isSaved}
+                className="h-11 w-full"
+              />
+            ) : null}
+
             {showContinuePayment && pendingPayment ? (
               <Button
                 onClick={() => continueTutorPendingPayment(pendingPayment, userTimezone)}

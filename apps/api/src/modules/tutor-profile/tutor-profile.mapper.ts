@@ -13,6 +13,10 @@ type TutorWithPrice = TutorProfile & {
   } | null
 }
 
+type TutorDtoOptions = {
+  isSaved?: boolean
+}
+
 function getTutorPrices(tutor: TutorWithPrice): {
   baseCurrency: ECurrency
   usd: number
@@ -29,6 +33,7 @@ function getTutorPrices(tutor: TutorWithPrice): {
 
 export function toVerifiedTutorProfileDto(
   tutor: TutorWithPrice,
+  options?: TutorDtoOptions,
 ): VerifiedTutorProfileDto {
   return {
     id: tutor.id,
@@ -52,6 +57,7 @@ export function toVerifiedTutorProfileDto(
     ratingAverage: Number(tutor.ratingAverage),
     timezone: tutor.user?.timezone ?? 'UTC',
     languages: tutor.languages.map((language) => ({ languageCode: language.languageCode, proficiency: language.proficiency })),
+    isSaved: options?.isSaved,
   } as unknown as VerifiedTutorProfileDto
 }
 

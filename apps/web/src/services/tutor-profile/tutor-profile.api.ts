@@ -14,6 +14,7 @@ import {
   TutorScheduleDto,
   TutorReviewsDto,
   TutorResourcesDto,
+  SavedTutorDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
   UpdateTutorSetupChecklistDto,
@@ -75,6 +76,22 @@ export const tutorProfileApi = {
   getVerifiedTutorResources(id: string): Promise<TutorResourcesDto> {
     return apiClient.get<ApiResponse<TutorResourcesDto>, TutorResourcesDto>(
       `/tutor-profiles/${id}/resources`
+    );
+  },
+
+  getSavedTutors(): Promise<SavedTutorDto[]> {
+    return apiClient.get<ApiResponse<SavedTutorDto[]>, SavedTutorDto[]>("/tutor-profiles/saved");
+  },
+
+  saveTutor(id: string): Promise<{ success: true }> {
+    return apiClient.post<ApiResponse<{ success: true }>, { success: true }>(
+      `/tutor-profiles/${id}/save`,
+    );
+  },
+
+  unsaveTutor(id: string): Promise<{ success: true }> {
+    return apiClient.delete<ApiResponse<{ success: true }>, { success: true }>(
+      `/tutor-profiles/${id}/save`,
     );
   },
 
@@ -168,6 +185,14 @@ const useGetVerifiedTutorResources = (id: string, enabled = false) => {
   });
 };
 
+const useGetSavedTutors = (enabled = true) => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.savedTutors(),
+    queryFn: () => tutorProfileApi.getSavedTutors(),
+    enabled,
+  });
+};
+
 const useSubmitTutorProfileMutation = () => {
   const queryClient = useQueryClient();
 
@@ -225,15 +250,44 @@ const useUpdateMySetupChecklistMutation = () => {
   });
 };
 
+const useSaveTutorMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => tutorProfileApi.saveTutor(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.tutorAbout(id) });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.savedTutors() });
+    },
+  });
+};
+
+const useUnsaveTutorMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => tutorProfileApi.unsaveTutor(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.tutorAbout(id) });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.savedTutors() });
+    },
+  });
+};
+
 export {
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
   useGetVerifiedTutorSchedule,
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
+  useGetSavedTutors,
   useSubmitTutorProfileMutation,
   useUpdateMyTutorProfileMutation,
   useGetMyProfile,
   useGetMySetupChecklist,
   useUpdateMySetupChecklistMutation,
+  useSaveTutorMutation,
+  useUnsaveTutorMutation,
 };

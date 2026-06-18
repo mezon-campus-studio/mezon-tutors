@@ -11,7 +11,7 @@ import {
   isDashboardSidebarLinkActive,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, MessageSquareWarning, Scale, Search, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
+import { Bookmark, Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, MessageSquareWarning, Scale, Search, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -43,6 +43,7 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
   becomeTutor: GraduationCap,
   tutorPolicy: Scale,
   settings: Settings,
+  bookmark: Bookmark,
 };
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
@@ -65,6 +66,7 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   becomeTutor: "from-violet-500 to-fuchsia-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
+  bookmark: "from-violet-500 to-fuchsia-500",
 };
 
 type DashboardMobileDrawerProps = {

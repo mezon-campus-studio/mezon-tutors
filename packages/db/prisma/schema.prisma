@@ -178,6 +178,7 @@ model User {
   vocabularyWords                  VocabularyWord[]
   groupsLed                        Group[]                 @relation("GroupLeader")
   groupMemberships                 GroupMember[]
+  savedTutors                      SavedTutor[]
 
   @@map("users")
 }
@@ -297,8 +298,24 @@ model TutorProfile {
   professionalDocuments ProfessionalDocument[]
   identityVerification  IdentityVerification?
   setupChecklist        TutorSetupChecklist?
+  savedBy               SavedTutor[]
 
   @@map("tutor_profiles")
+}
+
+model SavedTutor {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId String   @map("student_id") @db.Uuid
+  tutorId   String   @map("tutor_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  student User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutor   TutorProfile @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, tutorId])
+  @@index([studentId, createdAt])
+  @@index([tutorId])
+  @@map("saved_tutors")
 }
 
 model TutorSetupChecklist {
