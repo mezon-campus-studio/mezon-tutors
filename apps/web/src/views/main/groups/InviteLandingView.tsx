@@ -123,17 +123,11 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center py-12 px-4">
-      {/* Brand Logo Header */}
-      <div className="flex items-center gap-3 mb-12">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-          <BookOpen className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-2xl font-black text-gray-900 tracking-tight">Mezon Tutors</span>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center py-4 px-4">
+      
 
       {/* Main Card */}
-      <Card className="w-full max-w-[600px] p-8 md:p-12 rounded-[48px] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] bg-white relative overflow-hidden">
+      <Card className="w-full max-w-[600px] p-4 md:p-8 rounded-[48px] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] bg-white relative overflow-hidden">
         <div className="space-y-8 text-center relative z-10">
           {/* Status Badge */}
           <div className="flex justify-center">
@@ -145,7 +139,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
 
           {/* Group Title */}
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
               {group.name}
             </h1>
           </div>
