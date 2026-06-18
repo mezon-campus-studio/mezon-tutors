@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  TUTOR_DETAIL_DEFAULT_TAB,
-  type TutorDetailTabKey,
-} from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
 import {
   useGetVerifiedTutorAbout,
   useGetVerifiedTutorResources,
@@ -25,9 +20,6 @@ type TutorDetailPageProps = {
 
 export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
   const t = useTranslations("Tutors.Detail");
-  const [activeTab, setActiveTab] = useState<TutorDetailTabKey>(
-    TUTOR_DETAIL_DEFAULT_TAB,
-  );
 
   const {
     data: aboutData,
@@ -35,79 +27,20 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
     isError: isErrorAbout,
   } = useGetVerifiedTutorAbout(tutorId);
   const { data: scheduleData, isLoading: isLoadingSchedule } =
-    useGetVerifiedTutorSchedule(tutorId, activeTab === "schedule");
+    useGetVerifiedTutorSchedule(tutorId, true);
   const {
     data: reviewsData,
     isLoading: isLoadingReviews,
     isError: isErrorReviews,
-  } = useGetVerifiedTutorReviews(tutorId, activeTab === "reviews");
+  } = useGetVerifiedTutorReviews(tutorId, true);
   const {
     data: resourcesData,
     isLoading: isLoadingResources,
     isError: isErrorResources,
-  } = useGetVerifiedTutorResources(tutorId, activeTab === "resources");
+  } = useGetVerifiedTutorResources(tutorId, true);
 
   const shouldShowEmpty =
     !tutorId || isErrorAbout || (!isLoadingAbout && !aboutData);
-
-  const tabContent = useMemo(() => {
-    switch (activeTab) {
-      case "about":
-        return aboutData ? <TutorAboutTab tutor={aboutData} /> : null;
-      case "schedule":
-        if (isLoadingSchedule) {
-          return <p className="text-gray-500">{t("loading")}</p>;
-        }
-        return aboutData && scheduleData ? (
-          <TutorScheduleTab
-            tutor={{ ...aboutData, availability: scheduleData.availability }}
-          />
-        ) : null;
-      case "reviews":
-        if (isLoadingReviews) {
-          return <p className="text-gray-500">{t("loading")}</p>;
-        }
-        if (isErrorReviews) {
-          return <p className="text-gray-500">{t("loadError")}</p>;
-        }
-        return aboutData && reviewsData ? (
-          <TutorReviewsTab
-            tutor={{
-              ...aboutData,
-              reviews: reviewsData.reviews,
-              ratingCount: reviewsData.ratingCount,
-              ratingAverage: reviewsData.ratingAverage,
-            }}
-          />
-        ) : null;
-      case "resources":
-        if (isLoadingResources) {
-          return <p className="text-gray-500">{t("loading")}</p>;
-        }
-        if (isErrorResources) {
-          return <p className="text-gray-500">{t("loadError")}</p>;
-        }
-        return aboutData && resourcesData ? (
-          <TutorResourcesTab
-            tutor={{ ...aboutData, resources: resourcesData.resources }}
-          />
-        ) : null;
-      default:
-        return null;
-    }
-  }, [
-    activeTab,
-    aboutData,
-    scheduleData,
-    isLoadingSchedule,
-    reviewsData,
-    isLoadingReviews,
-    isErrorReviews,
-    resourcesData,
-    isLoadingResources,
-    isErrorResources,
-    t,
-  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -130,16 +63,61 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
 
         {aboutData ? (
           <div className="flex flex-col lg:flex-row gap-4 items-start">
-            <div className="flex-1 w-full flex flex-col">
-              <TutorDetailHeader
-                tutor={aboutData}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-              />
+            <div className="flex-1 w-full flex flex-col gap-6">
+              <TutorDetailHeader tutor={aboutData} />
 
-              <div className="bg-white border-x border-b border-gray-200 rounded-b-2xl p-6">
-                {tabContent}
-              </div>
+              {/* About Section */}
+              <section className="bg-white border border-gray-200 rounded-2xl p-6">
+                <TutorAboutTab tutor={aboutData} />
+              </section>
+
+              {/* Schedule Section */}
+              <section className="bg-white border border-gray-200 rounded-2xl p-6">
+                {isLoadingSchedule ? (
+                  <p className="text-gray-500">{t("loading")}</p>
+                ) : aboutData && scheduleData ? (
+                  <TutorScheduleTab
+                    tutor={{
+                      ...aboutData,
+                      availability: scheduleData.availability,
+                    }}
+                  />
+                ) : null}
+              </section>
+
+              {/* Reviews Section */}
+              <section className="bg-white border border-gray-200 rounded-2xl p-6">
+                {isLoadingReviews ? (
+                  <p className="text-gray-500">{t("loading")}</p>
+                ) : isErrorReviews ? (
+                  <p className="text-gray-500">{t("loadError")}</p>
+                ) : aboutData && reviewsData ? (
+                  <TutorReviewsTab
+                    tutor={{
+                      ...aboutData,
+                      reviews: reviewsData.reviews,
+                      ratingCount: reviewsData.ratingCount,
+                      ratingAverage: reviewsData.ratingAverage,
+                    }}
+                  />
+                ) : null}
+              </section>
+
+              {/* Resources Section */}
+              <section className="bg-white border border-gray-200 rounded-2xl p-6">
+                {isLoadingResources ? (
+                  <p className="text-gray-500">{t("loading")}</p>
+                ) : isErrorResources ? (
+                  <p className="text-gray-500">{t("loadError")}</p>
+                ) : aboutData && resourcesData ? (
+                  <TutorResourcesTab
+                    tutor={{
+                      ...aboutData,
+                      resources: resourcesData.resources,
+                    }}
+                  />
+                ) : null}
+              </section>
             </div>
 
             <div className="w-full lg:w-80">
