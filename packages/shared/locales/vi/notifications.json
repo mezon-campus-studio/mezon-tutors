@@ -39,9 +39,8 @@
   },
   "templates": {
     "bookingCreated": "{studentName} đã thanh toán buổi học thử với bạn. Xem lịch và chuẩn bị dạy nhé.",
-    "bookingConfirmed": "Lịch học với {tutorName} của bạn đã được xác nhận.",
     "bookingCancelled": "Lịch học của bạn đã bị hủy.",
-    "subscriptionEnrollmentConfirmed": "Gói đăng ký với {tutorName} ({planLabel}) đã được kích hoạt.",
+    "subscriptionEnrollmentConfirmed": "Gói đăng ký với {tutorName} ({planLabel}) đã được kích hoạt.{hasGroup, select, yes { Đăng kí nhóm học: {groupName}. Số thành viên nhóm: {membersCount}.} other {}}",
     "subscriptionEnrollmentCreated": "{studentName} đã đăng ký gói {planLabel} của bạn.",
     "welcomeLinked": "Chào {displayName}! Tài khoản Mezon đã được liên kết. Khám phá gia sư và đặt buổi học đầu tiên nhé.",
     "paymentSucceeded": "Thanh toán cho mã đặt lịch {bookingCode} đã thành công.",

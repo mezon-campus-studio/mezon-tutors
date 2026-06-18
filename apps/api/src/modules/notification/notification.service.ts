@@ -392,6 +392,12 @@ export class NotificationService {
         lessonsPerWeek: true,
         grossAmount: true,
         currency: true,
+        group: {
+          select: {
+            name: true,
+            _count: { select: { members: true } },
+          },
+        },
       },
     })
     if (!enrollment) {
@@ -427,6 +433,11 @@ export class NotificationService {
     const currency = (enrollment.currency ?? ECurrency.VND) as SharedCurrency
     const amountFormatted = formatToCurrency(currency, Number(enrollment.grossAmount))
 
+    const groupName = enrollment.group?.name
+    const membersCount = enrollment.group?._count?.members
+    const hasGroup = groupName && membersCount ? 'yes' : 'no'
+    const contentGroupSuffix = hasGroup === 'yes' ? ` Group Study: ${groupName}. Members: ${membersCount}.` : ''
+
     await Promise.allSettled([
       this.notifyInAppAndMezon({
         userId: params.studentId,
@@ -434,10 +445,10 @@ export class NotificationService {
         dedupeKey: `subscription-enrollment-confirmed:${params.enrollmentId}`,
         notification: {
           title: 'Subscription active',
-          content: `Your subscription with ${tutorName} (${planLabel}) is now active.`,
+          content: `Your subscription with ${tutorName} (${planLabel}) is now active.${contentGroupSuffix}`,
           type: ENotificationType.PAYMENT,
           i18nKey: NOTIFICATION_META.SUBSCRIPTION_ENROLLMENT_CONFIRMED.templateKey,
-          i18nParams: { tutorName, planLabel },
+          i18nParams: { tutorName, planLabel, hasGroup, groupName: groupName ?? '', membersCount: membersCount ?? 0 },
           metadata: { enrollmentId: params.enrollmentId },
         },
         mezonMessage: this.mezonMessageService.subscriptionEnrollmentConfirmed({
@@ -446,6 +457,8 @@ export class NotificationService {
           amountFormatted,
           enrollmentId: params.enrollmentId,
           senderAvatarUrl: tutor.user.avatar,
+          groupName: groupName,
+          membersCount: membersCount,
         }),
       }),
       this.notifyInAppAndMezon({
