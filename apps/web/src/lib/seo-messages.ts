@@ -14,6 +14,7 @@ export type SeoMessages = {
   };
   dashboard: { title: string; description: string };
   myLessons: { title: string; description: string };
+  savedTutors: { title: string; description: string };
   practice: { title: string; description: string };
   mySchedule: { title: string; description: string };
   wallet: { title: string; description: string };

@@ -77,6 +77,15 @@
       "notEligibleGeneric": "You are not eligible to subscribe right now.",
       "lessonsPerWeek": "{n} sessions / week",
       "perMonth": "per month",
+      "groupBanner": {
+        "label": "Group subscription:",
+        "membersDiscount": "{count} members · {percent}% off"
+      },
+      "groupPricing": {
+        "perStudent": "1 student: {price}",
+        "groupTotal": "Group of {count}: {price}",
+        "savings": "(save {amount})"
+      },
       "emptyPlans": "No plans available yet.",
       "back": "Back",
       "continueSchedule": "Pick schedule ({n} slots)"
@@ -116,7 +125,16 @@
         "walletBalance": "Pay with wallet: {balance}",
         "payViaWallet": "Pay via wallet",
         "remainingViaVnpay": "Remaining via VNPay",
-        "vnpayMinWalletNote": "VNPay requires a minimum payment of {minAmount}. Using your full wallet balance ({walletBalance}) would leave less than that via VNPay, so only {deductAmount} is deducted from your wallet."
+        "vnpayMinWalletNote": "VNPay requires a minimum payment of {minAmount}. Using your full wallet balance ({walletBalance}) would leave less than that via VNPay, so only {deductAmount} is deducted from your wallet.",
+        "group": {
+          "title": "Group subscription: {name}",
+          "originalPrice": "Base tuition (1 student):",
+          "memberCount": "Members:",
+          "totalGroupPrice": "Total group tuition:",
+          "discountLabel": "Group discount (–{percent}%):",
+          "leaderNote": "Leader pays the entire amount.",
+          "memberNote": "{count} members join with no additional cost."
+        }
       }
     },
     "Result": {

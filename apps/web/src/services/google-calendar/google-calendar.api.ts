@@ -31,7 +31,6 @@ export function useGoogleCalendarStatus() {
   return useQuery({
     queryKey: googleCalendarQueryKey.status(),
     queryFn: () => googleCalendarApi.getStatus(),
-    staleTime: 30_000,
   });
 }
 

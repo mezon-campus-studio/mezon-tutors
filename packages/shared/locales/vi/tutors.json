@@ -23,6 +23,11 @@
     "previous": "Trước",
     "next": "Sau"
   },
+  "SaveTutor": {
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "loginHint": "Đăng nhập bằng tài khoản học viên để lưu gia sư"
+  },
   "TutorCard": {
     "professional": "CHUYÊN NGHIỆP",
     "teaches": "Dạy {subject}",

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
 import type {
   PaginatedResponse,
+  SavedTutorDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
   UpdateTutorSetupChecklistDto,
@@ -92,9 +93,21 @@ export class TutorProfileController {
 
   @Get('verified')
   async getVerifiedTutors(
+    @Req() req: Request,
     @Query() query: VerifiedTutorQueryDto
   ): Promise<PaginatedResponse<VerifiedTutorProfileDto>> {
-    return this.tutorProfileService.getVerifiedTutors(query)
+    const user = req.user as AuthUserPayload | undefined
+    return this.tutorProfileService.getVerifiedTutors(query, user?.sub)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('saved')
+  async getSavedTutors(@Req() req: Request): Promise<SavedTutorDto[]> {
+    const user = req.user as AuthUserPayload
+    if (user.role !== 'STUDENT') {
+      throw new ForbiddenException('Only students can save tutors')
+    }
+    return this.tutorProfileService.getSavedTutors(user.sub)
   }
 
   @Get(':id/about')
@@ -119,6 +132,28 @@ export class TutorProfileController {
   async getVerifiedTutorResources(@Param('id') id: string): Promise<TutorResourcesDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorResources(id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/save')
+  async saveTutor(@Req() req: Request, @Param('id') id: string) {
+    await this.validateVerifiedTutor(id)
+    const user = req.user as AuthUserPayload
+    if (user.role !== 'STUDENT') {
+      throw new ForbiddenException('Only students can save tutors')
+    }
+    return this.tutorProfileService.saveTutor(user.sub, id)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/save')
+  async unsaveTutor(@Req() req: Request, @Param('id') id: string) {
+    const user = req.user as AuthUserPayload
+    if (user.role !== 'STUDENT') {
+      throw new ForbiddenException('Only students can save tutors')
+    }
+    await this.tutorProfileService.unsaveTutor(user.sub, id)
+    return { success: true }
   }
 
   @UseGuards(JwtAuthGuard)

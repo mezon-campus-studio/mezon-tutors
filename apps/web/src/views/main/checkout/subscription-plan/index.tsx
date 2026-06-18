@@ -1,13 +1,14 @@
 "use client";
 
 import {
+  calculateGroupSubscriptionPrice,
   ECurrency,
   formatToCurrency,
   ROUTES,
   type TutorSubscriptionPlanDto,
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
-import { AlertCircle, Sparkles } from "lucide-react";
+import { AlertCircle, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -25,18 +26,33 @@ import { buttonVariants } from "@/components/ui/button";
 import { useCurrency, useUserTimezone } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
+  useGetStudyGroup,
   useGetSubscriptionEligibility,
   useGetSubscriptionPlansByTutor,
   useGetVerifiedTutorAbout,
+  usePublicAppSettings,
 } from "@/services";
-import { isAuthenticatedAtom } from "@/store/auth.atom";
+import { isAuthenticatedAtom, userAtom } from "@/store/auth.atom";
+
+function getPlanPrice(
+  plan: TutorSubscriptionPlanDto,
+  currency: ECurrency,
+): number {
+  return currency === ECurrency.USD
+    ? plan.price.usd
+    : currency === ECurrency.PHP
+      ? plan.price.php
+      : plan.price.vnd;
+}
 
 export default function SubscriptionPlanCheckoutPage() {
   const t = useTranslations("SubscriptionCheckout.PlanPicker");
   const searchParams = useSearchParams();
   const router = useRouter();
   const tutorId = searchParams.get("tutorId") ?? "";
+  const groupId = searchParams.get("groupId") ?? undefined;
   const isAuth = useAtomValue(isAuthenticatedAtom);
+  const currentUser = useAtomValue(userAtom);
   const { currency } = useCurrency();
   const userTimezone = useUserTimezone();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -47,9 +63,30 @@ export default function SubscriptionPlanCheckoutPage() {
     useGetSubscriptionPlansByTutor(tutorId, Boolean(tutorId));
   const { data: eligibility, isPending: isEligPending } =
     useGetSubscriptionEligibility(tutorId, Boolean(tutorId) && isAuth);
+  const { data: group, isPending: isGroupPending } = useGetStudyGroup(
+    groupId ?? "",
+    Boolean(groupId) && isAuth,
+  );
+  const { data: appSettings, isPending: isAppSettingsPending } =
+    usePublicAppSettings();
+
+  const groupMemberCount = group?.members?.length ?? 1;
+  const groupDiscountRate = appSettings?.subscriptionGroupDiscountRate ?? 1;
+  const canApplyGroupBooking = Boolean(
+    groupId &&
+      group &&
+      currentUser?.id &&
+      group.leaderId === currentUser.id &&
+      groupMemberCount >= 2,
+  );
+  const groupDiscountPercent = Math.round((1 - groupDiscountRate) * 100);
 
   const isPending =
-    isTutorPending || isPlansPending || (isAuth && isEligPending);
+    isTutorPending ||
+    isPlansPending ||
+    (isAuth && isEligPending) ||
+    (Boolean(groupId) && isAuth && isGroupPending) ||
+    (canApplyGroupBooking && isAppSettingsPending);
   const canSubscribe = Boolean(isAuth && eligibility?.eligible);
   const selectedPlan = useMemo(
     () => plans?.find((p) => p.id === selectedPlanId) ?? null,
@@ -69,14 +106,24 @@ export default function SubscriptionPlanCheckoutPage() {
     });
   }, [plans]);
 
-  const monthlyLabel = (p: TutorSubscriptionPlanDto) => {
-    const v =
-      currency === ECurrency.USD
-        ? p.price.usd
-        : currency === ECurrency.PHP
-          ? p.price.php
-          : p.price.vnd;
-    return formatToCurrency(currency, v);
+  const monthlyLabel = (p: TutorSubscriptionPlanDto) =>
+    formatToCurrency(currency, getPlanPrice(p, currency));
+
+  const getGroupPlanPricing = (p: TutorSubscriptionPlanDto) => {
+    const baseMonthlyPrice = getPlanPrice(p, currency);
+    const pricing = calculateGroupSubscriptionPrice({
+      baseMonthlyPrice,
+      memberCount: groupMemberCount,
+      groupDiscountRate,
+      platformFeeRate: 0,
+    });
+    const fullGroupPrice = baseMonthlyPrice * groupMemberCount;
+    const savings = fullGroupPrice - pricing.grossAmount;
+    return {
+      perStudentDisplay: formatToCurrency(currency, baseMonthlyPrice),
+      groupTotalDisplay: formatToCurrency(currency, pricing.grossAmount),
+      savingsDisplay: formatToCurrency(currency, savings),
+    };
   };
 
   const handleContinue = () => {
@@ -190,8 +237,34 @@ export default function SubscriptionPlanCheckoutPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            {canApplyGroupBooking && group ? (
+              <div className="sticky top-0 z-10 mb-3 rounded-2xl border border-violet-200/80 bg-violet-50/95 p-5 shadow-sm backdrop-blur-sm">
+                <div className="flex items-start gap-2.5">
+                  <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
+                    <Users className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-sm font-semibold text-slate-800">
+                      {t("groupBanner.label")}{" "}
+                      <span className="text-violet-700">{group.name}</span>
+                    </p>
+                    <p className="text-xs font-medium text-violet-600">
+                      {t("groupBanner.membersDiscount", {
+                        count: groupMemberCount,
+                        percent: groupDiscountPercent,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {(plans ?? []).map((p) => {
               const active = p.id === selectedPlanId;
+              const groupPricing = canApplyGroupBooking
+                ? getGroupPlanPricing(p)
+                : null;
+
               return (
                 <button
                   key={p.id}
@@ -206,17 +279,38 @@ export default function SubscriptionPlanCheckoutPage() {
                   )}
                   onClick={() => setSelectedPlanId(p.id)}
                 >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="text-lg font-extrabold text-slate-900">
-                      {t("lessonsPerWeek", { n: p.lessonsPerWeek })}
-                    </span>
-                    <span className="text-xl font-extrabold text-violet-700">
-                      {monthlyLabel(p)}
-                    </span>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <span className="text-lg font-extrabold text-slate-900">
+                        {t("lessonsPerWeek", { n: p.lessonsPerWeek })}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {t("perMonth")}
+                      </span>
+                    </div>
+
+                    {groupPricing ? (
+                      <div className="text-right">
+                        <p className="text-xs text-slate-500">
+                          {t("groupPricing.perStudent", {
+                            price: groupPricing.perStudentDisplay,
+                          })}
+                        </p>
+                        <p className="text-xl font-extrabold text-violet-700">
+                          {groupPricing.groupTotalDisplay}
+                        </p>
+                        <p className="text-xs font-medium text-emerald-600">
+                          {t("groupPricing.savings", {
+                            amount: groupPricing.savingsDisplay,
+                          })}
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-extrabold text-violet-700">
+                        {monthlyLabel(p)}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {t("perMonth")}
-                  </span>
                 </button>
               );
             })}

@@ -14,6 +14,7 @@ import {
   TutorScheduleDto,
   TutorReviewsDto,
   TutorResourcesDto,
+  SavedTutorDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
   UpdateTutorSetupChecklistDto,
@@ -78,6 +79,22 @@ export const tutorProfileApi = {
     );
   },
 
+  getSavedTutors(): Promise<SavedTutorDto[]> {
+    return apiClient.get<ApiResponse<SavedTutorDto[]>, SavedTutorDto[]>("/tutor-profiles/saved");
+  },
+
+  saveTutor(id: string): Promise<{ success: true }> {
+    return apiClient.post<ApiResponse<{ success: true }>, { success: true }>(
+      `/tutor-profiles/${id}/save`,
+    );
+  },
+
+  unsaveTutor(id: string): Promise<{ success: true }> {
+    return apiClient.delete<ApiResponse<{ success: true }>, { success: true }>(
+      `/tutor-profiles/${id}/save`,
+    );
+  },
+
   submit(payload: SubmitTutorProfileDto): Promise<boolean> {
     return apiClient.post<ApiResponse<boolean>, boolean>("/tutor-profiles", payload);
   },
@@ -133,6 +150,7 @@ const useGetVerifiedTutors = (page: number, limit: number, filters: VerifiedTuto
     ),
     queryFn: () => tutorProfileApi.getVerifiedTutors(page, limit, filters),
     placeholderData: keepPreviousData,
+    staleTime: 30 * 1000,
   });
 };
 
@@ -168,6 +186,14 @@ const useGetVerifiedTutorResources = (id: string, enabled = false) => {
   });
 };
 
+const useGetSavedTutors = (enabled = true) => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.savedTutors(),
+    queryFn: () => tutorProfileApi.getSavedTutors(),
+    enabled,
+  });
+};
+
 const useSubmitTutorProfileMutation = () => {
   const queryClient = useQueryClient();
 
@@ -199,7 +225,6 @@ const useGetMyProfile = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.myTutorProfile(),
     queryFn: () => tutorProfileApi.getMyProfile(),
-    staleTime: 60 * 1000,
     enabled: options?.enabled ?? true,
   });
 };
@@ -208,7 +233,6 @@ const useGetMySetupChecklist = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.mySetupChecklist(),
     queryFn: () => tutorProfileApi.getMySetupChecklist(),
-    staleTime: 30 * 1000,
     enabled: options?.enabled ?? true,
   });
 };
@@ -225,15 +249,44 @@ const useUpdateMySetupChecklistMutation = () => {
   });
 };
 
+const useSaveTutorMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => tutorProfileApi.saveTutor(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.tutorAbout(id) });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.savedTutors() });
+    },
+  });
+};
+
+const useUnsaveTutorMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => tutorProfileApi.unsaveTutor(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.tutorAbout(id) });
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.savedTutors() });
+    },
+  });
+};
+
 export {
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
   useGetVerifiedTutorSchedule,
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
+  useGetSavedTutors,
   useSubmitTutorProfileMutation,
   useUpdateMyTutorProfileMutation,
   useGetMyProfile,
   useGetMySetupChecklist,
   useUpdateMySetupChecklistMutation,
+  useSaveTutorMutation,
+  useUnsaveTutorMutation,
 };

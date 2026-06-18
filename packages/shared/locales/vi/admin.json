@@ -270,6 +270,8 @@
       "fields": {
         "platformFeePercentage": "Phí nền tảng (%)",
         "platformFeePercentageHint": "Ví dụ: 20 nghĩa là phí 20%.",
+        "subscriptionGroupDiscountPercent": "Ưu đãi học nhóm (%)",
+        "subscriptionGroupDiscountPercentHint": "Ví dụ: 25 nghĩa là giảm 25% tổng học phí nhóm.",
         "settlementPeriodHours": "Settlement period (giờ)",
         "settlementPeriodHoursHint": "Số giờ sau khi buổi học kết thúc trước khi giải ngân cho gia sư.",
         "disputePeriodHours": "Dispute period (giờ)",
@@ -299,6 +301,7 @@
         "minWithdrawalAmountVndRange": "Phải từ {min} đến {max} VND.",
         "minWithdrawalAmountUsdRange": "Phải từ {min} đến {max} USD.",
         "minWithdrawalAmountPhpRange": "Phải từ {min} đến {max} PHP.",
+        "subscriptionGroupDiscountPercentRange": "Phải từ {min} đến {max}%.",
         "summary": "Vui lòng sửa các trường được đánh dấu trước khi lưu."
       }
     },

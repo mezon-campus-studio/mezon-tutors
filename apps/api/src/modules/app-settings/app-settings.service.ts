@@ -111,6 +111,11 @@ export class AppSettingsService {
     if (dto.minWithdrawalAmountPhp !== undefined) {
       data.minWithdrawalAmountPhp = new Prisma.Decimal(dto.minWithdrawalAmountPhp);
     }
+    if (dto.subscriptionGroupDiscountRate !== undefined) {
+      data.subscriptionGroupDiscountRate = new Prisma.Decimal(
+        dto.subscriptionGroupDiscountRate,
+      );
+    }
     if (dto.mezonLinks !== undefined) {
       data.mezonLinks = normalizeMezonLinksForStorage(
         dto.mezonLinks,
@@ -142,6 +147,7 @@ export class AppSettingsService {
     minWithdrawalAmountVnd: bigint;
     minWithdrawalAmountUsd: Prisma.Decimal;
     minWithdrawalAmountPhp: Prisma.Decimal;
+    subscriptionGroupDiscountRate: Prisma.Decimal;
     mezonLinks: Prisma.JsonValue | null;
     updatedByUserId: string | null;
     updatedAt: Date;
@@ -156,6 +162,7 @@ export class AppSettingsService {
       minWithdrawalAmountVnd: Number(row.minWithdrawalAmountVnd),
       minWithdrawalAmountUsd: Number(row.minWithdrawalAmountUsd),
       minWithdrawalAmountPhp: Number(row.minWithdrawalAmountPhp),
+      subscriptionGroupDiscountRate: Number(row.subscriptionGroupDiscountRate),
       mezonLinks: this.parseMezonLinks(row.mezonLinks),
       updatedByUserId: row.updatedByUserId,
       updatedBy: row.updatedBy,
@@ -172,6 +179,7 @@ export class AppSettingsService {
       minWithdrawalAmountVnd: settings.minWithdrawalAmountVnd,
       minWithdrawalAmountUsd: settings.minWithdrawalAmountUsd,
       minWithdrawalAmountPhp: settings.minWithdrawalAmountPhp,
+      subscriptionGroupDiscountRate: settings.subscriptionGroupDiscountRate,
       mezonLinks: settings.mezonLinks,
     };
   }

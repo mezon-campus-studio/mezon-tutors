@@ -18,6 +18,12 @@ type SubscriptionPaymentSummaryCardProps = {
   onUseWalletBalanceChange?: (value: boolean) => void;
   deductFromWallet?: number;
   vnpayAmount?: number;
+  groupId?: string;
+  groupName?: string;
+  memberCount?: number;
+  groupDiscountRate?: number;
+  originalPricePerStudent?: number;
+  currency?: ECurrency;
 };
 
 function WalletBalanceToggle({
@@ -66,8 +72,23 @@ export function SubscriptionPaymentSummaryCard({
   onUseWalletBalanceChange,
   deductFromWallet = 0,
   vnpayAmount = 0,
+  groupId,
+  groupName,
+  memberCount = 1,
+  groupDiscountRate = 1,
+  originalPricePerStudent = 0,
+  currency = ECurrency.VND,
 }: SubscriptionPaymentSummaryCardProps) {
   const t = useTranslations("SubscriptionCheckout.SchedulePicker.paymentSummary");
+  const tg = useTranslations("Groups");
+
+  const originalPriceDisplay = formatToCurrency(currency, originalPricePerStudent);
+  const subtotal = originalPricePerStudent * memberCount;
+  const subtotalDisplay = formatToCurrency(currency, subtotal);
+  const discountAmount = subtotal - (originalPricePerStudent * memberCount * groupDiscountRate);
+  const discountDisplay = formatToCurrency(currency, Math.round(discountAmount));
+  const discountPercent = Math.round((1 - groupDiscountRate) * 100);
+
   const walletBalanceDisplay = formatToCurrency(ECurrency.VND, walletBalance);
   const deductDisplay = formatToCurrency(ECurrency.VND, deductFromWallet);
   const vnpayRemainderDisplay = formatToCurrency(ECurrency.VND, vnpayAmount);
@@ -79,6 +100,8 @@ export function SubscriptionPaymentSummaryCard({
     { deductFromWallet, vnpayAmount },
     useWalletBalance,
   );
+
+  const isGroup = !!groupId && memberCount >= 2;
 
   return (
     <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
@@ -97,12 +120,49 @@ export function SubscriptionPaymentSummaryCard({
       </div>
 
       <div className="space-y-4 px-5 py-4">
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="text-slate-600">
-            {t("planLine", { lessonsPerWeek })}
-          </p>
-          <p className="shrink-0 font-bold text-slate-900">{totalDisplay}</p>
-        </div>
+        {isGroup && (
+          <div className="space-y-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-4">
+            <p className="text-sm font-bold text-violet-600 flex items-center gap-2">
+              <span className="size-2 rounded-full bg-violet-600" />
+              {t("group.title", { name: groupName ?? "" })}
+            </p>
+            
+            <div className="space-y-2 border-t border-violet-100 pt-3">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">{t("group.originalPrice")}</span>
+                <span className="font-semibold text-slate-700">{originalPriceDisplay}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">{t("group.memberCount")}</span>
+                <span className="font-semibold text-slate-700">× {memberCount} {tg("card.member").toLowerCase()}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t border-violet-100/50 pt-2">
+                <span className="font-bold text-slate-700">{t("group.totalGroupPrice")}</span>
+                <span className="font-bold text-slate-900">{subtotalDisplay}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                  <span>{t("group.discountLabel", { percent: discountPercent })}</span>
+                  <span>–{discountDisplay}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-white/60 rounded-xl p-2.5 text-[10px] text-slate-500 border border-violet-100/50">
+               <p>• {t("group.leaderNote")}</p>
+               <p>• {t("group.memberNote", { count: memberCount ?? 0 })}</p>
+            </div>
+          </div>
+        )}
+
+        {!isGroup && (
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <p className="text-slate-600">
+              {t("planLine", { lessonsPerWeek })}
+            </p>
+            <p className="shrink-0 font-bold text-slate-900">{totalDisplay}</p>
+          </div>
+        )}
 
         <div className="rounded-2xl bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-4 py-3 ring-1 ring-violet-100">
           <div className="flex items-center justify-between">
