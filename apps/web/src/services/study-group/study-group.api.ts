@@ -31,14 +31,14 @@ export const studyGroupApi = {
   },
 
   updateName: (id: string, name: string): Promise<StudyGroup> => {
-    return apiClient.patch(`/study-groups/${id}`, { name });
+    return apiClient.put(`/study-groups/${id}`, { name });
   },
 
   updateGroupChatChannel: (
     id: string,
     channelId: string,
   ): Promise<StudyGroup> => {
-    return apiClient.patch(`/study-groups/${id}/group-chat-channel`, {
+    return apiClient.put(`/study-groups/${id}/group-chat-channel`, {
       channelId,
     });
   },

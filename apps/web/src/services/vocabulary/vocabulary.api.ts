@@ -38,7 +38,7 @@ export const vocabularyApi = {
     status: VocabularyWordStatus,
   ): Promise<VocabularyWordItem> {
     const body: UpdateVocabularyWordStatusBody = { status };
-    return apiClient.patch<VocabularyWordItem>(`${BASE}/${id}/status`, body);
+    return apiClient.put<VocabularyWordItem>(`${BASE}/${id}/status`, body);
   },
 
   deleteWord(id: string): Promise<void> {

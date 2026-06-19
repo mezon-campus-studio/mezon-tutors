@@ -27,8 +27,10 @@ export default function MyLessonsEventCard({
   variant = 'grid',
 }: MyLessonsEventCardProps) {
   const t = useTranslations('MyLessons.schedule');
+  const tGroups = useTranslations('Groups');
   const isPlan = lesson.source === 'subscription';
   const isCompleted = lesson.status === 'completed';
+  const hasGroup = Boolean(lesson.groupName);
   const isList = variant === 'list';
 
   return (
@@ -38,13 +40,17 @@ export default function MyLessonsEventCard({
         isList
           ? 'min-h-[72px] gap-2 overflow-hidden rounded-2xl border p-3 shadow-sm'
           : 'h-full min-h-0 justify-center gap-0.5 overflow-hidden rounded-[inherit] border px-1.5 py-1 shadow-sm sm:px-2 sm:py-1.5',
-        isPlan
+        hasGroup
           ? isList
-            ? 'border-fuchsia-200/80 bg-linear-to-br from-fuchsia-50 via-white to-violet-50/90'
-            : 'border-fuchsia-200/80 bg-linear-to-br from-fuchsia-50/95 via-white to-violet-50/90'
-          : isList
-            ? 'border-amber-200/80 bg-linear-to-br from-amber-50 via-white to-orange-50/70'
-            : 'border-amber-200/80 bg-linear-to-br from-amber-50/95 via-white to-orange-50/70',
+            ? 'border-indigo-200/80 bg-linear-to-br from-indigo-50 via-white to-cyan-50/90'
+            : 'border-indigo-200/80 bg-linear-to-br from-indigo-50/95 via-white to-cyan-50/90'
+          : isPlan
+            ? isList
+              ? 'border-fuchsia-200/80 bg-linear-to-br from-fuchsia-50 via-white to-violet-50/90'
+              : 'border-fuchsia-200/80 bg-linear-to-br from-fuchsia-50/95 via-white to-violet-50/90'
+            : isList
+              ? 'border-amber-200/80 bg-linear-to-br from-amber-50 via-white to-orange-50/70'
+              : 'border-amber-200/80 bg-linear-to-br from-amber-50/95 via-white to-orange-50/70',
         isCompleted && 'opacity-[0.88]',
       )}
     >
@@ -56,13 +62,28 @@ export default function MyLessonsEventCard({
             isList
               ? 'h-5 px-2 py-0 text-[9px]'
               : 'h-4 px-1.5 py-0 text-[8px] sm:h-5 sm:px-2 sm:text-[9px]',
-            isPlan
-              ? 'border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800'
-              : 'border-amber-200/60 bg-amber-100/90 text-amber-900',
+            hasGroup
+              ? 'border-indigo-200/60 bg-indigo-100/90 text-indigo-900'
+              : isPlan
+                ? 'border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800'
+                : 'border-amber-200/60 bg-amber-100/90 text-amber-900',
           )}
         >
-          {isPlan ? t('lessonTagPlan') : t('lessonTagTrial')}
+          {hasGroup ? tGroups('groupStudyPrefix') : isPlan ? t('lessonTagPlan') : t('lessonTagTrial')}
         </Badge>
+        {hasGroup ? (
+          <Badge
+            variant="outline"
+            className={cn(
+              'max-w-full shrink truncate font-semibold uppercase leading-none text-indigo-700 border-indigo-200',
+              isList
+                ? 'h-5 px-2 py-0 text-[9px]'
+                : 'h-4 px-1.5 py-0 text-[8px] sm:h-5 sm:px-2 sm:text-[9px]',
+            )}
+          >
+            {lesson.groupName}
+          </Badge>
+        ) : null}
         {isCompleted ? (
           <Badge
             variant="outline"

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Put, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { AdminGuard } from '../../common/guards/admin.guard';
@@ -91,14 +91,14 @@ export class WalletController {
     await this.walletService.createWithdrawal(user.sub, body);
   }
 
-  @Patch('payout-bank')
+  @Put('payout-bank')
   @ApiOperation({ summary: 'Update payout bank account (student or tutor)' })
   updatePayoutBank(@Req() req: Request, @Body() body: UpdateWalletPayoutBankDto) {
     const user = req.user as AuthUserPayload;
     return this.walletService.updatePayoutBank(user.sub, body);
   }
 
-  @Patch('withdrawals/:id/approve')
+  @Put('withdrawals/:id/approve')
   @UseGuards(AdminGuard)
   @ApiOperation({ summary: 'Admin: approve withdrawal and settle funds' })
   approveWithdrawal(@Param('id') id: string, @Body() body: ApproveWithdrawalAdminDto) {
@@ -109,7 +109,7 @@ export class WalletController {
     });
   }
 
-  @Patch('withdrawals/:id/reject')
+  @Put('withdrawals/:id/reject')
   @UseGuards(AdminGuard)
   @ApiOperation({ summary: 'Admin: reject withdrawal and return funds to balance' })
   rejectWithdrawal(@Param('id') id: string, @Body() body: UpdateWithdrawalAdminDto) {

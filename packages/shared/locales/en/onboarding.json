@@ -23,6 +23,9 @@
   "goToMezon": "Open Mezon",
   "goToBotInvite": "Open bot invite link",
   "contactSupport": "Contact support",
+  "copySetupCommand": "Copy setup command",
+  "copiedSetupCommand": "Setup command copied",
+  "copySetupCommandError": "Failed to copy setup command",
   "completion": {
     "title": "You're all set!",
     "description": "You now know the basics. Start your learning or teaching journey today.",
@@ -135,16 +138,9 @@
           "tip3": "Follow the bot's reply — linking usually takes just a few seconds."
         }
       },
-      "customizeClan": {
-        "title": "Customize your Clan — almost done!",
-        "description": "Your Clan is linked. Customize theme, emoji, roles, and channels however you like before welcoming students.",
-        "imageAlt": "Illustration of customizing a Clan after setup",
-        "tips": {
-          "tip1": "Change theme, emoji, and roles to personalize your Clan.",
-          "tip2": "Add or rearrange text/voice channels to match how you teach.",
-          "tip3": "You're ready — students can join lessons through Mezonly."
-        }
-      },
+      "copySetupCommand": "Copy setup command",
+      "copiedSetupCommand": "Setup command copied",
+      "copySetupCommandError": "Failed to copy setup command",
       "reminder": {
         "title": "Lesson reminders",
         "description": "Ten minutes before a lesson starts, Mezonly notifies you and your student so you can both get ready.",

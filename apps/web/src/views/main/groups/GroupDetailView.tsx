@@ -301,7 +301,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className={cn("bg-gray-50 text-gray-500 text-[10px] font-black uppercase tracking-wider px-3 py-1 border-none", member.userId === group.leaderId ? "bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-md hover:shadow-violet-400/50" : null)}>
+                    <Badge variant="secondary" className={cn("text-xs font-bold px-2 py-1 rounded-full", member.userId === group.leaderId ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-700')}>
                       {member.userId === group.leaderId ? tGroups('card.leader') : tGroups('card.member')}
                     </Badge>
                     <button className="p-1 cursor-pointer text-gray-300 hover:text-gray-900 transition-colors">

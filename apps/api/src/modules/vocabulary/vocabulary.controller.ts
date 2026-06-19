@@ -7,7 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
-  Patch,
+  Put,
   Post,
   Req,
   UseGuards,
@@ -40,7 +40,7 @@ export class VocabularyController {
     return this.vocabularyService.create(user.sub, dto);
   }
 
-  @Patch(':id/status')
+  @Put(':id/status')
   updateStatus(
     @Req() req: Request,
     @Param('id', ParseUUIDPipe) id: string,

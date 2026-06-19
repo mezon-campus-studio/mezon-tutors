@@ -28,6 +28,7 @@ export type ScheduleEventItem = {
   timeLabel: string;
   isCompleted: boolean;
   lessonKind: "trial" | "subscription";
+  groupName?: string;
 };
 
 type MyScheduleCalendarSectionProps = {

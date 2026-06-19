@@ -71,12 +71,15 @@ const GroupCard = ({
       onClick={() => router.push(`${ROUTES.DASHBOARD.GROUPS}/${id}${tutorId ? `?tutorId=${tutorId}` : ''}`)}
       className="relative p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border-border/50 overflow-hidden rounded-3xl cursor-pointer"
     >
-      <div className="absolute top-0 left-0 w-1.5 h-full bg-primary/10 group-hover:bg-primary transition-colors duration-300" />
+      <div className="absolute top-0 left-0 w-1.5 h-full group-hover:bg-primary transition-colors duration-300" />
       
       <div className="mb-6">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl font-bold text-gray-900 truncate flex-1">{title}</h3>
-          <Badge variant="secondary" className="bg-gray-50 text-gray-500 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border-none shrink-0">
+          <Badge variant="secondary" className={cn(
+            "text-xs font-bold px-2 py-1 rounded-full",
+            role === 'Leader' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-700'
+          )}>
             {role === 'Leader' ? t('leader') : t('member')}
           </Badge>
         </div>

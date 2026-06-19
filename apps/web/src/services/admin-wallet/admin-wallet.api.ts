@@ -49,11 +49,11 @@ export const adminWalletApi = {
     id: string,
     payload: ApproveWalletWithdrawalAdminPayload = {},
   ): Promise<void> {
-    return apiClient.patch(`${BASE}/withdrawals/${id}/approve`, payload);
+    return apiClient.put(`${BASE}/withdrawals/${id}/approve`, payload);
   },
 
   rejectWithdrawal(id: string, adminNote?: string): Promise<void> {
-    return apiClient.patch(`${BASE}/withdrawals/${id}/reject`, { adminNote });
+    return apiClient.put(`${BASE}/withdrawals/${id}/reject`, { adminNote });
   },
 };
 

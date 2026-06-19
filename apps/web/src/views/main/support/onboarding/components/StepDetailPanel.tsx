@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Headphones } from 'lucide-react';
+import { ArrowRight, Copy, Headphones } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -13,6 +13,7 @@ import {
   getOnboardingImageSrcForCheck,
 } from '@mezon-tutors/shared';
 import { ONBOARDING_ICON_BY_KEY } from './onboarding-icons';
+import { toast } from '@/components/ui';
 
 function getOnboardingRoleBadgeLabel(
   role: OnboardingRole,
@@ -380,6 +381,16 @@ export function StepDetailPanel({
     step.tipKeys.length
   );
   const tipRichComponents = buildOnboardingTipRichComponents(actionHref, tipLinks);
+  const setupCommand = '*mezonly setup*';
+
+  const copyCommandToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(setupCommand);
+      toast.success(t('copiedSetupCommand'));
+    } catch {
+      toast.error(t('copySetupCommandError'));
+    }
+  };
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1fr_minmax(240px,320px)]">
@@ -469,6 +480,16 @@ export function StepDetailPanel({
                 <ArrowRight className="size-3.5" />
               </Link>
             )
+          ) : null}
+          {step.id === 'setupCommand' ? (
+            <button
+              type="button"
+              onClick={copyCommandToClipboard}
+              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-violet-200 bg-white px-4 text-xs font-semibold text-violet-700 transition-colors hover:border-violet-300 hover:bg-violet-50"
+            >
+              <Copy className="size-3.5" />
+              {t('copySetupCommand')}
+            </button>
           ) : null}
           <button
             type="button"
