@@ -314,6 +314,10 @@
         "mezonLinks": {
           "title": "Link Mezon",
           "description": "Link mời bot và Channel App — dùng trên trang hướng dẫn onboarding."
+        },
+        "socials": {
+          "title": "Mạng xã hội",
+          "description": "Link mạng xã hội hiển thị ở footer."
         }
       },
       "fields": {
@@ -336,7 +340,13 @@
         "channelAppWalletLink": "Channel App — Wallet",
         "channelAppMyLessonsLink": "Channel App — My lesson",
         "channelAppMyScheduleLink": "Channel App — My schedule",
-        "channelAppLinkHint": "Link install Channel App từ Mezon Developer Portal."
+        "channelAppLinkHint": "Link install Channel App từ Mezon Developer Portal.",
+        "socialFacebook": "Link Facebook",
+        "socialInstagram": "Link Instagram",
+        "socialYoutube": "Link YouTube",
+        "socialTiktok": "Link TikTok",
+        "socialLinkedin": "Link LinkedIn",
+        "socialTwitter": "Link Twitter"
       },
       "validation": {
         "required": "Trường này là bắt buộc.",

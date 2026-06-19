@@ -3,9 +3,12 @@ import { Prisma } from '@prisma/client';
 import {
   type AppSettings,
   type MezonLinks,
+  type SocialLinks,
   type PublicAppSettings,
   mezonLinksSchema,
   normalizeMezonLinksForStorage,
+  socialLinksSchema,
+  normalizeSocialLinksForStorage,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
@@ -121,6 +124,9 @@ export class AppSettingsService {
         dto.mezonLinks,
       ) as Prisma.InputJsonValue;
     }
+    if (dto.socialLinks !== undefined) {
+      data.socialLinks = normalizeSocialLinksForStorage(dto.socialLinks) as Prisma.InputJsonValue;
+    }
 
     return data;
   }
@@ -136,6 +142,15 @@ export class AppSettingsService {
     }
 
     return normalizeMezonLinksForStorage(parsed.data);
+  }
+
+  private parseSocialLinks(value: Prisma.JsonValue | null): SocialLinks | null {
+    if (value === null || value === undefined) return null;
+
+    const parsed = socialLinksSchema.safeParse(value);
+    if (!parsed.success) return null;
+
+    return normalizeSocialLinksForStorage(parsed.data);
   }
 
   private serialize(row: {
@@ -164,6 +179,7 @@ export class AppSettingsService {
       minWithdrawalAmountPhp: Number(row.minWithdrawalAmountPhp),
       subscriptionGroupDiscountRate: Number(row.subscriptionGroupDiscountRate),
       mezonLinks: this.parseMezonLinks(row.mezonLinks),
+      socialLinks: this.parseSocialLinks((row as any).socialLinks ?? null),
       updatedByUserId: row.updatedByUserId,
       updatedBy: row.updatedBy,
       updatedAt: row.updatedAt.toISOString(),
@@ -181,6 +197,7 @@ export class AppSettingsService {
       minWithdrawalAmountPhp: settings.minWithdrawalAmountPhp,
       subscriptionGroupDiscountRate: settings.subscriptionGroupDiscountRate,
       mezonLinks: settings.mezonLinks,
+      socialLinks: settings.socialLinks,
     };
   }
 }

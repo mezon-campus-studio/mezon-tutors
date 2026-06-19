@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ROUTES, SUPPORT_EMAIL } from "@mezon-tutors/shared";
+import { usePublicAppSettings } from "@/services";
 import { Separator } from "@/components/ui";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 
@@ -53,15 +54,62 @@ function LinkedinIcon({ className }: { className?: string }) {
   );
 }
 
-const SOCIALS = [
-  { href: "https://example.com", label: "Facebook", icon: FacebookIcon },
-  { href: "https://example.com", label: "Instagram", icon: InstagramIcon },
-  { href: "https://example.com", label: "LinkedIn", icon: LinkedinIcon },
-];
+function YoutubeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      role="presentation"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M23.498 6.186a2.99 2.99 0 0 0-2.104-2.117C19.537 3.5 12 3.5 12 3.5s-7.537 0-9.394.569A2.99 2.99 0 0 0 .502 6.186C0 8.057 0 12 0 12s0 3.943.502 5.814a2.99 2.99 0 0 0 2.104 2.117C4.463 20.5 12 20.5 12 20.5s7.537 0 9.394-.569a2.99 2.99 0 0 0 2.104-2.117C24 15.943 24 12 24 12s0-3.943-.502-5.814ZM9.545 15.568V8.432L15.818 12l-6.273 3.568Z" />
+    </svg>
+  );
+}
+
+function TiktokIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      role="presentation"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-1.885V13.39a5.324 5.324 0 1 1-5.324-5.324c.181 0 .36.01.536.027v2.621a2.704 2.704 0 1 0 2.167 2.649V0h2.621a4.798 4.798 0 0 0 4.77 4.77v1.916Z" />
+    </svg>
+  );
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      role="presentation"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.847h-7.406l-5.8-7.584-6.64 7.584H.472l8.6-9.83L0 1.153h7.594l5.243 6.932 6.064-6.932Zm-1.29 19.494h2.04L6.486 3.24H4.298l13.313 17.407Z" />
+    </svg>
+  );
+}
+
+function buildSocialsFromLinks(links: Record<string, string> | undefined | null) {
+  if (!links) return [] as { href: string; label: string; icon: any }[];
+  const socials: { href: string; label: string; icon: any }[] = [];
+  if (links.facebook) socials.push({ href: links.facebook, label: 'Facebook', icon: FacebookIcon });
+  if (links.instagram) socials.push({ href: links.instagram, label: 'Instagram', icon: InstagramIcon });
+  if (links.linkedin) socials.push({ href: links.linkedin, label: 'LinkedIn', icon: LinkedinIcon });
+  if (links.youtube) socials.push({ href: links.youtube, label: 'YouTube', icon: YoutubeIcon });
+  if (links.tiktok) socials.push({ href: links.tiktok, label: 'TikTok', icon: TiktokIcon });
+  if (links.twitter) socials.push({ href: links.twitter, label: 'Twitter', icon: XIcon });
+  return socials;
+}
 
 export default function Footer() {
   const t = useTranslations("Common.Footer");
   const pathname = usePathname();
+  const { data: publicSettings } = usePublicAppSettings();
+  const socials = buildSocialsFromLinks(publicSettings?.socialLinks as Record<string, string> | undefined | null);
 
   const HIDDEN_PREFIXES = [
     "/dashboard",
@@ -150,17 +198,19 @@ export default function Footer() {
             </p>
 
             <div className="flex items-center gap-2">
-              {SOCIALS.map((social) => {
+              {socials.map((social) => {
                 const Icon = social.icon;
                 return (
-                  <Link
+                  <a
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="group flex size-10 items-center justify-center rounded-full border border-violet-100 bg-white text-slate-500 shadow-sm shadow-violet-100/40 transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] hover:text-violet-700 hover:shadow-md hover:shadow-violet-200/40"
                   >
                     <Icon className="size-4" />
-                  </Link>
+                  </a>
                 );
               })}
             </div>

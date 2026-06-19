@@ -1,4 +1,4 @@
-import { APP_SETTINGS_LIMITS, type MezonLinks } from '@mezon-tutors/shared';
+import { APP_SETTINGS_LIMITS, type MezonLinks, type SocialLinks } from '@mezon-tutors/shared';
 import { Type } from 'class-transformer';
 import { IsInt, IsNumber, IsObject, IsOptional, Max, Min } from 'class-validator';
 
@@ -56,4 +56,8 @@ export class UpdateAppSettingsDto {
   @IsOptional()
   @IsObject()
   mezonLinks?: MezonLinks | null;
+
+  @IsOptional()
+  @IsObject()
+  socialLinks?: SocialLinks | null;
 }

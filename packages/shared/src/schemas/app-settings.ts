@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import { APP_SETTINGS_LIMITS } from '../constants/app-settings';
 import type { UpdateAppSettingsBody } from '../types/app-settings-api';
-import { createMezonLinksFormFieldsSchema, mapMezonLinksFormToStorage } from './mezon-links';
+import {
+  createMezonLinksFormFieldsSchema,
+  mapMezonLinksFormToStorage,
+} from './mezon-links';
+import {
+  createSocialLinksFormFieldsSchema,
+  mapSocialLinksFormToStorage,
+} from './social-links';
 
 export type AppSettingsFormValues = {
   platformFeePercent: string;
@@ -17,6 +24,12 @@ export type AppSettingsFormValues = {
   channelAppWalletLink: string;
   channelAppMyLessonsLink: string;
   channelAppMyScheduleLink: string;
+  socialFacebook: string;
+  socialInstagram: string;
+  socialYoutube: string;
+  socialTiktok: string;
+  socialLinkedin: string;
+  socialTwitter: string;
 };
 
 export type AppSettingsValidationMessages = {
@@ -68,6 +81,9 @@ function requiredDecimalString(
 
 export function createAppSettingsFormSchema(messages: AppSettingsValidationMessages) {
   const mezonLinksFields = createMezonLinksFormFieldsSchema({
+    invalidUrl: messages.invalidUrl,
+  }).shape;
+  const socialLinksFields = createSocialLinksFormFieldsSchema({
     invalidUrl: messages.invalidUrl,
   }).shape;
 
@@ -128,6 +144,7 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
         limits.minWithdrawalAmountPhp.max,
       ),
       ...mezonLinksFields,
+      ...socialLinksFields,
     })
     .transform(
       (values): UpdateAppSettingsBody => ({
@@ -146,6 +163,14 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
           channelAppWalletLink: values.channelAppWalletLink,
           channelAppMyLessonsLink: values.channelAppMyLessonsLink,
           channelAppMyScheduleLink: values.channelAppMyScheduleLink,
+        }),
+        socialLinks: mapSocialLinksFormToStorage({
+          socialFacebook: values.socialFacebook,
+          socialInstagram: values.socialInstagram,
+          socialYoutube: values.socialYoutube,
+          socialTiktok: values.socialTiktok,
+          socialLinkedin: values.socialLinkedin,
+          socialTwitter: values.socialTwitter,
         }),
       }),
     );
