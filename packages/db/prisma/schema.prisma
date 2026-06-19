@@ -647,7 +647,6 @@ model Transaction {
   type                      EWalletTransactionType
   amount                    BigInt
   grossAmount               BigInt?                    @map("gross_amount")
-  tutorAmount               BigInt?                    @map("tutor_amount")
   platformFee               BigInt?                    @map("platform_fee")
   direction                 EWalletTransactionDirection
   description               String?                    @db.Text

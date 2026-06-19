@@ -8,7 +8,6 @@ import type {
   ApiResponse,
   ApproveWalletWithdrawalAdminPayload,
   WalletTransactionDirection,
-  WalletTransactionType,
 } from "@mezon-tutors/shared";
 import { apiClient } from "../api-client";
 import { adminWalletQueryKey } from "./admin-wallet.qkey";
@@ -16,7 +15,6 @@ import { adminWalletQueryKey } from "./admin-wallet.qkey";
 const BASE = "/wallet";
 
 export type AdminTransactionsFilters = {
-  type?: WalletTransactionType;
   direction?: WalletTransactionDirection;
 };
 

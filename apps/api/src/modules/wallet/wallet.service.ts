@@ -52,6 +52,7 @@ import {
   transactionEconomicsFromAmount,
   transactionEconomicsFromGrossTutorFee,
 } from './transaction-economics';
+import type { TransactionEconomicsFields } from './transaction-economics';
 import { NotificationService } from '../notification/notification.service';
 import { AppSettingsService } from '../app-settings/app-settings.service';
 
@@ -414,16 +415,48 @@ export class WalletService {
         role: Role.TUTOR,
         monthReceived: 0,
         totalReceived: 0,
+        monthRefunded: 0,
+        totalRefunded: 0,
         monthWithdrawn: 0,
         totalWithdrawn: 0,
         transactionCount: 0,
       };
     }
 
-    const [monthAgg, transactionCount] = await Promise.all([
-      this.prisma.transaction.groupBy({
-        by: ['direction'],
-        where: { walletId: wallet.id, createdAt: { gte: monthStart } },
+    const [monthReceivedAgg, monthRefundedAgg, monthWithdrawnAgg, totalRefundedAgg, transactionCount] = await Promise.all([
+      this.prisma.transaction.aggregate({
+        where: {
+          walletId: wallet.id,
+          createdAt: { gte: monthStart },
+          direction: EWalletTransactionDirection.CREDIT,
+          type: EWalletTransactionType.BOOKING_PAYMENT,
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.transaction.aggregate({
+        where: {
+          walletId: wallet.id,
+          createdAt: { gte: monthStart },
+          direction: EWalletTransactionDirection.DEBIT,
+          type: EWalletTransactionType.REFUND,
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.transaction.aggregate({
+        where: {
+          walletId: wallet.id,
+          createdAt: { gte: monthStart },
+          direction: EWalletTransactionDirection.DEBIT,
+          type: EWalletTransactionType.WITHDRAWAL,
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.transaction.aggregate({
+        where: {
+          walletId: wallet.id,
+          direction: EWalletTransactionDirection.DEBIT,
+          type: EWalletTransactionType.REFUND,
+        },
         _sum: { amount: true },
       }),
       this.prisma.transaction.count({ where: { walletId: wallet.id } }),
@@ -431,9 +464,11 @@ export class WalletService {
 
     return {
       role: Role.TUTOR,
-      monthReceived: this.sumByDirection(monthAgg, EWalletTransactionDirection.CREDIT),
+      monthReceived: Number(monthReceivedAgg._sum.amount ?? 0n),
       totalReceived: Number(wallet.totalEarned),
-      monthWithdrawn: this.sumByDirection(monthAgg, EWalletTransactionDirection.DEBIT),
+      monthRefunded: Number(monthRefundedAgg._sum.amount ?? 0n),
+      totalRefunded: Number(totalRefundedAgg._sum.amount ?? 0n),
+      monthWithdrawn: Number(monthWithdrawnAgg._sum.amount ?? 0n),
       totalWithdrawn: Number(wallet.totalWithdrawn),
       transactionCount,
     };
@@ -820,11 +855,7 @@ export class WalletService {
       subscriptionEnrollmentId?: string;
       subscriptionSlotIndex?: number;
       description: string;
-      economics: {
-        grossAmount: bigint;
-        tutorAmount: bigint;
-        platformFee: bigint;
-      };
+      economics: TransactionEconomicsFields;
     },
   ): Promise<void> {
     if (params.tutorAmount <= 0n) {
@@ -875,11 +906,7 @@ export class WalletService {
     bookingId?: string;
     subscriptionEnrollmentId?: string;
     description?: string;
-    economics?: {
-      grossAmount: bigint;
-      tutorAmount: bigint;
-      platformFee: bigint;
-    };
+    economics?: TransactionEconomicsFields;
   }): Promise<void> {
     if (params.amount <= 0n) {
       return;
@@ -1235,8 +1262,11 @@ export class WalletService {
   }
 
   async getAdminTransactionStats(): Promise<AdminWalletTransactionStatsApiResponse> {
-    const monthStart = this.monthStart();
+    const where: Prisma.TransactionWhereInput = {
+      type: { in: [EWalletTransactionType.BOOKING_PAYMENT, EWalletTransactionType.WITHDRAWAL] },
+    };
 
+    const monthStart = this.monthStart();
     const [
       creditAgg,
       debitAgg,
@@ -1248,20 +1278,22 @@ export class WalletService {
     ] = await Promise.all([
       this.prisma.transaction.aggregate({
         _sum: { grossAmount: true },
-        where: { direction: EWalletTransactionDirection.CREDIT },
+        where: { direction: EWalletTransactionDirection.CREDIT, ...where },
       }),
       this.prisma.transaction.aggregate({
         _sum: { grossAmount: true },
-        where: { direction: EWalletTransactionDirection.DEBIT },
+        where: { direction: EWalletTransactionDirection.DEBIT, ...where },
       }),
       this.prisma.transaction.aggregate({
         _sum: { platformFee: true },
+        where: { ...where },
       }),
       this.prisma.transaction.aggregate({
         _sum: { grossAmount: true },
         where: {
           direction: EWalletTransactionDirection.CREDIT,
           createdAt: { gte: monthStart },
+          ...where
         },
       }),
       this.prisma.transaction.aggregate({
@@ -1269,10 +1301,11 @@ export class WalletService {
         where: {
           direction: EWalletTransactionDirection.DEBIT,
           createdAt: { gte: monthStart },
+          ...where
         },
       }),
-      this.prisma.transaction.count(),
-      this.prisma.transaction.count({ where: { createdAt: { gte: monthStart } } }),
+      this.prisma.transaction.count({ where }),
+      this.prisma.transaction.count({ where: { createdAt: { gte: monthStart }, ...where } }),
     ]);
 
     return {
@@ -1289,13 +1322,12 @@ export class WalletService {
   async getAllTransactions(
     page = 1,
     limit = 15,
-    type?: EWalletTransactionType,
     direction?: EWalletTransactionDirection,
   ): Promise<AdminWalletTransactionsApiResponse> {
     const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
 
     const where: Prisma.TransactionWhereInput = {
-      ...(type ? { type } : {}),
+      type: { in: [EWalletTransactionType.BOOKING_PAYMENT, EWalletTransactionType.WITHDRAWAL] },
       ...(direction ? { direction } : {}),
     };
 
@@ -1332,7 +1364,6 @@ export class WalletService {
       direction: row.direction,
       amount: Number(row.amount),
       grossAmount: row.grossAmount != null ? Number(row.grossAmount) : null,
-      tutorAmount: row.tutorAmount != null ? Number(row.tutorAmount) : null,
       platformFee: row.platformFee != null ? Number(row.platformFee) : null,
       description: row.description,
       createdAt: row.createdAt.toISOString(),
