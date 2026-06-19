@@ -7,8 +7,10 @@ export type TutorWalletMetrics = {
   pendingWithdrawal: number;
   withdrawable: number;
   monthReceived: number;
-  monthWithdrawn: number;
+  monthRefunded: number;
   totalReceived: number;
+  totalRefunded: number;
+  monthWithdrawn: number;
   totalWithdrawn: number;
   transactionCount: number;
   canWithdraw: boolean;
@@ -29,8 +31,10 @@ export function getTutorWalletMetrics(
     pendingWithdrawal,
     withdrawable: available,
     monthReceived: tutorStats?.monthReceived ?? 0,
-    monthWithdrawn: tutorStats?.monthWithdrawn ?? 0,
+    monthRefunded: tutorStats?.monthRefunded ?? 0,
     totalReceived: tutorStats?.totalReceived ?? details?.totalEarned ?? 0,
+    totalRefunded: tutorStats?.totalRefunded ?? 0,
+    monthWithdrawn: tutorStats?.monthWithdrawn ?? 0,
     totalWithdrawn: tutorStats?.totalWithdrawn ?? details?.totalWithdrawn ?? 0,
     transactionCount: tutorStats?.transactionCount ?? 0,
     canWithdraw: available >= 10_000 && (details?.withdrawalWindowOpen ?? true),

@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { EWalletTransactionDirection, EWalletTransactionType } from '@mezon-tutors/db';
+import { EWalletTransactionDirection } from '@mezon-tutors/db';
 
 export class GetAdminWalletTransactionsDto {
   @IsOptional()
@@ -15,10 +15,6 @@ export class GetAdminWalletTransactionsDto {
   @Min(1)
   @Max(50)
   limit?: number = 15;
-
-  @IsOptional()
-  @IsEnum(EWalletTransactionType)
-  type?: EWalletTransactionType;
 
   @IsOptional()
   @IsEnum(EWalletTransactionDirection)

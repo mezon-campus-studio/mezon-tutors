@@ -78,7 +78,6 @@ export class WalletController {
     return this.walletService.getAllTransactions(
       query.page,
       query.limit,
-      query.type,
       query.direction,
     );
   }

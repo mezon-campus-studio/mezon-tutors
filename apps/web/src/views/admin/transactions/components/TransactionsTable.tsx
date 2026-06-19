@@ -64,7 +64,7 @@ export default function TransactionsTable({
               <th className="px-5 py-3">{t("columns.user")}</th>
               <th className="px-5 py-3">{t("columns.type")}</th>
               <th className="px-5 py-3">{t("columns.direction")}</th>
-              <th className="px-5 py-3">{t("columns.gross")}</th>
+              <th className="px-5 py-3">{t("columns.amount")}</th>
               <th className="px-5 py-3">{t("columns.reference")}</th>
               <th className="px-5 py-3">{t("columns.createdAt")}</th>
             </tr>

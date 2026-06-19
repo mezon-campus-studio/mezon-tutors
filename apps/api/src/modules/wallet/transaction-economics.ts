@@ -1,29 +1,29 @@
 export type TransactionEconomicsFields = {
   grossAmount: bigint;
-  tutorAmount: bigint;
   platformFee: bigint;
 };
 
 export function transactionEconomicsData(fields: TransactionEconomicsFields) {
   return {
     grossAmount: fields.grossAmount,
-    tutorAmount: fields.tutorAmount,
     platformFee: fields.platformFee,
   };
 }
 
 export function transactionEconomicsFromGrossTutorFee(
   grossAmount: bigint,
-  tutorAmount: bigint,
+  _tutorAmount: bigint,
   platformFee: bigint,
 ): TransactionEconomicsFields {
-  return { grossAmount, tutorAmount, platformFee };
+  return { grossAmount, platformFee };
 }
 
-export function transactionEconomicsFromAmount(amount: bigint): TransactionEconomicsFields {
+export function transactionEconomicsFromAmount(
+  amount: bigint,
+  platformFee: bigint = 0n,
+): TransactionEconomicsFields {
   return {
-    grossAmount: amount,
-    tutorAmount: amount,
-    platformFee: 0n,
+    grossAmount: amount + platformFee,
+    platformFee,
   };
 }

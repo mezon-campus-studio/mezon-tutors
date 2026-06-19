@@ -6,13 +6,12 @@ export const adminWalletQueryKey = {
     [...adminWalletQueryKey.all, "transaction-stats"] as const,
   transactions: (
     page: number,
-    filters: { type?: string; direction?: string } = {},
+    filters: { direction?: string } = {},
   ) =>
     [
       ...adminWalletQueryKey.all,
       "transactions",
       page,
-      filters.type ?? "all",
       filters.direction ?? "all",
     ] as const,
 };

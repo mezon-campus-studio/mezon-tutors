@@ -50,6 +50,8 @@ export type TutorWalletStatsApiResponse = {
   role: 'TUTOR';
   monthReceived: number;
   totalReceived: number;
+  monthRefunded: number;
+  totalRefunded: number;
   monthWithdrawn: number;
   totalWithdrawn: number;
   transactionCount: number;
@@ -132,7 +134,6 @@ export type AdminWalletTransactionApiItem = {
   direction: WalletTransactionDirection;
   amount: number;
   grossAmount: number | null;
-  tutorAmount: number | null;
   platformFee: number | null;
   description: string | null;
   createdAt: string;

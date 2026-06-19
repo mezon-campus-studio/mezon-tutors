@@ -1,9 +1,6 @@
 "use client";
 
-import type {
-  WalletTransactionDirection,
-  WalletTransactionType,
-} from "@mezon-tutors/shared";
+import type { WalletTransactionDirection } from "@mezon-tutors/shared";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -15,14 +12,6 @@ import TutorsPagination from "@/views/main/tutors/components/TutorsPagination";
 import TransactionMetricsCards from "./components/TransactionMetricsCards";
 import TransactionsTable from "./components/TransactionsTable";
 
-const TRANSACTION_TYPES: WalletTransactionType[] = [
-  "BOOKING_PAYMENT",
-  "RELEASE",
-  "WITHDRAWAL",
-  "REFUND",
-  "PLATFORM_FEE",
-];
-
 const TRANSACTION_DIRECTIONS: WalletTransactionDirection[] = [
   "CREDIT",
   "DEBIT",
@@ -30,15 +19,12 @@ const TRANSACTION_DIRECTIONS: WalletTransactionDirection[] = [
 
 export default function AdminTransactionsView() {
   const t = useTranslations("Admin.Transactions");
-  const tTypes = useTranslations("Wallet.types");
   const [page, setPage] = useState(1);
-  const [typeFilter, setTypeFilter] = useState<WalletTransactionType | "">("");
   const [directionFilter, setDirectionFilter] = useState<
     WalletTransactionDirection | ""
   >("");
 
   const filters: AdminTransactionsFilters = {
-    ...(typeFilter ? { type: typeFilter } : {}),
     ...(directionFilter ? { direction: directionFilter } : {}),
   };
 
@@ -53,10 +39,8 @@ export default function AdminTransactionsView() {
   const totalPages = data?.meta?.totalPages ?? 1;
 
   const handleFilterChange = (
-    nextType: WalletTransactionType | "",
     nextDirection: WalletTransactionDirection | "",
   ) => {
-    setTypeFilter(nextType);
     setDirectionFilter(nextDirection);
     setPage(1);
   };
@@ -78,29 +62,9 @@ export default function AdminTransactionsView() {
         </h3>
         <div className="flex flex-wrap gap-2">
           <select
-            value={typeFilter}
-            onChange={(e) =>
-              handleFilterChange(
-                e.target.value as WalletTransactionType | "",
-                directionFilter,
-              )
-            }
-            className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-          >
-            <option value="">{t("filters.allTypes")}</option>
-            {TRANSACTION_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {tTypes(type)}
-              </option>
-            ))}
-          </select>
-          <select
             value={directionFilter}
             onChange={(e) =>
-              handleFilterChange(
-                typeFilter,
-                e.target.value as WalletTransactionDirection | "",
-              )
+              handleFilterChange(e.target.value as WalletTransactionDirection | "")
             }
             className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
           >
