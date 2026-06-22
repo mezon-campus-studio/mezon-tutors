@@ -60,7 +60,7 @@ const walletApi = {
   },
 
   updatePayoutBank(payload: UpdateWalletPayoutBankPayload): Promise<WalletPayoutBankAccount> {
-    return apiClient.patch<ApiResponse<WalletPayoutBankAccount>, WalletPayoutBankAccount>(
+    return apiClient.put<ApiResponse<WalletPayoutBankAccount>, WalletPayoutBankAccount>(
       `${BASE}/payout-bank`,
       payload,
     );

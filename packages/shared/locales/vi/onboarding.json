@@ -24,6 +24,9 @@
   "goToBotInvite": "Mở link mời bot",
   "goToSettings": "Mở cài đặt",
   "contactSupport": "Liên hệ hỗ trợ",
+  "copySetupCommand": "Sao chép lệnh cài đặt",
+  "copiedSetupCommand": "Đã sao chép lệnh cài đặt",
+  "copySetupCommandError": "Không sao chép được lệnh cài đặt",
   "completion": {
     "title": "Bạn đã sẵn sàng!",
     "description": "Bạn đã nắm được quy trình cơ bản. Bắt đầu hành trình học tập hoặc dạy học ngay hôm nay.",
@@ -134,16 +137,6 @@
           "tip1": "Mở text channel (ví dụ #general) trong Clan.",
           "tip2": "Gõ <command>*mezonly setup</command> rồi gửi.",
           "tip3": "Làm theo hướng dẫn bot trả về — thường chỉ mất vài giây."
-        }
-      },
-      "customizeClan": {
-        "title": "Tùy chỉnh Clan — gần như hoàn tất!",
-        "description": "Clan đã được liên kết. Bạn có thể tùy chỉnh theme, emoji, role và kênh theo ý muốn trước khi nhận học viên.",
-        "imageAlt": "Minh họa tùy chỉnh Clan sau khi setup xong",
-        "tips": {
-          "tip1": "Đổi theme, emoji và role cho Clan nếu muốn cá nhân hóa.",
-          "tip2": "Thêm hoặc sắp xếp lại kênh text/voice theo cách dạy của bạn.",
-          "tip3": "Clan đã sẵn sàng — học viên có thể vào buổi học qua Mezonly."
         }
       },
       "reminder": {

@@ -76,17 +76,13 @@ export default function DashboardScheduleMobileList<
                   : isToday
                     ? 'border border-violet-200 bg-violet-50/50 text-violet-700'
                     : 'text-slate-600 hover:bg-violet-50',
+                eventCount > 0 ? 'border border-violet-200' : null,
               )}
             >
               {eventCount > 0 ? (
                 <span
                   className={cn(
-                    "absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold leading-4 shadow-sm",
-                    isActive
-                      ? "bg-white text-violet-700"
-                      : isToday
-                        ? "bg-violet-600 text-white"
-                        : "bg-violet-100 text-violet-700",
+                    "absolute right-1 top-1 inline-flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-extrabold leading-4 shadow-sm bg-red-500 text-white",
                   )}
                 >
                   {eventCount}

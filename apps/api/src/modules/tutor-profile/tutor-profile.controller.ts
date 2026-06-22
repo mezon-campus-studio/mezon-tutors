@@ -80,7 +80,7 @@ export class TutorProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('me/setup-checklist')
+  @Put('me/setup-checklist')
   async patchMySetupChecklist(
     @Req() req: Request,
     @Body() body: UpdateTutorSetupChecklistBodyDto,

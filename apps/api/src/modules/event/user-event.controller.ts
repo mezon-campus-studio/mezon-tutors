@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
+  Put,
   Post,
   Req,
   UseGuards,
@@ -50,7 +50,7 @@ export class UserEventController {
     return this.eventService.getMySubmissionById(user.sub, id);
   }
 
-  @Patch('submissions/mine/:id')
+  @Put('submissions/mine/:id')
   @ApiOperation({ summary: 'Update an owned event submission (pending or rejected)' })
   updateMine(
     @Req() req: Request,

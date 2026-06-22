@@ -299,10 +299,10 @@ function PastLessonListItem({
         <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
         <div className="min-w-0 flex flex-col gap-0.5">
           {lesson.groupName && (
-            <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-600">
-               {tGroups('groupStudyPrefix')}: {lesson.groupName}
-            </p>
-          )}
+              <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">
+                {tGroups('groupStudyPrefix')}: {lesson.groupName}
+              </p>
+            )}
           <p className="text-xs font-semibold text-slate-500">
             {formatLessonDateLabel(lesson.dateLabel, locale)}
           </p>
@@ -540,7 +540,7 @@ function UpcomingLessonItem({
           <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
           <div className="min-w-0 flex flex-col gap-0.5">
             {lesson.groupName && (
-              <p className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-600">
+              <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">
                 {tGroups('groupStudyPrefix')}: {lesson.groupName}
               </p>
             )}

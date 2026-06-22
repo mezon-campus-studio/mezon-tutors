@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Req, UseGuards, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Req, UseGuards, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StudyGroupService } from './study-group.service';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
@@ -23,14 +23,14 @@ export class StudyGroupController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
+  @Put(':id')
   async update(@Req() req: Request, @Param('id') id: string, @Body('name') name: string) {
     const user = req.user as AuthUserPayload;
     return this.studyGroupService.updateName(user.sub, id, name);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id/group-chat-channel')
+  @Put(':id/group-chat-channel')
   async updateGroupChatChannel(
     @Req() req: Request,
     @Param('id') id: string,

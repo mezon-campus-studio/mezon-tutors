@@ -20,7 +20,7 @@ export const eventApi = {
   getMySubmission: (id: string) =>
     apiClient.get<EventDetailDto>(`${BASE}/submissions/mine/${encodeURIComponent(id)}`),
   updateMySubmission: (id: string, payload: CreateEventPayload) =>
-    apiClient.patch<EventDetailDto>(
+    apiClient.put<EventDetailDto>(
       `${BASE}/submissions/mine/${encodeURIComponent(id)}`,
       payload,
     ),

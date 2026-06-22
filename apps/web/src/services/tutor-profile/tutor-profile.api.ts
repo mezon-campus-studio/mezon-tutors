@@ -136,7 +136,7 @@ export const tutorProfileApi = {
   },
 
   updateMySetupChecklist(payload: UpdateTutorSetupChecklistDto): Promise<TutorSetupChecklistDto> {
-    return apiClient.patch<ApiResponse<TutorSetupChecklistDto>, TutorSetupChecklistDto>(
+    return apiClient.put<ApiResponse<TutorSetupChecklistDto>, TutorSetupChecklistDto>(
       "/tutor-profiles/me/setup-checklist",
       payload,
     );

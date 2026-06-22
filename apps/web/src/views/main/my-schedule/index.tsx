@@ -108,6 +108,7 @@ const toScheduleEvent = (
     timeLabel: `${startLocal.format('HH:mm')} - ${endLocal.format('HH:mm')}`,
     lessonKind: item.scheduleKind === 'subscription' ? 'subscription' : 'trial',
     isCompleted,
+    groupName: item.groupName,
   };
 };
 

@@ -127,12 +127,6 @@ export const ONBOARDING_TUTOR_STEPS: readonly OnboardingStepConfig[] = [
     ],
   },
   {
-    id: 'customizeClan',
-    iconKey: 'palette',
-    accent: 'from-amber-500 to-rose-500',
-    tipKeys: ['tip1', 'tip2', 'tip3'],
-  },
-  {
     id: 'reminder',
     iconKey: 'bell',
     accent: 'from-emerald-500 to-teal-500',
@@ -180,7 +174,6 @@ const ONBOARDING_TUTOR_ACTION_ROUTES: Partial<Record<string, string>> = {
   createClan: MEZON_URL,
   voiceChannels: MEZON_URL,
   setupCommand: MEZON_URL,
-  customizeClan: MEZON_URL,
   reminder: ROUTES.DASHBOARD.MY_SCHEDULE,
 };
 
