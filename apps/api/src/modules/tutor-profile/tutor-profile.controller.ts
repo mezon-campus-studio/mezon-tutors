@@ -13,6 +13,7 @@ import type {
   TutorScheduleDto,
   TutorReviewsDto,
   TutorResourcesDto,
+  TutorResumeDto,
   VerifiedTutorProfileDto,
 } from '@mezon-tutors/shared'
 import { VerificationStatus } from '@mezon-tutors/db'
@@ -132,6 +133,12 @@ export class TutorProfileController {
   async getVerifiedTutorResources(@Param('id') id: string): Promise<TutorResourcesDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorResources(id)
+  }
+
+  @Get(':id/resume')
+  async getVerifiedTutorResume(@Param('id') id: string): Promise<TutorResumeDto> {
+    await this.validateVerifiedTutor(id)
+    return this.tutorProfileService.getVerifiedTutorResume(id)
   }
 
   @UseGuards(JwtAuthGuard)

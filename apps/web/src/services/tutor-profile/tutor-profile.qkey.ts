@@ -24,6 +24,7 @@ export const tutorProfileQueryKey = {
   tutorSchedule: (id: string) => ['tutor-schedule', id],
   tutorReviews: (id: string) => ['tutor-reviews', id],
   tutorResources: (id: string) => ['tutor-resources', id],
+  tutorResume: (id: string) => ['tutor-resume', id],
   savedTutors: () => ['saved-tutors'],
   myTutorProfile: () => ['my-tutor-profile'],
   mySetupChecklist: () => ['my-tutor-setup-checklist'],
