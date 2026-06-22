@@ -346,6 +346,15 @@
     "reviewsEmpty": "No reviews yet.",
     "resourcesTitle": "Resources",
     "resourcesEmpty": "No resources yet.",
+    "resumeTitle": "Resume",
+    "resumeTabs": {
+      "education": "Education",
+      "certifications": "Certifications"
+    },
+    "resumeEmptyEducation": "No education listed yet.",
+    "resumeEmptyCertifications": "No certifications listed yet.",
+    "resumeVerified": "Certificate verified",
+    "resumeDegreeVerified": "Degree verified",
     "openResource": "Open",
     "perLesson": "/ 60-min lesson",
     "bookTrial": "Book trial lesson",

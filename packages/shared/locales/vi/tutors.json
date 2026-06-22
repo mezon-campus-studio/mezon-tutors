@@ -346,6 +346,15 @@
     "reviewsEmpty": "Chưa có đánh giá.",
     "resourcesTitle": "Tài nguyên",
     "resourcesEmpty": "Chưa có tài nguyên.",
+    "resumeTitle": "Học vấn & Chứng chỉ",
+    "resumeTabs": {
+      "education": "Học vấn",
+      "certifications": "Chứng chỉ"
+    },
+    "resumeEmptyEducation": "Chưa có thông tin học vấn.",
+    "resumeEmptyCertifications": "Chưa có chứng chỉ.",
+    "resumeVerified": "Chứng chỉ đã xác minh",
+    "resumeDegreeVerified": "Bằng cấp đã xác minh",
     "openResource": "Mở",
     "perLesson": "/ 60 phút",
     "bookTrial": "Đặt buổi học thử",

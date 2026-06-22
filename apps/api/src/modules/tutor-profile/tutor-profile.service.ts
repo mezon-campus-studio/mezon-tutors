@@ -16,6 +16,8 @@ import {
   UpdateMyTutorProfileDto,
   TUTOR_PROFILE_UPDATE_SECTION,
   VerifiedTutorProfileDto,
+  TutorResumeDto,
+  TutorResumeItemDto,
   normalizeUtcAvailabilityRowsForStorage,
 } from '@mezon-tutors/shared';
 import {
@@ -1172,6 +1174,37 @@ export class TutorProfileService {
       reviews: reviews.map(toTutorReviewDto),
       ratingCount: tutor.ratingCount,
       ratingAverage: Number(tutor.ratingAverage),
+    }
+  }
+
+  async getVerifiedTutorResume(id: string): Promise<TutorResumeDto> {
+    const documents = await this.prisma.professionalDocument.findMany({
+      where: {
+        tutorId: id,
+        type: {
+          in: [ProfessionalDocumentType.DEGREE, ProfessionalDocumentType.CERTIFICATE],
+        },
+        status: ProfessionalDocumentStatus.APPROVED,
+      },
+      orderBy: [{ yearOfComplete: 'desc' }, { uploadedAt: 'desc' }],
+    })
+
+    const mapItem = (doc: (typeof documents)[number]): TutorResumeItemDto => ({
+      id: doc.id,
+      name: doc.name,
+      specialization: doc.specialization,
+      institution: doc.institution,
+      yearOfComplete: doc.yearOfComplete,
+      isVerified: doc.status === ProfessionalDocumentStatus.APPROVED,
+    })
+
+    return {
+      education: documents
+        .filter((doc) => doc.type === ProfessionalDocumentType.DEGREE)
+        .map(mapItem),
+      certifications: documents
+        .filter((doc) => doc.type === ProfessionalDocumentType.CERTIFICATE)
+        .map(mapItem),
     }
   }
 

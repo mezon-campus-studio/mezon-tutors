@@ -328,6 +328,20 @@ export interface TutorResourcesDto {
   resources: TutorResourceDto[]
 }
 
+export interface TutorResumeItemDto {
+  id: string
+  name: string
+  specialization: string | null
+  institution: string | null
+  yearOfComplete: number | null
+  isVerified: boolean
+}
+
+export interface TutorResumeDto {
+  education: TutorResumeItemDto[]
+  certifications: TutorResumeItemDto[]
+}
+
 export type TutorProfileAboutState = {
   firstName: string
   lastName: string

@@ -14,6 +14,7 @@ import {
   TutorScheduleDto,
   TutorReviewsDto,
   TutorResourcesDto,
+  TutorResumeDto,
   SavedTutorDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
@@ -76,6 +77,12 @@ export const tutorProfileApi = {
   getVerifiedTutorResources(id: string): Promise<TutorResourcesDto> {
     return apiClient.get<ApiResponse<TutorResourcesDto>, TutorResourcesDto>(
       `/tutor-profiles/${id}/resources`
+    );
+  },
+
+  getVerifiedTutorResume(id: string): Promise<TutorResumeDto> {
+    return apiClient.get<ApiResponse<TutorResumeDto>, TutorResumeDto>(
+      `/tutor-profiles/${id}/resume`
     );
   },
 
@@ -186,6 +193,14 @@ const useGetVerifiedTutorResources = (id: string, enabled = false) => {
   });
 };
 
+const useGetVerifiedTutorResume = (id: string, enabled = false) => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.tutorResume(id),
+    queryFn: () => tutorProfileApi.getVerifiedTutorResume(id),
+    enabled: !!id && enabled,
+  });
+};
+
 const useGetSavedTutors = (enabled = true) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.savedTutors(),
@@ -281,6 +296,7 @@ export {
   useGetVerifiedTutorSchedule,
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,
+  useGetVerifiedTutorResume,
   useGetSavedTutors,
   useSubmitTutorProfileMutation,
   useUpdateMyTutorProfileMutation,
