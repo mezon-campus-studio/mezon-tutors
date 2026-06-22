@@ -25,10 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
   Skeleton,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import {
@@ -43,6 +39,8 @@ type MyVocabularyProps = {
   isLoading: boolean;
   onAddWord: () => void;
   onOpenFlashcards: () => void;
+  onOpenQuiz: () => void;
+  onOpenWordSearch: () => void;
 };
 
 const STATUS_DOT: Record<VocabularyWordStatus, string> = {
@@ -56,6 +54,8 @@ export default function MyVocabulary({
   isLoading,
   onAddWord,
   onOpenFlashcards,
+  onOpenQuiz,
+  onOpenWordSearch,
 }: MyVocabularyProps) {
   const t = useTranslations("Practice");
   const [activeTab, setActiveTab] = useState<TabKey>("ready");
@@ -148,45 +148,27 @@ export default function MyVocabulary({
             </span>
           </button>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    disabled
-                    className="flex min-h-[88px] w-full cursor-not-allowed flex-col items-start justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-left opacity-60"
-                  >
-                    <List className="size-5 text-slate-400" />
-                    <span className="text-xs font-semibold leading-snug text-slate-500">
-                      {t("exercises.quizzes")}
-                    </span>
-                  </button>
-                }
-              />
-              <TooltipContent>{t("exercises.comingSoon")}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            type="button"
+            onClick={onOpenQuiz}
+            className="flex min-h-[88px] flex-col items-start justify-between rounded-xl border border-amber-100 bg-amber-50/60 p-3 text-left transition hover:border-amber-200 hover:bg-amber-50"
+          >
+            <List className="size-5 text-amber-600" />
+            <span className="text-xs font-semibold leading-snug text-slate-800">
+              {t("exercises.quizzes")}
+            </span>
+          </button>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    disabled
-                    className="flex min-h-[88px] w-full cursor-not-allowed flex-col items-start justify-between rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-left opacity-60"
-                  >
-                    <Grid3x3 className="size-5 text-slate-400" />
-                    <span className="text-xs font-semibold leading-snug text-slate-500">
-                      {t("exercises.crosswords")}
-                    </span>
-                  </button>
-                }
-              />
-              <TooltipContent>{t("exercises.comingSoon")}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            type="button"
+            onClick={onOpenWordSearch}
+            className="flex min-h-[88px] flex-col items-start justify-between rounded-xl border border-teal-100 bg-teal-50/60 p-3 text-left transition hover:border-teal-200 hover:bg-teal-50"
+          >
+            <Grid3x3 className="size-5 text-teal-600" />
+            <span className="text-xs font-semibold leading-snug text-slate-800">
+              {t("exercises.crosswords")}
+            </span>
+          </button>
         </div>
       </div>
 

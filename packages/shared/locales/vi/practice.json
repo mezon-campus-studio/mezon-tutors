@@ -70,5 +70,37 @@
       "description": "Bạn đã hoàn thành {percent}% các từ trong danh sách sẵn sàng luyện tập.",
       "confirm": "Đã hiểu"
     }
+  },
+  "quiz": {
+    "prompt": "Chọn từ dựa trên nghĩa",
+    "progress": "Câu {current}/{total}",
+    "continue": "Tiếp tục",
+    "notEnoughWords": "Cần ít nhất 4 từ để làm câu đố. Hãy thêm từ hoặc đánh dấu thêm từ đã học.",
+    "backToVocabulary": "Quay lại từ vựng",
+    "feedback": {
+      "correct": "Làm tốt lắm!",
+      "incorrect": "Chưa đúng — đáp án là \"{word}\""
+    },
+    "complete": {
+      "title": "Hoàn thành câu đố!",
+      "summary": "Bạn trả lời đúng {correct}/{total} câu"
+    },
+    "sessionComplete": {
+      "title": "Kết quả câu đố",
+      "description": "Điểm của bạn: {score}/10 ({correct}/{total} câu đúng).",
+      "confirm": "Đã hiểu"
+    }
+  },
+  "wordSearch": {
+    "hint": "Kéo theo chiều ngang hoặc dọc để chọn từ",
+    "wordListTitle": "Danh sách từ",
+    "progress": "Đã tìm {found}/{total}",
+    "notEnoughWords": "Cần ít nhất 1 từ hợp lệ để chơi ô chữ. Hãy thêm từ vào danh sách.",
+    "backToVocabulary": "Quay lại từ vựng",
+    "sessionComplete": {
+      "title": "Hoàn thành!",
+      "description": "Bạn đã tìm được {found}/{total} từ. Làm tốt lắm!",
+      "confirm": "Đã hiểu"
+    }
   }
 }
