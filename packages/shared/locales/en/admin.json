@@ -314,6 +314,10 @@
         "mezonLinks": {
           "title": "Mezon links",
           "description": "Bot and Channel App invite links used on the onboarding guide."
+        },
+        "socials": {
+          "title": "Social links",
+          "description": "Social media links shown in the footer."
         }
       },
       "fields": {
@@ -336,7 +340,13 @@
         "channelAppWalletLink": "Channel App — Wallet",
         "channelAppMyLessonsLink": "Channel App — My lesson",
         "channelAppMyScheduleLink": "Channel App — My schedule",
-        "channelAppLinkHint": "Channel App install link from the Mezon Developer Portal."
+        "channelAppLinkHint": "Channel App install link from the Mezon Developer Portal.",
+        "socialFacebook": "Facebook URL",
+        "socialInstagram": "Instagram URL",
+        "socialYoutube": "YouTube URL",
+        "socialTiktok": "TikTok URL",
+        "socialLinkedin": "LinkedIn URL",
+        "socialTwitter": "Twitter URL"
       },
       "validation": {
         "required": "This field is required.",

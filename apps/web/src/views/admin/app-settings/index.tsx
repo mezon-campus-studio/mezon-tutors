@@ -7,6 +7,7 @@ import {
   createAppSettingsFormSchema,
   mapAppSettingsFormErrors,
   mapMezonLinksToFormValues,
+  mapSocialLinksToFormValues,
 } from "@mezon-tutors/shared";
 import { Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -37,6 +38,7 @@ function toFormState(settings: AppSettings): AppSettingsFormValues {
     minWithdrawalAmountUsd: String(settings.minWithdrawalAmountUsd),
     minWithdrawalAmountPhp: String(settings.minWithdrawalAmountPhp),
     ...mapMezonLinksToFormValues(settings.mezonLinks),
+    ...mapSocialLinksToFormValues(settings.socialLinks),
   };
 }
 
@@ -439,6 +441,56 @@ export default function AdminAppSettingsView() {
                   onChange={(v) => setField("channelAppMyScheduleLink", v)}
                 />
               </div>
+            </div>
+          </SettingsSection>
+
+          <SettingsSection
+            title={t("sections.socials.title")}
+            description={t("sections.socials.description")}
+          >
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <UrlField
+                id="socialFacebook"
+                label={t("fields.socialFacebook")}
+                error={errors.socialFacebook}
+                value={form.socialFacebook}
+                onChange={(v) => setField("socialFacebook", v)}
+              />
+              <UrlField
+                id="socialInstagram"
+                label={t("fields.socialInstagram")}
+                error={errors.socialInstagram}
+                value={form.socialInstagram}
+                onChange={(v) => setField("socialInstagram", v)}
+              />
+              <UrlField
+                id="socialYoutube"
+                label={t("fields.socialYoutube")}
+                error={errors.socialYoutube}
+                value={form.socialYoutube}
+                onChange={(v) => setField("socialYoutube", v)}
+              />
+              <UrlField
+                id="socialTiktok"
+                label={t("fields.socialTiktok")}
+                error={errors.socialTiktok}
+                value={form.socialTiktok}
+                onChange={(v) => setField("socialTiktok", v)}
+              />
+              <UrlField
+                id="socialLinkedin"
+                label={t("fields.socialLinkedin")}
+                error={errors.socialLinkedin}
+                value={form.socialLinkedin}
+                onChange={(v) => setField("socialLinkedin", v)}
+              />
+              <UrlField
+                id="socialTwitter"
+                label={t("fields.socialTwitter")}
+                error={errors.socialTwitter}
+                value={form.socialTwitter}
+                onChange={(v) => setField("socialTwitter", v)}
+              />
             </div>
           </SettingsSection>
         </div>

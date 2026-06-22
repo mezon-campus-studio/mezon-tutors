@@ -98,3 +98,4 @@ export * from './utils/onboarding';
 export * from './utils/cloudinary-private-file';
 export * from './schemas/app-settings';
 export * from './schemas/mezon-links';
+export * from './schemas/social-links';

@@ -751,6 +751,7 @@ model AppSettings {
   minWithdrawalAmountPhp              Decimal  @default(100) @map("min_withdrawal_amount_php") @db.Decimal(18, 6)
   subscriptionGroupDiscountRate       Decimal  @default(0.75) @map("subscription_group_discount_rate") @db.Decimal(4, 2)
   mezonLinks                          Json?    @map("mezon_links")
+  socialLinks                         Json?    @map("social_links")
   updatedByUserId                     String?  @map("updated_by_user_id") @db.Uuid
   createdAt                           DateTime @default(now()) @map("created_at")
   updatedAt                           DateTime @updatedAt @map("updated_at")

@@ -10,6 +10,15 @@ export type MezonLinks = {
   channelAppInviteLinks?: MezonChannelAppInviteLinks;
 };
 
+export type SocialLinks = {
+  facebook?: string;
+  instagram?: string;
+  youtube?: string;
+  tiktok?: string;
+  linkedin?: string;
+  twitter?: string;
+};
+
 export type AppSettings = {
   id: string;
   platformFeePercentage: number;
@@ -21,6 +30,7 @@ export type AppSettings = {
   minWithdrawalAmountPhp: number;
   subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
+  socialLinks: SocialLinks | null;
   updatedByUserId: string | null;
   updatedBy: {
     id: string;
@@ -39,6 +49,7 @@ export type PublicAppSettings = {
   minWithdrawalAmountPhp: number;
   subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
+  socialLinks: SocialLinks | null;
 };
 
 export type UpdateAppSettingsBody = {
@@ -51,4 +62,5 @@ export type UpdateAppSettingsBody = {
   minWithdrawalAmountPhp?: number;
   subscriptionGroupDiscountRate?: number;
   mezonLinks?: MezonLinks | null;
+  socialLinks?: SocialLinks | null;
 };
