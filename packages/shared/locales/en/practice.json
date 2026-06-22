@@ -70,5 +70,37 @@
       "description": "You've completed {percent}% of the words in your ready to practice list.",
       "confirm": "Got it"
     }
+  },
+  "quiz": {
+    "prompt": "Choose the word based on the meaning",
+    "progress": "Question {current}/{total}",
+    "continue": "Continue",
+    "notEnoughWords": "You need at least 4 words to start a quiz. Add more words or mark some as learned.",
+    "backToVocabulary": "Back to vocabulary",
+    "feedback": {
+      "correct": "Amazing work!",
+      "incorrect": "Not quite — the answer is \"{word}\""
+    },
+    "complete": {
+      "title": "Quiz complete!",
+      "summary": "You got {correct} out of {total} correct"
+    },
+    "sessionComplete": {
+      "title": "Quiz results",
+      "description": "Your score: {score}/10 ({correct}/{total} correct).",
+      "confirm": "Got it"
+    }
+  },
+  "wordSearch": {
+    "hint": "Drag horizontally or vertically to select a word",
+    "wordListTitle": "Word list",
+    "progress": "{found}/{total} found",
+    "notEnoughWords": "You need at least 1 valid word to play. Add words to your list first.",
+    "backToVocabulary": "Back to vocabulary",
+    "sessionComplete": {
+      "title": "All done!",
+      "description": "You found {found}/{total} words. Great job!",
+      "confirm": "Got it"
+    }
   }
 }
