@@ -343,6 +343,7 @@
     "scheduleTitle": "Schedule",
     "scheduleDescription": "Check when this tutor is available to teach",
     "scheduleEmpty": "No available schedule yet.",
+    "scheduleBookTrialHover": "Book a trial lesson at this time",
     "reviewsEmpty": "No reviews yet.",
     "resourcesTitle": "Resources",
     "resourcesEmpty": "No resources yet.",
