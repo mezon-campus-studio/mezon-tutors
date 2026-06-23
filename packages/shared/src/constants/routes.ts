@@ -15,6 +15,12 @@ export const ROUTES = {
     CREATE_SUCCESS: '/events/create/success',
     EDIT: (id: string) => `/dashboard/events/${id}/edit`,
   },
+  BLOGS: {
+    INDEX: '/blogs',
+    CREATE: '/blogs/create',
+    DETAIL: (slug: string) => `/blogs/${slug}`,
+    EDIT: (id: string) => `/dashboard/blogs/${id}/edit`,
+  },
   TUTOR: {
     INDEX: '/tutors',
     DETAIL: (id: string | number) => `/tutors/${id}`,
@@ -37,6 +43,8 @@ export const ROUTES = {
     TRANSACTIONS: '/admin/transactions',
     EVENTS: '/admin/events',
     EVENT_DETAIL: (id: string) => `/admin/events/${id}`,
+    BLOGS: '/admin/blogs',
+    BLOG_DETAIL: (id: string) => `/admin/blogs/${id}`,
   },
   MY_LESSONS: {
     INDEX: '/my-lessons',
@@ -55,6 +63,7 @@ export const ROUTES = {
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
     MY_EVENTS: '/dashboard/events',
+    MY_BLOGS: '/dashboard/blogs',
     GROUPS: '/dashboard/groups',
     SETTINGS: '/dashboard/settings',
   },

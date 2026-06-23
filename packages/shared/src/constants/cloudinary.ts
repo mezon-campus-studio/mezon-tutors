@@ -9,6 +9,7 @@ export const CLOUDINARY_FOLDER = {
   ADMIN_PAYMENTS: `${BASIC_FOLDER}/admin-payments`,
   LESSON_COMPLAINT: `${BASIC_FOLDER}/lesson-complaint`,
   EVENT: `${BASIC_FOLDER}/events`,
+  BLOG: `${BASIC_FOLDER}/blogs`,
 };
 
 export const MAX_IMAGE_SIZE_MB = 5;

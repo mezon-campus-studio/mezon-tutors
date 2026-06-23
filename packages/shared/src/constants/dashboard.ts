@@ -15,6 +15,7 @@ export type DashboardMenuIconKey =
   | 'dashboard'
   | 'profile'
   | 'events'
+  | 'blogs'
   | 'adminPanel'
   | 'onboarding'
   | 'becomeTutor'
@@ -37,6 +38,7 @@ export type DashboardMenuLabelKey =
   | 'dashboard'
   | 'profile'
   | 'events'
+  | 'blogs'
   | 'adminPanel'
   | 'onboarding'
   | 'becomeTutor'
@@ -140,6 +142,14 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'events',
     iconKey: 'events',
     href: ROUTES.DASHBOARD.MY_EVENTS,
+    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+  },
+  {
+    key: 'my-blogs',
+    type: 'link',
+    labelKey: 'blogs',
+    iconKey: 'blogs',
+    href: ROUTES.DASHBOARD.MY_BLOGS,
     roles: ['STUDENT', 'TUTOR', 'ADMIN'],
   },
   {
@@ -251,6 +261,9 @@ export function isDashboardSidebarLinkActive(
   }
   if (item.key === 'my-events') {
     return pathname.startsWith(ROUTES.DASHBOARD.MY_EVENTS);
+  }
+  if (item.key === 'my-blogs') {
+    return pathname.startsWith(ROUTES.DASHBOARD.MY_BLOGS);
   }
   if (item.key === 'settings') {
     return pathname.startsWith(ROUTES.DASHBOARD.SETTINGS);

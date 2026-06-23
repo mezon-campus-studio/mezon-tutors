@@ -4,6 +4,7 @@ export type AdminMenuKey =
   | 'tutorApplications'
   | 'lessonComplaints'
   | 'events'
+  | 'blogs'
   | 'appSettings'
   | 'students'
   | 'payments'
@@ -35,6 +36,12 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     labelKey: 'events',
     iconKey: 'events',
     href: ROUTES.ADMIN.EVENTS,
+  },
+  {
+    key: 'blogs',
+    labelKey: 'blogs',
+    iconKey: 'blogs',
+    href: ROUTES.ADMIN.BLOGS,
   },
   {
     key: 'appSettings',
