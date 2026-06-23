@@ -25,6 +25,7 @@ export function toBlogPostListItemDto(
     excerpt: post.excerpt,
     coverImageUrl: post.coverImageUrl,
     readingTime: post.readingTime,
+    upvoteCount: post._count?.upvotes ?? 0,
     publishStatus: post.publishStatus,
     createdAt: post.createdAt.toISOString(),
     publishedAt: post.publishedAt?.toISOString() ?? null,
