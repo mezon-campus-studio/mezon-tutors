@@ -55,6 +55,10 @@ export interface ScheduleSelectionProps {
   gridIntervalMinutes?: number;
   lessonDurationMinutes?: number;
   timezone?: string;
+  /** When true, cells are not clickable. */
+  readOnly?: boolean;
+  /** Native tooltip for selectable, future slots (bookable mode). */
+  selectableCellTitle?: string;
 }
 
 type WeekDate = {
@@ -237,6 +241,8 @@ export function ScheduleSelection({
   gridIntervalMinutes = SLOT_MINUTES,
   lessonDurationMinutes = SLOT_MINUTES,
   timezone = FALLBACK_TIMEZONE,
+  readOnly = false,
+  selectableCellTitle,
 }: ScheduleSelectionProps) {
   const t = useTranslations("Common.ScheduleSelection");
   const clientTimezoneLabel = useMemo(() => {
@@ -447,6 +453,9 @@ export function ScheduleSelection({
   }, [scrollTargetRowStartTime]);
 
   const handleCellSelect = (date: string, startTime: string) => {
+    if (readOnly) {
+      return;
+    }
     const key = `${date}|${startTime}`;
     if (!selectableCellSet.has(key)) {
       return;
@@ -651,7 +660,11 @@ export function ScheduleSelection({
                   !isPaymentHoldBlocked &&
                   blockedCellSet.has(key);
                 const disabled =
-                  isPast || isOccupiedBlocked || isPaymentHoldBlocked || !isSelectable;
+                  readOnly ||
+                  isPast ||
+                  isOccupiedBlocked ||
+                  isPaymentHoldBlocked ||
+                  !isSelectable;
                 const cellType = getScheduleCellType({
                   isAvailable,
                   isSelected,
@@ -660,6 +673,15 @@ export function ScheduleSelection({
                   isOccupiedBlocked,
                   isPaymentHoldBlocked,
                 });
+                const cellTitle =
+                  !readOnly &&
+                  selectableCellTitle &&
+                  isSelectable &&
+                  !isPast &&
+                  !isOccupiedBlocked &&
+                  !isPaymentHoldBlocked
+                    ? selectableCellTitle
+                    : undefined;
 
                 return (
                   <button
@@ -667,8 +689,11 @@ export function ScheduleSelection({
                     type="button"
                     onClick={() => handleCellSelect(day.id, startTime)}
                     disabled={disabled}
+                    title={cellTitle}
                     className={cn(
                       "relative isolate h-10 overflow-hidden border-r transition-colors last:border-r-0 disabled:opacity-100 disabled:saturate-100",
+                      readOnly && "cursor-default",
+                      !readOnly && isSelectable && !disabled && "cursor-pointer",
                       getScheduleCellClassName(cellType),
                     )}
                     aria-label={buildSlotLabel(

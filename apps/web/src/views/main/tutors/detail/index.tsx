@@ -6,7 +6,6 @@ import {
   useGetVerifiedTutorResources,
   useGetVerifiedTutorResume,
   useGetVerifiedTutorReviews,
-  useGetVerifiedTutorSchedule,
 } from "@/services";
 import { TutorAboutTab } from "./components/TutorAboutTab";
 import { TutorDetailHeader } from "./components/TutorDetailHeader";
@@ -28,8 +27,6 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
     isLoading: isLoadingAbout,
     isError: isErrorAbout,
   } = useGetVerifiedTutorAbout(tutorId);
-  const { data: scheduleData, isLoading: isLoadingSchedule } =
-    useGetVerifiedTutorSchedule(tutorId, true);
   const {
     data: reviewsData,
     isLoading: isLoadingReviews,
@@ -95,16 +92,7 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
 
               {/* Schedule Section */}
               <section className="bg-white border border-gray-200 rounded-2xl p-6">
-                {isLoadingSchedule ? (
-                  <p className="text-gray-500">{t("loading")}</p>
-                ) : aboutData && scheduleData ? (
-                  <TutorScheduleTab
-                    tutor={{
-                      ...aboutData,
-                      availability: scheduleData.availability,
-                    }}
-                  />
-                ) : null}
+                <TutorScheduleTab tutor={aboutData} />
               </section>
 
               {/* Reviews Section */}

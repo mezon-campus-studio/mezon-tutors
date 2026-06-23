@@ -13,9 +13,12 @@ import { ArrowRight, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useAtomValue } from "jotai";
 import { Badge, Button } from "@/components/ui";
 import { useCurrency } from "@/hooks";
+import { useGetSubscriptionEligibility } from "@/services";
 import { useGetVerifiedTutors } from "@/services/tutor-profile/tutor-profile.api";
+import { userAtom } from "@/store/auth.atom";
 
 const HEADER_DOT_PATTERN: CSSProperties = {
   backgroundImage:
@@ -57,6 +60,13 @@ function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCardProps
   const tSubject = useTranslations("Tutors.Filter.Subject");
   const tCountry = useTranslations("Tutors.Filter.Country");
   const tLanguage = useTranslations("Tutors.Filter.Language");
+
+  const currentUser = useAtomValue(userAtom);
+  const senderId = currentUser?.id;
+  const isOwnProfile = Boolean(senderId && senderId === tutor.userId);
+  const canFetchSub = Boolean(senderId && !isOwnProfile);
+  const { data: elig } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
+  const hasBookedTrial = Boolean(elig?.trialStatus != null);
 
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
   const price = trialLessonPrice(tutor, currency);
@@ -153,7 +163,7 @@ function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCardProps
             variant="gradient"
             className="h-9 w-full rounded-full text-xs font-semibold"
           >
-            {t("bookTrial")}
+            {hasBookedTrial ? t("tutorDetail") : t("bookTrial")}
             <ArrowRight className="ml-1 size-3.5" />
           </Button>
         </Link>

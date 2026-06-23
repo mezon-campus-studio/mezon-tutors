@@ -1,6 +1,14 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ENotificationType, Role, TutorProfile, VerificationStatus } from '@mezon-tutors/db';
+import {
+  ENotificationType,
+  IdentityVerificationStatus,
+  Prisma,
+  ProfessionalDocumentStatus,
+  Role,
+  TutorProfile,
+  VerificationStatus,
+} from '@mezon-tutors/db';
 import { ChannelMessageContent } from 'mezon-sdk';
 import {
   AdminLessonChangeHistoryItem,
@@ -29,6 +37,32 @@ export class TutorApplicationService {
     private readonly mezonMessageService: MezonMessageService,
     private readonly mezonBotService: MezonBotService
   ) {}
+
+  private async syncTutorVerificationDocuments(
+    tx: Prisma.TransactionClient,
+    tutorId: string,
+    decision: 'approved' | 'rejected'
+  ): Promise<void> {
+    const reviewedAt = new Date();
+    const documentStatus =
+      decision === 'approved'
+        ? ProfessionalDocumentStatus.APPROVED
+        : ProfessionalDocumentStatus.REJECTED;
+    const identityStatus =
+      decision === 'approved'
+        ? IdentityVerificationStatus.APPROVED
+        : IdentityVerificationStatus.REJECTED;
+
+    await tx.professionalDocument.updateMany({
+      where: { tutorId },
+      data: { status: documentStatus, reviewedAt },
+    });
+
+    await tx.identityVerification.updateMany({
+      where: { tutorId },
+      data: { status: identityStatus, reviewedAt },
+    });
+  }
 
   private buildRejectionSummary(notes: ContentReviewer[]): string {
     if (!notes.length) {
@@ -192,23 +226,24 @@ export class TutorApplicationService {
     if (!profile) {
       throw new NotFoundException(`Tutor application not found: ${id}`);
     }
-    await this.prisma.$transaction([
-      this.prisma.tutorProfile.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.tutorProfile.update({
         where: { id },
         data: {
           verificationStatus: VerificationStatus.APPROVED,
         },
-      }),
-      this.prisma.user.update({
+      });
+      await tx.user.update({
         where: { id: profile.userId },
         data: { role: Role.TUTOR },
-      }),
-      this.prisma.tutorSetupChecklist.upsert({
+      });
+      await tx.tutorSetupChecklist.upsert({
         where: { tutorId: profile.id },
         update: {},
         create: { tutorId: profile.id },
-      }),
-    ]);
+      });
+      await this.syncTutorVerificationDocuments(tx, profile.id, 'approved');
+    });
 
     const tutorName = profile.user?.username ?? 'there';
 
@@ -267,6 +302,7 @@ export class TutorApplicationService {
           data: { role: Role.STUDENT },
         });
       }
+      await this.syncTutorVerificationDocuments(tx, profile.id, 'rejected');
     });
 
     const reviewerNotes: ContentReviewer[] = await this.prisma.tutorAdminNote.findMany({
