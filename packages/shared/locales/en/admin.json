@@ -7,6 +7,7 @@
       "tutorApplications": "Tutor Applications",
       "lessonComplaints": "Lesson Complaints",
       "events": "Events",
+      "blogs": "Blogs",
       "appSettings": "App Settings",
       "students": "Students",
       "payments": "Payments",
@@ -462,6 +463,100 @@
         "rejectUpdateDialog": {
           "title": "Reject this update?",
           "description": "The published event stays unchanged. The submitter will see your reason.",
+          "label": "Reason",
+          "placeholder": "Enter rejection reason..."
+        }
+      }
+    },
+    "Blogs": {
+      "title": "Review blog posts",
+      "description": "Review user-submitted articles and publish them publicly.",
+      "loading": "Loading...",
+      "empty": "No posts in this filter.",
+      "searchPlaceholder": "Search by title or slug...",
+      "metrics": {
+        "pending": "Pending",
+        "pendingUpdates": "Pending updates",
+        "published": "Published",
+        "closed": "Closed",
+        "rejected": "Rejected",
+        "total": "Total"
+      },
+      "statusFilter": {
+        "all": "All",
+        "PENDING": "Pending",
+        "PUBLISHED": "Published",
+        "UPDATE_PENDING": "Update pending",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed"
+      },
+      "publishStatus": {
+        "PENDING": "Pending",
+        "PUBLISHED": "Published",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed",
+        "UPDATE_PENDING": "Update pending"
+      },
+      "list": {
+        "title": "Post list",
+        "description": "Click an item to review details.",
+        "review": "Review"
+      },
+      "detail": {
+        "loading": "Loading post...",
+        "back": "Back to list",
+        "submittedBy": "Submitted by",
+        "publish": "Publish",
+        "republish": "Republish",
+        "reject": "Reject",
+        "close": "Close post",
+        "publishSuccess": "Post published.",
+        "rejectSuccess": "Post rejected.",
+        "closeSuccess": "Post closed. It is no longer public.",
+        "approveUpdate": "Approve update",
+        "rejectUpdate": "Reject update",
+        "approveUpdateSuccess": "Update applied to published post.",
+        "rejectUpdateSuccess": "Update rejected.",
+        "actionFailed": "Action failed.",
+        "rejectReasonRequired": "Please enter a rejection reason.",
+        "rejectedReason": "Rejection reason",
+        "readTime": "{minutes} min read",
+        "sections": {
+          "content": "Content",
+          "images": "Images",
+          "tags": "Tags"
+        },
+        "fields": {
+          "excerpt": "Excerpt",
+          "coverImage": "Cover",
+          "ogImage": "OGP"
+        },
+        "publishDialog": {
+          "title": "Publish this post?",
+          "description": "The post will appear on the public blog page."
+        },
+        "rejectDialog": {
+          "title": "Reject this post?",
+          "description": "The submitter will see rejected status with your reason.",
+          "label": "Reason",
+          "placeholder": "Enter rejection reason..."
+        },
+        "closeDialog": {
+          "title": "Close this post?",
+          "description": "The post will be hidden from public pages. Data is kept and can be republished later."
+        },
+        "pendingUpdate": {
+          "title": "Pending update",
+          "description": "The author edited a published post. The public page still shows the old version until you approve.",
+          "submittedAt": "Submitted at {date}"
+        },
+        "approveUpdateDialog": {
+          "title": "Apply this update?",
+          "description": "New content will replace what is currently public."
+        },
+        "rejectUpdateDialog": {
+          "title": "Reject this update?",
+          "description": "The published post stays unchanged. The submitter will see your reason.",
           "label": "Reason",
           "placeholder": "Enter rejection reason..."
         }

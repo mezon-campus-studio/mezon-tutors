@@ -1,0 +1,153 @@
+{
+  "Blogs": {
+    "list": {
+      "meta": {
+        "title": "Blog & bài viết",
+        "description": "Đọc bài viết về học tiếng Anh, kỹ năng giao tiếp và kinh nghiệm từ cộng đồng Mezonly."
+      },
+      "badge": "Blog",
+      "title": "Tất cả bài viết",
+      "subtitle": "Mẹo học tập, chia sẻ kinh nghiệm và câu chuyện từ cộng đồng.",
+      "backHome": "Về trang chủ",
+      "count": "{count} bài viết",
+      "readTime": "{minutes} phút đọc",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Hãy quay lại sau — bài viết mới sẽ được cập nhật khi admin duyệt."
+      },
+      "actions": {
+        "readMore": "Đọc tiếp",
+        "create": "Viết bài"
+      }
+    },
+    "detail": {
+      "back": "Về danh sách blog",
+      "readTime": "{minutes} phút đọc",
+      "publishedAt": "Xuất bản {date}",
+      "author": "Tác giả",
+      "tags": "Chủ đề",
+      "engagement": {
+        "upvote": "Upvote",
+        "upvotes": "{count} upvote",
+        "comments": "{count} bình luận",
+        "commentTitle": "Bình luận",
+        "commentPlaceholder": "Viết bình luận...",
+        "submitComment": "Gửi bình luận",
+        "submitting": "Đang gửi...",
+        "deleteComment": "Xóa",
+        "loginToInteract": "Đăng nhập để upvote và bình luận",
+        "login": "Đăng nhập",
+        "emptyComments": "Chưa có bình luận nào. Hãy là người đầu tiên!",
+        "commentRequired": "Vui lòng nhập nội dung bình luận.",
+        "commentFailed": "Gửi bình luận thất bại.",
+        "deleteFailed": "Xóa bình luận thất bại.",
+        "upvoteFailed": "Không thể upvote bài viết.",
+        "reply": "Trả lời",
+        "replyPlaceholder": "Trả lời",
+        "cancel": "Hủy",
+        "replies": "{count} phản hồi"
+      }
+    },
+    "create": {
+      "badge": "Đề xuất bài viết",
+      "title": "Viết bài mới",
+      "description": "Chia sẻ kiến thức hoặc kinh nghiệm. Sau khi gửi, admin sẽ xem xét và xuất bản.",
+      "uploadHint": "PNG/JPG, tối đa {maxMb}MB",
+      "sections": {
+        "basic": "Thông tin cơ bản",
+        "content": "Nội dung",
+        "images": "Ảnh minh họa",
+        "seo": "SEO & chia sẻ"
+      },
+      "fields": {
+        "title": "Tiêu đề",
+        "slug": "Đường dẫn (slug)",
+        "excerpt": "Mô tả ngắn",
+        "content": "Nội dung bài viết",
+        "tags": "Thẻ",
+        "tagsPlaceholder": "Tìm hoặc tạo thẻ mới...",
+        "coverImage": "Ảnh cover",
+        "ogImage": "Ảnh OGP (chia sẻ mạng xã hội)",
+        "seoTitle": "Tiêu đề SEO",
+        "seoDescription": "Mô tả SEO"
+      },
+      "actions": {
+        "upload": "Tải ảnh lên",
+        "uploading": "Đang tải...",
+        "submit": "Gửi duyệt",
+        "submitting": "Đang gửi..."
+      },
+      "tags": {
+        "empty": "Chưa chọn thẻ nào",
+        "loading": "Đang tải danh sách thẻ...",
+        "create": "Tạo thẻ \"{name}\"",
+        "existing": "{count} bài",
+        "remove": "Xóa thẻ {name}"
+      },
+      "errors": {
+        "titleRequired": "Vui lòng nhập tiêu đề.",
+        "contentRequired": "Vui lòng nhập nội dung.",
+        "submitFailed": "Gửi bài viết thất bại. Vui lòng thử lại."
+      },
+      "editor": {
+        "placeholder": "Viết nội dung bài viết...",
+        "pasteHint": "Có thể dán ảnh trực tiếp (Ctrl+V) hoặc kéo thả vào vùng soạn thảo.",
+        "bold": "In đậm",
+        "italic": "In nghiêng",
+        "underline": "Gạch dưới",
+        "heading1": "Tiêu đề 1",
+        "heading2": "Tiêu đề 2",
+        "heading3": "Tiêu đề 3",
+        "strike": "Gạch ngang",
+        "blockquote": "Trích dẫn",
+        "codeBlock": "Khối mã",
+        "horizontalRule": "Đường kẻ ngang",
+        "bulletList": "Danh sách",
+        "orderedList": "Danh sách số",
+        "link": "Liên kết",
+        "linkPrompt": "Nhập URL liên kết",
+        "image": "Chèn ảnh",
+        "undo": "Hoàn tác",
+        "redo": "Làm lại",
+        "words": "{count} từ",
+        "readTime": "{minutes} phút đọc"
+      },
+      "success": "Đã gửi bài viết. Admin sẽ xem xét trong thời gian sớm nhất.",
+      "edit": {
+        "badge": "Chỉnh sửa",
+        "title": "Cập nhật bài viết",
+        "description": "Chỉnh sửa nội dung và gửi lại để admin xem xét.",
+        "rejectedBanner": "Bài viết bị từ chối: {reason}",
+        "publishedEditBanner": "Bài đang hiển thị công khai. Thay đổi cần admin duyệt trước khi áp dụng.",
+        "updatePendingBanner": "Bạn đã gửi bản cập nhật — đang chờ admin duyệt.",
+        "updateRejectedBanner": "Cập nhật bị từ chối: {reason}",
+        "closedBanner": "Bài viết đã được admin đóng — không thể chỉnh sửa.",
+        "submit": "Lưu & gửi lại",
+        "submitUpdate": "Gửi cập nhật",
+        "success": "Đã cập nhật bài viết.",
+        "updateSubmitted": "Đã gửi bản cập nhật. Admin sẽ duyệt trước khi hiển thị công khai.",
+        "backToList": "Về bài viết của tôi"
+      }
+    },
+    "my": {
+      "title": "Bài viết của tôi",
+      "description": "Theo dõi trạng thái duyệt và chỉnh sửa các bài bạn đã gửi.",
+      "create": "Viết bài mới",
+      "empty": {
+        "title": "Chưa có bài viết nào",
+        "description": "Bạn chưa gửi bài viết nào. Hãy chia sẻ kiến thức với cộng đồng."
+      },
+      "actions": {
+        "view": "Xem bài",
+        "edit": "Chỉnh sửa"
+      },
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "REJECTED": "Bị từ chối",
+        "CLOSED": "Đã đóng",
+        "UPDATE_PENDING": "Cập nhật chờ duyệt"
+      }
+    }
+  }
+}

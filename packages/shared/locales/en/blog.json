@@ -1,0 +1,153 @@
+{
+  "Blogs": {
+    "list": {
+      "meta": {
+        "title": "Blog & articles",
+        "description": "Read articles about learning English, communication skills, and stories from the Mezonly community."
+      },
+      "badge": "Blog",
+      "title": "All articles",
+      "subtitle": "Learning tips, shared experiences, and stories from the community.",
+      "backHome": "Back to home",
+      "count": "{count} articles",
+      "readTime": "{minutes} min read",
+      "empty": {
+        "title": "No articles yet",
+        "description": "Check back later — new articles appear after admin approval."
+      },
+      "actions": {
+        "readMore": "Read more",
+        "create": "Write article"
+      }
+    },
+    "detail": {
+      "back": "Back to blog",
+      "readTime": "{minutes} min read",
+      "publishedAt": "Published {date}",
+      "author": "Author",
+      "tags": "Topics",
+      "engagement": {
+        "upvote": "Upvote",
+        "upvotes": "{count} upvotes",
+        "comments": "{count} comments",
+        "commentTitle": "Comments",
+        "commentPlaceholder": "Write a comment...",
+        "submitComment": "Post comment",
+        "submitting": "Posting...",
+        "deleteComment": "Delete",
+        "loginToInteract": "Login to upvote and comment",
+        "login": "Login",
+        "emptyComments": "No comments yet. Be the first!",
+        "commentRequired": "Please enter a comment.",
+        "commentFailed": "Failed to post comment.",
+        "deleteFailed": "Failed to delete comment.",
+        "upvoteFailed": "Failed to upvote this post.",
+        "reply": "Reply",
+        "replyPlaceholder": "Reply to",
+        "cancel": "Cancel",
+        "replies": "{count} replies"
+      }
+    },
+    "create": {
+      "badge": "Submit article",
+      "title": "Write a new article",
+      "description": "Share knowledge or experience. After submission, admin will review and publish.",
+      "uploadHint": "PNG/JPG, max {maxMb}MB",
+      "sections": {
+        "basic": "Basic info",
+        "content": "Content",
+        "images": "Images",
+        "seo": "SEO & sharing"
+      },
+      "fields": {
+        "title": "Title",
+        "slug": "Slug",
+        "excerpt": "Short excerpt",
+        "content": "Article content",
+        "tags": "Tags",
+        "tagsPlaceholder": "Search or create a tag...",
+        "coverImage": "Cover image",
+        "ogImage": "OGP image (social sharing)",
+        "seoTitle": "SEO title",
+        "seoDescription": "SEO description"
+      },
+      "actions": {
+        "upload": "Upload image",
+        "uploading": "Uploading...",
+        "submit": "Submit for review",
+        "submitting": "Submitting..."
+      },
+      "tags": {
+        "empty": "No tags selected",
+        "loading": "Loading tags...",
+        "create": "Create tag \"{name}\"",
+        "existing": "{count} posts",
+        "remove": "Remove tag {name}"
+      },
+      "errors": {
+        "titleRequired": "Please enter a title.",
+        "contentRequired": "Please enter content.",
+        "submitFailed": "Failed to submit article. Please try again."
+      },
+      "editor": {
+        "placeholder": "Write your article content...",
+        "pasteHint": "You can paste images (Ctrl+V) or drag and drop them into the editor.",
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "heading1": "Heading 1",
+        "heading2": "Heading 2",
+        "heading3": "Heading 3",
+        "strike": "Strikethrough",
+        "blockquote": "Blockquote",
+        "codeBlock": "Code block",
+        "horizontalRule": "Horizontal rule",
+        "bulletList": "Bullet list",
+        "orderedList": "Numbered list",
+        "link": "Link",
+        "linkPrompt": "Enter link URL",
+        "image": "Insert image",
+        "undo": "Undo",
+        "redo": "Redo",
+        "words": "{count} words",
+        "readTime": "{minutes} min read"
+      },
+      "success": "Article submitted. Admin will review it soon.",
+      "edit": {
+        "badge": "Edit",
+        "title": "Update article",
+        "description": "Edit content and resubmit for admin review.",
+        "rejectedBanner": "Article rejected: {reason}",
+        "publishedEditBanner": "This article is public. Changes require admin approval before going live.",
+        "updatePendingBanner": "You submitted an update — waiting for admin approval.",
+        "updateRejectedBanner": "Update rejected: {reason}",
+        "closedBanner": "This article was closed by admin — editing is disabled.",
+        "submit": "Save & resubmit",
+        "submitUpdate": "Submit update",
+        "success": "Article updated.",
+        "updateSubmitted": "Update submitted. Admin will approve before it goes public.",
+        "backToList": "Back to my articles"
+      }
+    },
+    "my": {
+      "title": "My articles",
+      "description": "Track review status and edit your submitted articles.",
+      "create": "Write new article",
+      "empty": {
+        "title": "No articles yet",
+        "description": "You have not submitted any articles yet. Share your knowledge with the community."
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "PUBLISHED": "Published",
+        "REJECTED": "Rejected",
+        "CLOSED": "Closed",
+        "UPDATE_PENDING": "Update pending"
+      }
+    }
+  }
+}

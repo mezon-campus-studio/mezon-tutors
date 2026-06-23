@@ -7,6 +7,7 @@
       "tutorApplications": "Hồ sơ gia sư",
       "lessonComplaints": "Khiếu nại buổi học",
       "events": "Sự kiện",
+      "blogs": "Blogs",
       "appSettings": "Cấu hình ứng dụng",
       "students": "Học viên",
       "payments": "Thanh toán",
@@ -462,6 +463,100 @@
         "rejectUpdateDialog": {
           "title": "Từ chối bản cập nhật?",
           "description": "Sự kiện publish giữ nguyên. Người gửi sẽ thấy lý do từ chối.",
+          "label": "Lý do",
+          "placeholder": "Nhập lý do từ chối cập nhật..."
+        }
+      }
+    },
+    "Blogs": {
+      "title": "Duyệt blog",
+      "description": "Xem xét các bài viết do người dùng gửi và publish để hiển thị công khai.",
+      "loading": "Đang tải...",
+      "empty": "Không có bài viết nào trong bộ lọc này.",
+      "searchPlaceholder": "Tìm theo tiêu đề hoặc slug...",
+      "metrics": {
+        "pending": "Chờ duyệt",
+        "pendingUpdates": "Cập nhật chờ duyệt",
+        "published": "Đã publish",
+        "closed": "Đã đóng",
+        "rejected": "Đã từ chối",
+        "total": "Tổng"
+      },
+      "statusFilter": {
+        "all": "Tất cả",
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "UPDATE_PENDING": "Cập nhật chờ duyệt",
+        "REJECTED": "Đã từ chối",
+        "CLOSED": "Đã đóng"
+      },
+      "publishStatus": {
+        "PENDING": "Chờ duyệt",
+        "PUBLISHED": "Đã publish",
+        "REJECTED": "Đã từ chối",
+        "CLOSED": "Đã đóng",
+        "UPDATE_PENDING": "Cập nhật chờ duyệt"
+      },
+      "list": {
+        "title": "Danh sách bài viết",
+        "description": "Nhấn vào từng mục để xem chi tiết và duyệt.",
+        "review": "Xem & duyệt"
+      },
+      "detail": {
+        "loading": "Đang tải bài viết...",
+        "back": "Quay lại danh sách",
+        "submittedBy": "Gửi bởi",
+        "publish": "Publish",
+        "republish": "Publish lại",
+        "reject": "Từ chối",
+        "close": "Đóng bài viết",
+        "publishSuccess": "Đã publish bài viết.",
+        "rejectSuccess": "Đã từ chối bài viết.",
+        "closeSuccess": "Đã đóng bài viết. Bài không còn hiển thị công khai.",
+        "approveUpdate": "Duyệt cập nhật",
+        "rejectUpdate": "Từ chối cập nhật",
+        "approveUpdateSuccess": "Đã áp dụng cập nhật lên bài publish.",
+        "rejectUpdateSuccess": "Đã từ chối bản cập nhật.",
+        "actionFailed": "Thao tác thất bại.",
+        "rejectReasonRequired": "Vui lòng nhập lý do từ chối.",
+        "rejectedReason": "Lý do từ chối",
+        "readTime": "{minutes} phút đọc",
+        "sections": {
+          "content": "Nội dung",
+          "images": "Ảnh",
+          "tags": "Thẻ"
+        },
+        "fields": {
+          "excerpt": "Mô tả ngắn",
+          "coverImage": "Cover",
+          "ogImage": "OGP"
+        },
+        "publishDialog": {
+          "title": "Publish bài viết?",
+          "description": "Bài viết sẽ hiển thị trên trang blog công khai."
+        },
+        "rejectDialog": {
+          "title": "Từ chối bài viết?",
+          "description": "Người gửi sẽ thấy trạng thái bị từ chối kèm lý do.",
+          "label": "Lý do",
+          "placeholder": "Nhập lý do từ chối..."
+        },
+        "closeDialog": {
+          "title": "Đóng bài viết?",
+          "description": "Bài viết sẽ ẩn khỏi trang công khai. Dữ liệu vẫn được lưu và có thể publish lại sau."
+        },
+        "pendingUpdate": {
+          "title": "Bản cập nhật đang chờ duyệt",
+          "description": "Người gửi đã chỉnh sửa bài đã publish. Trang công khai vẫn hiển thị bản cũ cho đến khi bạn duyệt.",
+          "submittedAt": "Gửi lúc {date}"
+        },
+        "approveUpdateDialog": {
+          "title": "Áp dụng bản cập nhật?",
+          "description": "Nội dung mới sẽ thay thế phiên bản đang hiển thị công khai."
+        },
+        "rejectUpdateDialog": {
+          "title": "Từ chối bản cập nhật?",
+          "description": "Bài publish giữ nguyên. Người gửi sẽ thấy lý do từ chối.",
           "label": "Lý do",
           "placeholder": "Nhập lý do từ chối cập nhật..."
         }

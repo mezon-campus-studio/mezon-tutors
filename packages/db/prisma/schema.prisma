@@ -179,6 +179,11 @@ model User {
   groupsLed                        Group[]                 @relation("GroupLeader")
   groupMemberships                 GroupMember[]
   savedTutors                      SavedTutor[]
+  blogPosts                        BlogPost[]                @relation("BlogPostAuthor")
+  blogReviewedPosts                BlogPost[]                @relation("BlogPostReviewedBy")
+  blogPostComments                 BlogPostComment[]         @relation("BlogPostCommentAuthor")
+  blogPostUpvotes                  BlogPostUpvote[]                 @relation("BlogPostUpvoteUser")
+  blogPostCommentUpvotes           BlogPostCommentUpvote[]          @relation("BlogPostCommentUpvoteUser")
 
   @@map("users")
 }
@@ -882,4 +887,107 @@ model GroupMember {
 
   @@id([groupId, userId])
   @@map("group_members")
+}
+
+enum BlogPublishStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+  CLOSED
+}
+
+enum BlogUpdateReviewStatus {
+  PENDING
+  REJECTED
+}
+
+model BlogTag {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug String @unique @db.VarChar(120)
+  name String @db.VarChar(120)
+
+  posts BlogPost[]
+
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                 String                @unique @db.VarChar(200)
+  title                String                @db.VarChar(200)
+  content              String                @db.Text
+  excerpt              String?               @db.Text
+  coverImageUrl        String?               @map("cover_image_url") @db.Text
+  seoTitle             String?               @map("seo_title") @db.VarChar(120)
+  seoDescription       String?               @map("seo_description") @db.VarChar(320)
+  ogImageUrl           String?               @map("og_image_url") @db.Text
+  readingTime          Int                   @map("reading_time") @default(1)
+  publishStatus        BlogPublishStatus     @default(PENDING) @map("publish_status")
+  rejectedReason       String?               @map("rejected_reason") @db.Text
+  publishedAt          DateTime?             @map("published_at")
+  updateReviewStatus   BlogUpdateReviewStatus? @map("update_review_status")
+  pendingUpdate        Json?                    @map("pending_update")
+  updateRejectedReason String?                  @map("update_rejected_reason") @db.Text
+  updateSubmittedAt    DateTime?                @map("update_submitted_at")
+  authorId             String                @map("author_id") @db.Uuid
+  reviewedById         String?               @map("reviewed_by_id") @db.Uuid
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+
+  author      User         @relation("BlogPostAuthor", fields: [authorId], references: [id])
+  reviewedBy  User?        @relation("BlogPostReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  tags        BlogTag[]
+  comments    BlogPostComment[]
+  upvotes     BlogPostUpvote[]
+
+  @@index([publishStatus, createdAt])
+  @@index([authorId])
+  @@map("blog_posts")
+}
+
+model BlogPostComment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  parentId  String?  @map("parent_id") @db.Uuid
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post    BlogPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User              @relation("BlogPostCommentAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  parent  BlogPostComment?  @relation("BlogPostCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies BlogPostComment[] @relation("BlogPostCommentReplies")
+  upvotes BlogPostCommentUpvote[]
+
+  @@index([postId, createdAt])
+  @@map("blog_post_comments")
+}
+
+model BlogPostCommentUpvote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commentId String   @map("comment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment BlogPostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User            @relation("BlogPostCommentUpvoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@map("blog_post_comment_upvotes")
+}
+
+model BlogPostUpvote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User     @relation("BlogPostUpvoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@map("blog_post_upvotes")
 }

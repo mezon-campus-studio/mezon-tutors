@@ -30,6 +30,7 @@ import { LessonComplaintModule } from './modules/lesson-complaint/lesson-complai
 import { AppSettingsModule } from './modules/app-settings/app-settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { EventModule } from './modules/event/event.module';
+import { BlogModule } from './modules/blog/blog.module';
 import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { CommonModule } from './common/common.module';
@@ -76,6 +77,7 @@ import { StudyGroupModule } from './modules/study-group/study-group.module';
     AppSettingsModule,
     SupportModule,
     EventModule,
+    BlogModule,
     GoogleCalendarModule,
     VocabularyModule,
     StudyGroupModule,

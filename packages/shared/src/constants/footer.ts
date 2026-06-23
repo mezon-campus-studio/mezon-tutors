@@ -28,7 +28,7 @@ export const FOOTER_COLUMNS: FooterColumnConfig[] = [
     titleKey: 'community.title',
     links: [
       { labelKey: 'community.becomeTutor', href: ROUTES.BECOME_TUTOR.INDEX },
-      { labelKey: 'community.blog', href: ROUTES.HOME.index },
+      { labelKey: 'community.blog', href: ROUTES.BLOGS.INDEX },
       { labelKey: 'community.events', href: ROUTES.HOME.events },
     ],
   },
