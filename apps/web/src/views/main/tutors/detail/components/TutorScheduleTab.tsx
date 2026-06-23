@@ -12,14 +12,14 @@ import { useAtomValue } from 'jotai';
 import { Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   ScheduleSelection,
   type SelectedScheduleSlot,
 } from '@/components/common/ScheduleSelection';
-import { Spinner } from '@/components/ui';
+import { Badge, Spinner } from '@/components/ui';
 import { useTutorScheduleGrid, useUserTimezone } from '@/hooks';
-import { parseYmdInTimezone } from '@/lib/timezone';
+import { formatWeekdayShort, parseYmdInTimezone } from '@/lib/timezone';
 import { useGetAlreadyBookedTrialLesson } from '@/services';
 import { isAuthenticatedAtom, userAtom } from '@/store/auth.atom';
 
@@ -92,6 +92,49 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
       alreadyBookedResponse.status !== ETrialLessonBookingStatus.CANCELLED,
   );
 
+  const bookedScheduleSlots = useMemo((): SelectedScheduleSlot[] => {
+    if (!hasActiveTrialBooking || !alreadyBookedResponse?.startAt) {
+      return [];
+    }
+
+    const bookingDuration =
+      alreadyBookedResponse.durationMinutes ?? DURATION_OPTIONS[0];
+    const startLocal = dayjs.utc(alreadyBookedResponse.startAt).tz(userTimezone);
+    if (!startLocal.isValid()) {
+      return [];
+    }
+
+    const date = startLocal.format('YYYY-MM-DD');
+    const startTime = startLocal.format('HH:mm');
+    const endTime = startLocal.add(bookingDuration, 'minute').format('HH:mm');
+
+    return [
+      {
+        date,
+        startTime,
+        endTime,
+        label: `${formatWeekdayShort(date, userTimezone)} . ${startTime} - ${endTime}`,
+      },
+    ];
+  }, [
+    hasActiveTrialBooking,
+    alreadyBookedResponse?.startAt,
+    alreadyBookedResponse?.durationMinutes,
+    userTimezone,
+  ]);
+
+  useEffect(() => {
+    const bookingDuration = alreadyBookedResponse?.durationMinutes;
+    if (
+      !hasActiveTrialBooking ||
+      !bookingDuration ||
+      !DURATION_OPTIONS.includes(bookingDuration as (typeof DURATION_OPTIONS)[number])
+    ) {
+      return;
+    }
+    setDuration(bookingDuration);
+  }, [hasActiveTrialBooking, alreadyBookedResponse?.durationMinutes]);
+
   const viewMode = useMemo<ScheduleViewMode>(() => {
     if (!isAuthenticated || isOwnProfile) {
       return 'guest';
@@ -152,13 +195,22 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     (isAuthenticated && isAlreadyBookedPending) ||
     isOccupiedDataLoading;
 
+  const scheduleHeading = (
+    <div className="mb-2 flex flex-wrap items-center gap-2">
+      <h2 className="text-xl font-extrabold text-gray-900">{t('scheduleTitle')}</h2>
+      {hasActiveTrialBooking ? (
+        <Badge className="h-auto rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+          {t('scheduleTrialBookedBadge')}
+        </Badge>
+      ) : null}
+    </div>
+  );
+
   if (!isLoading && !hasAvailability) {
     return (
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="mb-2 text-xl font-extrabold text-gray-900">
-            {t('scheduleTitle')}
-          </h2>
+          {scheduleHeading}
           <p className="text-sm text-gray-600">
             {t('scheduleHint', { timezone: userTimezone })}
           </p>
@@ -175,9 +227,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="mb-2 text-xl font-extrabold text-gray-900">
-            {t('scheduleTitle')}
-          </h2>
+          {scheduleHeading}
           <p className="text-sm text-gray-600">
             {t('scheduleHint', { timezone: userTimezone })}
           </p>
@@ -201,6 +251,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           selectionMode="single"
           lessonDurationMinutes={duration}
           readOnly={readOnly}
+          value={bookedScheduleSlots}
           selectableCellTitle={
             viewMode === 'bookable' ? t('scheduleBookTrialHover') : undefined
           }
