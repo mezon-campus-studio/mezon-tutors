@@ -19,6 +19,7 @@ export const ROUTES = {
     INDEX: '/blogs',
     CREATE: '/blogs/create',
     DETAIL: (slug: string) => `/blogs/${slug}`,
+    TAG: (slug: string) => `/blogs/tag/${slug}`,
     EDIT: (id: string) => `/dashboard/blogs/${id}/edit`,
   },
   TUTOR: {

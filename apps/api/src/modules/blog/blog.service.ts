@@ -13,6 +13,8 @@ import {
 import type {
   BlogCommentDto,
   BlogEngagementDto,
+  BlogListResultDto,
+  BlogListSidebarDto,
   BlogMetricsDto,
   BlogPostDetailDto,
   BlogPostListItemDto,
@@ -151,64 +153,74 @@ export class BlogService {
     return [...new Set(ids)];
   }
 
-  async listPublished(): Promise<BlogPostListItemDto[]> {
+  private async mapPublishedPostsWithStats(
+    posts: BlogPostWithRelations[],
+  ): Promise<BlogPostListItemDto[]> {
     const startOfToday = this.getStartOfToday();
     const startOfWeek = this.getStartOfWeek();
-
-    const posts = await this.prisma.blogPost.findMany({
-      where: { publishStatus: BlogPublishStatus.PUBLISHED },
-      include: blogInclude,
-      orderBy: { publishedAt: 'desc' },
-    });
-
     const postIds = posts.map((post) => post.id);
-    const [todayUpvotes, weeklyUpvotes, todayComments, todayCommentUpvotes] = await Promise.all([
-      this.prisma.blogPostUpvote.groupBy({
-        by: ['postId'],
-        where: {
-          postId: { in: postIds },
-          createdAt: { gte: startOfToday },
-        },
-        _count: { _all: true },
-      }),
-      this.prisma.blogPostUpvote.groupBy({
-        by: ['postId'],
-        where: {
-          postId: { in: postIds },
-          createdAt: { gte: startOfWeek },
-        },
-        _count: { _all: true },
-      }),
-      this.prisma.blogPostComment.groupBy({
-        by: ['postId'],
-        where: {
-          postId: { in: postIds },
-          createdAt: { gte: startOfToday },
-        },
-        _count: { _all: true },
-      }),
-      this.prisma.blogPostCommentUpvote.findMany({
-        where: {
-          createdAt: { gte: startOfToday },
-          comment: {
-            postId: { in: postIds },
-          },
-        },
-        select: {
-          comment: {
-            select: { postId: true },
-          },
-        },
-      }),
-    ]);
 
-    const todayMap = new Map(todayUpvotes.map((entry) => [entry.postId, entry._count._all]));
-    const weekMap = new Map(weeklyUpvotes.map((entry) => [entry.postId, entry._count._all]));
-    const todayCommentMap = new Map(todayComments.map((entry) => [entry.postId, entry._count._all]));
+    if (postIds.length === 0) {
+      return [];
+    }
+
+    const [todayUpvotes, weeklyUpvotes, todayComments, todayCommentUpvotes] =
+      await Promise.all([
+        this.prisma.blogPostUpvote.groupBy({
+          by: ['postId'],
+          where: {
+            postId: { in: postIds },
+            createdAt: { gte: startOfToday },
+          },
+          _count: { _all: true },
+        }),
+        this.prisma.blogPostUpvote.groupBy({
+          by: ['postId'],
+          where: {
+            postId: { in: postIds },
+            createdAt: { gte: startOfWeek },
+          },
+          _count: { _all: true },
+        }),
+        this.prisma.blogPostComment.groupBy({
+          by: ['postId'],
+          where: {
+            postId: { in: postIds },
+            createdAt: { gte: startOfToday },
+          },
+          _count: { _all: true },
+        }),
+        this.prisma.blogPostCommentUpvote.findMany({
+          where: {
+            createdAt: { gte: startOfToday },
+            comment: {
+              postId: { in: postIds },
+            },
+          },
+          select: {
+            comment: {
+              select: { postId: true },
+            },
+          },
+        }),
+      ]);
+
+    const todayMap = new Map(
+      todayUpvotes.map((entry) => [entry.postId, entry._count._all]),
+    );
+    const weekMap = new Map(
+      weeklyUpvotes.map((entry) => [entry.postId, entry._count._all]),
+    );
+    const todayCommentMap = new Map(
+      todayComments.map((entry) => [entry.postId, entry._count._all]),
+    );
     const todayCommentUpvoteMap = new Map<string, number>();
     for (const upvote of todayCommentUpvotes) {
       const postId = upvote.comment.postId;
-      todayCommentUpvoteMap.set(postId, (todayCommentUpvoteMap.get(postId) ?? 0) + 1);
+      todayCommentUpvoteMap.set(
+        postId,
+        (todayCommentUpvoteMap.get(postId) ?? 0) + 1,
+      );
     }
 
     return posts.map((post) => {
@@ -222,6 +234,208 @@ export class BlogService {
         commentUpvotesToday: todayCommentUpvoteMap.get(post.id) ?? 0,
       };
     });
+  }
+
+  private pickFeaturedPost(
+    posts: BlogPostListItemDto[],
+  ): BlogPostListItemDto | null {
+    if (posts.length === 0) return null;
+    return [...posts].sort((a, b) => {
+      const discussionA = (a.commentsToday ?? 0) + (a.commentUpvotesToday ?? 0);
+      const discussionB = (b.commentsToday ?? 0) + (b.commentUpvotesToday ?? 0);
+      const discussionDiff = discussionB - discussionA;
+      if (discussionDiff !== 0) return discussionDiff;
+      const commentDiff = (b.commentsToday ?? 0) - (a.commentsToday ?? 0);
+      if (commentDiff !== 0) return commentDiff;
+      return b.upvoteCount - a.upvoteCount;
+    })[0];
+  }
+
+  private async getAllPublishedWithStats(): Promise<BlogPostListItemDto[]> {
+    const posts = await this.prisma.blogPost.findMany({
+      where: { publishStatus: BlogPublishStatus.PUBLISHED },
+      include: blogInclude,
+      orderBy: { publishedAt: 'desc' },
+    });
+    return this.mapPublishedPostsWithStats(posts);
+  }
+
+  async getFeaturedPost(): Promise<BlogPostListItemDto | null> {
+    const posts = await this.getAllPublishedWithStats();
+    return this.pickFeaturedPost(posts);
+  }
+
+  async getListSidebar(): Promise<BlogListSidebarDto> {
+    const posts = await this.getAllPublishedWithStats();
+
+    const popularPosts = [...posts]
+      .sort((a, b) => {
+        const weeklyDiff = (b.upvotesThisWeek ?? 0) - (a.upvotesThisWeek ?? 0);
+        if (weeklyDiff !== 0) return weeklyDiff;
+        return b.upvoteCount - a.upvoteCount;
+      })
+      .slice(0, 5)
+      .map((post) => ({
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        upvotesThisWeek: post.upvotesThisWeek ?? 0,
+      }));
+
+    const tagMap = new Map<string, { name: string; slug: string; count: number }>();
+    for (const post of posts) {
+      for (const tag of post.tags) {
+        const existing = tagMap.get(tag.slug);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          tagMap.set(tag.slug, { name: tag.name, slug: tag.slug, count: 1 });
+        }
+      }
+    }
+
+    const tags = [...tagMap.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+      .map(({ name, slug, count }) => ({ name, slug, count }));
+
+    const newTopicMap = new Map<
+      string,
+      { name: string; slug: string; timestamp: number }
+    >();
+    for (const post of posts) {
+      const timestamp = new Date(post.createdAt).getTime();
+      for (const tag of post.tags) {
+        const current = newTopicMap.get(tag.slug);
+        if (!current || timestamp > current.timestamp) {
+          newTopicMap.set(tag.slug, {
+            name: tag.name,
+            slug: tag.slug,
+            timestamp,
+          });
+        }
+      }
+    }
+
+    const newTopics = [...newTopicMap.values()]
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 6)
+      .map(({ name, slug }) => ({ name, slug }));
+
+    const startOfWeek = this.getStartOfWeek();
+    const trendingMap = new Map<string, { name: string; slug: string; count: number }>();
+    for (const post of posts) {
+      const postCreatedAt = new Date(post.createdAt);
+      if (postCreatedAt < startOfWeek) continue;
+      for (const tag of post.tags) {
+        const existing = trendingMap.get(tag.slug);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          trendingMap.set(tag.slug, { name: tag.name, slug: tag.slug, count: 1 });
+        }
+      }
+    }
+
+    const trendingTags = [...trendingMap.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8)
+      .map(({ name, slug, count }) => ({ name, slug, count }));
+
+    return { popularPosts, tags, newTopics, trendingTags };
+  }
+
+  async listPublished(query: {
+    search?: string;
+    page: number;
+    limit: number;
+  }): Promise<BlogListResultDto> {
+    const { search, page, limit } = query;
+    const featured = await this.getFeaturedPost();
+    const where: Prisma.BlogPostWhereInput = {
+      publishStatus: BlogPublishStatus.PUBLISHED,
+      ...(search
+        ? {
+            OR: [
+              { title: { contains: search, mode: 'insensitive' } },
+              { excerpt: { contains: search, mode: 'insensitive' } },
+              {
+                tags: {
+                  some: { name: { contains: search, mode: 'insensitive' } },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, posts] = await Promise.all([
+      this.prisma.blogPost.count({ where }),
+      this.prisma.blogPost.findMany({
+        where,
+        include: blogInclude,
+        orderBy: { publishedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    const data = await this.mapPublishedPostsWithStats(posts);
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
+  }
+
+  async getTagBySlug(slug: string): Promise<BlogTagListItemDto> {
+    const tag = await this.prisma.blogTag.findUnique({
+      where: { slug },
+      include: {
+        _count: {
+          select: {
+            posts: {
+              where: { publishStatus: BlogPublishStatus.PUBLISHED },
+            },
+          },
+        },
+      },
+    });
+    if (!tag) {
+      throw new NotFoundException('Blog tag not found');
+    }
+    return {
+      id: tag.id,
+      slug: tag.slug,
+      name: tag.name,
+      postCount: tag._count.posts,
+    };
+  }
+
+  async listPublishedByTagSlug(slug: string): Promise<BlogPostListItemDto[]> {
+    const tag = await this.prisma.blogTag.findUnique({ where: { slug } });
+    if (!tag) {
+      throw new NotFoundException('Blog tag not found');
+    }
+
+    const posts = await this.prisma.blogPost.findMany({
+      where: {
+        publishStatus: BlogPublishStatus.PUBLISHED,
+        tags: { some: { slug } },
+      },
+      include: blogInclude,
+      orderBy: { publishedAt: 'desc' },
+    });
+
+    return this.mapPublishedPostsWithStats(posts);
   }
 
   async listTags(): Promise<BlogTagListItemDto[]> {
@@ -315,7 +529,9 @@ export class BlogService {
       seoDescription: payload.seoDescription?.trim() || null,
       ogImageUrl: payload.ogImageUrl?.trim() || null,
       readingTime: estimateReadingTime(payload.content),
-      tags: { set: tagIds.map((id) => ({ id })) },
+      tags: tagIds.length
+        ? { set: tagIds.map((id) => ({ id })) }
+        : undefined,
     };
 
     if (payload.slug) {

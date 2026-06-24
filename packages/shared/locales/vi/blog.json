@@ -20,10 +20,30 @@
         "create": "Viết bài"
       }
     },
+    "tag": {
+      "meta": {
+        "title": "Chủ đề blog",
+        "description": "Các bài viết gắn thẻ {tag} trên Mezon Tutors."
+      },
+      "badge": "Chủ đề",
+      "back": "Về danh sách blog",
+      "description": "Khám phá các bài viết về {tag}.",
+      "count": "{count} bài viết",
+      "loadMore": "Xem thêm bài viết",
+      "stats": {
+        "posts": "{count} bài viết",
+        "avgReadTime": "{minutes} phút đọc TB",
+        "upvotes": "{count} upvote"
+      },
+      "empty": {
+        "title": "Chưa có bài viết trong chủ đề này",
+        "description": "Hiện chưa có bài viết đã xuất bản với chủ đề này."
+      }
+    },
     "detail": {
       "back": "Về danh sách blog",
       "readTime": "{minutes} phút đọc",
-      "publishedAt": "Xuất bản {date}",
+      "publishedAt": "{date}",
       "author": "Tác giả",
       "tags": "Chủ đề",
       "engagement": {

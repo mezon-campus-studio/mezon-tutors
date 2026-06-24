@@ -20,10 +20,30 @@
         "create": "Write article"
       }
     },
+    "tag": {
+      "meta": {
+        "title": "Blog tag",
+        "description": "Articles tagged with {tag} on Mezon Tutors."
+      },
+      "badge": "Tag",
+      "back": "Back to blog",
+      "description": "Explore articles about {tag}.",
+      "count": "{count} articles",
+      "loadMore": "Load more articles",
+      "stats": {
+        "posts": "{count} posts",
+        "avgReadTime": "{minutes} min avg read",
+        "upvotes": "{count} upvotes"
+      },
+      "empty": {
+        "title": "No articles in this tag",
+        "description": "There are no published articles with this tag yet."
+      }
+    },
     "detail": {
       "back": "Back to blog",
       "readTime": "{minutes} min read",
-      "publishedAt": "Published {date}",
+      "publishedAt": "{date}",
       "author": "Author",
       "tags": "Topics",
       "engagement": {
