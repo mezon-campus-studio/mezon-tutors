@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { BlogCommentsDrawer } from '@/components/blogs/BlogCommentsDrawer';
-import { BlogContentHtml } from '@/components/blogs/BlogContentHtml';
+import { BlogContentSection } from '@/components/blogs/BlogContentSection';
 import { EngagementButtons } from '@/components/blogs/BlogEngagementSection';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { useBlogEngagement, useToggleBlogUpvote } from '@/services/blog/blog.api';
@@ -130,10 +130,7 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
           </div>
         ) : null}
 
-        <BlogContentHtml
-          content={post.content}
-          className="mt-10"
-        />
+        <BlogContentSection content={post.content} className="mt-10" />
 
         <div className="mt-10 flex items-center justify-between border-t border-violet-100 pt-6">
           <EngagementButtons

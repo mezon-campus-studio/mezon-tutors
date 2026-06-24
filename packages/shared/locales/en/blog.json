@@ -11,6 +11,23 @@
       "backHome": "Back to home",
       "count": "{count} articles",
       "readTime": "{minutes} min read",
+      "hero": {
+        "title": "Learn Better Every Day",
+        "description": "Discover educational articles, tutoring insights, and practical learning resources crafted for students and parents at Mezon Tutors."
+      },
+      "searchPlaceholder": "Search articles, topics, and resources...",
+      "newTopics": "New topics",
+      "featuredBadge": "Featured article",
+      "latestTitle": "Latest Articles",
+      "loadMore": "Load more articles",
+      "loading": "Loading...",
+      "sidebar": {
+        "popularPosts": "Popular Posts",
+        "upvotesThisWeek": "{count} upvotes this week",
+        "tags": "Tags",
+        "trendingTags": "Trending Tags",
+        "newPostsThisWeek": "{count} new posts this week"
+      },
       "empty": {
         "title": "No articles yet",
         "description": "Check back later — new articles appear after admin approval."
@@ -46,6 +63,7 @@
       "publishedAt": "{date}",
       "author": "Author",
       "tags": "Topics",
+      "toc": "On this page",
       "engagement": {
         "upvote": "Upvote",
         "upvotes": "{count} upvotes",

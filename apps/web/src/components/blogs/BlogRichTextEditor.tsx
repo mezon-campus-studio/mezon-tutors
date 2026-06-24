@@ -82,7 +82,7 @@ export function BlogRichTextEditor({ value, onChange, disabled, label }: BlogRic
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: { levels: [2, 3] },
       }),
       Link.configure({
         openOnClick: false,
@@ -206,16 +206,6 @@ export function BlogRichTextEditor({ value, onChange, disabled, label }: BlogRic
             onClick={() => runCommand(() => editor?.chain().focus().toggleUnderline().run())}
           >
             <Underline className="size-4" />
-          </ToolbarButton>
-          <ToolbarButton
-            active={editor?.isActive('heading', { level: 1 })}
-            disabled={disabled}
-            label={t('heading1')}
-            onClick={() =>
-              runCommand(() => editor?.chain().focus().toggleHeading({ level: 1 }).run())
-            }
-          >
-            <Heading1 className="size-4" />
           </ToolbarButton>
           <ToolbarButton
             active={editor?.isActive('heading', { level: 2 })}

@@ -644,12 +644,6 @@
   max-width: 100%;
 }
 
-.tiptap h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 2rem 0 1rem;
-}
 
 .tiptap h2 {
   font-size: 1.25rem;
@@ -691,11 +685,11 @@
   border-radius: 12px;
 }
 
-.blog-content h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 2rem 0 1rem;
+.blog-content h2,
+.blog-content h3 {
+  scroll-margin-top: 6rem;
 }
+
 
 .blog-content h2 {
   font-size: 1.5rem;

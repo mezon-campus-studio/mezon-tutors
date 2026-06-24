@@ -11,6 +11,23 @@
       "backHome": "Về trang chủ",
       "count": "{count} bài viết",
       "readTime": "{minutes} phút đọc",
+      "hero": {
+        "title": "Học tốt hơn mỗi ngày",
+        "description": "Khám phá các bài viết giáo dục, chia sẻ về gia sư và tài nguyên học tập thực tế dành cho học viên và phụ huynh tại Mezon Tutors."
+      },
+      "searchPlaceholder": "Tìm kiếm bài viết, chủ đề và tài nguyên...",
+      "newTopics": "Chủ đề mới",
+      "featuredBadge": "Bài viết nổi bật",
+      "latestTitle": "Bài viết mới nhất",
+      "loadMore": "Xem thêm bài viết",
+      "loading": "Đang tải...",
+      "sidebar": {
+        "popularPosts": "Bài viết phổ biến",
+        "upvotesThisWeek": "{count} upvote trong tuần",
+        "tags": "Chủ đề",
+        "trendingTags": "Xu hướng",
+        "newPostsThisWeek": "{count} bài mới trong tuần"
+      },
       "empty": {
         "title": "Chưa có bài viết nào",
         "description": "Hãy quay lại sau — bài viết mới sẽ được cập nhật khi admin duyệt."
@@ -46,6 +63,7 @@
       "publishedAt": "{date}",
       "author": "Tác giả",
       "tags": "Chủ đề",
+      "toc": "Mục lục",
       "engagement": {
         "upvote": "Upvote",
         "upvotes": "{count} upvote",

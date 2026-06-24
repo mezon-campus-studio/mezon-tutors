@@ -126,11 +126,10 @@ export default function BlogsListPage({
         <section className="mb-10 overflow-hidden rounded-[28px] border border-violet-100 bg-[linear-gradient(130deg,#f8f5ff_0%,#ffffff_45%,#f5f3ff_100%)] px-6 py-10 shadow-[0_20px_70px_-45px_rgba(109,40,217,0.45)] sm:px-10 lg:py-14">
           <div className="mx-auto max-w-4xl text-center">
             <h1 className="mt-5 text-balance text-4xl font-black tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              Learn Better Every Day
+              {t('hero.title')}
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Discover educational articles, tutoring insights, and practical learning resources
-              crafted for students and parents at Mezon Tutors.
+              {t('hero.description')}
             </p>
 
             <div className="mx-auto mt-9 flex max-w-3xl items-center gap-3 rounded-2xl border border-violet-100 bg-white px-4 py-3 shadow-[0_10px_32px_-20px_rgba(109,40,217,0.4)] transition-all focus-within:border-violet-300 focus-within:shadow-[0_16px_40px_-22px_rgba(109,40,217,0.45)]">
@@ -138,7 +137,7 @@ export default function BlogsListPage({
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search articles, topics, and resources..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 sm:text-base"
               />
               {searchLoading ? <Loader2 className="size-4 shrink-0 animate-spin text-violet-700" /> : null}
@@ -147,7 +146,7 @@ export default function BlogsListPage({
             {sidebar.newTopics.length > 0 ? (
               <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
                 <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                  New topics
+                  {t('newTopics')}
                 </span>
                 {sidebar.newTopics.map((topic) => (
                   <Link
@@ -185,7 +184,7 @@ export default function BlogsListPage({
                 </Link>
                 <div className="flex flex-col justify-center p-7 sm:p-9 lg:p-12">
                   <span className="mb-4 inline-flex w-fit rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-violet-700">
-                    Featured article
+                    {t('featuredBadge')}
                   </span>
                   <Link href={ROUTES.BLOGS.DETAIL(featuredPost.slug)}>
                     <h2 className="text-balance text-3xl font-black leading-tight text-slate-900 transition-colors hover:text-violet-700 sm:text-4xl">
@@ -247,7 +246,7 @@ export default function BlogsListPage({
             <div className="lg:col-span-9">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-2xl font-black tracking-tight text-slate-900">
-                  Latest Articles
+                  {t('latestTitle')}
                 </h3>
               </div>
 
@@ -275,10 +274,10 @@ export default function BlogsListPage({
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 size-4 animate-spin" />
-                        Loading...
+                        {t('loading')}
                       </>
                     ) : (
-                      'Load more articles'
+                      t('loadMore')
                     )}
                   </Button>
                 </div>
@@ -290,7 +289,7 @@ export default function BlogsListPage({
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h4 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900">
                     <Flame className="size-4 text-violet-700" />
-                    Popular Posts
+                    {t('sidebar.popularPosts')}
                   </h4>
                   <div className="space-y-3">
                     {sidebar.popularPosts.map((post) => (
@@ -303,7 +302,7 @@ export default function BlogsListPage({
                           {post.title}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {post.upvotesThisWeek.toLocaleString()} upvotes this week
+                          {t('sidebar.upvotesThisWeek', { count: post.upvotesThisWeek })}
                         </p>
                       </Link>
                     ))}
@@ -311,7 +310,7 @@ export default function BlogsListPage({
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h4 className="mb-4 text-base font-bold text-slate-900">Tags</h4>
+                  <h4 className="mb-4 text-base font-bold text-slate-900">{t('sidebar.tags')}</h4>
                   <div className="space-y-2">
                     {sidebar.tags.map((tag) => (
                       <Link
@@ -329,7 +328,7 @@ export default function BlogsListPage({
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h4 className="mb-4 text-base font-bold text-slate-900">Trending Tags</h4>
+                  <h4 className="mb-4 text-base font-bold text-slate-900">{t('sidebar.trendingTags')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {sidebar.trendingTags.map((tag) => (
                       <Link
@@ -339,7 +338,7 @@ export default function BlogsListPage({
                       >
                         #{tag.name}{' '}
                         <span className="text-violet-700/70">
-                          ({(tag.count ?? 0).toLocaleString()} new posts this week)
+                          ({t('sidebar.newPostsThisWeek', { count: tag.count ?? 0 })})
                         </span>
                       </Link>
                     ))}
