@@ -446,10 +446,15 @@ export function ScheduleSelection({
     if (!scrollTargetRowStartTime || !scrollBodyRef.current) {
       return;
     }
-    const rowEl = scrollBodyRef.current.querySelector<HTMLElement>(
+    const container = scrollBodyRef.current;
+    const rowEl = container.querySelector<HTMLElement>(
       `[data-schedule-row="${CSS.escape(scrollTargetRowStartTime)}"]`,
     );
-    rowEl?.scrollIntoView({ block: "center", behavior: "auto" });
+    if (rowEl) {
+      const top =
+        rowEl.offsetTop - container.clientHeight / 2 + rowEl.clientHeight / 2;
+      container.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    }
   }, [scrollTargetRowStartTime]);
 
   const handleCellSelect = (date: string, startTime: string) => {
@@ -610,7 +615,7 @@ export function ScheduleSelection({
       <div
         ref={scrollBodyRef}
         className={cn(
-          "min-h-0 overflow-auto rounded-xl border bg-background",
+          "relative min-h-0 overflow-auto rounded-xl border bg-background",
           fillAvailableHeight && "flex-1 basis-0",
         )}
         style={bodyScrollStyle}
