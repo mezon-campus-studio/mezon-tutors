@@ -342,6 +342,7 @@
     "emptySection": "Chưa có thông tin.",
     "scheduleTitle": "Lịch dạy",
     "scheduleTrialBookedBadge": "Bạn đã đặt lịch học thử với gia sư này",
+    "trialAlreadyBookedWarning": "Bạn đã đặt lịch học thử với gia sư này, vui lòng đăng kí tháng nếu muốn tiếp tục học",
     "scheduleDescription": "Xem lịch trống của gia sư",
     "scheduleEmpty": "Chưa có lịch trống.",
     "scheduleBookTrialHover": "Đặt buổi học thử vào buổi này",

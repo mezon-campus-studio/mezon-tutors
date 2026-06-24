@@ -13,6 +13,7 @@ import { Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   ScheduleSelection,
   type SelectedScheduleSlot,
@@ -165,6 +166,12 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     includeOccupiedBlocking,
   });
 
+  const handleReadOnlyCellClick = () => {
+    if (hasActiveTrialBooking) {
+      toast.warning(t('trialAlreadyBookedWarning'));
+    }
+  };
+
   const handleSlotSelect = (slots: SelectedScheduleSlot[]) => {
     const slot = slots[0];
     if (!slot || readOnly) {
@@ -251,6 +258,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           selectionMode="single"
           lessonDurationMinutes={duration}
           readOnly={readOnly}
+          onReadOnlyCellClick={handleReadOnlyCellClick}
           value={bookedScheduleSlots}
           selectableCellTitle={
             viewMode === 'bookable' ? t('scheduleBookTrialHover') : undefined
