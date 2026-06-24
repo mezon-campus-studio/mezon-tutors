@@ -76,6 +76,7 @@ function ScheduleDurationToggle({
 
 export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   const t = useTranslations('Tutors.Detail');
+  const tSheet = useTranslations('Tutors.TrialBookingSheet');
   const router = useRouter();
   const userTimezone = useUserTimezone();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
@@ -167,6 +168,14 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   });
 
   const handleReadOnlyCellClick = () => {
+    if (!isAuthenticated) {
+      toast.error(tSheet('loginRequiredTitle'), {
+        description: tSheet('loginRequiredDescription'),
+      });
+      return;
+    }
+    if (isOwnProfile) return;
+
     if (!tutor.activeStatus) {
       toast.warning(t('temporarilyBusy'));
     } else if (hasActiveTrialBooking) {
@@ -175,6 +184,12 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   };
 
   const handleSlotSelect = (slots: SelectedScheduleSlot[]) => {
+    if (!isAuthenticated) {
+      toast.error(tSheet('loginRequiredTitle'), {
+        description: tSheet('loginRequiredDescription'),
+      });
+      return;
+    }
     if (!tutor.activeStatus) {
       toast.warning(t('temporarilyBusy'));
       return;
