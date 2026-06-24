@@ -72,6 +72,8 @@
   },
   "ScheduleSelection": {
     "today": "Hôm nay",
+    "previousWeek": "Tuần trước",
+    "nextWeek": "Tuần sau",
     "status": {
       "available": "Lịch trống",
       "pastAvailable": "Đã qua (chỉ xem)",

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui";
@@ -8,6 +8,7 @@ import {
   FALLBACK_TIMEZONE,
   formatUtcOffsetLabel,
   formatWeekdayShort,
+  getTimezoneUtcOffsetMinutes,
   getWeekStartMondayInTimezone,
   nowInTimezone,
   parseYmdInTimezone,
@@ -19,6 +20,7 @@ const DAY_COUNT = 7;
 const MINUTES_PER_DAY = 24 * 60;
 
 type SelectionMode = "single" | "multiple";
+type ScheduleSelectionVariant = "grid" | "list";
 
 export type ScheduleSlotInput = {
   date: string;
@@ -60,6 +62,8 @@ export interface ScheduleSelectionProps {
   onReadOnlyCellClick?: (date: string, startTime: string) => void;
   /** Native tooltip for selectable, future slots (bookable mode). */
   selectableCellTitle?: string;
+  /** List shows only bookable future slots as underlined times; grid shows the full cell matrix. */
+  variant?: ScheduleSelectionVariant;
 }
 
 type WeekDate = {
@@ -105,6 +109,22 @@ function normalizeEndTime(
     return endTime;
   }
   return minutesToTime(parseTimeToMinutes(startTime) + defaultDurationMinutes);
+}
+
+function formatTimezoneDisplay(timezoneName: string): string {
+  const offsetMinutes = getTimezoneUtcOffsetMinutes(timezoneName);
+  if (offsetMinutes === 0) {
+    return `${timezoneName} GMT +0:00`;
+  }
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMinutes);
+  const hours = Math.floor(abs / 60);
+  const minutes = abs % 60;
+  const offsetLabel =
+    minutes === 0
+      ? `${sign}${hours}:00`
+      : `${sign}${hours}:${String(minutes).padStart(2, "0")}`;
+  return `${timezoneName} GMT ${offsetLabel}`;
 }
 
 function buildSlotLabel(
@@ -245,6 +265,7 @@ export function ScheduleSelection({
   readOnly = false,
   onReadOnlyCellClick,
   selectableCellTitle,
+  variant = "grid",
 }: ScheduleSelectionProps) {
   const t = useTranslations("Common.ScheduleSelection");
   const clientTimezoneLabel = useMemo(() => {
@@ -296,6 +317,17 @@ export function ScheduleSelection({
       .hour(12)
       .toDate();
     return `${formatter.format(start)} - ${formatter.format(end)}`;
+  }, [weekDates, timezone]);
+
+  const weekRangeLabelCompact = useMemo(() => {
+    if (!weekDates.length) {
+      return "";
+    }
+    const start = parseYmdInTimezone(weekDates[0].id, timezone);
+    const end = parseYmdInTimezone(weekDates[DAY_COUNT - 1].id, timezone);
+    const startLabel = start.format("MMM D");
+    const endLabel = end.format("D, YYYY");
+    return `${startLabel} – ${endLabel}`;
   }, [weekDates, timezone]);
 
   const timeRows = useMemo(() => {
@@ -395,6 +427,59 @@ export function ScheduleSelection({
     }
     return set;
   }, [selectedSlots, gridIntervalMinutes]);
+
+  const listSlotsByDay = useMemo(() => {
+    if (variant !== "list") {
+      return new Map<string, SelectedScheduleSlot[]>();
+    }
+
+    const nowMs = nowInTimezone(timezone).valueOf();
+    const map = new Map<string, SelectedScheduleSlot[]>();
+    for (const day of weekDates) {
+      map.set(day.id, []);
+    }
+
+    const addSlot = (slot: SelectedScheduleSlot) => {
+      const daySlots = map.get(slot.date);
+      if (!daySlots) {
+        return;
+      }
+      if (daySlots.some((entry) => entry.startTime === slot.startTime)) {
+        return;
+      }
+      daySlots.push(slot);
+    };
+
+    for (const key of selectableCellSet) {
+      const [date, startTime] = key.split("|");
+      if (toCellTimestamp(date, startTime, timezone) <= nowMs) {
+        continue;
+      }
+      addSlot(
+        toSelectedSlot({ date, startTime }, lessonDurationMinutes, timezone),
+      );
+    }
+
+    if (readOnly) {
+      for (const slot of selectedSlots) {
+        addSlot(slot);
+      }
+    }
+
+    for (const daySlots of map.values()) {
+      daySlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+    }
+
+    return map;
+  }, [
+    variant,
+    weekDates,
+    selectableCellSet,
+    timezone,
+    lessonDurationMinutes,
+    readOnly,
+    selectedSlots,
+  ]);
 
   const emitChange = (next: SelectedScheduleSlot[]) => {
     if (!value) {
@@ -503,6 +588,108 @@ export function ScheduleSelection({
   const bodyScrollStyle = fillAvailableHeight
     ? undefined
     : { maxHeight: maxBodyHeight };
+
+  if (variant === "list") {
+    return (
+      <div className={cn("space-y-4", className)}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              disabled={weekOffset === 0}
+              onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
+              aria-label={t("previousWeek")}
+            >
+              <ChevronLeftIcon className="size-5" />
+            </Button>
+            <span className="min-w-[140px] text-center text-sm font-semibold text-slate-900 sm:text-base">
+              {weekRangeLabelCompact}
+            </span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              onClick={() => setWeekOffset((prev) => prev + 1)}
+              aria-label={t("nextWeek")}
+            >
+              <ChevronRightIcon className="size-5" />
+            </Button>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+            <span className="max-w-[220px] truncate sm:max-w-none">
+              {formatTimezoneDisplay(timezone)}
+            </span>
+            <ChevronDownIcon className="size-4 shrink-0 text-slate-400" aria-hidden />
+          </div>
+        </div>
+
+        <div className="-mx-1 overflow-x-auto px-1 pb-2 sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
+          <div className="grid min-w-[400px] grid-cols-7 gap-1 sm:min-w-0 sm:gap-2">
+            {weekDates.map((day) => {
+              const daySlots = listSlotsByDay.get(day.id) ?? [];
+            const hasSlots = daySlots.length > 0;
+
+            return (
+              <div key={day.id} className="min-w-0">
+                <div
+                  className={cn(
+                    "mb-3 h-1 rounded-full",
+                    hasSlots ? "bg-violet-600/95" : "bg-slate-200",
+                  )}
+                  aria-hidden
+                />
+                <div className="text-center">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {parseYmdInTimezone(day.id, timezone)
+                      .format("ddd")
+                      .slice(0, 3)}
+                  </p>
+                  <p className="text-lg font-bold text-slate-900">{day.dayOfMonth}</p>
+                </div>
+                <div className="mt-3 flex flex-col items-center gap-2">
+                  {daySlots.map((slot) => {
+                    const slotKey = toSlotKey(slot);
+                    const isSelected = selectedSet.has(slotKey);
+                    const isClickable =
+                      !readOnly && selectableCellSet.has(slotKey);
+
+                    return (
+                      <button
+                        key={slotKey}
+                        type="button"
+                        onClick={() => handleCellSelect(day.id, slot.startTime)}
+                        disabled={readOnly && !isSelected}
+                        title={
+                          isClickable && selectableCellTitle
+                            ? selectableCellTitle
+                            : undefined
+                        }
+                        className={cn(
+                          "text-sm font-medium underline decoration-1 underline-offset-4 transition-colors",
+                          isSelected
+                            ? "text-violet-600 decoration-violet-500"
+                            : isClickable
+                              ? "cursor-pointer text-slate-900 decoration-slate-400 hover:text-violet-600 hover:decoration-violet-500"
+                              : "cursor-default text-slate-600 decoration-slate-300",
+                          readOnly && !isSelected && "cursor-default opacity-80",
+                        )}
+                        aria-label={slot.label}
+                        aria-pressed={isSelected}
+                      >
+                        {slot.startTime}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

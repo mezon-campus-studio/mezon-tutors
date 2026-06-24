@@ -251,6 +251,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
         ) : null}
 
         <ScheduleSelection
+          variant="list"
           availableSlots={scheduleAvailableSlots}
           blockedSlots={scheduleBlockedSlots}
           heldSlots={scheduleHeldSlots}
@@ -267,7 +268,6 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           onWeekChange={({ weekOffset: nextWeekOffset }) => {
             setWeekOffset(nextWeekOffset);
           }}
-          maxBodyHeight="560px"
         />
       </div>
     </div>
