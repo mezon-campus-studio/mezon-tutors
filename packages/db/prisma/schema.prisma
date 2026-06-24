@@ -280,6 +280,7 @@ model TutorProfile {
   motivate           String             @default("")
   headline           String             @default("")
   isProfessional     Boolean            @default(false) @map("is_professional")
+  activeStatus       Boolean            @default(true) @map("active_status")
   verificationStatus VerificationStatus @map("verification_status")
   totalLessonsTaught Int                @default(0) @map("total_lessons_taught")
   totalStudents      Int                @default(0) @map("total_students")

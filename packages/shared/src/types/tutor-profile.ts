@@ -184,6 +184,7 @@ export type TutorProfile = {
     php: number
   }
   isProfessional: boolean
+  activeStatus: boolean
   verificationStatus: VerificationStatus
   totalLessonsTaught: number
   totalStudents: number
@@ -194,6 +195,10 @@ export type TutorProfile = {
   phone: string
   createdAt: Date
   updatedAt: Date
+}
+
+export interface UpdateTutorActiveStatusDto {
+  activeStatus: boolean
 }
 
 export type TutorApplicationMetrics = {
@@ -258,6 +263,7 @@ export interface VerifiedTutorProfileDto {
     php: number
   }
   isProfessional: boolean
+  activeStatus: boolean
   totalLessonsTaught: number
   totalStudents: number
   ratingCount: number

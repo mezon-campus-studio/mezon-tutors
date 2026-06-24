@@ -133,6 +133,7 @@ export type TutorProfile = {
     php: number;
   };
   isProfessional: boolean;
+  activeStatus: boolean;
   verificationStatus: VerificationStatus;
   totalLessonsTaught: number;
   totalStudents: number;

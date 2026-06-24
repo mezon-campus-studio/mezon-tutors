@@ -659,7 +659,7 @@ export function ScheduleSelection({
                         key={slotKey}
                         type="button"
                         onClick={() => handleCellSelect(day.id, slot.startTime)}
-                        disabled={readOnly && !isSelected}
+                        disabled={readOnly && !isSelected && !onReadOnlyCellClick}
                         title={
                           isClickable && selectableCellTitle
                             ? selectableCellTitle

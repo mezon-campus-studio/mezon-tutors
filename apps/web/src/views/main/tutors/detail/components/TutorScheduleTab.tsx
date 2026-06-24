@@ -147,7 +147,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   }, [isAuthenticated, isOwnProfile, hasActiveTrialBooking]);
 
   const includeOccupiedBlocking = viewMode !== 'guest';
-  const readOnly = viewMode !== 'bookable';
+  const readOnly = viewMode !== 'bookable' || !tutor.activeStatus;
 
   const {
     scheduleAvailableSlots,
@@ -167,12 +167,18 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   });
 
   const handleReadOnlyCellClick = () => {
-    if (hasActiveTrialBooking) {
+    if (!tutor.activeStatus) {
+      toast.warning(t('temporarilyBusy'));
+    } else if (hasActiveTrialBooking) {
       toast.warning(t('trialAlreadyBookedWarning'));
     }
   };
 
   const handleSlotSelect = (slots: SelectedScheduleSlot[]) => {
+    if (!tutor.activeStatus) {
+      toast.warning(t('temporarilyBusy'));
+      return;
+    }
     const slot = slots[0];
     if (!slot || readOnly) {
       return;

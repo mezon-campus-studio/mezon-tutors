@@ -23,6 +23,7 @@ import { TutorSetupChecklistService } from './tutor-setup-checklist.service'
 import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto'
 import { UpdateAvailabilityDto } from './dto/update-availability.dto'
 import { UpdateMyTutorProfileBodyDto } from './dto/update-my-tutor-profile.dto'
+import { UpdateActiveStatusBodyDto } from './dto/update-active-status.dto'
 import { UpdateTutorSetupChecklistBodyDto } from './dto/update-tutor-setup-checklist.dto'
 import { PrismaService } from '../../prisma/prisma.service'
 
@@ -69,6 +70,14 @@ export class TutorProfileController {
       user.sub,
       body as UpdateMyTutorProfileDto
     )
+    return { success: true }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/active-status')
+  async patchMyActiveStatus(@Req() req: Request, @Body() body: UpdateActiveStatusBodyDto) {
+    const user = req.user as AuthUserPayload
+    await this.tutorProfileService.updateActiveStatusByUserId(user.sub, body.activeStatus)
     return { success: true }
   }
 

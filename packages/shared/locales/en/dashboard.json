@@ -573,6 +573,12 @@
         "rating": "Average rating",
         "reviews": "Reviews"
       },
+      "activeStatus": {
+        "label": "Currently working",
+        "enabledToast": "You are now active. Students can book trial lessons and monthly subscriptions.",
+        "disabledToast": "You are now inactive. New students will see that you are temporarily busy.",
+        "errorToast": "Could not update your active status. Please try again."
+      },
       "sections": {
         "personal": "Personal information",
         "about": "About you",

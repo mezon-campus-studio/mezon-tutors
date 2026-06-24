@@ -50,6 +50,7 @@ export class TutorApplicationMapper {
         php: Number(profile.trialLessonPrice?.php ?? 0),
       },
       isProfessional: profile.isProfessional,
+      activeStatus: profile.activeStatus,
       verificationStatus: parseEnum(
         profile.verificationStatus,
         VALID_VERIFICATION_STATUSES,
