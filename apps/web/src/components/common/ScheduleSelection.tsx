@@ -57,6 +57,7 @@ export interface ScheduleSelectionProps {
   timezone?: string;
   /** When true, cells are not clickable. */
   readOnly?: boolean;
+  onReadOnlyCellClick?: (date: string, startTime: string) => void;
   /** Native tooltip for selectable, future slots (bookable mode). */
   selectableCellTitle?: string;
 }
@@ -242,6 +243,7 @@ export function ScheduleSelection({
   lessonDurationMinutes = SLOT_MINUTES,
   timezone = FALLBACK_TIMEZONE,
   readOnly = false,
+  onReadOnlyCellClick,
   selectableCellTitle,
 }: ScheduleSelectionProps) {
   const t = useTranslations("Common.ScheduleSelection");
@@ -459,6 +461,7 @@ export function ScheduleSelection({
 
   const handleCellSelect = (date: string, startTime: string) => {
     if (readOnly) {
+      onReadOnlyCellClick?.(date, startTime);
       return;
     }
     const key = `${date}|${startTime}`;
@@ -665,7 +668,6 @@ export function ScheduleSelection({
                   !isPaymentHoldBlocked &&
                   blockedCellSet.has(key);
                 const disabled =
-                  readOnly ||
                   isPast ||
                   isOccupiedBlocked ||
                   isPaymentHoldBlocked ||
@@ -697,8 +699,7 @@ export function ScheduleSelection({
                     title={cellTitle}
                     className={cn(
                       "relative isolate h-10 overflow-hidden border-r transition-colors last:border-r-0 disabled:opacity-100 disabled:saturate-100",
-                      readOnly && "cursor-default",
-                      !readOnly && isSelectable && !disabled && "cursor-pointer",
+                      isSelectable && !disabled && "cursor-pointer",
                       getScheduleCellClassName(cellType),
                     )}
                     aria-label={buildSlotLabel(

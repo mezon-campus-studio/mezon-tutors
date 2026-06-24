@@ -342,6 +342,7 @@
     "emptySection": "No information yet.",
     "scheduleTitle": "Schedule",
     "scheduleTrialBookedBadge": "You have already booked a trial lesson with this tutor",
+    "trialAlreadyBookedWarning": "You have already booked a trial lesson with this tutor. Please subscribe to continue learning.",
     "scheduleDescription": "Check when this tutor is available to teach",
     "scheduleEmpty": "No available schedule yet.",
     "scheduleBookTrialHover": "Book a trial lesson at this time",
