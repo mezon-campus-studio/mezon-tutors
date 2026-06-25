@@ -79,16 +79,39 @@ export default function CreateBlogView({ blogId }: CreateBlogViewProps = {}) {
 
   useEffect(() => {
     if (!isEditMode || !existingPost || formInitialized) return;
-    setTitle(existingPost.title);
-    setSlug(existingPost.slug);
-    setSlugManuallyEdited(true);
-    setExcerpt(existingPost.excerpt ?? '');
-    setContent(existingPost.content);
-    setSelectedTags(blogTagsToDrafts(existingPost.tags));
-    setSeoTitle(existingPost.seoTitle ?? '');
-    setSeoDescription(existingPost.seoDescription ?? '');
-    setCoverImageUrl(existingPost.coverImageUrl ?? '');
-    setOgImageUrl(existingPost.ogImageUrl ?? '');
+
+    const pending = existingPost.updateReviewStatus === 'PENDING' ? existingPost.pendingUpdate : null;
+
+    setTitle(pending?.title ?? existingPost.title);
+    setSlug(pending?.slug ?? existingPost.slug);
+    setSlugManuallyEdited(Boolean(pending?.slug));
+    setExcerpt(pending?.excerpt ?? existingPost.excerpt ?? '');
+    setContent(pending?.content ?? existingPost.content);
+
+    if (pending) {
+      const drafts: BlogTagDraft[] = [];
+      if (pending.tagIds) {
+        for (const id of pending.tagIds) {
+          const tag = existingPost.tags.find((t) => t.id === id);
+          if (tag) {
+            drafts.push({ id: tag.id, name: tag.name });
+          }
+        }
+      }
+      if (pending.tagNames) {
+        for (const name of pending.tagNames) {
+          drafts.push({ name });
+        }
+      }
+      setSelectedTags(drafts.length > 0 ? drafts : blogTagsToDrafts(existingPost.tags));
+    } else {
+      setSelectedTags(blogTagsToDrafts(existingPost.tags));
+    }
+
+    setSeoTitle(pending?.seoTitle ?? existingPost.seoTitle ?? '');
+    setSeoDescription(pending?.seoDescription ?? existingPost.seoDescription ?? '');
+    setCoverImageUrl(pending?.coverImageUrl ?? existingPost.coverImageUrl ?? '');
+    setOgImageUrl(pending?.ogImageUrl ?? existingPost.ogImageUrl ?? '');
     setFormInitialized(true);
   }, [isEditMode, existingPost, formInitialized]);
 

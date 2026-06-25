@@ -1,3 +1,5 @@
+import type { PaginationMeta } from './pagination';
+
 export type BlogPublishStatus = 'PENDING' | 'PUBLISHED' | 'REJECTED' | 'CLOSED';
 
 export type BlogUpdateReviewStatus = 'PENDING' | 'REJECTED';
@@ -116,4 +118,27 @@ export type ToggleCommentUpvoteResultDto = {
 export type CreateBlogCommentPayload = {
   content: string;
   parentId?: string;
+};
+
+export type BlogListResultDto = {
+  data: BlogPostListItemDto[];
+  meta: PaginationMeta;
+};
+
+export type BlogSidebarTopicDto = {
+  name: string;
+  slug: string;
+  count?: number;
+};
+
+export type BlogListSidebarDto = {
+  popularPosts: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    upvotesThisWeek: number;
+  }>;
+  tags: BlogSidebarTopicDto[];
+  newTopics: BlogSidebarTopicDto[];
+  trendingTags: BlogSidebarTopicDto[];
 };

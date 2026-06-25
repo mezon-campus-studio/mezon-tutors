@@ -2,7 +2,8 @@ import { BlogPublishStatusFilter } from "@mezon-tutors/shared";
 
 export const blogQueryKey = {
   all: ["blog"] as const,
-  list: () => [...blogQueryKey.all, "list"] as const,
+  list: (params?: { search?: string; page?: number; limit?: number }) =>
+    [...blogQueryKey.all, "list", params ?? {}] as const,
   detail: (slug: string) => [...blogQueryKey.all, "detail", slug] as const,
   mySubmissions: () => [...blogQueryKey.all, "my-submissions"] as const,
   mySubmission: (id: string) => [...blogQueryKey.all, "my-submission", id] as const,

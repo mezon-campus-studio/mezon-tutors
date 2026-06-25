@@ -179,6 +179,12 @@
         "online": "Trực tuyến"
       }
     },
+    "Blogs": {
+      "badge": "Từ blog",
+      "title": "Mẹo học, câu chuyện & góc nhìn học tập",
+      "description": "Bài viết thực tế về học ngoại ngữ, thói quen học và cách tận dụng tối đa buổi học với gia sư.",
+      "viewAll": "Xem tất cả bài viết"
+    },
     "FeaturedTutors": {
       "badge": "Gia sư nổi bật tuần này",
       "title": "Học từ những người thực sự hiểu bạn",

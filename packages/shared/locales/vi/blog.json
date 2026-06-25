@@ -11,6 +11,23 @@
       "backHome": "Về trang chủ",
       "count": "{count} bài viết",
       "readTime": "{minutes} phút đọc",
+      "hero": {
+        "title": "Học tốt hơn mỗi ngày",
+        "description": "Khám phá các bài viết giáo dục, chia sẻ về gia sư và tài nguyên học tập thực tế dành cho học viên và phụ huynh tại Mezon Tutors."
+      },
+      "searchPlaceholder": "Tìm kiếm bài viết, chủ đề và tài nguyên...",
+      "newTopics": "Chủ đề mới",
+      "featuredBadge": "Bài viết nổi bật",
+      "latestTitle": "Bài viết mới nhất",
+      "loadMore": "Xem thêm bài viết",
+      "loading": "Đang tải...",
+      "sidebar": {
+        "popularPosts": "Bài viết phổ biến",
+        "upvotesThisWeek": "{count} upvote trong tuần",
+        "tags": "Chủ đề",
+        "trendingTags": "Xu hướng",
+        "newPostsThisWeek": "{count} bài mới trong tuần"
+      },
       "empty": {
         "title": "Chưa có bài viết nào",
         "description": "Hãy quay lại sau — bài viết mới sẽ được cập nhật khi admin duyệt."
@@ -20,12 +37,33 @@
         "create": "Viết bài"
       }
     },
+    "tag": {
+      "meta": {
+        "title": "Chủ đề blog",
+        "description": "Các bài viết gắn thẻ {tag} trên Mezon Tutors."
+      },
+      "badge": "Chủ đề",
+      "back": "Về danh sách blog",
+      "description": "Khám phá các bài viết về {tag}.",
+      "count": "{count} bài viết",
+      "loadMore": "Xem thêm bài viết",
+      "stats": {
+        "posts": "{count} bài viết",
+        "avgReadTime": "{minutes} phút đọc TB",
+        "upvotes": "{count} upvote"
+      },
+      "empty": {
+        "title": "Chưa có bài viết trong chủ đề này",
+        "description": "Hiện chưa có bài viết đã xuất bản với chủ đề này."
+      }
+    },
     "detail": {
       "back": "Về danh sách blog",
       "readTime": "{minutes} phút đọc",
-      "publishedAt": "Xuất bản {date}",
+      "publishedAt": "{date}",
       "author": "Tác giả",
       "tags": "Chủ đề",
+      "toc": "Mục lục",
       "engagement": {
         "upvote": "Upvote",
         "upvotes": "{count} upvote",

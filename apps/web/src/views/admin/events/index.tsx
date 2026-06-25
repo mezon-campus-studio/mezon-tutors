@@ -83,8 +83,8 @@ export default function AdminEventsView() {
         </div>
         <Select value={status} onValueChange={(value) => setStatus(value as EventPublishStatusFilter)}>
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue />
-          </SelectTrigger>
+            <SelectValue>{(value: string) => t(`statusFilter.${value}`)}</SelectValue>
+            </SelectTrigger>
           <SelectContent>
             {EVENT_PUBLISH_STATUS_FILTERS.map((item) => (
               <SelectItem key={item} value={item}>

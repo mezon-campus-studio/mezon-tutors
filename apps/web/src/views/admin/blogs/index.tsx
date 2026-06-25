@@ -83,7 +83,7 @@ export default function AdminBlogsView() {
             onValueChange={(value) => setStatus(value as BlogPublishStatusFilter)}
           >
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue />
+              <SelectValue>{(value: string) => t(`statusFilter.${value}`)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {BLOG_PUBLISH_STATUS_FILTERS.map((item) => (

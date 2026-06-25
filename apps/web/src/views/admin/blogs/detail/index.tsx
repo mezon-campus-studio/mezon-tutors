@@ -33,6 +33,7 @@ type AdminBlogDetailViewProps = {
 
 export default function AdminBlogDetailView({ blogId }: AdminBlogDetailViewProps) {
   const t = useTranslations("Admin.Blogs.detail");
+  const tPublishStatus = useTranslations("Admin.Blogs.publishStatus");
   const { data: post, isLoading } = useAdminBlogDetail(blogId);
   const publishBlog = usePublishBlog();
   const rejectBlog = useRejectBlog();
@@ -51,7 +52,7 @@ export default function AdminBlogDetailView({ blogId }: AdminBlogDetailViewProps
     return <p className="text-sm text-slate-500">{t("loading")}</p>;
   }
 
-  const pendingUpdate = post.pendingUpdate;
+  const pendingUpdate = post.updateReviewStatus === "PENDING" ? post.pendingUpdate : null;
 
   const handlePublish = async () => {
     try {
@@ -128,11 +129,16 @@ export default function AdminBlogDetailView({ blogId }: AdminBlogDetailViewProps
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-900">{post.title}</h1>
-              <Badge>{post.publishStatus}</Badge>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {pendingUpdate?.title ?? post.title}
+              </h1>
+              <Badge>{tPublishStatus(post.publishStatus)}</Badge>
+              {pendingUpdate ? (
+                <Badge>{tPublishStatus("UPDATE_PENDING")}</Badge>
+              ) : null}
             </div>
-            {post.excerpt ? (
-              <p className="mt-1 text-sm text-slate-600">{post.excerpt}</p>
+            {pendingUpdate?.excerpt || post.excerpt ? (
+              <p className="mt-1 text-sm text-slate-600">{pendingUpdate?.excerpt ?? post.excerpt}</p>
             ) : null}
             <p className="mt-2 text-xs text-slate-500">
               {t("submittedBy")} {post.createdBy?.username ?? "—"} ·{" "}
@@ -202,7 +208,7 @@ export default function AdminBlogDetailView({ blogId }: AdminBlogDetailViewProps
 
         <div className="grid gap-4 lg:grid-cols-2">
           <InfoCard title={t("sections.content")}>
-            <BlogContentHtml content={post.content} className="text-sm" />
+            <BlogContentHtml content={pendingUpdate?.content ?? post.content} className="text-sm" />
           </InfoCard>
 
           <div className="space-y-4">
@@ -222,11 +228,11 @@ export default function AdminBlogDetailView({ blogId }: AdminBlogDetailViewProps
 
             <InfoCard title={t("sections.images")}>
               <div className="grid gap-4 sm:grid-cols-2">
-                {post.coverImageUrl ? (
-                  <PreviewImage src={post.coverImageUrl} label={t("fields.coverImage")} />
+                {(pendingUpdate?.coverImageUrl ?? post.coverImageUrl) ? (
+                  <PreviewImage src={pendingUpdate?.coverImageUrl ?? post.coverImageUrl!} label={t("fields.coverImage")} />
                 ) : null}
-                {post.ogImageUrl ? (
-                  <PreviewImage src={post.ogImageUrl} label={t("fields.ogImage")} />
+                {(pendingUpdate?.ogImageUrl ?? post.ogImageUrl) ? (
+                  <PreviewImage src={pendingUpdate?.ogImageUrl ?? post.ogImageUrl!} label={t("fields.ogImage")} />
                 ) : null}
               </div>
             </InfoCard>
