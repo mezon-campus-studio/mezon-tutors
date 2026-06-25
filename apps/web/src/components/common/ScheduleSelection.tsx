@@ -671,8 +671,8 @@ export function ScheduleSelection({
                             ? "text-violet-600 decoration-violet-500"
                             : isClickable
                               ? "cursor-pointer text-slate-900 decoration-slate-400 hover:text-violet-600 hover:decoration-violet-500"
-                              : "cursor-default text-slate-600 decoration-slate-300",
-                          readOnly && !isSelected && "cursor-default opacity-80",
+                              : cn("text-slate-600 decoration-slate-300", onReadOnlyCellClick ? "cursor-pointer" : "cursor-default"),
+                          readOnly && !isSelected && cn("opacity-80", !onReadOnlyCellClick && "cursor-default"),
                         )}
                         aria-label={slot.label}
                         aria-pressed={isSelected}
