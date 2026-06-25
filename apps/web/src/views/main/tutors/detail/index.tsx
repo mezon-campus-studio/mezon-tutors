@@ -14,6 +14,7 @@ import { TutorResourcesTab } from "./components/TutorResourcesTab";
 import { TutorResumeTab } from "./components/TutorResumeTab";
 import { TutorReviewsTab } from "./components/TutorReviewsTab";
 import { TutorScheduleTab } from "./components/TutorScheduleTab";
+import { SimilarTutorsSection } from "./components/SimilarTutorsSection";
 
 type TutorDetailPageProps = {
   tutorId: string;
@@ -128,6 +129,9 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
                   />
                 ) : null}
               </section>
+
+              {/* Similar Tutors Section */}
+              <SimilarTutorsSection tutor={aboutData} />
             </div>
 
             <div className="w-full lg:w-80">
