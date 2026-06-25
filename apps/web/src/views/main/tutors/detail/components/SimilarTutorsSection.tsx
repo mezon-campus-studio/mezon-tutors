@@ -32,7 +32,7 @@ export function SimilarTutorsSection({ tutor }: SimilarTutorsSectionProps) {
       <h3 className="text-xl font-bold text-gray-900 mb-6">
         {t("youMightAlsoLike")}
       </h3>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {similarTutors.map((similarTutor, index) => (
           <FeaturedTutorCard
             key={similarTutor.id}
