@@ -281,6 +281,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
 
         <ScheduleSelection
           variant="list"
+          weekOffset={weekOffset}
           availableSlots={scheduleAvailableSlots}
           blockedSlots={scheduleBlockedSlots}
           heldSlots={scheduleHeldSlots}

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui";
@@ -64,6 +64,7 @@ export interface ScheduleSelectionProps {
   selectableCellTitle?: string;
   /** List shows only bookable future slots as underlined times; grid shows the full cell matrix. */
   variant?: ScheduleSelectionVariant;
+  weekOffset?: number;
 }
 
 type WeekDate = {
@@ -266,12 +267,31 @@ export function ScheduleSelection({
   onReadOnlyCellClick,
   selectableCellTitle,
   variant = "grid",
+  weekOffset: externalWeekOffset,
 }: ScheduleSelectionProps) {
   const t = useTranslations("Common.ScheduleSelection");
   const clientTimezoneLabel = useMemo(() => {
     return formatUtcOffsetLabel(timezone);
   }, [timezone]);
-  const [weekOffset, setWeekOffset] = useState(0);
+  
+  const [internalWeekOffset, setInternalWeekOffset] = useState(0);
+  const isControlled = externalWeekOffset !== undefined;
+  const weekOffset = isControlled ? externalWeekOffset : internalWeekOffset;
+
+  const handleWeekOffsetChange = (nextOffset: number | ((prev: number) => number)) => {
+    const nextVal = typeof nextOffset === "function" ? nextOffset(weekOffset) : nextOffset;
+    if (!isControlled) {
+      setInternalWeekOffset(nextVal);
+    }
+    if (onWeekChange) {
+      const start = getWeekStartMondayInTimezone(timezone).add(nextVal * DAY_COUNT, "day");
+      onWeekChange({
+        weekOffset: nextVal,
+        startDate: start.format("YYYY-MM-DD"),
+        endDate: start.add(DAY_COUNT - 1, "day").format("YYYY-MM-DD"),
+      });
+    }
+  };
   const [internalValue, setInternalValue] =
     useState<SelectedScheduleSlot[]>(defaultValue);
   const baseWeekStart = useMemo(
@@ -598,7 +618,7 @@ export function ScheduleSelection({
               size="icon-sm"
               variant="ghost"
               disabled={weekOffset === 0}
-              onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
+              onClick={() => handleWeekOffsetChange((prev) => Math.max(0, prev - 1))}
               aria-label={t("previousWeek")}
             >
               <ChevronLeftIcon className="size-5" />
@@ -609,7 +629,7 @@ export function ScheduleSelection({
             <Button
               size="icon-sm"
               variant="ghost"
-              onClick={() => setWeekOffset((prev) => prev + 1)}
+              onClick={() => handleWeekOffsetChange((prev) => prev + 1)}
               aria-label={t("nextWeek")}
             >
               <ChevronRightIcon className="size-5" />
@@ -620,7 +640,6 @@ export function ScheduleSelection({
             <span className="max-w-[220px] truncate sm:max-w-none">
               {formatTimezoneDisplay(timezone)}
             </span>
-            <ChevronDownIcon className="size-4 shrink-0 text-slate-400" aria-hidden />
           </div>
         </div>
 
@@ -774,7 +793,7 @@ export function ScheduleSelection({
             size="lg"
             className="text-base"
             disabled={weekOffset === 0}
-            onClick={() => setWeekOffset(0)}
+            onClick={() => handleWeekOffsetChange(0)}
           >
             <CalendarIcon className="size-4" />
             {t("today")}
@@ -784,7 +803,7 @@ export function ScheduleSelection({
               size="icon-sm"
               variant="ghost"
               disabled={weekOffset === 0}
-              onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
+              onClick={() => handleWeekOffsetChange((prev) => Math.max(0, prev - 1))}
             >
               <ChevronLeftIcon className="size-5" />
             </Button>
@@ -794,7 +813,7 @@ export function ScheduleSelection({
             <Button
               size="icon-sm"
               variant="ghost"
-              onClick={() => setWeekOffset((prev) => prev + 1)}
+              onClick={() => handleWeekOffsetChange((prev) => prev + 1)}
             >
               <ChevronRightIcon className="size-5" />
             </Button>
