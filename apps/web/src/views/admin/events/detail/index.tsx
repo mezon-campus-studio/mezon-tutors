@@ -33,6 +33,7 @@ type AdminEventDetailViewProps = {
 
 export default function AdminEventDetailView({ eventId }: AdminEventDetailViewProps) {
   const t = useTranslations("Admin.Events.detail");
+  const tPublishStatus = useTranslations("Admin.Events.publishStatus");
   const { data: event, isLoading } = useAdminEventDetail(eventId);
   const publishEvent = usePublishEvent();
   const rejectEvent = useRejectEvent();
@@ -150,7 +151,7 @@ export default function AdminEventDetailView({ eventId }: AdminEventDetailViewPr
             <h1 className="text-2xl font-bold text-slate-900">
               {content.title.replace(/\n/g, " ")}
             </h1>
-            <Badge>{event.publishStatus}</Badge>
+            <Badge>{tPublishStatus(event.publishStatus)}</Badge>
           </div>
           <p className="mt-1 text-sm text-slate-600">{content.tagline}</p>
           <p className="mt-2 text-xs text-slate-500">

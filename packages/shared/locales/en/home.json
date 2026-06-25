@@ -179,6 +179,12 @@
         "online": "Online"
       }
     },
+    "Blogs": {
+      "badge": "From the blog",
+      "title": "Tips, stories & learning insights",
+      "description": "Practical reads on language learning, study habits, and getting the most from your tutor sessions.",
+      "viewAll": "View all articles"
+    },
     "FeaturedTutors": {
       "badge": "Top tutors this week",
       "title": "Learn from people who get it",

@@ -1,3 +1,4 @@
+import HomeBlogsSection from "./components/HomeBlogsSection";
 import HomeCtaSection from "./components/HomeCtaSection";
 import HomeFeaturedTutorsSection from "./components/HomeFeaturedTutorsSection";
 import HomeHeroSection from "./components/HomeHeroSection";
@@ -14,6 +15,7 @@ export default function HomePage() {
       <HomeHowItWorksSection />
       <HomeEventsSection />
       <HomeFeaturedTutorsSection />
+      <HomeBlogsSection />
       <HomeWhyUsSection />
       <HomeMezonShowcaseSection />
       <HomeTestimonialsSection />

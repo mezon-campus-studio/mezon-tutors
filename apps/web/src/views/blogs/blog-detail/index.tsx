@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { BlogCommentsDrawer } from '@/components/blogs/BlogCommentsDrawer';
-import { BlogContentHtml } from '@/components/blogs/BlogContentHtml';
+import { BlogContentSection } from '@/components/blogs/BlogContentSection';
 import { EngagementButtons } from '@/components/blogs/BlogEngagementSection';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { useBlogEngagement, useToggleBlogUpvote } from '@/services/blog/blog.api';
@@ -69,12 +69,13 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
           {post.tags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {post.tags.map((tag) => (
-                <span
+                <Link
                   key={tag.id}
-                  className="rounded-full bg-violet-50 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 ring-1 ring-violet-100"
+                  href={ROUTES.BLOGS.TAG(tag.slug)}
+                  className="rounded-full bg-violet-50 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 ring-1 ring-violet-100 transition-colors hover:bg-violet-100"
                 >
                   {tag.name}
-                </span>
+                </Link>
               ))}
             </div>
           ) : null}
@@ -116,22 +117,20 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
         </header>
 
         {post.coverImageUrl ? (
-          <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-violet-100 bg-violet-50 shadow-lg shadow-violet-100/50">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 shadow-lg shadow-violet-100/50">
             <Image
               src={post.coverImageUrl}
               alt=""
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-full h-auto"
               priority
             />
           </div>
         ) : null}
 
-        <BlogContentHtml
-          content={post.content}
-          className="mt-10"
-        />
+        <BlogContentSection content={post.content} className="mt-10" />
 
         <div className="mt-10 flex items-center justify-between border-t border-violet-100 pt-6">
           <EngagementButtons

@@ -108,10 +108,6 @@ export function BlogTagPicker({ value, onChange, disabled }: BlogTagPickerProps)
         addTag({ name: trimmedQuery });
       }
     }
-
-    if (event.key === "Backspace" && !query && value.length > 0) {
-      onChange(value.slice(0, -1));
-    }
   };
 
   return (

@@ -76,6 +76,7 @@ function ScheduleDurationToggle({
 
 export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   const t = useTranslations('Tutors.Detail');
+  const tSheet = useTranslations('Tutors.TrialBookingSheet');
   const router = useRouter();
   const userTimezone = useUserTimezone();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
@@ -147,7 +148,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   }, [isAuthenticated, isOwnProfile, hasActiveTrialBooking]);
 
   const includeOccupiedBlocking = viewMode !== 'guest';
-  const readOnly = viewMode !== 'bookable';
+  const readOnly = viewMode !== 'bookable' || !tutor.activeStatus;
 
   const {
     scheduleAvailableSlots,
@@ -167,12 +168,32 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   });
 
   const handleReadOnlyCellClick = () => {
-    if (hasActiveTrialBooking) {
+    if (!isAuthenticated) {
+      toast.error(tSheet('loginRequiredTitle'), {
+        description: tSheet('loginRequiredDescription'),
+      });
+      return;
+    }
+    if (isOwnProfile) return;
+
+    if (!tutor.activeStatus) {
+      toast.warning(t('temporarilyBusy'));
+    } else if (hasActiveTrialBooking) {
       toast.warning(t('trialAlreadyBookedWarning'));
     }
   };
 
   const handleSlotSelect = (slots: SelectedScheduleSlot[]) => {
+    if (!isAuthenticated) {
+      toast.error(tSheet('loginRequiredTitle'), {
+        description: tSheet('loginRequiredDescription'),
+      });
+      return;
+    }
+    if (!tutor.activeStatus) {
+      toast.warning(t('temporarilyBusy'));
+      return;
+    }
     const slot = slots[0];
     if (!slot || readOnly) {
       return;
@@ -251,6 +272,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
         ) : null}
 
         <ScheduleSelection
+          variant="list"
           availableSlots={scheduleAvailableSlots}
           blockedSlots={scheduleBlockedSlots}
           heldSlots={scheduleHeldSlots}
@@ -267,7 +289,6 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           onWeekChange={({ weekOffset: nextWeekOffset }) => {
             setWeekOffset(nextWeekOffset);
           }}
-          maxBodyHeight="560px"
         />
       </div>
     </div>

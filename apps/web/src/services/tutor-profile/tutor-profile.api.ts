@@ -18,6 +18,7 @@ import {
   SavedTutorDto,
   SubmitTutorProfileDto,
   UpdateMyTutorProfileDto,
+  UpdateTutorActiveStatusDto,
   UpdateTutorSetupChecklistDto,
   TutorSetupChecklistDto,
   VerificationStatus,
@@ -108,6 +109,13 @@ export const tutorProfileApi = {
 
   updateMyProfile(payload: UpdateMyTutorProfileDto): Promise<boolean> {
     return apiClient.put<ApiResponse<boolean>, boolean>("/tutor-profiles/me", payload);
+  },
+
+  updateActiveStatus(payload: UpdateTutorActiveStatusDto): Promise<boolean> {
+    return apiClient.patch<ApiResponse<boolean>, boolean>(
+      "/tutor-profiles/me/active-status",
+      payload,
+    );
   },
 
   getMyProfile(): Promise<{
@@ -232,6 +240,19 @@ const useUpdateMyTutorProfileMutation = () => {
   });
 };
 
+const useUpdateActiveStatusMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateTutorActiveStatusDto) =>
+      tutorProfileApi.updateActiveStatus(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tutorProfileQueryKey.myTutorProfile() });
+      queryClient.invalidateQueries({ queryKey: ["verified-tutors"] });
+    },
+  });
+};
+
 export function submitTutorProfile(payload: SubmitTutorProfileDto): Promise<boolean> {
   return tutorProfileApi.submit(payload);
 }
@@ -300,6 +321,7 @@ export {
   useGetSavedTutors,
   useSubmitTutorProfileMutation,
   useUpdateMyTutorProfileMutation,
+  useUpdateActiveStatusMutation,
   useGetMyProfile,
   useGetMySetupChecklist,
   useUpdateMySetupChecklistMutation,

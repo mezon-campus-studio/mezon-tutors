@@ -4,6 +4,7 @@ import type { TutorResumeDto, TutorResumeItemDto } from "@mezon-tutors/shared";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type ResumeTab = "education" | "certifications";
 
@@ -36,10 +37,17 @@ function ResumeEntry({
   const subtitle = getSubtitle(item);
 
   return (
-    <div className="grid grid-cols-[88px_1fr] gap-x-6 gap-y-1 sm:grid-cols-[120px_1fr]">
-      <p className="pt-0.5 text-sm font-medium text-gray-500">
-        {yearLabel ?? ""}
-      </p>
+    <div
+      className={cn(
+        "grid gap-x-6 gap-y-1",
+        yearLabel
+          ? "grid-cols-[70px_1fr] sm:grid-cols-[70px_1fr]"
+          : "grid-cols-1",
+      )}
+    >
+      {yearLabel ? (
+        <p className="pt-0.5 text-sm font-medium text-gray-500">{yearLabel}</p>
+      ) : null}
 
       <div className="flex flex-col gap-1.5">
         <h3 className="text-base font-bold text-gray-900">{item.name}</h3>

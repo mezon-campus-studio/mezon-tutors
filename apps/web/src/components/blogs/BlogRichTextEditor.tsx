@@ -210,16 +210,6 @@ export function BlogRichTextEditor({ value, onChange, disabled, label }: BlogRic
           <ToolbarButton
             active={editor?.isActive('heading', { level: 2 })}
             disabled={disabled}
-            label={t('heading1')}
-            onClick={() =>
-              runCommand(() => editor?.chain().focus().toggleHeading({ level: 1 }).run())
-            }
-          >
-            <Heading1 className="size-4" />
-          </ToolbarButton>
-          <ToolbarButton
-            active={editor?.isActive('heading', { level: 2 })}
-            disabled={disabled}
             label={t('heading2')}
             onClick={() =>
               runCommand(() => editor?.chain().focus().toggleHeading({ level: 2 }).run())

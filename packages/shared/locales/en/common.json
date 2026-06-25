@@ -21,7 +21,7 @@
   },
   "Footer": {
     "tagline": "TUTOR MATCHING",
-    "description": "The leading tutor matching platform for working professionals in Vietnam. Learn anything, anytime, right on Mezon.",
+    "description": "The tutor matching platform for working professionals in Vietnam. Learn anything, anytime, right on Mezon.",
     "newsletter": {
       "title": "Updates from Mezonly",
       "description": "Get learning tips and new tutor offers in your inbox.",
@@ -72,6 +72,8 @@
   },
   "ScheduleSelection": {
     "today": "Today",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
     "status": {
       "available": "Available",
       "pastAvailable": "Past (view only)",

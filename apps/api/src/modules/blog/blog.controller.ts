@@ -15,6 +15,8 @@ import type { Request } from 'express';
 import type {
   BlogCommentDto,
   BlogEngagementDto,
+  BlogListResultDto,
+  BlogListSidebarDto,
   BlogMetricsDto,
   BlogPostDetailDto,
   BlogPostListItemDto,
@@ -25,6 +27,7 @@ import type {
 } from '@mezon-tutors/shared';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { BlogService } from './blog.service';
 import { CreateBlogDto, CreateBlogCommentDto, RejectBlogDto } from './dto/blog.dto';
@@ -34,16 +37,50 @@ import { CreateBlogDto, CreateBlogCommentDto, RejectBlogDto } from './dto/blog.d
 export class PublicBlogController {
   constructor(private readonly blogService: BlogService) {}
 
+  @Get('featured')
+  @ApiOperation({ summary: 'Get featured blog post (most discussed today)' })
+  getFeatured(): Promise<BlogPostListItemDto | null> {
+    return this.blogService.getFeaturedPost();
+  }
+
+  @Get('sidebar')
+  @ApiOperation({ summary: 'Get blog list sidebar data' })
+  getSidebar(): Promise<BlogListSidebarDto> {
+    return this.blogService.getListSidebar();
+  }
+
   @Get()
-  @ApiOperation({ summary: 'List published blog posts' })
-  listPublished(): Promise<BlogPostListItemDto[]> {
-    return this.blogService.listPublished();
+  @ApiOperation({ summary: 'List published blog posts (paginated, searchable)' })
+  listPublished(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<BlogListResultDto> {
+    return this.blogService.listPublished({
+      search,
+      page: Math.max(1, Number(page) || 1),
+      limit: Math.min(100, Math.max(1, Number(limit) || 5)),
+    });
   }
 
   @Get('tags')
   @ApiOperation({ summary: 'List blog tags' })
   listTags(): Promise<BlogTagListItemDto[]> {
     return this.blogService.listTags();
+  }
+
+  @Get('tags/:slug')
+  @ApiOperation({ summary: 'Get blog tag by slug' })
+  getTagBySlug(@Param('slug') slug: string): Promise<BlogTagListItemDto> {
+    return this.blogService.getTagBySlug(slug);
+  }
+
+  @Get('tags/:slug/posts')
+  @ApiOperation({ summary: 'List published blog posts by tag slug' })
+  listPublishedByTag(
+    @Param('slug') slug: string,
+  ): Promise<BlogPostListItemDto[]> {
+    return this.blogService.listPublishedByTagSlug(slug);
   }
 
   @Get(':slug')
@@ -54,6 +91,7 @@ export class PublicBlogController {
 
   @Get(':slug/comments')
   @ApiOperation({ summary: 'List comments on a published blog post' })
+  @UseGuards(OptionalJwtAuthGuard)
   listComments(
     @Param('slug') slug: string,
     @Req() req: Request,

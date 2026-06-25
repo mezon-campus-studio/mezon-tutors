@@ -1,6 +1,7 @@
 import type {
   BlogCommentDto,
   BlogEngagementDto,
+  BlogListResultDto,
   BlogMetricsDto,
   BlogPostDetailDto,
   BlogPostListItemDto,
@@ -20,7 +21,8 @@ const BASE = "/blog";
 const ADMIN_BASE = "/admin/blogs";
 
 export const blogApi = {
-  listPublished: () => publicApiClient.get<BlogPostListItemDto[]>(BASE),
+  listPublished: (params?: { search?: string; page?: number; limit?: number }) =>
+    publicApiClient.get<BlogListResultDto>(BASE, { params }),
   getBySlug: (slug: string) =>
     publicApiClient.get<BlogPostDetailDto>(`${BASE}/${encodeURIComponent(slug)}`),
   listTags: () => publicApiClient.get<BlogTagListItemDto[]>(`${BASE}/tags`),
@@ -84,10 +86,13 @@ export const blogApi = {
     ),
 };
 
-export const usePublishedBlogs = (enabled = true) =>
+export const usePublishedBlogs = (
+  params?: { search?: string; page?: number; limit?: number },
+  enabled = true,
+) =>
   useQuery({
-    queryKey: blogQueryKey.list(),
-    queryFn: () => blogApi.listPublished(),
+    queryKey: blogQueryKey.list(params),
+    queryFn: () => blogApi.listPublished(params),
     enabled,
     refetchOnWindowFocus: true,
   });

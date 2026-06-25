@@ -7,11 +7,11 @@
     "totalLabelNoSubject": "<highlight>{value}</highlight> tutors available",
     "sortBy": "Sort by:",
     "popularity": "Popularity",
-    "top_picks": "Top Picks",
-    "highest_price": "Highest Price",
-    "lowest_price": "Lowest Price",
+    "top_picks": "Featured",
+    "highest_price": "Price decreasing",
+    "lowest_price": "Price increasing",
     "number_of_reviews": "Number of Reviews",
-    "best_rating": "Best Rating"
+    "best_rating": "Top Rated"
   },
   "PreviewCard": {
     "selectTutor": "Select a tutor to preview.",
@@ -39,6 +39,7 @@
     "subscribeMonthly": "Subscribe monthly",
     "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
+    "temporarilyBusy": "Tutor temporarily busy",
     "sendMessage": "Send message",
     "messageModal": {
       "title": "Send message to {tutorName}",
@@ -365,6 +366,7 @@
     "subscribeGroup": "Subscribe as Group",
     "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
+    "temporarilyBusy": "Tutor temporarily busy",
     "sendMessage": "Send message",
     "bookedLast48h": "{count} lessons booked in the last 48h",
     "totalStudents": "{count} students",

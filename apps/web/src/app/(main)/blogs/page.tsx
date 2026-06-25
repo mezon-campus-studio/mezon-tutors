@@ -3,7 +3,11 @@ import { ROUTES } from "@mezon-tutors/shared";
 import { createPageMetadata } from "@/lib/seo";
 import { getSeoLocale } from "@/lib/seo-messages";
 import BlogsListPage from "@/views/blogs/blogs-list";
-import { fetchPublishedBlogs } from "@/services";
+import {
+  fetchBlogListSidebar,
+  fetchFeaturedBlog,
+  fetchPublishedBlogs,
+} from "@/services";
 
 async function loadBlogsListMeta(locale: string) {
   const file = (await import(`@mezon-tutors/shared/locales/${locale}/blog.json`))
@@ -23,7 +27,27 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function Page() {
-  const posts = await fetchPublishedBlogs();
-  return <BlogsListPage posts={posts} />;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const search = q?.trim() || undefined;
+
+  const [featuredPost, sidebar, latest] = await Promise.all([
+    fetchFeaturedBlog(),
+    fetchBlogListSidebar(),
+    fetchPublishedBlogs({ search, page: 1, limit: 5 }),
+  ]);
+
+  return (
+    <BlogsListPage
+      featuredPost={featuredPost}
+      sidebar={sidebar}
+      latestPosts={latest.data}
+      initialMeta={latest.meta}
+      initialSearch={q ?? ''}
+    />
+  );
 }
