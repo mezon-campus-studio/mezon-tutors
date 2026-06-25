@@ -7,11 +7,11 @@
     "totalLabelNoSubject": "Có <highlight>{value}</highlight> gia sư đang khả dụng",
     "sortBy": "Sắp xếp theo:",
     "popularity": "Phổ biến",
-    "top_picks": "Lựa chọn hàng đầu",
-    "highest_price": "Giá cao nhất",
-    "lowest_price": "Giá thấp nhất",
+    "top_picks": "Lựa chọn tiêu biểu",
+    "highest_price": "Giá giảm dần",
+    "lowest_price": "Giá tăng dần",
     "number_of_reviews": "Số lượng đánh giá",
-    "best_rating": "Đánh giá tốt nhất"
+    "best_rating": "Đánh giá cao"
   },
   "PreviewCard": {
     "selectTutor": "Chọn gia sư để xem preview.",

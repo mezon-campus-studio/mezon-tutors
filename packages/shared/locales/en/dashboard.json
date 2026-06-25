@@ -508,7 +508,7 @@
       "emptyDescription": "Save tutors from the browse page or a tutor profile, and they will appear here.",
       "metrics": {
         "total": "Saved",
-        "topRated": "Top rated",
+        "topRated": "Highly rated",
         "professional": "Professional"
       }
     },

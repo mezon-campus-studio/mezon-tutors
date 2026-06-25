@@ -7,11 +7,11 @@
     "totalLabelNoSubject": "<highlight>{value}</highlight> tutors available",
     "sortBy": "Sort by:",
     "popularity": "Popularity",
-    "top_picks": "Top Picks",
-    "highest_price": "Highest Price",
-    "lowest_price": "Lowest Price",
+    "top_picks": "Featured",
+    "highest_price": "Price decreasing",
+    "lowest_price": "Price increasing",
     "number_of_reviews": "Number of Reviews",
-    "best_rating": "Best Rating"
+    "best_rating": "Top Rated"
   },
   "PreviewCard": {
     "selectTutor": "Select a tutor to preview.",
