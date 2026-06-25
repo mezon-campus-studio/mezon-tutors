@@ -251,6 +251,14 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     );
   }
 
+  const getCellTitle = () => {
+    if (!isAuthenticated) return tSheet('loginRequiredDescription');
+    if (isOwnProfile) return undefined;
+    if (!tutor.activeStatus) return t('temporarilyBusy');
+    if (hasActiveTrialBooking) return t('trialAlreadyBookedWarning');
+    return t('scheduleBookTrialHover');
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -282,9 +290,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           readOnly={readOnly}
           onReadOnlyCellClick={handleReadOnlyCellClick}
           value={bookedScheduleSlots}
-          selectableCellTitle={
-            viewMode === 'bookable' ? t('scheduleBookTrialHover') : undefined
-          }
+          selectableCellTitle={getCellTitle()}
           onChange={handleSlotSelect}
           onWeekChange={({ weekOffset: nextWeekOffset }) => {
             setWeekOffset(nextWeekOffset);

@@ -661,7 +661,7 @@ export function ScheduleSelection({
                         onClick={() => handleCellSelect(day.id, slot.startTime)}
                         disabled={readOnly && !isSelected && !onReadOnlyCellClick}
                         title={
-                          isClickable && selectableCellTitle
+                          (isClickable || onReadOnlyCellClick) && selectableCellTitle
                             ? selectableCellTitle
                             : undefined
                         }
@@ -868,7 +868,7 @@ export function ScheduleSelection({
                   isPaymentHoldBlocked,
                 });
                 const cellTitle =
-                  !readOnly &&
+                  (!readOnly || !!onReadOnlyCellClick) &&
                   selectableCellTitle &&
                   isSelectable &&
                   !isPast &&
