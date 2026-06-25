@@ -73,14 +73,22 @@ export default function TutorCard({
   const trialDone =
     elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
   const showContinuePayment = canFetchSub && Boolean(pendingPayment);
-  const showSubscribe =
+  const showMonthlyActions = tutor.activeStatus !== false;
+  const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false;
+  const wouldShowSubscribeIfActive =
     canFetchSub &&
     !showContinuePayment &&
     trialDone &&
     hasSubscriptionPlans &&
     elig?.reason !== "ALREADY_ENROLLED";
-  const showBookTrial =
+  const wouldShowBookTrialIfActive =
     !isOwnProfile && (!currentUser?.id || !trialDone) && !showContinuePayment;
+  const showSubscribe = showMonthlyActions && wouldShowSubscribeIfActive;
+  const showBookTrial = showMonthlyActions && wouldShowBookTrialIfActive;
+  const showBusyBadge =
+    isTutorTemporarilyBusy &&
+    !showContinuePayment &&
+    (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
   const bookTrialDisabled =
     canFetchSub &&
     (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
@@ -216,6 +224,10 @@ export default function TutorCard({
                   <CreditCard className="mr-1.5 size-4" />
                   {t("continuePayment")}
                 </Button>
+              ) : showBusyBadge ? (
+                <span className="inline-flex h-10 w-full items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 text-center text-sm font-semibold text-amber-800">
+                  {t("temporarilyBusy")}
+                </span>
               ) : showSubscribe ? (
                 <Link
                   href={`${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`}

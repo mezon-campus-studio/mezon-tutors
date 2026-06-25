@@ -61,6 +61,7 @@ import { cn } from '@/lib/utils';
 import {
   useGetCurrencyRates,
   useGetMyProfile,
+  useUpdateActiveStatusMutation,
   useUpdateMyTutorProfileMutation,
 } from '@/services';
 import {
@@ -223,6 +224,7 @@ export default function TutorProfileView() {
   const profile = data?.profile as MyTutorProfileRecord | null | undefined;
   const userTimezone = useUserTimezone();
   const updateProfileMutation = useUpdateMyTutorProfileMutation();
+  const updateActiveStatusMutation = useUpdateActiveStatusMutation();
   const [editingTab, setEditingTab] = useState<ProfileTabNumber | null>(null);
   const editingTabRef = useRef<ProfileTabNumber | null>(null);
   editingTabRef.current = editingTab;
@@ -534,7 +536,8 @@ export default function TutorProfileView() {
         </header>
 
         <div className="min-w-0 overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf5ff,#fdf2f8)] p-4 shadow-sm sm:p-5 md:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
+            <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <Avatar className="size-20 shrink-0 rounded-full border-2 border-white ring-2 ring-violet-100 sm:size-24">
             {profile.avatar ? (
               <AvatarImage
@@ -564,6 +567,52 @@ export default function TutorProfileView() {
               {tSubject(profile.subject as ESubject)}
             </p>
           </div>
+            </div>
+
+            {profile.verificationStatus === 'APPROVED' ? (
+              <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-center">
+                <span className="text-sm font-semibold text-slate-700">
+                  {t('activeStatus.label')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={profile.activeStatus !== false}
+                  aria-label={t('activeStatus.label')}
+                  disabled={updateActiveStatusMutation.isPending}
+                  onClick={() => {
+                    const nextActiveStatus = profile.activeStatus === false;
+                    updateActiveStatusMutation.mutate(
+                      { activeStatus: nextActiveStatus },
+                      {
+                        onSuccess: () => {
+                          toast.success(
+                            nextActiveStatus
+                              ? t('activeStatus.enabledToast')
+                              : t('activeStatus.disabledToast')
+                          );
+                          void refetch();
+                        },
+                        onError: () => {
+                          toast.error(t('activeStatus.errorToast'));
+                        },
+                      }
+                    );
+                  }}
+                  className={cn(
+                    'relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+                    profile.activeStatus !== false ? 'bg-violet-600' : 'bg-slate-300'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform',
+                      profile.activeStatus !== false ? 'translate-x-5' : 'translate-x-0.5'
+                    )}
+                  />
+                </button>
+              </div>
+            ) : null}
         </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 lg:grid-cols-4">

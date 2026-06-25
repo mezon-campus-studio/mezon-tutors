@@ -72,6 +72,8 @@
   },
   "ScheduleSelection": {
     "today": "Today",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
     "status": {
       "available": "Available",
       "pastAvailable": "Past (view only)",

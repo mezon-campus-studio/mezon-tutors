@@ -39,6 +39,7 @@
     "subscribeMonthly": "Đăng ký theo tháng",
     "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
+    "temporarilyBusy": "Gia sư tạm thời bận",
     "sendMessage": "Gửi tin nhắn",
     "messageModal": {
       "title": "Nhắn tin cho {tutorName}",
@@ -365,6 +366,7 @@
     "subscribeGroup": "Đăng ký học theo nhóm",
     "continuePayment": "Thanh toán ngay",
     "bookTrialDisabledHint": "Bạn đã có buổi học thử với gia sư này chưa hoàn tất.",
+    "temporarilyBusy": "Gia sư tạm thời bận",
     "sendMessage": "Gửi tin nhắn",
     "bookedLast48h": "{count} buổi được đặt trong 48h qua",
     "totalStudents": "{count} học viên",

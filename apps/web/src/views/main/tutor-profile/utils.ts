@@ -30,6 +30,7 @@ export type MyTutorProfileRecord = {
   motivate: string;
   headline: string;
   verificationStatus: string;
+  activeStatus: boolean;
   totalLessonsTaught: number;
   totalStudents: number;
   ratingCount: number;

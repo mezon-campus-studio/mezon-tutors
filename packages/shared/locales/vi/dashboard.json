@@ -573,6 +573,12 @@
         "rating": "Đánh giá TB",
         "reviews": "Lượt đánh giá"
       },
+      "activeStatus": {
+        "label": "Đang làm việc",
+        "enabledToast": "Bạn đã bật trạng thái hoạt động. Học viên có thể đặt buổi học thử và đăng ký tháng.",
+        "disabledToast": "Bạn đã tắt trạng thái hoạt động. Học viên mới sẽ thấy gia sư tạm thời bận.",
+        "errorToast": "Không thể cập nhật trạng thái hoạt động. Vui lòng thử lại."
+      },
       "sections": {
         "personal": "Thông tin cá nhân",
         "about": "Giới thiệu",

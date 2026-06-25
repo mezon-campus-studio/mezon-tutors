@@ -369,6 +369,22 @@ export class TutorProfileService {
     };
   }
 
+  async updateActiveStatusByUserId(userId: string, activeStatus: boolean): Promise<void> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    await this.prisma.tutorProfile.update({
+      where: { id: profile.id },
+      data: { activeStatus },
+    });
+  }
+
   async createReview(
     tutorId: string,
     reviewerId: string,
