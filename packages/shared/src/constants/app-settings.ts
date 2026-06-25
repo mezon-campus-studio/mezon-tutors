@@ -3,6 +3,8 @@ export const PUBLIC_APP_SETTINGS_FALLBACK = {
   lessonChangePeriodHours: 12,
 } as const;
 
+export const DEFAULT_INTRO_VIDEO_MAX_DURATION_SECONDS = 120;
+
 export const APP_SETTINGS_LIMITS = {
   platformFeePercentage: { min: 0, max: 1 },
   platformFeePercent: { min: 0, max: 100 },
@@ -14,4 +16,5 @@ export const APP_SETTINGS_LIMITS = {
   minWithdrawalAmountPhp: { min: 0.01, max: 10_000_000 },
   subscriptionGroupDiscountRate: { min: 0.01, max: 1 },
   subscriptionGroupDiscountPercent: { min: 0, max: 99 },
+  introVideoMaxDurationSeconds: { min: 15, max: 600 },
 } as const;

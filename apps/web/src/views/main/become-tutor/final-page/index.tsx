@@ -13,6 +13,7 @@ import {
   PROFESSIONAL_DOCUMENT_TYPE,
   normalizeUtcAvailabilityRows,
   EXISTING_SECURE_FILE,
+  resolveVideoIdFromUrl,
 } from '@mezon-tutors/shared';
 import { useGetMyProfile } from '@/services';
 import {
@@ -173,7 +174,7 @@ export default function FinalPage() {
 
     setVideo({
       videoLink: profile.videoUrl,
-      videoId: null,
+      videoId: resolveVideoIdFromUrl(profile.videoUrl ?? ''),
     });
 
     const baseCurrency = profile.trialLessonPrice?.baseCurrency || 'VND';

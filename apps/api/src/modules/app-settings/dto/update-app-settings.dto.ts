@@ -1,4 +1,4 @@
-import { APP_SETTINGS_LIMITS, type MezonLinks, type SocialLinks } from '@mezon-tutors/shared';
+import { APP_SETTINGS_LIMITS, type MezonLinks, type SocialLinks, type YoutubeSettings } from '@mezon-tutors/shared';
 import { Type } from 'class-transformer';
 import { IsInt, IsNumber, IsObject, IsOptional, Max, Min } from 'class-validator';
 
@@ -60,4 +60,8 @@ export class UpdateAppSettingsDto {
   @IsOptional()
   @IsObject()
   socialLinks?: SocialLinks | null;
+
+  @IsOptional()
+  @IsObject()
+  youtubeSettings?: YoutubeSettings | null;
 }

@@ -84,6 +84,20 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CALENDAR_CALLBACK_URL: z.string().url().optional(),
+
+  /** Long-lived OAuth refresh token for the Mezonly YouTube channel (youtube.upload scope). */
+  YOUTUBE_REFRESH_TOKEN: z.string().optional(),
+  YOUTUBE_PRIVACY_STATUS: z.enum(['public', 'unlisted', 'private']).default('unlisted'),
+  /** YouTube category ID (27 = Education). */
+  YOUTUBE_CATEGORY_ID: z.string().default('27'),
+  /**
+   * When true, re-encode Cloudinary source to 16:9 landscape before YouTube upload
+   * so vertical clips are published as regular videos instead of Shorts.
+   */
+  YOUTUBE_FORCE_LANDSCAPE: z
+    .string()
+    .default('true')
+    .transform((value) => value === 'true'),
 }).superRefine((data, ctx) => {
   if (data.NODE_ENV !== 'production') return;
   const requiredInProd: [string, string][] = [
@@ -149,6 +163,10 @@ export class AppConfigService {
       GOOGLE_CLIENT_ID: this.configService.get('GOOGLE_CLIENT_ID'),
       GOOGLE_CLIENT_SECRET: this.configService.get('GOOGLE_CLIENT_SECRET'),
       GOOGLE_CALENDAR_CALLBACK_URL: this.configService.get('GOOGLE_CALENDAR_CALLBACK_URL'),
+      YOUTUBE_REFRESH_TOKEN: this.configService.get('YOUTUBE_REFRESH_TOKEN'),
+      YOUTUBE_PRIVACY_STATUS: this.configService.get('YOUTUBE_PRIVACY_STATUS'),
+      YOUTUBE_CATEGORY_ID: this.configService.get('YOUTUBE_CATEGORY_ID'),
+      YOUTUBE_FORCE_LANDSCAPE: this.configService.get('YOUTUBE_FORCE_LANDSCAPE'),
     };
 
     try {
@@ -308,6 +326,26 @@ export class AppConfigService {
   isGoogleCalendarConfigured(): boolean {
     const { clientId, clientSecret, callbackUrl } = this.googleCalendarOAuthConfig;
     return Boolean(clientId && clientSecret && callbackUrl);
+  }
+
+  get youtubeUploadConfig() {
+    const clientId = this.env.GOOGLE_CLIENT_ID?.trim() ?? '';
+    const clientSecret = this.env.GOOGLE_CLIENT_SECRET?.trim() ?? '';
+    const refreshToken = this.env.YOUTUBE_REFRESH_TOKEN?.trim() ?? '';
+
+    return {
+      clientId,
+      clientSecret,
+      refreshToken,
+      privacyStatus: this.env.YOUTUBE_PRIVACY_STATUS,
+      categoryId: this.env.YOUTUBE_CATEGORY_ID?.trim() || '27',
+      forceLandscape: this.env.YOUTUBE_FORCE_LANDSCAPE,
+    };
+  }
+
+  isYoutubeUploadConfigured(): boolean {
+    const { clientId, clientSecret, refreshToken } = this.youtubeUploadConfig;
+    return Boolean(clientId && clientSecret && refreshToken);
   }
 
   // Helper generic method if needed for other keys

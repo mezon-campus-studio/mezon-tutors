@@ -4,6 +4,7 @@ import { apiClient } from '../api-client';
 type CloudinaryUploadResponse = {
   public_id: string;
   secure_url: string;
+  duration?: number;
 };
 
 type CloudinarySignatureResponse = {
@@ -51,7 +52,7 @@ class CloudinaryService {
     file: File,
     folder: string,
     resourceType: 'auto' | 'image' | 'video' | 'raw' = 'auto'
-  ): Promise<{ publicId: string; secureUrl: string }> {
+  ): Promise<{ publicId: string; secureUrl: string; durationSeconds?: number }> {
     const signature = await apiClient.post<CloudinarySignatureResponse, CloudinarySignatureResponse>(
       '/cloudinary/signature',
       { folder }
@@ -84,6 +85,8 @@ class CloudinaryService {
     return {
       publicId: result.public_id,
       secureUrl: result.secure_url,
+      durationSeconds:
+        typeof result.duration === 'number' ? result.duration : undefined,
     };
   }
 

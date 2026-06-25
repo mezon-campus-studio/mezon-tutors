@@ -242,7 +242,8 @@
     "previewPlaceholder": "Paste a valid YouTube or Vimeo link below to preview your video here.",
     "tabs": {
       "record": "Record video",
-      "pasteLink": "Paste link"
+      "pasteLink": "Paste link",
+      "upload": "Upload video"
     },
     "video": {
       "cta": "Click to start recording",
@@ -253,6 +254,17 @@
       "placeholder": "https://youtube.com/watch?v=...",
       "addButton": "Add",
       "checking": "Checking video..."
+    },
+    "upload": {
+      "label": "Upload your introduction video",
+      "hint": "MP4, MOV, or WebM · up to {maxSize}MB · max {maxMinutes}:00",
+      "emptyLabel": "Click or drag and drop your video",
+      "dropHereLabel": "Drop video here",
+      "uploadButton": "Choose video",
+      "uploadingCloudinary": "Uploading video…",
+      "youtubeNotice": "When your profile is approved, your video will be published publicly on Mezonly's YouTube channel.",
+      "success": "Video uploaded successfully. It will be published to YouTube after admin approval.",
+      "fileName": "Selected file"
     },
     "bestPracticesTitle": "Video Best Practices",
     "bestPractices": [
@@ -270,7 +282,10 @@
       "emptyLink": "Please paste a YouTube or Vimeo link.",
       "invalidLink": "Video link must be a valid YouTube or Vimeo URL.",
       "tooLong": "Video must be 2 minutes or shorter.",
-      "missingBeforeContinue": "Please add a video under 2 minutes before continuing."
+      "missingBeforeContinue": "Please add a video under 2 minutes before continuing.",
+      "invalidVideoType": "Please upload an MP4, MOV, or WebM video.",
+      "invalidVideoSize": "Video must be {max}MB or smaller.",
+      "uploadFailed": "Video upload failed. Please try again."
     },
     "back": "Back",
     "continue": "Continue to 5"

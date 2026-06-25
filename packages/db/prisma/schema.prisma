@@ -758,6 +758,7 @@ model AppSettings {
   subscriptionGroupDiscountRate       Decimal  @default(0.75) @map("subscription_group_discount_rate") @db.Decimal(4, 2)
   mezonLinks                          Json?    @map("mezon_links")
   socialLinks                         Json?    @map("social_links")
+  youtubeSettings                     Json?    @map("youtube_settings")
   updatedByUserId                     String?  @map("updated_by_user_id") @db.Uuid
   createdAt                           DateTime @default(now()) @map("created_at")
   updatedAt                           DateTime @updatedAt @map("updated_at")

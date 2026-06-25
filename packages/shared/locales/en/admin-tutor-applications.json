@@ -153,6 +153,7 @@
       "approve": {
         "title": "Approve Application",
         "description": "Are you sure you want to approve {name}'s application? This will grant them tutor access.",
+        "youtubeUploading": "The video is being uploaded to YouTube, please wait…",
         "confirm": "Approve"
       },
       "reject": {

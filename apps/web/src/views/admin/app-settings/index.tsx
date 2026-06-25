@@ -8,6 +8,7 @@ import {
   mapAppSettingsFormErrors,
   mapMezonLinksToFormValues,
   mapSocialLinksToFormValues,
+  mapYoutubeSettingsToFormValues,
 } from "@mezon-tutors/shared";
 import { Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -39,6 +40,7 @@ function toFormState(settings: AppSettings): AppSettingsFormValues {
     minWithdrawalAmountPhp: String(settings.minWithdrawalAmountPhp),
     ...mapMezonLinksToFormValues(settings.mezonLinks),
     ...mapSocialLinksToFormValues(settings.socialLinks),
+    ...mapYoutubeSettingsToFormValues(settings.youtubeSettings),
   };
 }
 
@@ -188,6 +190,14 @@ export default function AdminAppSettingsView() {
           },
         ),
         invalidUrl: tValidation("invalidUrl"),
+        invalidPlaylistId: tValidation("invalidPlaylistId"),
+        introVideoMaxDurationSecondsRange: tValidation(
+          "introVideoMaxDurationSecondsRange",
+          {
+            min: limits.introVideoMaxDurationSeconds.min,
+            max: limits.introVideoMaxDurationSeconds.max,
+          },
+        ),
       }),
     [tValidation],
   );
@@ -490,6 +500,46 @@ export default function AdminAppSettingsView() {
                 error={errors.socialTwitter}
                 value={form.socialTwitter}
                 onChange={(v) => setField("socialTwitter", v)}
+              />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection
+            title={t("sections.youtube.title")}
+            description={t("sections.youtube.description")}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="youtubePlaylistId"
+                  className="text-sm font-medium text-slate-700"
+                >
+                  {t("fields.youtubePlaylistId")}
+                </Label>
+                <Input
+                  id="youtubePlaylistId"
+                  placeholder="PLxxxxxxxx"
+                  value={form.youtubePlaylistId}
+                  onChange={(e) => setField("youtubePlaylistId", e.target.value)}
+                  aria-invalid={Boolean(errors.youtubePlaylistId)}
+                  className={`h-10 ${errors.youtubePlaylistId ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
+                />
+                {errors.youtubePlaylistId ? (
+                  <p className="text-xs text-rose-600">{errors.youtubePlaylistId}</p>
+                ) : (
+                  <p className="text-xs text-slate-500">{t("fields.youtubePlaylistIdHint")}</p>
+                )}
+              </div>
+              <NumberField
+                id="youtubeIntroVideoMaxDurationSeconds"
+                label={t("fields.youtubeIntroVideoMaxDurationSeconds")}
+                hint={t("fields.youtubeIntroVideoMaxDurationSecondsHint")}
+                error={errors.youtubeIntroVideoMaxDurationSeconds}
+                value={form.youtubeIntroVideoMaxDurationSeconds}
+                onChange={(v) => setField("youtubeIntroVideoMaxDurationSeconds", v)}
+                min={limits.introVideoMaxDurationSeconds.min}
+                max={limits.introVideoMaxDurationSeconds.max}
+                step="1"
               />
             </div>
           </SettingsSection>

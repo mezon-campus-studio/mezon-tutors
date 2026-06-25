@@ -153,6 +153,7 @@
       "approve": {
         "title": "Duyệt đơn đăng ký",
         "description": "Bạn có chắc chắn muốn duyệt đơn đăng ký của {name}? Hành động này sẽ cấp quyền gia sư cho họ.",
+        "youtubeUploading": "Video đang được đăng lên YouTube, vui lòng chờ…",
         "confirm": "Duyệt"
       },
       "reject": {

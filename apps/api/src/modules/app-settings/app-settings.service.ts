@@ -4,11 +4,15 @@ import {
   type AppSettings,
   type MezonLinks,
   type SocialLinks,
+  type YoutubeSettings,
   type PublicAppSettings,
   mezonLinksSchema,
   normalizeMezonLinksForStorage,
   socialLinksSchema,
   normalizeSocialLinksForStorage,
+  youtubeSettingsSchema,
+  normalizeYoutubeSettingsForStorage,
+  resolveIntroVideoMaxDurationSeconds,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateAppSettingsDto } from './dto/update-app-settings.dto';
@@ -127,6 +131,11 @@ export class AppSettingsService {
     if (dto.socialLinks !== undefined) {
       data.socialLinks = normalizeSocialLinksForStorage(dto.socialLinks) as Prisma.InputJsonValue;
     }
+    if (dto.youtubeSettings !== undefined) {
+      data.youtubeSettings = normalizeYoutubeSettingsForStorage(
+        dto.youtubeSettings,
+      ) as Prisma.InputJsonValue;
+    }
 
     return data;
   }
@@ -153,6 +162,15 @@ export class AppSettingsService {
     return normalizeSocialLinksForStorage(parsed.data);
   }
 
+  private parseYoutubeSettings(value: Prisma.JsonValue | null): YoutubeSettings | null {
+    if (value === null || value === undefined) return null;
+
+    const parsed = youtubeSettingsSchema.safeParse(value);
+    if (!parsed.success) return null;
+
+    return normalizeYoutubeSettingsForStorage(parsed.data);
+  }
+
   private serialize(row: {
     id: string;
     platformFeePercentage: Prisma.Decimal;
@@ -164,6 +182,8 @@ export class AppSettingsService {
     minWithdrawalAmountPhp: Prisma.Decimal;
     subscriptionGroupDiscountRate: Prisma.Decimal;
     mezonLinks: Prisma.JsonValue | null;
+    socialLinks?: Prisma.JsonValue | null;
+    youtubeSettings?: Prisma.JsonValue | null;
     updatedByUserId: string | null;
     updatedAt: Date;
     updatedBy: { id: string; username: string } | null;
@@ -179,7 +199,8 @@ export class AppSettingsService {
       minWithdrawalAmountPhp: Number(row.minWithdrawalAmountPhp),
       subscriptionGroupDiscountRate: Number(row.subscriptionGroupDiscountRate),
       mezonLinks: this.parseMezonLinks(row.mezonLinks),
-      socialLinks: this.parseSocialLinks((row as any).socialLinks ?? null),
+      socialLinks: this.parseSocialLinks(row.socialLinks ?? null),
+      youtubeSettings: this.parseYoutubeSettings(row.youtubeSettings ?? null),
       updatedByUserId: row.updatedByUserId,
       updatedBy: row.updatedBy,
       updatedAt: row.updatedAt.toISOString(),
@@ -198,6 +219,15 @@ export class AppSettingsService {
       subscriptionGroupDiscountRate: settings.subscriptionGroupDiscountRate,
       mezonLinks: settings.mezonLinks,
       socialLinks: settings.socialLinks,
+      youtubeSettings: settings.youtubeSettings
+        ? {
+            introVideoMaxDurationSeconds: resolveIntroVideoMaxDurationSeconds(
+              settings.youtubeSettings,
+            ),
+          }
+        : {
+            introVideoMaxDurationSeconds: resolveIntroVideoMaxDurationSeconds(null),
+          },
     };
   }
 }
