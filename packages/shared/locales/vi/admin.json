@@ -319,6 +319,10 @@
         "socials": {
           "title": "Mạng xã hội",
           "description": "Link mạng xã hội hiển thị ở footer."
+        },
+        "youtube": {
+          "title": "YouTube (video giới thiệu gia sư)",
+          "description": "Playlist và giới hạn thời lượng khi admin duyệt hồ sơ gia sư."
         }
       },
       "fields": {
@@ -347,7 +351,11 @@
         "socialYoutube": "Link YouTube",
         "socialTiktok": "Link TikTok",
         "socialLinkedin": "Link LinkedIn",
-        "socialTwitter": "Link Twitter"
+        "socialTwitter": "Link Twitter",
+        "youtubePlaylistId": "Playlist ID video giới thiệu",
+        "youtubePlaylistIdHint": "Tùy chọn. Ví dụ: PLxxxxxxxx. Dùng khi đăng video gia sư đã duyệt lên YouTube. Để trống sẽ không thêm vào playlist.",
+        "youtubeIntroVideoMaxDurationSeconds": "Thời lượng video tối đa (giây)",
+        "youtubeIntroVideoMaxDurationSecondsHint": "Giới hạn độ dài video giới thiệu khi gia sư đăng ký và khi admin duyệt."
       },
       "validation": {
         "required": "Trường này là bắt buộc.",
@@ -362,6 +370,8 @@
         "minWithdrawalAmountUsdRange": "Phải từ {min} đến {max} USD.",
         "minWithdrawalAmountPhpRange": "Phải từ {min} đến {max} PHP.",
         "subscriptionGroupDiscountPercentRange": "Phải từ {min} đến {max}%.",
+        "invalidPlaylistId": "Nhập playlist ID YouTube hợp lệ (bắt đầu bằng PL) hoặc để trống.",
+        "introVideoMaxDurationSecondsRange": "Phải từ {min} đến {max} giây.",
         "summary": "Vui lòng sửa các trường được đánh dấu trước khi lưu."
       }
     },

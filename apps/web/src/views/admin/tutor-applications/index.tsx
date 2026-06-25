@@ -4,6 +4,7 @@ import {
   ADMIN_TUTOR_APPLICATION_PAGE_SIZE,
   ADMIN_TUTOR_APPLICATION_STATUS_FILTERS,
   type AdminTutorApplicationStatusFilter,
+  isCloudinaryVideoUrl,
   type TutorProfile,
 } from "@mezon-tutors/shared";
 import { Search } from "lucide-react";
@@ -39,6 +40,7 @@ type ConfirmAction = {
   type: "approve" | "reject";
   id: string;
   name: string;
+  videoUrl?: string | null;
 };
 
 const filterApplications = (
@@ -119,6 +121,7 @@ export default function AdminTutorApplicationsView() {
       type: "approve",
       id: app.id,
       name: getFullName(app),
+      videoUrl: app.videoUrl,
     });
   };
 
@@ -247,6 +250,13 @@ export default function AdminTutorApplicationsView() {
         description={tApprove("description", {
           name: confirmAction?.name ?? "",
         })}
+        loadingMessage={
+          approveMutation.isPending &&
+          confirmAction?.videoUrl &&
+          isCloudinaryVideoUrl(confirmAction.videoUrl)
+            ? tApprove("youtubeUploading")
+            : undefined
+        }
         confirmLabel={tApprove("confirm")}
         cancelLabel={tModals("cancel")}
         loading={approveMutation.isPending}

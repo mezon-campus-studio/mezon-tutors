@@ -9,6 +9,10 @@ import {
   createSocialLinksFormFieldsSchema,
   mapSocialLinksFormToStorage,
 } from './social-links';
+import {
+  createYoutubeSettingsFormFieldsSchema,
+  mapYoutubeSettingsFormToStorage,
+} from './youtube-settings';
 
 export type AppSettingsFormValues = {
   platformFeePercent: string;
@@ -30,6 +34,8 @@ export type AppSettingsFormValues = {
   socialTiktok: string;
   socialLinkedin: string;
   socialTwitter: string;
+  youtubePlaylistId: string;
+  youtubeIntroVideoMaxDurationSeconds: string;
 };
 
 export type AppSettingsValidationMessages = {
@@ -45,6 +51,8 @@ export type AppSettingsValidationMessages = {
   minWithdrawalAmountUsdRange: string;
   minWithdrawalAmountPhpRange: string;
   subscriptionGroupDiscountPercentRange: string;
+  invalidPlaylistId: string;
+  introVideoMaxDurationSecondsRange: string;
 };
 
 const limits = APP_SETTINGS_LIMITS;
@@ -85,6 +93,10 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
   }).shape;
   const socialLinksFields = createSocialLinksFormFieldsSchema({
     invalidUrl: messages.invalidUrl,
+  }).shape;
+  const youtubeSettingsFields = createYoutubeSettingsFormFieldsSchema({
+    invalidPlaylistId: messages.invalidPlaylistId,
+    introVideoMaxDurationSecondsRange: messages.introVideoMaxDurationSecondsRange,
   }).shape;
 
   return z
@@ -145,6 +157,7 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
       ),
       ...mezonLinksFields,
       ...socialLinksFields,
+      ...youtubeSettingsFields,
     })
     .transform(
       (values): UpdateAppSettingsBody => ({
@@ -171,6 +184,10 @@ export function createAppSettingsFormSchema(messages: AppSettingsValidationMessa
           socialTiktok: values.socialTiktok,
           socialLinkedin: values.socialLinkedin,
           socialTwitter: values.socialTwitter,
+        }),
+        youtubeSettings: mapYoutubeSettingsFormToStorage({
+          youtubePlaylistId: values.youtubePlaylistId,
+          youtubeIntroVideoMaxDurationSeconds: values.youtubeIntroVideoMaxDurationSeconds,
         }),
       }),
     );

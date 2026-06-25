@@ -19,6 +19,11 @@ export type SocialLinks = {
   twitter?: string;
 };
 
+export type YoutubeSettings = {
+  playlistId?: string;
+  introVideoMaxDurationSeconds?: number;
+};
+
 export type AppSettings = {
   id: string;
   platformFeePercentage: number;
@@ -31,6 +36,7 @@ export type AppSettings = {
   subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
   socialLinks: SocialLinks | null;
+  youtubeSettings: YoutubeSettings | null;
   updatedByUserId: string | null;
   updatedBy: {
     id: string;
@@ -50,6 +56,9 @@ export type PublicAppSettings = {
   subscriptionGroupDiscountRate: number;
   mezonLinks: MezonLinks | null;
   socialLinks: SocialLinks | null;
+  youtubeSettings: {
+    introVideoMaxDurationSeconds: number;
+  };
 };
 
 export type UpdateAppSettingsBody = {
@@ -63,4 +72,5 @@ export type UpdateAppSettingsBody = {
   subscriptionGroupDiscountRate?: number;
   mezonLinks?: MezonLinks | null;
   socialLinks?: SocialLinks | null;
+  youtubeSettings?: YoutubeSettings | null;
 };

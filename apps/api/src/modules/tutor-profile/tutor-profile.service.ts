@@ -19,6 +19,11 @@ import {
   TutorResumeDto,
   TutorResumeItemDto,
   normalizeUtcAvailabilityRowsForStorage,
+  isCloudinaryVideoUrl,
+  resolveIntroVideoMaxDurationSeconds,
+  buildTutorIntroYoutubeMetadata,
+  type TutorIntroYoutubeProfileMeta,
+  type PublishIntroVideoResponse,
 } from '@mezon-tutors/shared';
 import {
   ETrialLessonStatus,
@@ -33,14 +38,28 @@ import dayjs = require('dayjs');
 import { toTutorReviewDto, toVerifiedTutorProfileDto } from './tutor-profile.mapper';
 import { VerifiedTutorQueryDto } from './dto/verified-tutor-query.dto';
 import { NotificationService } from '../notification/notification.service';
+import { YoutubeService } from '../youtube/youtube.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { AppSettingsService } from '../app-settings/app-settings.service';
+import { AppConfigService } from '../../shared/services/app-config.service';
+
 @Injectable()
 export class TutorProfileService {
   private readonly logger = new Logger(TutorProfileService.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly youtubeService: YoutubeService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly appSettingsService: AppSettingsService,
+    private readonly appConfig: AppConfigService,
   ) {}
+
+  private async getIntroVideoMaxDurationSeconds(): Promise<number> {
+    const settings = await this.appSettingsService.getSettings();
+    return resolveIntroVideoMaxDurationSeconds(settings.youtubeSettings);
+  }
 
   private buildTrialLessonPriceDataFromPrices(currency: ECurrency, prices: { usd: number; vnd: number; php: number }) {
     return {
@@ -1249,5 +1268,70 @@ export class TutorProfileService {
           ]
         : [],
     }
+  }
+
+  async resolveVideoUrlOnApproval(
+    profile: TutorIntroYoutubeProfileMeta & {
+      videoUrl: string;
+      user?: { username: string | null } | null;
+    },
+  ): Promise<string> {
+    const videoUrl = profile.videoUrl?.trim() ?? '';
+    if (!videoUrl || !isCloudinaryVideoUrl(videoUrl)) {
+      return videoUrl;
+    }
+
+    const published = await this.publishCloudinaryUrlToYoutube(videoUrl, {
+      tutorId: profile.tutorId,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      username: profile.user?.username ?? profile.username ?? '',
+      headline: profile.headline ?? '',
+      subject: profile.subject ?? '',
+      introduce: profile.introduce ?? '',
+      motivate: profile.motivate ?? '',
+      durationSeconds: null,
+    });
+
+    return published.videoUrl;
+  }
+
+  private async publishCloudinaryUrlToYoutube(
+    cloudinaryUrl: string,
+    profile: TutorIntroYoutubeProfileMeta & {
+      username?: string;
+      durationSeconds?: number | null;
+    },
+  ): Promise<PublishIntroVideoResponse> {
+    const { title, description } = buildTutorIntroYoutubeMetadata(profile, {
+      profileBaseUrl: this.appConfig.frontendUrl,
+    });
+
+    let durationSeconds = profile.durationSeconds ?? null;
+    if (durationSeconds === null) {
+      durationSeconds = await this.cloudinaryService.getVideoDurationSeconds(cloudinaryUrl);
+    }
+
+    const maxDurationSeconds = await this.getIntroVideoMaxDurationSeconds();
+    if (
+      typeof durationSeconds === 'number' &&
+      durationSeconds > maxDurationSeconds
+    ) {
+      throw new BadRequestException(
+        `Video must be ${maxDurationSeconds} seconds or shorter`,
+      );
+    }
+
+    const result = await this.youtubeService.uploadVideoFromUrl(cloudinaryUrl, {
+      title,
+      description,
+      durationSeconds,
+      maxDurationSeconds,
+    });
+
+    return {
+      videoUrl: result.videoUrl,
+      videoId: result.videoId,
+    };
   }
 }

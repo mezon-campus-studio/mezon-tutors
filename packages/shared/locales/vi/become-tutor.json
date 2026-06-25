@@ -242,7 +242,8 @@
     "previewPlaceholder": "Dán liên kết YouTube hoặc Vimeo hợp lệ bên dưới để xem trước video tại đây.",
     "tabs": {
       "record": "Ghi hình trực tiếp",
-      "pasteLink": "Dán liên kết"
+      "pasteLink": "Dán liên kết",
+      "upload": "Tải video lên"
     },
     "video": {
       "cta": "Nhấn để bắt đầu ghi hình",
@@ -253,6 +254,17 @@
       "placeholder": "https://youtube.com/watch?v=...",
       "addButton": "Thêm",
       "checking": "Đang kiểm tra video..."
+    },
+    "upload": {
+      "label": "Tải video giới thiệu của bạn",
+      "hint": "MP4, MOV hoặc WebM · tối đa {maxSize}MB · tối đa {maxMinutes}:00",
+      "emptyLabel": "Nhấn hoặc kéo thả video vào đây",
+      "dropHereLabel": "Thả video tại đây",
+      "uploadButton": "Chọn video",
+      "uploadingCloudinary": "Đang tải video lên…",
+      "youtubeNotice": "Khi hồ sơ được duyệt, video của bạn sẽ được đăng công khai trên kênh YouTube của Mezonly.",
+      "success": "Tải video thành công. Video sẽ được đăng lên YouTube sau khi admin duyệt hồ sơ.",
+      "fileName": "Tệp đã chọn"
     },
     "bestPracticesTitle": "Mẹo quay video hiệu quả",
     "bestPractices": [
@@ -270,7 +282,10 @@
       "emptyLink": "Vui lòng dán liên kết YouTube hoặc Vimeo.",
       "invalidLink": "Liên kết video phải là URL YouTube hoặc Vimeo hợp lệ.",
       "tooLong": "Video phải có thời lượng tối đa 2 phút.",
-      "missingBeforeContinue": "Vui lòng thêm video dưới 2 phút trước khi tiếp tục."
+      "missingBeforeContinue": "Vui lòng thêm video dưới 2 phút trước khi tiếp tục.",
+      "invalidVideoType": "Vui lòng tải lên video MP4, MOV hoặc WebM.",
+      "invalidVideoSize": "Video phải nhỏ hơn hoặc bằng {max}MB.",
+      "uploadFailed": "Tải video lên thất bại. Vui lòng thử lại."
     },
     "back": "Quay lại",
     "continue": "Tiếp tục tới bước 5"

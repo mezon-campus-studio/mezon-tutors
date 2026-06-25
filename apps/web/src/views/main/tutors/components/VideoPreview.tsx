@@ -1,6 +1,9 @@
 "use client";
 
-import { getYoutubeEmbedUrl } from "@mezon-tutors/shared";
+import {
+  getYoutubeEmbedUrl,
+  isCloudinaryVideoUrl,
+} from "@mezon-tutors/shared";
 import { PlayIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -27,9 +30,13 @@ export default function VideoPreview({
     return last ?? null;
   }, [embedUrl]);
 
+  const isCloudinaryVideo = useMemo(
+    () => isCloudinaryVideoUrl(videoUrl),
+    [videoUrl],
+  );
   const isYoutubeVideo = Boolean(embedUrl && youtubeId);
   const hasVideoUrl = Boolean(videoUrl);
-  const canOpenVideo = isYoutubeVideo;
+  const canOpenVideo = isYoutubeVideo || isCloudinaryVideo;
 
   const thumbnailUrl = useMemo(() => {
     if (!isYoutubeVideo || !youtubeId) return null;
@@ -99,6 +106,12 @@ export default function VideoPreview({
               <PlayIcon className="size-7 text-white" />
             </div>
           </div>
+        ) : isCloudinaryVideo ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
+            <div className="flex size-16 items-center justify-center rounded-full bg-violet-600/95 pl-1">
+              <PlayIcon className="size-7 text-white" />
+            </div>
+          </div>
         ) : (
           <div className="px-4 text-center">
             {title ? (
@@ -109,7 +122,7 @@ export default function VideoPreview({
             <div className="mt-1 text-sm text-slate-600">
               {!hasVideoUrl
                 ? t("noVideo")
-                : !isYoutubeVideo
+                : !canOpenVideo
                   ? t("invalidVideo")
                   : t("pressToPlay")}
             </div>
@@ -140,7 +153,14 @@ export default function VideoPreview({
                 </button>
 
                 <div className="aspect-video w-full bg-slate-950">
-                  {embedUrl ? (
+                  {isCloudinaryVideo && videoUrl ? (
+                    <video
+                      src={videoUrl}
+                      controls
+                      autoPlay
+                      className="h-full w-full border-0 object-contain"
+                    />
+                  ) : embedUrl ? (
                     <iframe
                       src={`${embedUrl}?autoplay=1&rel=0&modestbranding=1`}
                       title="YouTube video"

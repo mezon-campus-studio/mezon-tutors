@@ -319,6 +319,10 @@
         "socials": {
           "title": "Social links",
           "description": "Social media links shown in the footer."
+        },
+        "youtube": {
+          "title": "YouTube (tutor intro videos)",
+          "description": "Playlist and duration limits applied when admin approves tutor profiles."
         }
       },
       "fields": {
@@ -347,7 +351,11 @@
         "socialYoutube": "YouTube URL",
         "socialTiktok": "TikTok URL",
         "socialLinkedin": "LinkedIn URL",
-        "socialTwitter": "Twitter URL"
+        "socialTwitter": "Twitter URL",
+        "youtubePlaylistId": "Tutor intro playlist ID",
+        "youtubePlaylistIdHint": "Optional. Example: PLxxxxxxxx. Used when publishing approved tutor videos to YouTube. Leave blank to skip adding videos to a playlist.",
+        "youtubeIntroVideoMaxDurationSeconds": "Max intro video duration (seconds)",
+        "youtubeIntroVideoMaxDurationSecondsHint": "Maximum length for tutor introduction videos during registration and approval."
       },
       "validation": {
         "required": "This field is required.",
@@ -362,6 +370,8 @@
         "minWithdrawalAmountUsdRange": "Must be between {min} and {max} USD.",
         "minWithdrawalAmountPhpRange": "Must be between {min} and {max} PHP.",
         "subscriptionGroupDiscountPercentRange": "Must be between {min} and {max}%.",
+        "invalidPlaylistId": "Enter a valid YouTube playlist ID (starts with PL) or leave blank.",
+        "introVideoMaxDurationSecondsRange": "Must be between {min} and {max} seconds.",
         "summary": "Fix the highlighted fields before saving."
       }
     },

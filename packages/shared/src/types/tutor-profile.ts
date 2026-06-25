@@ -394,13 +394,24 @@ export type TutorProfileCertificationState = {
 }
 
 export type TutorProfileVideoId = {
-  type: 'youtube' | 'vimeo'
+  type: 'youtube' | 'vimeo' | 'cloudinary'
   id: string
 }
 
 export type TutorProfileVideoState = {
   videoLink: string
   videoId: TutorProfileVideoId | null
+}
+
+export type PublishIntroVideoDto = {
+  cloudinaryUrl: string
+  title?: string
+  durationSeconds?: number
+}
+
+export type PublishIntroVideoResponse = {
+  videoUrl: string
+  videoId: string
 }
 
 export type TimeSlot = {

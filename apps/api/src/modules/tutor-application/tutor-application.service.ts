@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ENotificationType,
@@ -24,6 +24,7 @@ import { ContentReviewer } from '../../shared/types';
 import { MezonBotService } from '../mezon-bot/mezon-bot.service';
 import { NotificationService } from '../notification/notification.service';
 import { TutorApplicationMapper, TutorProfileWithUser } from './tutor-application.mapper';
+import { TutorProfileService } from '../tutor-profile/tutor-profile.service';
 
 @Injectable()
 export class TutorApplicationService {
@@ -35,7 +36,8 @@ export class TutorApplicationService {
     private readonly mapper: TutorApplicationMapper,
     private readonly notificationService: NotificationService,
     private readonly mezonMessageService: MezonMessageService,
-    private readonly mezonBotService: MezonBotService
+    private readonly mezonBotService: MezonBotService,
+    private readonly tutorProfileService: TutorProfileService,
   ) {}
 
   private async syncTutorVerificationDocuments(
@@ -218,6 +220,13 @@ export class TutorApplicationService {
       select: {
         id: true,
         userId: true,
+        videoUrl: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        subject: true,
+        introduce: true,
+        motivate: true,
         user: {
           select: { email: true, username: true, mezonUserId: true },
         },
@@ -226,11 +235,33 @@ export class TutorApplicationService {
     if (!profile) {
       throw new NotFoundException(`Tutor application not found: ${id}`);
     }
+
+    let resolvedVideoUrl = profile.videoUrl ?? '';
+    try {
+      resolvedVideoUrl = await this.tutorProfileService.resolveVideoUrlOnApproval({
+        tutorId: profile.id,
+        videoUrl: profile.videoUrl ?? '',
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        headline: profile.headline,
+        subject: profile.subject,
+        introduce: profile.introduce,
+        motivate: profile.motivate,
+        user: profile.user,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to publish intro video on approval for tutor ${id}`, error);
+      throw new InternalServerErrorException(
+        'Could not publish the tutor intro video to YouTube. Please try again.',
+      );
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.tutorProfile.update({
         where: { id },
         data: {
           verificationStatus: VerificationStatus.APPROVED,
+          videoUrl: resolvedVideoUrl,
         },
       });
       await tx.user.update({

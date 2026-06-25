@@ -1,6 +1,6 @@
 "use client";
 
-import { ROUTES } from "@mezon-tutors/shared";
+import { ROUTES, isCloudinaryVideoUrl } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
 import { ArrowLeft, Check, X } from "lucide-react";
 import Link from "next/link";
@@ -90,6 +90,7 @@ export default function AdminTutorApplicationDetailView({
   const status = profile.verificationStatus;
   const showApprove = status === "PENDING" || status === "REJECTED";
   const showReject = status === "PENDING" || status === "APPROVED";
+  const willUploadIntroVideoToYoutube = isCloudinaryVideoUrl(profile.videoUrl);
 
   const closeConfirmDialog = () => {
     setConfirmAction(null);
@@ -206,6 +207,11 @@ export default function AdminTutorApplicationDetailView({
         }}
         title={tApprove("title")}
         description={tApprove("description", { name: fullName })}
+        loadingMessage={
+          approveMutation.isPending && willUploadIntroVideoToYoutube
+            ? tApprove("youtubeUploading")
+            : undefined
+        }
         confirmLabel={tApprove("confirm")}
         cancelLabel={tModals("cancel")}
         loading={approveMutation.isPending}

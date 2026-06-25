@@ -488,6 +488,30 @@ export class CloudinaryService {
     throw lastError ?? new NotFoundException(`Asset not found: ${trimmed}`);
   }
 
+  async getVideoDurationSeconds(publicIdOrUrl: string): Promise<number | null> {
+    this.ensureConfigured();
+    const trimmed = publicIdOrUrl.trim();
+    if (!trimmed) {
+      throw new BadRequestException('publicId is required');
+    }
+
+    let publicId = trimmed;
+    if (/^https?:\/\//i.test(trimmed)) {
+      const resolved = this.resolveAssetReference(trimmed);
+      publicId = resolved.publicId;
+    }
+
+    try {
+      const info = await cloudinary.api.resource(publicId, {
+        resource_type: 'video',
+        type: 'upload',
+      });
+      return typeof info.duration === 'number' ? info.duration : null;
+    } catch {
+      return null;
+    }
+  }
+
   createUploadSignature(params: { folder?: string; publicId?: string; timestamp?: number }) {
     this.ensureConfigured();
     const timestamp = params.timestamp || Math.floor(Date.now() / 1000);
