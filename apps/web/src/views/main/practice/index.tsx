@@ -23,6 +23,7 @@ import WordSearchModal, {
 } from "./components/WordSearchModal";
 import MyVocabulary from "./components/MyVocabulary";
 import VocabularyStats from "./components/VocabularyStats";
+import LearningProgressSection from "./components/LearningProgressSection";
 
 export default function PracticePage() {
   const t = useTranslations("Practice");
@@ -56,6 +57,8 @@ export default function PracticePage() {
               </h1>
               <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
             </div>
+
+            <LearningProgressSection />
 
             <div className="flex flex-col-reverse gap-6 lg:flex-row">
               <div className="min-w-0 flex-1">

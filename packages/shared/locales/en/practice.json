@@ -102,5 +102,38 @@
       "description": "You found {found}/{total} words. Great job!",
       "confirm": "Got it"
     }
+  },
+  "progress": {
+    "currentStreak": "Day streak",
+    "longestStreak": "Longest streak",
+    "motivationText": "Keep practicing every day to build a strong habit and expand your vocabulary!",
+    "myPractice": "My practice",
+    "totalPracticeCounts": "Total practice counts",
+    "heatmap": {
+      "less": "Less",
+      "more": "More",
+      "wordsLearned": "{count} words learned",
+      "wordsLearnedOn": "on {date}",
+      "dateFormat": "{month} {day}, {year}",
+      "weekdays": {
+        "mon": "Mon",
+        "wed": "Wed",
+        "fri": "Fri"
+      },
+      "months": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dec"
+      }
+    }
   }
 }

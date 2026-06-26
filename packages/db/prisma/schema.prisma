@@ -184,6 +184,7 @@ model User {
   blogPostComments                 BlogPostComment[]         @relation("BlogPostCommentAuthor")
   blogPostUpvotes                  BlogPostUpvote[]                 @relation("BlogPostUpvoteUser")
   blogPostCommentUpvotes           BlogPostCommentUpvote[]          @relation("BlogPostCommentUpvoteUser")
+  learningLogs                     LearningLog[]
 
   @@map("users")
 }
@@ -209,6 +210,7 @@ model VocabularyWord {
   updatedAt    DateTime             @updatedAt @map("updated_at")
 
   student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  learningLogs LearningLog[]
 
   @@unique([studentId, word, definition])
   @@index([studentId, word])
@@ -992,4 +994,24 @@ model BlogPostUpvote {
   @@unique([postId, userId])
   @@index([postId])
   @@map("blog_post_upvotes")
+}
+
+enum ELearningAction {
+  READY_TO_LEARNING
+  LEARNING_TO_LEARNED
+}
+
+model LearningLog {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId          String             @map("student_id") @db.Uuid
+  vocabularyWordId   String             @map("vocabulary_word_id") @db.Uuid
+  action             ELearningAction
+  learnedAt          DateTime           @default(now()) @map("learned_at")
+  dateKey            DateTime           @default(now()) @db.Date @map("date_key")
+
+  student          User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  vocabularyWord   VocabularyWord   @relation(fields: [vocabularyWordId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, dateKey(sort: Desc)])
+  @@map("learning_logs")
 }
