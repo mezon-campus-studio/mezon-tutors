@@ -16,6 +16,8 @@ export type AuthUser = {
   mezonUserId: string;
   email: string | null;
   username: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   avatar?: string | null;
   role?: string | null;
   idToken?: string | null;
@@ -28,6 +30,8 @@ export type AuthUserSource = {
   mezonUserId?: string;
   email?: string | null;
   username?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   avatar?: string | null;
   role?: string | null;
   idToken?: string | null;
@@ -40,6 +44,8 @@ export function toAuthUser(source: AuthUserSource): AuthUser {
     mezonUserId: source.mezonUserId ?? "",
     email: source.email ?? "",
     username: source.username ?? "",
+    firstName: source.firstName ?? null,
+    lastName: source.lastName ?? null,
     avatar: source.avatar ?? null,
     role: source.role ?? null,
     idToken: source.idToken ?? null,

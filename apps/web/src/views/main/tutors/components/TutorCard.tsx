@@ -42,6 +42,7 @@ type TutorCardProps = {
   isActive?: boolean;
   onHoverAction?: (tutor: VerifiedTutorProfileDto) => void;
   onSelectAction?: (tutor: VerifiedTutorProfileDto) => void;
+  preview?: boolean;
 };
 
 export default function TutorCard({
@@ -49,6 +50,7 @@ export default function TutorCard({
   isActive = false,
   onHoverAction,
   onSelectAction,
+  preview = false,
 }: TutorCardProps) {
   const t = useTranslations("Tutors.TutorCard");
   const tSubject = useTranslations("Tutors.Filter.Subject");
@@ -64,8 +66,9 @@ export default function TutorCard({
   const senderId = currentUser?.id ?? '';
   const senderMezonUserId = currentUser?.mezonUserId;
   const recipientId = tutor.userId;
-  const isOwnProfile = Boolean(currentUser?.id && currentUser.id === tutor.userId);
-  const canFetchSub = Boolean(currentUser?.id && !isOwnProfile);
+  const isOwnProfile =
+    !preview && Boolean(currentUser?.id && currentUser.id === tutor.userId);
+  const canFetchSub = Boolean(currentUser?.id && !isOwnProfile && !preview);
   const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
   const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
   const { pendingPayment } = useTutorPendingPayment(tutor.id, canFetchSub);
@@ -84,7 +87,7 @@ export default function TutorCard({
   const wouldShowBookTrialIfActive =
     !isOwnProfile && (!currentUser?.id || !trialDone) && !showContinuePayment;
   const showSubscribe = showMonthlyActions && wouldShowSubscribeIfActive;
-  const showBookTrial = showMonthlyActions && wouldShowBookTrialIfActive;
+  const showBookTrial = preview || (showMonthlyActions && wouldShowBookTrialIfActive);
   const showBusyBadge =
     isTutorTemporarilyBusy &&
     !showContinuePayment &&
@@ -113,13 +116,18 @@ export default function TutorCard({
   return (
     <>
       <Card
-        className={`group relative overflow-hidden py-0 cursor-pointer transition-all duration-300 ${
-          isActive
-            ? "border-violet-300 shadow-lg shadow-violet-200/40 ring-2 ring-violet-200/60"
-            : "border-slate-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40"
-        }`}
-        onMouseEnter={() => onHoverAction?.(tutor)}
-        onClick={() => onSelectAction?.(tutor)}
+        className={cn(
+          'group relative overflow-hidden py-0 transition-all duration-300',
+          preview
+            ? 'cursor-default border-violet-100'
+            : 'cursor-pointer',
+          !preview &&
+            (isActive
+              ? 'border-violet-300 shadow-lg shadow-violet-200/40 ring-2 ring-violet-200/60'
+              : 'border-slate-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40'),
+        )}
+        onMouseEnter={preview ? undefined : () => onHoverAction?.(tutor)}
+        onClick={preview ? undefined : () => onSelectAction?.(tutor)}
       >
         {isActive ? (
           <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#7c3aed,#ec4899)]" />
@@ -133,6 +141,9 @@ export default function TutorCard({
                 alt={name}
                 width={140}
                 height={140}
+                unoptimized={
+                  tutor.avatar.startsWith('data:') || tutor.avatar.startsWith('blob:')
+                }
                 className="aspect-square size-28 rounded-2xl object-cover object-center shadow-sm md:size-36"
               />
               {tutor.isProfessional ? (
@@ -148,7 +159,7 @@ export default function TutorCard({
                 <h3 className="text-xl font-extrabold text-slate-900 transition-colors group-hover:text-violet-700 md:text-2xl">
                   {name}
                 </h3>
-                {!isOwnProfile ? (
+                {!isOwnProfile && !preview ? (
                   <SaveTutorButton tutorId={tutor.id} isSaved={tutor.isSaved} iconOnly />
                 ) : null}
               </div>
@@ -243,12 +254,12 @@ export default function TutorCard({
               ) : showBookTrial ? (
                 <Button
                   size="lg"
-                  disabled={bookTrialDisabled}
+                  disabled={preview || bookTrialDisabled}
                   title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
                   className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
                   onClick={(event) => {
                     event.stopPropagation();
-                    setIsTrialBookingSheetOpen(true);
+                    if (!preview) setIsTrialBookingSheetOpen(true);
                   }}
                 >
                   <Calendar className="mr-1.5 size-4" />
@@ -258,10 +269,11 @@ export default function TutorCard({
               <Button
                 variant="outline"
                 size="lg"
+                disabled={preview}
                 className="h-10 w-full rounded-full border-slate-200 text-sm font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setIsMessageModalOpen(true);
+                  if (!preview) setIsMessageModalOpen(true);
                 }}
               >
                 <MessageCircle className="mr-1.5 size-4" />
@@ -272,32 +284,36 @@ export default function TutorCard({
         </CardContent>
       </Card>
 
-      <SendMessageModal
-        open={isMessageModalOpen}
-        title={tutor.firstName}
-        senderId={senderId}
-        senderMezonUserId={senderMezonUserId ?? ''}
-        recipientId={recipientId}
-        recipientMezonUserId={tutor.mezonUserId}
-        onOpenChangeAction={setIsMessageModalOpen}
-      />
+      {!preview ? (
+        <>
+          <SendMessageModal
+            open={isMessageModalOpen}
+            title={tutor.firstName}
+            senderId={senderId}
+            senderMezonUserId={senderMezonUserId ?? ''}
+            recipientId={recipientId}
+            recipientMezonUserId={tutor.mezonUserId}
+            onOpenChangeAction={setIsMessageModalOpen}
+          />
 
-      <TrialBookingSheet
-        open={isTrialBookingSheetOpen}
-        onOpenChange={setIsTrialBookingSheetOpen}
-        tutor={{
-          id: tutor.id,
-          name,
-          title: tutor.subject,
-          prices: {
-            baseCurrency: tutorPrices?.baseCurrency ?? ECurrency.VND,
-            usd: tutorPrices?.usd ?? 0,
-            vnd: tutorPrices?.vnd ?? 0,
-            php: tutorPrices?.php ?? 0,
-          },
-          avatar: tutor.avatar,
-        }}
-      />
+          <TrialBookingSheet
+            open={isTrialBookingSheetOpen}
+            onOpenChange={setIsTrialBookingSheetOpen}
+            tutor={{
+              id: tutor.id,
+              name,
+              title: tutor.subject,
+              prices: {
+                baseCurrency: tutorPrices?.baseCurrency ?? ECurrency.VND,
+                usd: tutorPrices?.usd ?? 0,
+                vnd: tutorPrices?.vnd ?? 0,
+                php: tutorPrices?.php ?? 0,
+              },
+              avatar: tutor.avatar,
+            }}
+          />
+        </>
+      ) : null}
     </>
   );
 }

@@ -180,12 +180,6 @@ export function parseYouTubeId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-export function parseVimeoId(url: string): string | null {
-  const trimmed = url.trim();
-  const match = /vimeo\.com\/(?:video\/)?(\d+)/.exec(trimmed);
-  return match ? match[1] : null;
-}
-
 export const PROFESSIONAL_DOCUMENT_TYPE = {
   DEGREE: 'DEGREE',
   CERTIFICATE: 'CERTIFICATE',

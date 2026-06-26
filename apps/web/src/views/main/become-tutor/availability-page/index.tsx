@@ -19,6 +19,9 @@ import {
 import { AlertCircle } from 'lucide-react';
 import { BecomeTutorSection, BecomeTutorShell } from '../_shared/BecomeTutorShell';
 import {
+  BecomeTutorFieldLabel,
+} from '../_shared/BecomeTutorFormFields';
+import {
   tutorProfileAvailabilityAtom,
   tutorProfileAboutAtom,
   tutorProfilePhotoAtom,
@@ -30,7 +33,6 @@ import {
 import {
   DAY_KEYS,
   HOURLY_RATE_REGEX,
-  DEFAULT_AVATAR_URL,
   timeToMinutes,
   BECOME_TUTOR_STEPS,
   calculateStepProgress,
@@ -313,22 +315,21 @@ export default function AvailabilityPage() {
       phone: about.phone,
       subject: about.subject,
       languages,
-      avatar: photo.photo?.uploadedUrl || DEFAULT_AVATAR_URL,
       identityPhotoPublicId: resolvePublicIdForSubmit(photo.identity?.publicId),
       headline: photo.headline,
       motivate: photo.motivate,
       introduce: photo.introduce,
-      teachingCertificateName: certification.teachingCertificate.name,
-      teachingYear: certification.teachingCertificate.year,
+      teachingCertificateName: certification.teachingCertificate.name || undefined,
+      teachingYear: certification.teachingCertificate.year || undefined,
       teachingCertificatePublicId: resolvePublicIdForSubmit(
         certification.teachingCertificate.file?.publicId,
       ),
-      university: certification.higherEducation.university,
-      degree: certification.higherEducation.degree,
-      specialization: certification.higherEducation.specialization,
+      university: certification.higherEducation.university || undefined,
+      degree: certification.higherEducation.degree || undefined,
+      specialization: certification.higherEducation.specialization || undefined,
       educationPublicId: resolvePublicIdForSubmit(certification.higherEducation.file?.publicId),
       cvPublicId: resolvePublicIdForSubmit(about.cv?.publicId),
-      cvFileName: about.cv?.fileName || 'CV',
+      cvFileName: about.cv?.fileName || undefined,
       videoUrl: video.videoLink,
       pricePerHour: Number.parseFloat(hourlyRate) || 0,
       currency,
@@ -386,6 +387,9 @@ export default function AvailabilityPage() {
         description={t('rate.question')}
       >
         <div className="space-y-3">
+          <BecomeTutorFieldLabel required>
+            {t('rateCardTitle')}
+          </BecomeTutorFieldLabel>
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="flex h-12 flex-1 items-center rounded-xl border border-slate-200 bg-slate-50/60 px-4 transition-colors focus-within:border-violet-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-200/60">
               <span className="mr-2 text-base font-bold text-violet-600">
@@ -481,6 +485,9 @@ export default function AvailabilityPage() {
         title={t('availabilityCardTitle')}
         contentRef={availabilityCardRef}
       >
+        <BecomeTutorFieldLabel required className="mb-2 block">
+          {t('availabilityCardTitle')}
+        </BecomeTutorFieldLabel>
         <TutorAvailabilitySelection
           slotsByDay={slotsByDayForm}
           onSlotsByDayChange={handleAvailabilityChange}
@@ -491,6 +498,7 @@ export default function AvailabilityPage() {
           }
           contentRef={availabilityCardRef}
           showTimezoneLabel
+          timePickerDropUp
         />
       </BecomeTutorSection>
     </BecomeTutorShell>

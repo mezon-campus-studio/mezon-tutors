@@ -33,16 +33,22 @@ export interface SubmitTutorProfileDto {
   subject: string;
   languages: TutorLanguageDto[];
 
-  avatar?: string;
+  identityPhotoPublicId?: string;
   headline: string;
   motivate: string;
   introduce: string;
 
-  teachingCertificateName: string;
-  teachingYear: string;
-  university: string;
-  degree: string;
-  specialization: string;
+  teachingCertificateName?: string;
+  teachingYear?: string;
+  teachingCertificatePublicId?: string;
+
+  university?: string;
+  degree?: string;
+  specialization?: string;
+  educationPublicId?: string;
+
+  cvPublicId?: string;
+  cvFileName?: string;
 
   videoUrl: string;
 

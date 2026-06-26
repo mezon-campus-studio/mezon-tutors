@@ -78,7 +78,9 @@ export class UserService {
 
     const avatarWhere = {
       ...verifiedWhere,
-      avatar: { not: { equals: '' } },
+      user: {
+        avatar: { not: { equals: '' } },
+      },
     } as const;
 
     const [totalTutors, avatarCount] = await Promise.all([
@@ -95,7 +97,10 @@ export class UserService {
 
     const rows = await this.prisma.tutorProfile.findMany({
       where: avatarWhere,
-      select: { id: true, avatar: true },
+      select: {
+        id: true,
+        user: { select: { avatar: true } },
+      },
       skip,
       take: poolSize,
       orderBy: { createdAt: 'desc' },
@@ -106,7 +111,7 @@ export class UserService {
     return {
       avatars: rows.slice(0, safeLimit).map((tutor) => ({
         id: tutor.id,
-        url: tutor.avatar,
+        url: tutor.user.avatar,
       })),
       tutor: totalTutors,
     };

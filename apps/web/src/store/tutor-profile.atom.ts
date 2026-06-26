@@ -216,3 +216,20 @@ export const resetTutorProfileAfterSubmitAtom = atom(null, (_, set) => {
 })
 
 export const isEditingRejectedProfileAtom = atom<boolean>(false)
+
+export type TutorProfileLivePreviewPatch = {
+  about: Pick<
+    TutorProfileAboutState,
+    'firstName' | 'lastName' | 'country' | 'subject' | 'languages' | 'proficiencies'
+  > | null
+  photo: Pick<TutorProfilePhotoState, 'introduce' | 'headline' | 'motivate'> | null
+}
+
+export const defaultTutorProfileLivePreviewPatch: TutorProfileLivePreviewPatch = {
+  about: null,
+  photo: null,
+}
+
+export const tutorProfileLivePreviewAtom = atom<TutorProfileLivePreviewPatch>(
+  defaultTutorProfileLivePreviewPatch,
+)

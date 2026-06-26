@@ -4,7 +4,7 @@ import { ECurrency } from '@mezon-tutors/shared'
 
 type TutorWithPrice = TutorProfile & {
   languages: TutorLanguage[]
-  user?: Pick<User, 'mezonUserId' | 'timezone'>
+  user?: Pick<User, 'mezonUserId' | 'timezone' | 'avatar'>
   trialLessonPrice?: {
     baseCurrency?: ECurrency
     usd?: Prisma.Decimal | number | null
@@ -41,7 +41,7 @@ export function toVerifiedTutorProfileDto(
     mezonUserId: tutor.user?.mezonUserId ?? '',
     firstName: tutor.firstName,
     lastName: tutor.lastName,
-    avatar: tutor.avatar,
+    avatar: tutor.user?.avatar ?? '',
     videoUrl: tutor.videoUrl,
     country: tutor.country,
     subject: tutor.subject,

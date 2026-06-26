@@ -7,13 +7,16 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
-import { Input, Label, YearPicker } from "@/components/ui";
+import { Input, YearPicker } from "@/components/ui";
 import { BadgeCheck, Wallet, Info } from "lucide-react";
 import UploadFile from "@/components/common/UploadFile";
 import { tutorProfileCertificationAtom, markStepCompletedAtom, tutorProfileLastSavedAtAtom, defaultCertificationState } from "@/store";
 import { CLOUDINARY_FOLDER, EXISTING_SECURE_FILE, MAX_FILE_SIZE_MB, BECOME_TUTOR_STEPS, calculateStepProgress, ACCEPT_FILE_TYPES, PROFESSIONAL_DOCUMENT_EXTENSIONS } from "@mezon-tutors/shared";
 import { cloudinaryService } from "@/services";
 import { BecomeTutorSection, BecomeTutorShell } from "../_shared/BecomeTutorShell";
+import {
+  BecomeTutorFieldLabel,
+} from "../_shared/BecomeTutorFormFields";
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.CERTIFICATION;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
@@ -38,11 +41,11 @@ export default function CertificationPage() {
   const certificationSchema = useMemo(
     () =>
       z.object({
-        certificateType: z.string().min(1, t("validation.certificateTypeRequired")),
-        teachingYear: z.string().min(4, t("validation.yearRequired")).regex(/^\d{4}$/, t("validation.yearInvalid")),
-        university: z.string().min(1, t("validation.universityRequired")),
-        degree: z.string().min(1, t("validation.degreeRequired")),
-        specialization: z.string().min(1, t("validation.specializationRequired")),
+        certificateType: z.string(),
+        teachingYear: z.string(),
+        university: z.string(),
+        degree: z.string(),
+        specialization: z.string(),
         teachingCertificateFile: z.instanceof(File).nullable(),
         educationFile: z.instanceof(File).nullable(),
       }).superRefine((data, ctx) => {
@@ -60,21 +63,15 @@ export default function CertificationPage() {
           }
         };
 
-        const hasTeaching = data.teachingCertificateFile !== null || !!certificationMerged.teachingCertificate.file.dataUrl || !!certificationMerged.teachingCertificate.file.publicId;
-        if (!hasTeaching) {
-          ctx.addIssue({ path: ["teachingCertificateFile"], code: "custom", message: t("validation.certificateFileRequired") });
-        } else if (data.teachingCertificateFile) {
+        if (data.teachingCertificateFile) {
           validateFile(data.teachingCertificateFile, "teachingCertificateFile", t("validation.certificateFileInvalidType"), t("validation.certificateFileTooLarge", { max: MAX_FILE_SIZE_MB }));
         }
 
-        const hasEducation = data.educationFile !== null || !!certificationMerged.higherEducation.file.dataUrl || !!certificationMerged.higherEducation.file.publicId;
-        if (!hasEducation) {
-          ctx.addIssue({ path: ["educationFile"], code: "custom", message: t("validation.educationFileRequired") });
-        } else if (data.educationFile) {
+        if (data.educationFile) {
           validateFile(data.educationFile, "educationFile", t("validation.educationFileInvalidType"), t("validation.educationFileTooLarge", { max: MAX_FILE_SIZE_MB }));
         }
       }),
-    [t, certificationMerged.teachingCertificate.file.dataUrl, certificationMerged.teachingCertificate.file.publicId, certificationMerged.higherEducation.file.dataUrl, certificationMerged.higherEducation.file.publicId]
+    [t]
   );
 
   type CertificationFormValues = z.infer<typeof certificationSchema>;
@@ -222,17 +219,7 @@ export default function CertificationPage() {
     const { teachingCertificateFile: _tcf, educationFile: _ef, certificateType, ...textFields } = values;
     if (teachingUploading || educationUploading) return;
 
-    if (!certificationMerged.teachingCertificate.file.publicId) {
-      form.setError("teachingCertificateFile", { type: "manual", message: t("validation.certificateUploadFailed") });
-      return;
-    }
-
-    if (!certificationMerged.higherEducation.file.publicId) {
-      form.setError("educationFile", { type: "manual", message: t("validation.educationUploadFailed") });
-      return;
-    }
-
-    setCertification((prev) => ({ 
+    setCertification((prev) => ({
       ...prev, 
       teachingCertificate: { 
         ...prev.teachingCertificate, 
@@ -316,12 +303,9 @@ export default function CertificationPage() {
         <form className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label
-                htmlFor="certificateType"
-                className="text-xs font-semibold text-slate-700"
-              >
+              <BecomeTutorFieldLabel htmlFor="certificateType">
                 {t("teaching.certificateLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="certificateType"
                 placeholder={t("teaching.certificatePlaceholder")}
@@ -335,9 +319,9 @@ export default function CertificationPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel>
                 {t("teaching.yearLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Controller
                 name="teachingYear"
                 control={control}
@@ -358,9 +342,9 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-slate-700">
+            <BecomeTutorFieldLabel>
               {t("teaching.uploadTitle")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <UploadFile
               variant="file"
               accept={ACCEPT_FILE_TYPES}
@@ -403,12 +387,9 @@ export default function CertificationPage() {
         <form className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label
-                htmlFor="university"
-                className="text-xs font-semibold text-slate-700"
-              >
+              <BecomeTutorFieldLabel htmlFor="university">
                 {t("education.universityLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="university"
                 placeholder={t("education.universityPlaceholder")}
@@ -422,12 +403,9 @@ export default function CertificationPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label
-                htmlFor="degree"
-                className="text-xs font-semibold text-slate-700"
-              >
+              <BecomeTutorFieldLabel htmlFor="degree">
                 {t("education.degreeLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="degree"
                 placeholder={t("education.degreePlaceholder")}
@@ -441,12 +419,9 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label
-              htmlFor="specialization"
-              className="text-xs font-semibold text-slate-700"
-            >
+            <BecomeTutorFieldLabel htmlFor="specialization">
               {t("education.specializationLabel")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <Input
               id="specialization"
               placeholder={t("education.specializationPlaceholder")}
@@ -461,9 +436,9 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-slate-700">
+            <BecomeTutorFieldLabel>
               {t("education.uploadTitle")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <UploadFile
               variant="file"
               accept={ACCEPT_FILE_TYPES}

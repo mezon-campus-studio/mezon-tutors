@@ -12,6 +12,7 @@ type TimePickerProps = {
   placeholder?: string;
   minTime?: string;
   maxTime?: string;
+  dropUp?: boolean;
 };
 
 function toMinutes(time: string): number {
@@ -25,6 +26,7 @@ export function TimePicker({
   placeholder = '09:00',
   minTime,
   maxTime,
+  dropUp = false,
 }: TimePickerProps) {
   const t = useTranslations('BecomeTutor.availability.availability');
   const [isOpen, setIsOpen] = useState(false);
@@ -185,7 +187,11 @@ export function TimePicker({
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-[70] mt-1 max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div
+          className={`absolute left-0 right-0 z-[70] max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg ${
+            dropUp ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}
+        >
           <div className="flex h-full">
             {/* Hours column */}
             <div

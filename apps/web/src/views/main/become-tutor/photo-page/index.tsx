@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Control, type FieldValues } from "react-hook-form";
 import { z } from "zod";
 import {
   ACCEPT_IMAGE_TYPES,
@@ -22,8 +22,7 @@ import {
   EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
-import { Input, Label } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui";
 import UploadFile from "@/components/common/UploadFile";
 import { cloudinaryService } from "@/services";
 import {
@@ -36,6 +35,10 @@ import {
   BecomeTutorSection,
   BecomeTutorShell,
 } from "../_shared/BecomeTutorShell";
+import { useBecomeTutorPhotoPreviewSync } from "../_shared/useBecomeTutorLivePreview";
+import {
+  BecomeTutorFieldLabel,
+} from "../_shared/BecomeTutorFormFields";
 import { MezonSyncButton } from "@/components/dashboard";
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.PHOTO;
@@ -133,9 +136,12 @@ export default function PhotoPage() {
     setFocus,
     register,
     getValues,
+    control,
     formState: { errors },
     setValue,
   } = form;
+
+  useBecomeTutorPhotoPreviewSync(control as unknown as Control<FieldValues>);
 
   useEffect(() => {
     const dataUrl = tutorProfilePhoto.identity?.dataUrl;
@@ -356,11 +362,76 @@ export default function PhotoPage() {
       </BecomeTutorSection>
 
       <BecomeTutorSection
+        eyebrow="Profile"
+        title={t("cardTitle")}
+        description={t("cardSubtitle")}
+        contentRef={formCardRef}
+      >
+        <form
+          onSubmit={handleSubmit(onSaveContinue, onValidationError)}
+          className="flex flex-col gap-4"
+        >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <BecomeTutorFieldLabel htmlFor="headline" required>
+                {t("fields.headlineLabel")}
+              </BecomeTutorFieldLabel>
+              <Input
+                id="headline"
+                placeholder={t("fields.headlinePlaceholder")}
+                {...register("headline")}
+                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.headline && (
+                <p className="text-xs text-rose-600">
+                  {errors.headline.message}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <BecomeTutorFieldLabel htmlFor="motivate" required>
+                {t("fields.motivateLabel")}
+              </BecomeTutorFieldLabel>
+              <Input
+                id="motivate"
+                placeholder={t("fields.motivatePlaceholder")}
+                {...register("motivate")}
+                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.motivate && (
+                <p className="text-xs text-rose-600">
+                  {errors.motivate.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <BecomeTutorFieldLabel htmlFor="introduce" required>
+              {t("fields.introduceLabel")}
+            </BecomeTutorFieldLabel>
+            <Input
+              id="introduce"
+              placeholder={t("fields.introducePlaceholder")}
+              {...register("introduce")}
+              className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+            />
+            {errors.introduce && (
+              <p className="text-xs text-rose-600">{errors.introduce.message}</p>
+            )}
+          </div>
+        </form>
+      </BecomeTutorSection>
+
+      <BecomeTutorSection
         eyebrow="Verification"
         title={t("identity.title")}
         description={t("identity.subtitle")}
         contentRef={identityCardRef}
       >
+        <BecomeTutorFieldLabel required className="mb-2 block">
+          {t("identity.uploadButton")}
+        </BecomeTutorFieldLabel>
         <UploadFile
           variant="image"
           accept={ACCEPT_IMAGE_TYPES}
@@ -400,68 +471,6 @@ export default function PhotoPage() {
             ))}
           </div>
         </div>
-      </BecomeTutorSection>
-
-      <BecomeTutorSection
-        eyebrow="Profile"
-        title={t("cardTitle")}
-        description={t("cardSubtitle")}
-        contentRef={formCardRef}
-      >
-        <form
-          onSubmit={handleSubmit(onSaveContinue, onValidationError)}
-          className="flex flex-col gap-4"
-        >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="headline" className="text-xs font-semibold text-slate-700">
-                {t("fields.headlineLabel")}
-              </Label>
-              <Input
-                id="headline"
-                placeholder={t("fields.headlinePlaceholder")}
-                {...register("headline")}
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              />
-              {errors.headline && (
-                <p className="text-xs text-rose-600">
-                  {errors.headline.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="motivate" className="text-xs font-semibold text-slate-700">
-                {t("fields.motivateLabel")}
-              </Label>
-              <Input
-                id="motivate"
-                placeholder={t("fields.motivatePlaceholder")}
-                {...register("motivate")}
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              />
-              {errors.motivate && (
-                <p className="text-xs text-rose-600">
-                  {errors.motivate.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="introduce" className="text-xs font-semibold text-slate-700">
-              {t("fields.introduceLabel")}
-            </Label>
-            <Input
-              id="introduce"
-              placeholder={t("fields.introducePlaceholder")}
-              {...register("introduce")}
-              className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-            />
-            {errors.introduce && (
-              <p className="text-xs text-rose-600">{errors.introduce.message}</p>
-            )}
-          </div>
-        </form>
       </BecomeTutorSection>
     </BecomeTutorShell>
   );

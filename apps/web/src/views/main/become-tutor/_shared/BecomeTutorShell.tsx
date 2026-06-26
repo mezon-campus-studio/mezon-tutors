@@ -20,6 +20,8 @@ import { useTranslations } from "next-intl";
 import { formatLastSavedTime, ROUTES } from "@mezon-tutors/shared";
 import { Button } from "@/components/ui";
 import { tutorProfileLastSavedAtAtom } from "@/store";
+import { BecomeTutorRequiredNote } from "./BecomeTutorFormFields";
+import { BecomeTutorCardPreview } from "./BecomeTutorCardPreview";
 
 const STEPS = [
   { id: "about", number: 1, icon: UserCircle, accent: "from-violet-500 to-purple-500" },
@@ -204,15 +206,35 @@ export function BecomeTutorShell({
                   })}
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 border-t border-violet-100 pt-3">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-violet-100">
-                    <div
-                      className="h-full rounded-full bg-[linear-gradient(90deg,#7c3aed,#a855f7,#ec4899)] transition-all duration-500"
-                      style={{ width: `${progressPercent}%` }}
-                    />
+                <div className="mt-4 space-y-3 border-t border-violet-100 pt-3">
+                  <BecomeTutorRequiredNote variant="chip" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-violet-100">
+                      <div
+                        className="h-full rounded-full bg-[linear-gradient(90deg,#7c3aed,#a855f7,#ec4899)] transition-all duration-500"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    <p className="shrink-0 text-[11px] font-medium text-slate-500 sm:text-xs">
+                      {nextLabel}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-slate-500 sm:text-xs">{nextLabel}</p>
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/40 p-4 shadow-sm shadow-violet-100/20 sm:p-5">
+                <div className="mb-4 space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+                    {tShell("preview.eyebrow")}
+                  </p>
+                  <p className="text-sm font-extrabold text-slate-900 sm:text-base">
+                    {tShell("preview.title")}
+                  </p>
+                  <p className="text-xs leading-5 text-slate-500 sm:text-sm">
+                    {tShell("preview.hint")}
+                  </p>
+                </div>
+                <BecomeTutorCardPreview />
               </div>
 
               {children}
@@ -272,7 +294,7 @@ export function BecomeTutorSection({
   return (
     <div
       ref={contentRef}
-      className={`overflow-hidden rounded-3xl border border-violet-100 bg-white p-5 shadow-sm shadow-violet-100/40 sm:p-6 ${className ?? ""}`}
+      className={`min-w-0 rounded-3xl border border-violet-100 bg-white p-5 shadow-sm shadow-violet-100/40 sm:p-6 ${className ?? ""}`}
     >
       {title || eyebrow || description ? (
         <div className="mb-5 space-y-1">

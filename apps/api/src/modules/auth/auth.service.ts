@@ -389,7 +389,10 @@ export class AuthService {
   }
 
   async getCurrentUserForMe(userId: string, idToken?: string | null) {
-    const user = await this.userService.findById(userId);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { tutorProfile: true },
+    });
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -398,6 +401,8 @@ export class AuthService {
       id: user.id,
       mezonUserId: user.mezonUserId,
       username: user.username,
+      firstName: user.tutorProfile?.firstName ?? null,
+      lastName: user.tutorProfile?.lastName ?? null,
       role: user.role,
       avatar: user.avatar || null,
       email: user.email ?? null,
