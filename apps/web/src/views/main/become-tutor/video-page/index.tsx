@@ -5,6 +5,7 @@ import {
   AlertCircle,
   Check,
   CheckCircle,
+  Info,
   Link2,
   Upload,
   Video,
@@ -21,7 +22,6 @@ import {
   calculateStepProgress,
   CLOUDINARY_FOLDER,
   MAX_INTRO_VIDEO_SIZE_MB,
-  parseVimeoId,
   parseYouTubeId,
   resolveIntroVideoMaxDurationSeconds,
 } from "@mezon-tutors/shared";
@@ -117,16 +117,11 @@ export default function VideoPage() {
       return;
     }
 
-    let nextId: { type: "youtube" | "vimeo"; id: string } | null = null;
+    let nextId: { type: "youtube"; id: string } | null = null;
 
     const ytId = parseYouTubeId(trimmed);
     if (ytId) {
       nextId = { type: "youtube", id: ytId };
-    } else {
-      const vimeoId = parseVimeoId(trimmed);
-      if (vimeoId) {
-        nextId = { type: "vimeo", id: vimeoId };
-      }
     }
 
     if (!nextId) {
@@ -279,17 +274,20 @@ export default function VideoPage() {
       onContinue={handleSubmit(handleContinue)}
       continueDisabled={isBusy}
     >
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2" ref={videoInputSectionRef}>
-          <BecomeTutorSection
-            eyebrow="Preview"
-            title={t("title")}
-            description={t("subtitle")}
-          >
+      <BecomeTutorSection
+        eyebrow={t("stepLabel")}
+        title={t("title")}
+        description={t("subtitle")}
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+          <div className="order-2 space-y-3 lg:order-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+              {t("previewLabel")}
+              <span className="ml-0.5 text-rose-500">*</span>
+            </p>
             <div
-              className="relative w-full overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#fdf2f8)]"
-              style={{ aspectRatio: "16/9", minHeight: "200px" }}
-              aria-busy={isBusy}
+              className="relative w-full overflow-hidden rounded-2xl border border-violet-100 bg-[linear-gradient(135deg,#faf7ff,#fdf2f8)] shadow-sm shadow-violet-100/40"
+              style={{ aspectRatio: "16/9" }}
             >
               {videoId ? (
                 videoId.type === "cloudinary" ? (
@@ -300,11 +298,7 @@ export default function VideoPage() {
                   />
                 ) : (
                   <iframe
-                    src={
-                      videoId.type === "youtube"
-                        ? `https://www.youtube.com/embed/${videoId.id}?rel=0`
-                        : `https://player.vimeo.com/video/${videoId.id}?autoplay=0`
-                    }
+                    src={`https://www.youtube.com/embed/${videoId.id}?rel=0`}
                     title="Profile video"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
@@ -321,161 +315,163 @@ export default function VideoPage() {
                   </p>
                 </div>
               )}
-              {isBusy ? (
-                <div className="absolute inset-0 z-1 flex flex-col items-center justify-center gap-2 bg-white/75 backdrop-blur-[2px]">
-                  <Spinner className="size-10 text-violet-600" />
-                  <p className="text-xs font-semibold text-violet-800">
-                    {isCheckingVideo
-                      ? t("link.checking")
-                      : uploadingLabel}
-                  </p>
-                </div>
-              ) : null}
             </div>
-          </BecomeTutorSection>
+            <div className="grid grid-cols-1 gap-5">
+              <div className="rounded-3xl border border-emerald-100 bg-[linear-gradient(135deg,#ecfdf5,#f0fdfa)] p-5 shadow-sm">
+                <div className="mb-3 flex items-center gap-2.5">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700">
+                    <CheckCircle className="size-5" />
+                  </div>
+                  <h3 className="text-sm font-extrabold text-emerald-900">
+                    {t("bestPracticesTitle")}
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {bestPractices.map((item, index) => (
+                    <div key={index} className="flex items-start gap-2 text-xs text-emerald-900/90">
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                      <span className="leading-5">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setInputMode("upload")}
-              className={cn(
-                "h-10 rounded-full border px-4 text-xs font-semibold",
-                inputMode === "upload"
-                  ? "border-violet-300 bg-violet-50 text-violet-800"
-                  : "border-slate-200 bg-white text-slate-600",
-              )}
-            >
-              <Upload className="mr-1.5 size-3.5" />
-              {t("tabs.upload")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setInputMode("pasteLink")}
-              className={cn(
-                "h-10 rounded-full border px-4 text-xs font-semibold",
-                inputMode === "pasteLink"
-                  ? "border-violet-300 bg-violet-50 text-violet-800"
-                  : "border-slate-200 bg-white text-slate-600",
-              )}
-            >
-              <Link2 className="mr-1.5 size-3.5" />
-              {t("tabs.pasteLink")}
-            </Button>
+              <div className="rounded-3xl border border-rose-100 bg-[linear-gradient(135deg,#fff1f2,#fef3f2)] p-5 shadow-sm">
+                <div className="mb-3 flex items-center gap-2.5">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-rose-500/15 text-rose-700">
+                    <XCircle className="size-5" />
+                  </div>
+                  <h3 className="text-sm font-extrabold text-rose-900">
+                    {t("avoidTitle")}
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {avoidItems.map((item, index) => (
+                    <div key={index} className="flex items-start gap-2 text-xs text-rose-900/90">
+                      <X className="mt-0.5 size-3.5 shrink-0 text-rose-600" />
+                      <span className="leading-5">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {inputMode === "upload" ? (
-            <BecomeTutorSection eyebrow="Upload" title={t("upload.label")}>
-              <p className="mb-4 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs leading-5 text-sky-800 sm:text-sm">
-                {t("upload.youtubeNotice")}
+          <div ref={videoInputSectionRef} className="order-1 flex flex-col gap-4 lg:order-2">
+            <div className="flex items-start gap-2.5 rounded-2xl border border-violet-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-4 py-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-700">
+                <Info className="size-4" />
+              </div>
+              <p className="text-xs leading-5 text-violet-900/90 sm:text-sm sm:leading-6">
+                {t("methodNotice")}
               </p>
-              <UploadFile
-                accept={ACCEPT_INTRO_VIDEO_TYPES}
-                fileName={uploadFileName}
-                isUploading={isUploading}
-                onFile={handleVideoUpload}
-                uploadLabel={t("upload.uploadButton")}
-                uploadingLabel={uploadingLabel}
-                hint={t("upload.hint", {
-                  maxSize: MAX_INTRO_VIDEO_SIZE_MB,
-                  maxMinutes: maxVideoDurationMinutes,
-                })}
-                emptyLabel={t("upload.emptyLabel")}
-                dropHereLabel={t("upload.dropHereLabel")}
-                error={uploadError ?? undefined}
-              />
-              {durationError ? (
-                <div className="mt-3 flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                  <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                  {durationError}
-                </div>
-              ) : null}
-              {videoId?.type === "cloudinary" && !isUploading && !uploadError ? (
-                <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                  <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
-                  {t("upload.success")}
-                </div>
-              ) : null}
-            </BecomeTutorSection>
-          ) : (
-            <BecomeTutorSection eyebrow="Video link" title={t("link.label")}>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Controller
-                  control={control}
-                  name="videoLink"
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      className="h-11 flex-1 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-                      placeholder={t("link.placeholder")}
-                      value={value}
-                      disabled={isCheckingVideo}
-                      onChange={(e) => onChange(e.target.value)}
-                    />
-                  )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setInputMode("upload")}
+                className={cn(
+                  "h-10 flex-1 rounded-full border px-4 text-xs font-semibold sm:flex-none",
+                  inputMode === "upload"
+                    ? "border-violet-300 bg-violet-50 text-violet-800 shadow-sm shadow-violet-100"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/50",
+                )}
+              >
+                <Upload className="mr-1.5 size-3.5" />
+                {t("tabs.upload")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setInputMode("pasteLink")}
+                className={cn(
+                  "h-10 flex-1 rounded-full border px-4 text-xs font-semibold sm:flex-none",
+                  inputMode === "pasteLink"
+                    ? "border-violet-300 bg-violet-50 text-violet-800 shadow-sm shadow-violet-100"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/50",
+                )}
+              >
+                <Link2 className="mr-1.5 size-3.5" />
+                {t("tabs.pasteLink")}
+              </Button>
+            </div>
+
+            {inputMode === "upload" ? (
+              <div className="space-y-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm shadow-violet-100/30 sm:p-5">
+                <p className="text-sm font-extrabold text-slate-900">{t("upload.label")}</p>
+                <p className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs leading-5 text-sky-800 sm:text-sm">
+                  {t("upload.youtubeNotice")}
+                </p>
+                <UploadFile
+                  accept={ACCEPT_INTRO_VIDEO_TYPES}
+                  fileName={uploadFileName}
+                  isUploading={isUploading}
+                  onFile={handleVideoUpload}
+                  uploadLabel={t("upload.uploadButton")}
+                  uploadingLabel={uploadingLabel}
+                  hint={t("upload.hint", {
+                    maxSize: MAX_INTRO_VIDEO_SIZE_MB,
+                    maxMinutes: maxVideoDurationMinutes,
+                  })}
+                  emptyLabel={t("upload.emptyLabel")}
+                  dropHereLabel={t("upload.dropHereLabel")}
+                  error={uploadError ?? undefined}
                 />
-                <Button
-                  type="button"
-                  onClick={handleSubmit(handleAddLink)}
-                  disabled={isCheckingVideo}
-                  className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
-                >
-                  {isCheckingVideo ? (
-                    <Spinner className="mr-1.5 size-4 text-white" />
-                  ) : null}
-                  {isCheckingVideo ? t("link.checking") : t("link.addButton")}
-                </Button>
+                {durationError ? (
+                  <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                    <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    {durationError}
+                  </div>
+                ) : null}
+                {videoId?.type === "cloudinary" && !isUploading && !uploadError ? (
+                  <div className="flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                    <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+                    {t("upload.success")}
+                  </div>
+                ) : null}
               </div>
-              {durationError ? (
-                <div className="mt-3 flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                  <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                  {durationError}
+            ) : (
+              <div className="space-y-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm shadow-violet-100/30 sm:p-5">
+                <p className="text-sm font-extrabold text-slate-900">{t("link.label")}</p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Controller
+                    control={control}
+                    name="videoLink"
+                    render={({ field: { value, onChange } }) => (
+                      <Input
+                        className="h-11 flex-1 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+                        placeholder={t("link.placeholder")}
+                        value={value}
+                        disabled={isCheckingVideo}
+                        onChange={(e) => onChange(e.target.value)}
+                      />
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleSubmit(handleAddLink)}
+                    disabled={isCheckingVideo}
+                    className="h-11 shrink-0 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+                  >
+                    {isCheckingVideo ? (
+                      <Spinner className="mr-1.5 size-4 text-white" />
+                    ) : null}
+                    {isCheckingVideo ? t("link.checking") : t("link.addButton")}
+                  </Button>
                 </div>
-              ) : null}
-            </BecomeTutorSection>
-          )}
-        </div>
-
-        <div className="space-y-5">
-          <div className="rounded-3xl border border-emerald-100 bg-[linear-gradient(135deg,#ecfdf5,#f0fdfa)] p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700">
-                <CheckCircle className="size-5" />
+                {durationError ? (
+                  <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                    <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    {durationError}
+                  </div>
+                ) : null}
               </div>
-              <h3 className="text-sm font-extrabold text-emerald-900">
-                {t("bestPracticesTitle")}
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {bestPractices.map((item, index) => (
-                <div key={index} className="flex items-start gap-2 text-xs text-emerald-900/90">
-                  <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
-                  <span className="leading-5">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-rose-100 bg-[linear-gradient(135deg,#fff1f2,#fef3f2)] p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-rose-500/15 text-rose-700">
-                <XCircle className="size-5" />
-              </div>
-              <h3 className="text-sm font-extrabold text-rose-900">
-                {t("avoidTitle")}
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {avoidItems.map((item, index) => (
-                <div key={index} className="flex items-start gap-2 text-xs text-rose-900/90">
-                  <X className="mt-0.5 size-3.5 shrink-0 text-rose-600" />
-                  <span className="leading-5">{item}</span>
-                </div>
-              ))}
-            </div>
+            )}
           </div>
         </div>
-      </div>
+      </BecomeTutorSection>
     </BecomeTutorShell>
   );
 }

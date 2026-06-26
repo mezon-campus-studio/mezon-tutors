@@ -308,10 +308,11 @@ export class TutorProfileService {
         identityVerification: true;
         professionalDocuments: true;
         trialLessonPrice: true;
+        user: { select: { avatar: true } };
       };
     }>
   ) {
-    const { identityVerification, professionalDocuments, trialLessonPrice, ...rest } = profile;
+    const { identityVerification, professionalDocuments, trialLessonPrice, user, ...rest } = profile;
 
     const profileData = trialLessonPrice
       ? {
@@ -325,6 +326,7 @@ export class TutorProfileService {
 
     return {
       ...profileData,
+      avatar: user?.avatar ?? '',
       identityVerification: identityVerification
         ? {
             id: identityVerification.id,
@@ -368,6 +370,7 @@ export class TutorProfileService {
         identityVerification: true,
         professionalDocuments: true,
         trialLessonPrice: true,
+        user: { select: { avatar: true } },
       },
     });
 
@@ -461,7 +464,6 @@ export class TutorProfileService {
         userId: userId,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        avatar: dto.avatar,
         videoUrl: dto.videoUrl ?? '',
         country: dto.country,
         phone: dto.phone,
@@ -525,17 +527,17 @@ export class TutorProfileService {
     const teachingCertPublicId = this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId);
     if (teachingCertPublicId && profile) {
       await this.createTutorCertificateByUserId(profile.id, {
-        name: dto.teachingCertificateName,
+        name: dto.teachingCertificateName?.trim() || 'Certificate',
         fileUrl: teachingCertPublicId,
         type: ProfessionalDocumentType.CERTIFICATE,
-        yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
+        yearOfComplete: dto.teachingYear ? Number.parseInt(dto.teachingYear, 10) : undefined,
       });
     }
 
     const educationPublicId = this.normalizeCloudinaryPublicId(dto.educationPublicId);
     if (educationPublicId && profile) {
       await this.createTutorCertificateByUserId(profile.id, {
-        name: dto.degree,
+        name: dto.degree?.trim() || 'Degree',
         fileUrl: educationPublicId,
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
@@ -567,7 +569,6 @@ export class TutorProfileService {
       data: {
         firstName: dto.firstName,
         lastName: dto.lastName,
-        avatar: dto.avatar,
         videoUrl: dto.videoUrl ?? '',
         country: dto.country,
         phone: dto.phone,
@@ -577,7 +578,7 @@ export class TutorProfileService {
         experience: dto.specialization,
         motivate: dto.motivate,
         headline: dto.headline,
-        isProfessional: !!dto.teachingCertificateName,
+        isProfessional: !!this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId),
         verificationStatus: VerificationStatus.PENDING,
       } as unknown as Prisma.TutorProfileUpdateInput,
     });
@@ -631,17 +632,17 @@ export class TutorProfileService {
     const teachingCertPublicId = this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId);
     if (teachingCertPublicId && profile) {
       await this.upsertTutorCertificateByUserId(profile.id, {
-        name: dto.teachingCertificateName,
+        name: dto.teachingCertificateName?.trim() || 'Certificate',
         fileUrl: teachingCertPublicId,
         type: ProfessionalDocumentType.CERTIFICATE,
-        yearOfComplete: dto.teachingYear ? parseInt(dto.teachingYear, 10) : undefined,
+        yearOfComplete: dto.teachingYear ? Number.parseInt(dto.teachingYear, 10) : undefined,
       });
     }
 
     const educationPublicId = this.normalizeCloudinaryPublicId(dto.educationPublicId);
     if (educationPublicId && profile) {
       await this.upsertTutorCertificateByUserId(profile.id, {
-        name: dto.degree,
+        name: dto.degree?.trim() || 'Degree',
         fileUrl: educationPublicId,
         type: ProfessionalDocumentType.DEGREE,
         institution: dto.university,
@@ -910,6 +911,7 @@ export class TutorProfileService {
           select: {
             mezonUserId: true,
             timezone: true,
+            avatar: true,
           },
         },
       } as unknown as Prisma.TutorProfileInclude,
@@ -1123,6 +1125,7 @@ export class TutorProfileService {
           select: {
             mezonUserId: true,
             timezone: true,
+            avatar: true,
           },
         },
       } as unknown as Prisma.TutorProfileInclude,

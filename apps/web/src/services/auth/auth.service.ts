@@ -14,6 +14,8 @@ export type AuthUser = {
   id?: string;
   mezonUserId?: string;
   username?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string | null;
   avatar?: string | null;
   role?: string;
@@ -33,6 +35,8 @@ export type MeResponse = {
   mezonUserId?: string;
   email?: string;
   username?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   avatar?: string | null;
   role?: string;
   timezone?: string | null;

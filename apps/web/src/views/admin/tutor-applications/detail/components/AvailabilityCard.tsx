@@ -86,7 +86,7 @@ export default function AvailabilityCard({
                     className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"
                   >
                     <span className="w-24 shrink-0 text-sm font-medium text-slate-700">
-                      {days(String(idx) as never)}
+                      {days(String((idx + 1) % 7) as never)}
                     </span>
                     <div className="flex flex-1 flex-wrap justify-end gap-1.5">
                       {slots.length === 0 ? (

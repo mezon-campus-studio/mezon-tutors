@@ -70,12 +70,20 @@
     "saveExit": "Lưu & Thoát",
     "savingExit": "Đang lưu…",
     "draftSaved": "Bản nháp đã được lưu lúc {time}",
+    "requiredNote": "là trường bắt buộc",
     "stepper": {
       "about": "Giới thiệu",
       "photo": "Ảnh hồ sơ",
       "certification": "Chứng chỉ",
       "video": "Video",
       "availability": "Lịch dạy"
+    },
+    "preview": {
+      "eyebrow": "Xem trước",
+      "title": "Học viên sẽ thấy hồ sơ của bạn như thế nào",
+      "hint": "Cập nhật tự động khi bạn hoàn thành từng bước.",
+      "namePlaceholder": "Tên của bạn",
+      "introPlaceholder": "Phần giới thiệu sẽ hiển thị ở đây sau khi bạn thêm ở bước Ảnh hồ sơ."
     }
   },
   "photo": {
@@ -239,7 +247,9 @@
     "progressPercent": 75,
     "title": "Video giới thiệu",
     "subtitle": "Hãy giới thiệu bản thân với học viên bằng một đoạn video ngắn để tăng độ hiển thị hồ sơ của bạn lên gấp 3 lần.",
-    "previewPlaceholder": "Dán liên kết YouTube hoặc Vimeo hợp lệ bên dưới để xem trước video tại đây.",
+    "previewPlaceholder": "Video xem trước sẽ hiển thị tại đây sau khi bạn tải lên hoặc dán liên kết.",
+    "previewLabel": "Xem trước",
+    "methodNotice": "Hãy chọn một trong hai cách bên dưới — tải video lên hoặc dán liên kết YouTube.",
     "tabs": {
       "record": "Ghi hình trực tiếp",
       "pasteLink": "Dán liên kết",
@@ -250,7 +260,7 @@
       "durationLabel": "Tối đa 2:00"
     },
     "link": {
-      "label": "Hoặc dán liên kết YouTube/Vimeo",
+      "label": "Hoặc dán liên kết YouTube",
       "placeholder": "https://youtube.com/watch?v=...",
       "addButton": "Thêm",
       "checking": "Đang kiểm tra video..."
@@ -279,8 +289,8 @@
       "Nhạc nền lớn hơn giọng nói của bạn"
     ],
     "errors": {
-      "emptyLink": "Vui lòng dán liên kết YouTube hoặc Vimeo.",
-      "invalidLink": "Liên kết video phải là URL YouTube hoặc Vimeo hợp lệ.",
+      "emptyLink": "Vui lòng dán liên kết YouTube.",
+      "invalidLink": "Liên kết video phải là URL YouTube hợp lệ.",
       "tooLong": "Video phải có thời lượng tối đa 2 phút.",
       "missingBeforeContinue": "Vui lòng thêm video dưới 2 phút trước khi tiếp tục.",
       "invalidVideoType": "Vui lòng tải lên video MP4, MOV hoặc WebM.",

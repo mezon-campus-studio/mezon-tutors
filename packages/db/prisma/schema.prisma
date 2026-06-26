@@ -269,7 +269,6 @@ model TutorProfile {
   userId             String             @unique @map("user_id") @db.Uuid
   firstName          String             @map("first_name")
   lastName           String             @map("last_name")
-  avatar             String             @default("")
   videoUrl           String             @default("") @map("video_url")
   country            String
   phone              String

@@ -7,7 +7,6 @@ import {
   formatToCurrency,
   HOURLY_RATE_REGEX,
   MIN_PRICE,
-  parseVimeoId,
   parseYouTubeId,
   validateWeeklySlots,
   VIETNAM_PHONE_REGEX,
@@ -126,7 +125,7 @@ export function createTutorProfileFormSchema(messages: ProfileFormMessages) {
       .string()
       .trim()
       .min(1, tVideo('errors.emptyLink'))
-      .refine((url) => Boolean(parseYouTubeId(url) || parseVimeoId(url)), {
+      .refine((url) => Boolean(parseYouTubeId(url)), {
         message: tVideo('errors.invalidLink'),
       }),
     hourlyRate: z.string(),

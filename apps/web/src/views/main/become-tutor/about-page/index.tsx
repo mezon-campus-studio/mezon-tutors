@@ -6,7 +6,7 @@ import { ShieldCheck, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, type Control, type FieldValues } from "react-hook-form";
 import { z } from "zod";
 import {
   BECOME_TUTOR_STEPS,
@@ -49,6 +49,10 @@ import {
   BecomeTutorSection,
   BecomeTutorShell,
 } from "../_shared/BecomeTutorShell";
+import { useBecomeTutorAboutPreviewSync } from "../_shared/useBecomeTutorLivePreview";
+import {
+  BecomeTutorFieldLabel,
+} from "../_shared/BecomeTutorFormFields";
 
 const CURRENT_STEP = BECOME_TUTOR_STEPS.ABOUT;
 const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
@@ -188,20 +192,8 @@ export default function AboutPage() {
           cvFile: z.instanceof(File).nullable(),
         })
         .superRefine((data, ctx) => {
-          const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-          const hasCv =
-            data.cvFile !== null ||
-            !!about.cv?.dataUrl ||
-            !!about.cv?.publicId;
-          if (!hasCv) {
-            ctx.addIssue({
-              path: ["cvFile"],
-              code: "custom",
-              message: t("validation.cvRequired"),
-            });
-            return;
-          }
           if (!data.cvFile) return;
+          const bytesLimit = MAX_IMAGE_SIZE_MB * 1024 * 1024;
           const ext = data.cvFile.name.split(".").pop()?.toLowerCase() ?? "";
           if (!allowedCvExt.has(ext)) {
             ctx.addIssue({
@@ -219,7 +211,7 @@ export default function AboutPage() {
             });
           }
         }),
-    [t, about.cv?.dataUrl, about.cv?.publicId, allowedCvExt],
+    [t, allowedCvExt],
   );
 
   type AboutFormValues = z.infer<typeof aboutSchema>;
@@ -258,6 +250,8 @@ export default function AboutPage() {
     name: "languageEntries",
   });
   const formCardRef = useRef<HTMLDivElement | null>(null);
+
+  useBecomeTutorAboutPreviewSync(control as unknown as Control<FieldValues>);
 
   // Sync persisted draft into the form when text fields change (e.g. returning from step 2).
   // Do NOT depend on `about.cv` — CV upload updates the atom mid-edit while form text
@@ -391,15 +385,6 @@ export default function AboutPage() {
   const onSubmit = (values: AboutFormValues) => {
     if (isUploadingCv) return;
 
-    if (!about.cv?.publicId) {
-      form.setError("cvFile", {
-        type: "manual",
-        message: t("validation.cvUploadFailed"),
-      });
-      cvCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
     const entries = values.languageEntries.filter(
       (e) => e.language && e.proficiency,
     );
@@ -467,9 +452,9 @@ export default function AboutPage() {
         >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="firstName" className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel htmlFor="firstName" required>
                 {t("fields.firstNameLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="firstName"
                 placeholder={tp("firstName")}
@@ -481,9 +466,9 @@ export default function AboutPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="lastName" className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel htmlFor="lastName" required>
                 {t("fields.lastNameLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="lastName"
                 placeholder={tp("lastName")}
@@ -497,9 +482,9 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-semibold text-slate-700">
+            <BecomeTutorFieldLabel htmlFor="email" required>
               {t("fields.emailLabel")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <Input
               id="email"
               type="email"
@@ -514,9 +499,9 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel required>
                 {t("fields.countryLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Controller
                 name="country"
                 control={control}
@@ -546,9 +531,9 @@ export default function AboutPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel htmlFor="phone" required>
                 {t("fields.phoneLabel")}
-              </Label>
+              </BecomeTutorFieldLabel>
               <Input
                 id="phone"
                 placeholder={tp("phone")}
@@ -562,9 +547,9 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700">
+            <BecomeTutorFieldLabel required>
               {t("fields.subjectLabel")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <Controller
               name="subject"
               control={control}
@@ -595,9 +580,9 @@ export default function AboutPage() {
 
           <div className="space-y-3 rounded-2xl border border-violet-100 bg-violet-50/30 p-4">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-700">
+              <BecomeTutorFieldLabel required>
                 {t("fields.languagesLabel")}
-              </p>
+              </BecomeTutorFieldLabel>
               <button
                 type="button"
                 onClick={() => append({ language: "", proficiency: "" })}
@@ -691,9 +676,9 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-1.5" ref={cvCardRef}>
-            <Label className="text-xs font-semibold text-slate-700">
+            <BecomeTutorFieldLabel>
               {t("fields.cvLabel")}
-            </Label>
+            </BecomeTutorFieldLabel>
             <p className="text-xs text-slate-500">{t("fields.cvHelper")}</p>
             <UploadFile
               accept={ACCEPT_CV_TYPES}

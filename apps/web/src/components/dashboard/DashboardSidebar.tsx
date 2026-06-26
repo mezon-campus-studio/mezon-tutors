@@ -110,8 +110,17 @@ export default function DashboardSidebar({
       ? DASHBOARD_ROLE_TITLES[userRole as DashboardRole]
       : t("sidebar.fallbackTitle");
 
+  const tutorName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`.trim()
+      : null;
+  const displayName =
+    user?.role === "TUTOR" && tutorName
+      ? tutorName
+      : user?.username || "User";
+
   const userInitials =
-    user?.username
+    displayName
       ?.split(" ")
       .filter(Boolean)
       .slice(0, 2)
@@ -144,7 +153,7 @@ export default function DashboardSidebar({
             {user?.avatar ? (
               <AvatarImage
                 src={user.avatar}
-                alt={user?.username ?? "User"}
+                alt={displayName}
                 className="rounded-lg object-cover"
               />
             ) : null}
@@ -154,7 +163,7 @@ export default function DashboardSidebar({
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-extrabold text-slate-900">
-              {user?.username || "User"}
+              {displayName}
             </p>
             <p className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.16em] text-violet-600">
               <span className="size-1 rounded-full bg-emerald-500" />

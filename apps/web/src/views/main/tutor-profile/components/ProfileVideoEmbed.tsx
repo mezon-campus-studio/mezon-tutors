@@ -1,6 +1,6 @@
 'use client';
 
-import { parseVimeoId, parseYouTubeId } from '@mezon-tutors/shared';
+import { parseYouTubeId } from '@mezon-tutors/shared';
 import { Video } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -11,11 +11,6 @@ export function getProfileVideoEmbedSrc(url: string): string | null {
   const youtubeId = parseYouTubeId(trimmed);
   if (youtubeId) {
     return `https://www.youtube.com/embed/${youtubeId}?rel=0`;
-  }
-
-  const vimeoId = parseVimeoId(trimmed);
-  if (vimeoId) {
-    return `https://player.vimeo.com/video/${vimeoId}`;
   }
 
   return null;

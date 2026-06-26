@@ -1,4 +1,4 @@
-import { parseVimeoId, parseYouTubeId } from '../constants/tutor-profile';
+import { parseYouTubeId } from '../constants/tutor-profile';
 import type { TutorProfileVideoId } from '../types/tutor-profile';
 
 export function isCloudinaryVideoUrl(url: string | null | undefined): boolean {
@@ -18,11 +18,6 @@ export function resolveVideoIdFromUrl(url: string): TutorProfileVideoId | null {
   const youtubeId = parseYouTubeId(trimmed);
   if (youtubeId) {
     return { type: 'youtube', id: youtubeId };
-  }
-
-  const vimeoId = parseVimeoId(trimmed);
-  if (vimeoId) {
-    return { type: 'vimeo', id: vimeoId };
   }
 
   if (isCloudinaryVideoUrl(trimmed)) {

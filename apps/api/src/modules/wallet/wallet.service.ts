@@ -59,14 +59,12 @@ import { AppSettingsService } from '../app-settings/app-settings.service';
 const WALLET_TUTOR_PROFILE_SELECT = {
   firstName: true,
   lastName: true,
-  avatar: true,
   user: { select: { username: true, avatar: true } },
 } as const;
 
 type WalletTutorProfileSnapshot = {
   firstName?: string | null;
   lastName?: string | null;
-  avatar?: string | null;
   user?: { username?: string | null; avatar?: string | null } | null;
 };
 
@@ -132,7 +130,7 @@ export class WalletService {
   }
 
   private formatWalletTutorAvatar(tutor?: WalletTutorProfileSnapshot | null): string | null {
-    return tutor?.avatar ?? tutor?.user?.avatar ?? null;
+    return tutor?.user?.avatar ?? null;
   }
 
   private formatWithdrawalRequesterName(user: {

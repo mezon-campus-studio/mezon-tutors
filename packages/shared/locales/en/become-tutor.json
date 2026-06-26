@@ -70,12 +70,20 @@
     "saveExit": "Save & Exit",
     "savingExit": "Saving…",
     "draftSaved": "Draft saved at {time}",
+    "requiredNote": "indicates a required field",
     "stepper": {
       "about": "About",
       "photo": "Photo",
       "certification": "Credentials",
       "video": "Video",
       "availability": "Schedule"
+    },
+    "preview": {
+      "eyebrow": "Live preview",
+      "title": "How students will see your profile",
+      "hint": "Updates automatically as you complete each step.",
+      "namePlaceholder": "Your name",
+      "introPlaceholder": "Your introduction will appear here once you add it in the Photo step."
     }
   },
   "photo": {
@@ -239,7 +247,9 @@
     "progressPercent": 75,
     "title": "Video introduction",
     "subtitle": "Introduce yourself to students with a short video to increase your profile visibility by up to 3x.",
-    "previewPlaceholder": "Paste a valid YouTube or Vimeo link below to preview your video here.",
+    "previewPlaceholder": "Your video preview will appear here after you upload or add a link.",
+    "previewLabel": "Preview",
+    "methodNotice": "Choose one of the two options below — upload a video file or paste a YouTube link.",
     "tabs": {
       "record": "Record video",
       "pasteLink": "Paste link",
@@ -250,7 +260,7 @@
       "durationLabel": "2:00 max"
     },
     "link": {
-      "label": "Or paste YouTube/Vimeo link",
+      "label": "Or paste YouTube link",
       "placeholder": "https://youtube.com/watch?v=...",
       "addButton": "Add",
       "checking": "Checking video..."
@@ -279,8 +289,8 @@
       "Music that's louder than your voice"
     ],
     "errors": {
-      "emptyLink": "Please paste a YouTube or Vimeo link.",
-      "invalidLink": "Video link must be a valid YouTube or Vimeo URL.",
+      "emptyLink": "Please paste a YouTube link.",
+      "invalidLink": "Video link must be a valid YouTube URL.",
       "tooLong": "Video must be 2 minutes or shorter.",
       "missingBeforeContinue": "Please add a video under 2 minutes before continuing.",
       "invalidVideoType": "Please upload an MP4, MOV, or WebM video.",

@@ -35,7 +35,7 @@ export class TutorApplicationMapper {
       userId: profile.userId,
       firstName: profile.firstName,
       lastName: profile.lastName,
-      avatar: profile.avatar,
+      avatar: profile.user?.avatar ?? '',
       videoUrl: profile.videoUrl,
       country: parseEnum(profile.country, ABOUT_COUNTRIES, 'Other'),
       subject: profile.subject,

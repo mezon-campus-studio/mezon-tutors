@@ -97,6 +97,7 @@ export type TutorAvailabilitySelectionProps = {
   contentRef?: React.RefObject<HTMLDivElement | null>;
   onSlotAdded?: () => void;
   showTimezoneLabel?: boolean;
+  timePickerDropUp?: boolean;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export function TutorAvailabilitySelection({
   contentRef,
   onSlotAdded,
   showTimezoneLabel = true,
+  timePickerDropUp = true,
 }: TutorAvailabilitySelectionProps) {
   const t = useTranslations('BecomeTutor.availability');
   const slotValidationMessages = useMemo<SlotValidationMessages>(
@@ -235,6 +237,7 @@ export function TutorAvailabilitySelection({
                     onChange={(v) => updateSlot(index, { startTime: v })}
                     placeholder={DEFAULT_AVAILABILITY_SLOT.startTime}
                     maxTime={startTimeMax}
+                    dropUp={timePickerDropUp}
                   />
                 </div>
 
@@ -254,6 +257,7 @@ export function TutorAvailabilitySelection({
                     onChange={(v) => updateSlot(index, { endTime: v })}
                     placeholder={DEFAULT_AVAILABILITY_SLOT.endTime}
                     minTime={endTimeMin}
+                    dropUp={timePickerDropUp}
                   />
                 </div>
 
