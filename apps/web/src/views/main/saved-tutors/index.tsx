@@ -43,7 +43,7 @@ function SavedTutorMetrics({
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3">
         <Skeleton className="h-24 rounded-2xl" />
         <Skeleton className="h-24 rounded-2xl" />
         <Skeleton className="h-24 rounded-2xl" />
@@ -79,7 +79,7 @@ function SavedTutorMetrics({
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-3 gap-3">
       {items.map((item) => {
         const Icon = item.icon;
         return (
@@ -88,19 +88,21 @@ function SavedTutorMetrics({
             className="relative min-w-0 overflow-hidden border-violet-100 shadow-sm shadow-violet-100/30"
           >
             <span className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.accent}`} />
-            <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-5">
+            <CardContent className="flex flex-col gap-1.5 p-3 sm:p-4">
               <div className="min-w-0">
-                <p className="truncate text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <p className="truncate text-[10px] font-bold uppercase tracking-wider text-slate-500">
                   {item.label}
                 </p>
-                <p className="mt-2 text-3xl font-extrabold text-slate-900">
+              </div>
+              <div className="flex items-end justify-between gap-1">
+                <p className="text-2xl font-extrabold text-slate-900">
                   {item.value}
                 </p>
-              </div>
-              <div
-                className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${item.bg} ${item.text}`}
-              >
-                <Icon className="size-5" />
+                <div
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.text}`}
+                >
+                  <Icon className="size-4" />
+                </div>
               </div>
             </CardContent>
           </Card>
