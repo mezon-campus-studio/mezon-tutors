@@ -102,5 +102,38 @@
       "description": "Bạn đã tìm được {found}/{total} từ. Làm tốt lắm!",
       "confirm": "Đã hiểu"
     }
+  },
+  "progress": {
+    "currentStreak": "Chuỗi ngày",
+    "longestStreak": "Chuỗi dài nhất",
+    "motivationText": "Hãy luyện tập mỗi ngày để xây dựng thói quen tốt và mở rộng vốn từ vựng!",
+    "myPractice": "Luyện tập của tôi",
+    "totalPracticeCounts": "Tổng lượt luyện tập",
+    "heatmap": {
+      "less": "Ít",
+      "more": "Nhiều",
+      "wordsLearned": "{count} từ đã học",
+      "wordsLearnedOn": "vào {date}",
+      "dateFormat": "ngày {day} {month} {year}",
+      "weekdays": {
+        "mon": "T2",
+        "wed": "T4",
+        "fri": "T6"
+      },
+      "months": {
+        "jan": "Th1",
+        "feb": "Th2",
+        "mar": "Th3",
+        "apr": "Th4",
+        "may": "Th5",
+        "jun": "Th6",
+        "jul": "Th7",
+        "aug": "Th8",
+        "sep": "Th9",
+        "oct": "Th10",
+        "nov": "Th11",
+        "dec": "Th12"
+      }
+    }
   }
 }

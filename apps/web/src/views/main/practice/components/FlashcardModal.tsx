@@ -17,6 +17,7 @@ import { Button, Kbd } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import MezonlyLogo from "@/public/images/Mezonly-logo.png";
 import { useUpdateWordStatusMutation } from "@/services/vocabulary/vocabulary.api";
+import { useLogLearning } from "@/services/learning-log/learning-log.api";
 
 type FlashcardPhase = "ready" | "learning";
 
@@ -179,6 +180,7 @@ export default function FlashcardModal({
 }: FlashcardModalProps) {
   const t = useTranslations("Practice.flashcards");
   const updateStatus = useUpdateWordStatusMutation();
+  const { mutate: logLearning } = useLogLearning();
   const [phase, setPhase] = useState<FlashcardPhase>("ready");
   const [deck, setDeck] = useState<VocabularyWordItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -287,11 +289,13 @@ export default function FlashcardModal({
     if (phase === "ready") {
       sessionLearningRef.current.push({ ...current, status: "learning" });
       updateStatus.mutate({ id: current.id, status: "learning" });
+      logLearning({ vocabularyWordId: current.id, action: "READY_TO_LEARNING" });
     } else {
       updateStatus.mutate({ id: current.id, status: "learned" });
+      logLearning({ vocabularyWordId: current.id, action: "LEARNING_TO_LEARNED" });
     }
     advanceCard();
-  }, [current, phase, updateStatus, advanceCard]);
+  }, [current, phase, updateStatus, logLearning, advanceCard]);
 
   const handleRight = useCallback(() => {
     if (!current) return;

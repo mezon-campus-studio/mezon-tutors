@@ -35,6 +35,7 @@ import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { CommonModule } from './common/common.module';
 import { StudyGroupModule } from './modules/study-group/study-group.module';
+import { LearningLogModule } from './modules/learning-log/learning-log.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { StudyGroupModule } from './modules/study-group/study-group.module';
     GoogleCalendarModule,
     VocabularyModule,
     StudyGroupModule,
+    LearningLogModule,
   ],
   controllers: [HealthController],
   providers: [
