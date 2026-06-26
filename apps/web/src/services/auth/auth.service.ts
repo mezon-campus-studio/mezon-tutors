@@ -49,7 +49,8 @@ class AuthService {
   async loginWithChannelAppHash(rawHashData: string): Promise<ExchangeResponse> {
     const data = await credentialsApiClient.post<ExchangeResponse>(
       "/auth/channel-app/login",
-      { hashData: base64EncodeUtf8(rawHashData) }
+      { hashData: base64EncodeUtf8(rawHashData) },
+      { headers: { "Content-Type": "application/json" } }
     );
     this.store.set(accessTokenAtom, data.accessToken);
     return data;

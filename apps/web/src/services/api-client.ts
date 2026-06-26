@@ -27,13 +27,9 @@ export function resetRefreshTokenLock(): void {
   refreshPromise = null;
 }
 
-/** Cookie-based auth endpoints only (refresh, logout, login). */
 export const credentialsApiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 credentialsApiClient.interceptors.response.use(

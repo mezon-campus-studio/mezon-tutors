@@ -29,7 +29,9 @@ export function useBecomeTutorAboutPreviewSync(control: Control<FieldValues>) {
   const languageEntries = useWatch({ control, name: 'languageEntries' });
 
   useEffect(() => {
-    const entries = (languageEntries ?? []).filter((entry) => entry.language?.trim());
+    const entries = ((languageEntries ?? []) as Array<{ language: string; proficiency: string }>).filter(
+      (entry) => entry.language?.trim(),
+    );
     setLive((prev) => ({
       ...prev,
       about: {

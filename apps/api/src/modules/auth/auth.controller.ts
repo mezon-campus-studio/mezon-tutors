@@ -39,34 +39,36 @@ export class AuthController {
     private readonly mezonChannelAppService: MezonChannelAppService
   ) {}
 
-  private getCrossSiteCookieOptions(maxAge: number): CookieOptions {
+  private getOAuthStateCookieOptions(): CookieOptions {
     return {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      maxAge,
+      maxAge: OAUTH_STATE_MAX_AGE,
       path: '/',
       partitioned: true,
     };
   }
 
   private getRefreshCookieOptions(): CookieOptions {
-    return this.getCrossSiteCookieOptions(REFRESH_TOKEN_MAX_AGE);
+    return {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: REFRESH_TOKEN_MAX_AGE,
+      path: '/',
+    };
   }
 
   private clearRefreshCookie(res: Response) {
-    const opts = this.getRefreshCookieOptions();
-    res.clearCookie('refresh_token', {
-      path: opts.path ?? '/',
-      httpOnly: opts.httpOnly,
-      secure: opts.secure,
-      sameSite: opts.sameSite,
-      partitioned: opts.partitioned,
-    });
-  }
-
-  private getOAuthStateCookieOptions(): CookieOptions {
-    return this.getCrossSiteCookieOptions(OAUTH_STATE_MAX_AGE);
+    const base = {
+      path: '/',
+      httpOnly: true as const,
+      secure: true as const,
+      sameSite: 'lax' as const,
+    };
+    res.clearCookie('refresh_token', base);
+    res.clearCookie('refresh_token', { ...base, partitioned: true });
   }
 
   private buildFrontendReturnUrl(path: string, params: Record<string, string>): string {

@@ -9,6 +9,10 @@ const CORS_RESPONSE_HEADERS = new Set([
   'access-control-max-age',
 ]);
 
+function isCorsHeader(name: string): boolean {
+  return CORS_RESPONSE_HEADERS.has(name.toLowerCase());
+}
+
 export function stripCorsResponseHeadersMiddleware(
   _req: Request,
   res: Response,
@@ -16,7 +20,7 @@ export function stripCorsResponseHeadersMiddleware(
 ) {
   const originalSetHeader = res.setHeader.bind(res);
   res.setHeader = (name: string, value: number | string | readonly string[]) => {
-    if (CORS_RESPONSE_HEADERS.has(name.toLowerCase())) {
+    if (isCorsHeader(name)) {
       return res;
     }
     return originalSetHeader(name, value);
