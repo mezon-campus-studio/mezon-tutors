@@ -39,6 +39,7 @@
   },
   "templates": {
     "bookingCreated": "{studentName} paid for a trial lesson with you. Check your schedule and get ready to teach.",
+    "bookingConfirmed": "Your trial lesson with {tutorName} is confirmed.",
     "bookingCancelled": "Your booking has been cancelled.",
     "subscriptionEnrollmentConfirmed": "Your subscription with {tutorName} ({planLabel}) is now active.{hasGroup, select, yes { Group Study: {groupName}. Members: {membersCount}.} other {}}",
     "subscriptionEnrollmentCreated": "{studentName} enrolled in your {planLabel} plan.",

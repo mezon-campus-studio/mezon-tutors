@@ -291,7 +291,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
             aria-label={getLabel('title', 'Notifications')}
             className={cn(
               'z-999 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white shadow-xl',
-              'fixed top-14 right-4 left-4 max-h-[calc(100dvh-4rem)] p-3 sm:top-16 sm:p-4',
+              'fixed top-14 right-4 left-auto w-[min(calc(100vw-2rem),360px)] max-h-[min(calc(100dvh-5rem),520px)] p-3 sm:top-16 sm:p-4',
               'md:absolute md:top-11 md:right-0 md:left-auto md:w-[min(24rem,calc(100vw-2rem))] md:max-h-none md:p-4',
               'lg:w-[440px]',
             )}
@@ -331,7 +331,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
           </div>
 
           <div
-            className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 max-h-[calc(100dvh-12rem)] md:max-h-[420px]"
+            className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 max-h-[calc(100dvh-14rem)] md:max-h-[420px]"
             ref={listRef}
             onScroll={handleListScroll}
           >

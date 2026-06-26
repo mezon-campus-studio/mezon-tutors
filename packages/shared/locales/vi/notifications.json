@@ -39,6 +39,7 @@
   },
   "templates": {
     "bookingCreated": "{studentName} đã thanh toán buổi học thử với bạn. Xem lịch và chuẩn bị dạy nhé.",
+    "bookingConfirmed": "Buổi học thử của bạn với {tutorName} đã được xác nhận.",
     "bookingCancelled": "Lịch học của bạn đã bị hủy.",
     "subscriptionEnrollmentConfirmed": "Gói đăng ký với {tutorName} ({planLabel}) đã được kích hoạt.{hasGroup, select, yes { Đăng kí nhóm học: {groupName}. Số thành viên nhóm: {membersCount}.} other {}}",
     "subscriptionEnrollmentCreated": "{studentName} đã đăng ký gói {planLabel} của bạn.",
