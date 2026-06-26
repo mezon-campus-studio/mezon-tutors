@@ -1,8 +1,11 @@
 import type { CSSProperties } from "react";
+import { useMemo } from "react";
 import {
   ECurrency,
   ESubject,
   formatToCurrency,
+  getYoutubeEmbedUrl,
+  isCloudinaryVideoUrl,
   ROUTES,
   type VerifiedTutorProfileDto,
 } from "@mezon-tutors/shared";
@@ -63,6 +66,20 @@ export function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCa
   const { data: elig } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
   const hasBookedTrial = Boolean(elig?.trialStatus != null);
 
+  const videoUrl = tutor.videoUrl;
+  const embedUrl = useMemo(() => getYoutubeEmbedUrl(videoUrl), [videoUrl]);
+  const youtubeId = useMemo(() => {
+    if (!embedUrl) return null;
+    const last = embedUrl.split("/").filter(Boolean).pop();
+    return last ?? null;
+  }, [embedUrl]);
+  const isCloudinaryVideo = useMemo(() => isCloudinaryVideoUrl(videoUrl), [videoUrl]);
+  const thumbnailUrl = useMemo(() => {
+    if (youtubeId) return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+    return null;
+  }, [youtubeId]);
+  const hasThumbnail = Boolean(thumbnailUrl || isCloudinaryVideo);
+
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
   const price = trialLessonPrice(tutor, currency);
   const rateLabel = formatToCurrency(currency, price);
@@ -87,11 +104,28 @@ export function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCa
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-200/50">
-      <div className={`relative h-36 bg-gradient-to-br ${gradient}`}>
+      <div
+        className={`relative h-36${hasThumbnail ? "" : ` bg-gradient-to-br ${gradient}`}`}
+      >
+        {/* Background image / overlay — clipped to the header only */}
         <div
-          className="absolute inset-0 opacity-30"
-          style={HEADER_DOT_PATTERN}
-        />
+          className="absolute inset-0 overflow-hidden rounded-t-3xl"
+          style={
+            thumbnailUrl
+              ? { backgroundImage: `url(${thumbnailUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+              : undefined
+          }
+        >
+          {hasThumbnail ? (
+            <div className="absolute inset-0 bg-slate-900/30" />
+          ) : (
+            <div
+              className="absolute inset-0 opacity-30"
+              style={HEADER_DOT_PATTERN}
+            />
+          )}
+        </div>
+
         <div className="absolute inset-x-4 -bottom-10 flex items-end justify-between">
           <Link
             href={detailHref}
