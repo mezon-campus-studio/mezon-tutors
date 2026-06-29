@@ -41,7 +41,6 @@ export const defaultPhotoState: TutorProfilePhotoState = {
     fileName: '',
   },
   headline: '',
-  motivate: '',
   introduce: '',
 }
 
@@ -222,7 +221,7 @@ export type TutorProfileLivePreviewPatch = {
     TutorProfileAboutState,
     'firstName' | 'lastName' | 'country' | 'subject' | 'languages' | 'proficiencies'
   > | null
-  photo: Pick<TutorProfilePhotoState, 'introduce' | 'headline' | 'motivate'> | null
+  photo: Pick<TutorProfilePhotoState, 'introduce' | 'headline'> | null
 }
 
 export const defaultTutorProfileLivePreviewPatch: TutorProfileLivePreviewPatch = {

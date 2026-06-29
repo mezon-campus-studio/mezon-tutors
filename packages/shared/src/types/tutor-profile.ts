@@ -35,7 +35,6 @@ export interface SubmitTutorProfileDto {
 
   identityPhotoPublicId?: string
   headline: string
-  motivate: string
   introduce: string
 
   teachingCertificateName?: string
@@ -82,7 +81,6 @@ export interface UpdateMyTutorProfileGeneralDto {
 
 export interface UpdateMyTutorProfileTutorInfoDto {
   headline: string
-  motivate: string
   introduce: string
   videoUrl: string
 }
@@ -174,7 +172,6 @@ export type TutorProfile = {
   subject: string
   introduce: string
   experience: string
-  motivate: string
   headline: string
   prices: {
     baseCurrency: ECurrency
@@ -227,7 +224,6 @@ export type TutorApplication = {
   introVideoTitle: string
   introPreview: string
   headline: string
-  motivate: string
   introduce: string
   experience: string
   certificates: TutorCertificate[]
@@ -253,7 +249,6 @@ export interface VerifiedTutorProfileDto {
   subject: string
   introduce: string
   experience: string
-  motivate: string
   headline: string
   prices: {
     baseCurrency: ECurrency
@@ -370,7 +365,6 @@ export type TutorProfilePhotoState = {
   photo: TutorProfileFile
   identity: TutorProfileFile
   headline: string
-  motivate: string
   introduce: string
 }
 

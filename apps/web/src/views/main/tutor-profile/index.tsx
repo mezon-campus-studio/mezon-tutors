@@ -269,7 +269,6 @@ export default function TutorProfileView() {
     phone: '',
     subject: '',
     headline: '',
-    motivate: '',
     introduce: '',
     videoUrl: '',
     hourlyRate: '',
@@ -401,7 +400,7 @@ export default function TutorProfileView() {
       tab === PROFILE_TAB.GENERAL
         ? (['firstName', 'lastName', 'country', 'phone', 'subject', 'languageEntries'] as const)
         : tab === PROFILE_TAB.TUTOR_INFO
-          ? (['headline', 'motivate', 'introduce', 'videoUrl'] as const)
+          ? (['headline', 'introduce', 'videoUrl'] as const)
           : (['hourlyRate', 'currency', 'slotsByDay'] as const);
 
     const isValid = await form.trigger([...fieldsToValidate]);
@@ -876,8 +875,8 @@ export default function TutorProfileView() {
                   <Label className="text-xs font-semibold text-slate-700">
                     {tPhoto('fields.headlineLabel')}
                   </Label>
-                  <Input
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50/60"
+                  <Textarea
+                    className="min-h-20 rounded-xl border-slate-200 bg-slate-50/60"
                     placeholder={tPhoto('fields.headlinePlaceholder')}
                     {...form.register('headline')}
                   />
@@ -885,21 +884,10 @@ export default function TutorProfileView() {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-slate-700">
-                    {tPhoto('fields.motivateLabel')}
-                  </Label>
-                  <Textarea
-                    className="min-h-24 rounded-xl border-slate-200 bg-slate-50/60"
-                    placeholder={tPhoto('fields.motivatePlaceholder')}
-                    {...form.register('motivate')}
-                  />
-                  <FieldError message={errors.motivate?.message} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">
                     {tPhoto('fields.introduceLabel')}
                   </Label>
                   <Textarea
-                    className="min-h-32 rounded-xl border-slate-200 bg-slate-50/60"
+                    className="min-h-28 rounded-xl border-slate-200 bg-slate-50/60"
                     placeholder={tPhoto('fields.introducePlaceholder')}
                     {...form.register('introduce')}
                   />
@@ -1087,10 +1075,6 @@ export default function TutorProfileView() {
                 <ProfileField
                   label={tPhoto('fields.headlineLabel')}
                   value={profile.headline}
-                />
-                <ProfileField
-                  label={tPhoto('fields.motivateLabel')}
-                  value={profile.motivate}
                 />
                 <ProfileField
                   label={tPhoto('fields.introduceLabel')}

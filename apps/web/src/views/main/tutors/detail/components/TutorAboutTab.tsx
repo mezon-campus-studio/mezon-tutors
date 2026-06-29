@@ -1,7 +1,7 @@
 "use client";
 
 import type { TutorAboutDto } from "@mezon-tutors/shared";
-import { Languages, Sparkles, Target, User } from "lucide-react";
+import { Languages, Sparkles, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import VideoPreview from "../../components/VideoPreview";
 
@@ -76,19 +76,6 @@ export function TutorAboutTab({ tutor }: TutorAboutTabProps) {
           />
           <p className="text-sm leading-7 text-slate-700 sm:text-base">
             {tutor.experience}
-          </p>
-        </div>
-      ) : null}
-
-      {tutor.motivate ? (
-        <div className="flex flex-col gap-3">
-          <SectionTitle
-            icon={Target}
-            eyebrow="Teaching style"
-            title={t("motivationTitle")}
-          />
-          <p className="text-sm leading-7 text-slate-700 sm:text-base">
-            {tutor.motivate}
           </p>
         </div>
       ) : null}

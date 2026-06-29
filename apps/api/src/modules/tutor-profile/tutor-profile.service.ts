@@ -197,7 +197,6 @@ export class TutorProfileService {
 
         const profileUpdate: Prisma.TutorProfileUpdateInput = {};
         if (tutorInfo.headline !== profile.headline) profileUpdate.headline = tutorInfo.headline;
-        if (tutorInfo.motivate !== profile.motivate) profileUpdate.motivate = tutorInfo.motivate;
         if (tutorInfo.introduce !== profile.introduce) profileUpdate.introduce = tutorInfo.introduce;
         const nextVideoUrl = tutorInfo.videoUrl ?? '';
         if (nextVideoUrl !== (profile.videoUrl ?? '')) profileUpdate.videoUrl = nextVideoUrl;
@@ -471,7 +470,6 @@ export class TutorProfileService {
         subject: dto.subject,
         introduce: dto.introduce,
         experience: dto.specialization,
-        motivate: dto.motivate,
         headline: dto.headline,
         ratingAverage: 0,
         verificationStatus: VerificationStatus.PENDING,
@@ -576,7 +574,6 @@ export class TutorProfileService {
         subject: dto.subject,
         introduce: dto.introduce,
         experience: dto.specialization,
-        motivate: dto.motivate,
         headline: dto.headline,
         isProfessional: !!this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId),
         verificationStatus: VerificationStatus.PENDING,
@@ -1292,7 +1289,6 @@ export class TutorProfileService {
       headline: profile.headline ?? '',
       subject: profile.subject ?? '',
       introduce: profile.introduce ?? '',
-      motivate: profile.motivate ?? '',
       durationSeconds: null,
     });
 

@@ -138,8 +138,6 @@
     "fields": {
       "headlineLabel": "Tiêu đề hồ sơ",
       "headlinePlaceholder": "VD: Gia sư Toán nhiệt huyết",
-      "motivateLabel": "Điều gì thúc đẩy bạn dạy học?",
-      "motivatePlaceholder": "Chia sẻ lý do bạn muốn hỗ trợ học viên",
       "introduceLabel": "Giới thiệu bản thân với học viên",
       "introducePlaceholder": "Mô tả ngắn gọn kinh nghiệm và phong cách giảng dạy"
     },
@@ -165,7 +163,6 @@
     "saveContinue": "Lưu và tiếp tục",
     "validation": {
       "headlineRequired": "Vui lòng nhập tiêu đề hồ sơ",
-      "motivateRequired": "Vui lòng nhập điều thúc đẩy bạn dạy học",
       "introduceRequired": "Vui lòng nhập phần giới thiệu bản thân",
       "photoRequired": "Vui lòng tải lên ảnh hồ sơ",
       "photoInvalidType": "Ảnh hồ sơ chỉ hỗ trợ JPG hoặc PNG",

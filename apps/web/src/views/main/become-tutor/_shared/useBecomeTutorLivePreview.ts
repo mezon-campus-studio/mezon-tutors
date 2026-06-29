@@ -56,7 +56,6 @@ export function useBecomeTutorPhotoPreviewSync(control: Control<FieldValues>) {
   const setLive = useSetAtom(tutorProfileLivePreviewAtom);
   const introduce = useWatch({ control, name: 'introduce' });
   const headline = useWatch({ control, name: 'headline' });
-  const motivate = useWatch({ control, name: 'motivate' });
 
   useEffect(() => {
     setLive((prev) => ({
@@ -64,10 +63,9 @@ export function useBecomeTutorPhotoPreviewSync(control: Control<FieldValues>) {
       photo: {
         introduce: introduce ?? '',
         headline: headline ?? '',
-        motivate: motivate ?? '',
       },
     }));
-  }, [headline, introduce, motivate, setLive]);
+  }, [headline, introduce, setLive]);
 
   useEffect(() => {
     return () => {

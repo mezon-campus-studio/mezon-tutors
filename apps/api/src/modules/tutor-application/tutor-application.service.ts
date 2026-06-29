@@ -226,7 +226,6 @@ export class TutorApplicationService {
         headline: true,
         subject: true,
         introduce: true,
-        motivate: true,
         user: {
           select: { email: true, username: true, mezonUserId: true },
         },
@@ -246,7 +245,6 @@ export class TutorApplicationService {
         headline: profile.headline,
         subject: profile.subject,
         introduce: profile.introduce,
-        motivate: profile.motivate,
         user: profile.user,
       });
     } catch (error) {

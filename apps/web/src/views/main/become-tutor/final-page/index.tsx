@@ -144,7 +144,6 @@ export default function FinalPage() {
         fileName: profile.identityVerification?.hasFile ? 'uploaded-document' : '',
       },
       headline: profile.headline,
-      motivate: profile.motivate,
       introduce: profile.introduce,
     });
 

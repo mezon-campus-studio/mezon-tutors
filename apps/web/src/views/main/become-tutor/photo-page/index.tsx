@@ -22,7 +22,7 @@ import {
   EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
-import { Input } from "@/components/ui";
+import { Input, Textarea } from "@/components/ui";
 import UploadFile from "@/components/common/UploadFile";
 import { cloudinaryService } from "@/services";
 import {
@@ -70,7 +70,6 @@ export default function PhotoPage() {
         .object({
           introduce: z.string().min(1, t("validation.introduceRequired")),
           headline: z.string().min(1, t("validation.headlineRequired")),
-          motivate: z.string().min(1, t("validation.motivateRequired")),
           identityPhotoFile: z.instanceof(File).nullable(),
         })
         .superRefine((data, ctx) => {
@@ -123,7 +122,6 @@ export default function PhotoPage() {
     defaultValues: {
       introduce: tutorProfilePhoto.introduce,
       headline: tutorProfilePhoto.headline,
-      motivate: tutorProfilePhoto.motivate,
       identityPhotoFile: null,
     },
     resolver: zodResolver(photoFormSchema),
@@ -295,7 +293,7 @@ export default function PhotoPage() {
       behavior: "smooth",
       block: "center",
     });
-    if (["headline", "motivate", "introduce"].includes(firstError))
+    if (["headline", "introduce"].includes(firstError))
       setFocus(firstError);
   };
 
@@ -305,7 +303,6 @@ export default function PhotoPage() {
     setTutorProfilePhoto((prev) => ({
       ...prev,
       headline: values.headline,
-      motivate: values.motivate,
       introduce: values.introduce,
     }));
     setLastSavedAt(new Date().toISOString());
@@ -371,50 +368,32 @@ export default function PhotoPage() {
           onSubmit={handleSubmit(onSaveContinue, onValidationError)}
           className="flex flex-col gap-4"
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
-              <BecomeTutorFieldLabel htmlFor="headline" required>
-                {t("fields.headlineLabel")}
-              </BecomeTutorFieldLabel>
-              <Input
-                id="headline"
-                placeholder={t("fields.headlinePlaceholder")}
-                {...register("headline")}
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              />
-              {errors.headline && (
-                <p className="text-xs text-rose-600">
-                  {errors.headline.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <BecomeTutorFieldLabel htmlFor="motivate" required>
-                {t("fields.motivateLabel")}
-              </BecomeTutorFieldLabel>
-              <Input
-                id="motivate"
-                placeholder={t("fields.motivatePlaceholder")}
-                {...register("motivate")}
-                className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-              />
-              {errors.motivate && (
-                <p className="text-xs text-rose-600">
-                  {errors.motivate.message}
-                </p>
-              )}
-            </div>
+          <div className="space-y-1.5">
+            <BecomeTutorFieldLabel htmlFor="headline" required>
+              {t("fields.headlineLabel")}
+            </BecomeTutorFieldLabel>
+            <Textarea
+              id="headline"
+              placeholder={t("fields.headlinePlaceholder")}
+              {...register("headline")}
+              className="min-h-20 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+            />
+            {errors.headline && (
+              <p className="text-xs text-rose-600">
+                {errors.headline.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
             <BecomeTutorFieldLabel htmlFor="introduce" required>
               {t("fields.introduceLabel")}
             </BecomeTutorFieldLabel>
-            <Input
+            <Textarea
               id="introduce"
               placeholder={t("fields.introducePlaceholder")}
               {...register("introduce")}
-              className="h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              className="min-h-28 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
             />
             {errors.introduce && (
               <p className="text-xs text-rose-600">{errors.introduce.message}</p>

@@ -61,7 +61,6 @@ function useBecomeTutorPreviewTutor(
       subject: about.subject,
       introduce: photo.introduce?.trim() || placeholders.intro,
       experience: '',
-      motivate: photo.motivate || '',
       headline: photo.headline || '',
       prices: {
         baseCurrency,

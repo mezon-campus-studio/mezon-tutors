@@ -9,7 +9,6 @@ export type TutorIntroYoutubeProfileMeta = {
   headline?: string;
   subject?: string;
   introduce?: string;
-  motivate?: string;
 };
 
 const YOUTUBE_TITLE_MAX_LENGTH = 100;

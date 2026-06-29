@@ -138,8 +138,6 @@
     "fields": {
       "headlineLabel": "Profile headline",
       "headlinePlaceholder": "e.g. Passionate math tutor",
-      "motivateLabel": "What motivates you to teach?",
-      "motivatePlaceholder": "Share what drives you to help students",
       "introduceLabel": "Introduce yourself to students",
       "introducePlaceholder": "Briefly describe your experience and teaching style"
     },
@@ -165,7 +163,6 @@
     "saveContinue": "Save and Continue",
     "validation": {
       "headlineRequired": "Profile headline is required",
-      "motivateRequired": "What motivates you is required",
       "introduceRequired": "Introduction is required",
       "photoRequired": "Profile photo is required",
       "photoInvalidType": "Photo must be JPG or PNG",
