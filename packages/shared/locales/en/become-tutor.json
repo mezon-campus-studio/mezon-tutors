@@ -159,6 +159,8 @@
         "description": "Solid or simple backgrounds work best to keep focus on you."
       }
     },
+    "previewLabel": "Preview detail profile",
+    "noInformation": "No information yet",
     "back": "Back",
     "saveContinue": "Save and Continue",
     "validation": {

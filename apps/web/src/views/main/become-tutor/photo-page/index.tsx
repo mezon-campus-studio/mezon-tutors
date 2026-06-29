@@ -6,12 +6,15 @@ import {
   Focus,
   GraduationCap,
   Image as ImageIcon,
+  MapPin,
+  Star,
   Sun,
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useForm, type Control, type FieldValues } from "react-hook-form";
+import { useForm, useWatch, type Control, type FieldValues } from "react-hook-form";
 import { z } from "zod";
 import {
   ACCEPT_IMAGE_TYPES,
@@ -22,11 +25,13 @@ import {
   EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
 } from "@mezon-tutors/shared";
-import { Input, Textarea } from "@/components/ui";
+import Image from "next/image";
+import { Textarea } from "@/components/ui";
 import UploadFile from "@/components/common/UploadFile";
 import { cloudinaryService } from "@/services";
 import {
   markStepCompletedAtom,
+  tutorProfileAboutAtom,
   tutorProfileLastSavedAtAtom,
   tutorProfilePhotoAtom,
   userAtom,
@@ -46,6 +51,7 @@ const PROGRESS_PERCENT = calculateStepProgress(CURRENT_STEP);
 
 export default function PhotoPage() {
   const t = useTranslations("BecomeTutor.photo");
+  const tCard = useTranslations("Tutors.TutorCard");
   const router = useRouter();
   const identityCardRef = useRef<HTMLDivElement | null>(null);
   const formCardRef = useRef<HTMLDivElement | null>(null);
@@ -54,6 +60,7 @@ export default function PhotoPage() {
   );
   const [, markStepCompleted] = useAtom(markStepCompletedAtom);
   const currentUser = useAtomValue(userAtom);
+  const tutorProfileAbout = useAtomValue(tutorProfileAboutAtom);
   const [previewIdentityUrl, setPreviewIdentityUrl] = useState<string | null>(
     tutorProfilePhoto.identity?.dataUrl || null,
   );
@@ -140,6 +147,9 @@ export default function PhotoPage() {
   } = form;
 
   useBecomeTutorPhotoPreviewSync(control as unknown as Control<FieldValues>);
+
+  const watchedHeadline = useWatch({ control, name: 'headline' });
+  const watchedIntroduce = useWatch({ control, name: 'introduce' });
 
   useEffect(() => {
     const dataUrl = tutorProfilePhoto.identity?.dataUrl;
@@ -364,42 +374,116 @@ export default function PhotoPage() {
         description={t("cardSubtitle")}
         contentRef={formCardRef}
       >
-        <form
-          onSubmit={handleSubmit(onSaveContinue, onValidationError)}
-          className="flex flex-col gap-4"
-        >
-          <div className="space-y-1.5">
-            <BecomeTutorFieldLabel htmlFor="headline" required>
-              {t("fields.headlineLabel")}
-            </BecomeTutorFieldLabel>
-            <Textarea
-              id="headline"
-              placeholder={t("fields.headlinePlaceholder")}
-              {...register("headline")}
-              className="min-h-20 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-            />
-            {errors.headline && (
-              <p className="text-xs text-rose-600">
-                {errors.headline.message}
-              </p>
-            )}
-          </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <form
+            onSubmit={handleSubmit(onSaveContinue, onValidationError)}
+            className="flex flex-col gap-4 lg:col-span-3"
+          >
+            <div className="space-y-1.5">
+              <BecomeTutorFieldLabel htmlFor="headline" required>
+                {t("fields.headlineLabel")}
+              </BecomeTutorFieldLabel>
+              <Textarea
+                id="headline"
+                placeholder={t("fields.headlinePlaceholder")}
+                {...register("headline")}
+                className="min-h-30 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.headline && (
+                <p className="text-xs text-rose-600">
+                  {errors.headline.message}
+                </p>
+              )}
+            </div>
 
-          <div className="space-y-1.5">
-            <BecomeTutorFieldLabel htmlFor="introduce" required>
-              {t("fields.introduceLabel")}
-            </BecomeTutorFieldLabel>
-            <Textarea
-              id="introduce"
-              placeholder={t("fields.introducePlaceholder")}
-              {...register("introduce")}
-              className="min-h-28 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-            />
-            {errors.introduce && (
-              <p className="text-xs text-rose-600">{errors.introduce.message}</p>
-            )}
+            <div className="space-y-1.5">
+              <BecomeTutorFieldLabel htmlFor="introduce" required>
+                {t("fields.introduceLabel")}
+              </BecomeTutorFieldLabel>
+              <Textarea
+                id="introduce"
+                placeholder={t("fields.introducePlaceholder")}
+                {...register("introduce")}
+                className="min-h-40 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+              />
+              {errors.introduce && (
+                <p className="text-xs text-rose-600">{errors.introduce.message}</p>
+              )}
+            </div>
+          </form>
+
+          <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
+            <div className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm">
+              <div className="bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] px-4 py-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-600">
+                  {t("previewLabel")}
+                </p>
+              </div>
+              <div className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="relative shrink-0">
+                    <Image
+                      src={currentUser?.avatar || DEFAULT_AVATAR_URL}
+                      alt="avatar"
+                      width={56}
+                      height={56}
+                      className="size-14 rounded-xl object-cover object-center shadow-sm ring-1 ring-white"
+                    />
+                    <div className="absolute -bottom-1 -right-1 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] px-1.5 py-0.5 text-[8px] font-bold text-white ring-1 ring-white">
+                      Pro
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-extrabold text-slate-900">
+                      {tutorProfileAbout.firstName} {tutorProfileAbout.lastName}
+                    </p>
+                    <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600 ring-1 ring-amber-100">
+                      <Star className="size-3 fill-amber-400 text-amber-400" />
+                      0.00
+                    </span>
+                  </div>
+                </div>
+
+                {watchedHeadline && (
+                  <p className="mt-3 text-xs leading-5 text-slate-600 line-clamp-2">
+                    {watchedHeadline}
+                  </p>
+                )}
+
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 ring-1 ring-violet-100">
+                    <GraduationCap className="size-3" />
+                    {tutorProfileAbout.subject || tCard("noSubject")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-50 px-2 py-0.5 text-[10px] font-semibold text-fuchsia-700 ring-1 ring-fuchsia-100">
+                    <MapPin className="size-3" />
+                    {tutorProfileAbout.country || tCard("noCountry")}
+                  </span>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-6 items-center justify-center rounded-md bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+                      <User className="size-3" />
+                    </div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-violet-500">
+                      Introduction
+                    </p>
+                  </div>
+                  {watchedIntroduce ? (
+                    <p className="mt-2 text-xs leading-5 text-slate-700 line-clamp-4">
+                      {watchedIntroduce}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-xs italic leading-5 text-slate-400">
+                      {t("noInformation")}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       </BecomeTutorSection>
 
       <BecomeTutorSection
