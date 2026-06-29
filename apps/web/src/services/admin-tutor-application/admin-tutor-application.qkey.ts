@@ -6,4 +6,6 @@ export const adminTutorApplicationQueryKey = {
     [...adminTutorApplicationQueryKey.all, "detail", id] as const,
   lessonChangeHistory: (tutorId: string) =>
     [...adminTutorApplicationQueryKey.all, "lesson-change-history", tutorId] as const,
+  stats: (tutorProfileId: string) =>
+    [...adminTutorApplicationQueryKey.all, "stats", tutorProfileId] as const,
 };

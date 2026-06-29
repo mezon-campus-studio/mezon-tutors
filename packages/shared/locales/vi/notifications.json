@@ -28,7 +28,7 @@
     "lessonComplaintApproved": "Khiếu nại đã được duyệt",
     "lessonComplaintRejected": "Khiếu nại bị từ chối",
     "lessonComplaintTutorRejected": "Gia sư từ chối khiếu nại",
-    "tutorLessonComplaintApproved": "Khiếu nại về buổi học của bạn đã được duyệt",
+    "tutorLessonComplaintApproved": "Khiếu nại về buổi học của bạn đã được duyệt. {amount} đã được hoàn từ thu nhập tương ứng.",
     "tutorLessonComplaintSubmitted": "Khiếu nại buổi học mới",
     "adminWithdrawalRequested": "Yêu cầu rút tiền mới",
     "tutorWithdrawalCompleted": "Rút tiền thành công",

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  AdminUserWalletTransactionsApiResponse,
   AdminWalletTransactionStatsApiResponse,
   AdminWalletTransactionsApiResponse,
   AdminWalletWithdrawalsApiResponse,
@@ -45,6 +46,18 @@ export const adminWalletApi = {
     });
   },
 
+  getUserTransactions(
+    userId: string,
+    page: number,
+  ): Promise<AdminUserWalletTransactionsApiResponse> {
+    return apiClient.get<
+      ApiResponse<AdminUserWalletTransactionsApiResponse>,
+      AdminUserWalletTransactionsApiResponse
+    >(`${BASE}/admin/transactions/user/${userId}`, {
+      params: { page, limit: 10 },
+    });
+  },
+
   approveWithdrawal(
     id: string,
     payload: ApproveWalletWithdrawalAdminPayload = {},
@@ -80,6 +93,14 @@ export function useAdminWalletTransactions(
   return useQuery({
     queryKey: adminWalletQueryKey.transactions(page, filters),
     queryFn: () => adminWalletApi.getTransactions(page, filters),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useAdminUserTransactions(userId: string, page: number) {
+  return useQuery({
+    queryKey: adminWalletQueryKey.userTransactions(userId, page),
+    queryFn: () => adminWalletApi.getUserTransactions(userId, page),
     staleTime: 30 * 1000,
   });
 }

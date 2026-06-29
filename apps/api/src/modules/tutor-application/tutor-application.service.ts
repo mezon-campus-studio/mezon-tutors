@@ -2,6 +2,9 @@ import { Injectable, InternalServerErrorException, Logger, NotFoundException } f
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ENotificationType,
+  EPaymentStatus,
+  ETrialLessonStatus,
+  ESubscriptionEnrollmentStatus,
   IdentityVerificationStatus,
   Prisma,
   ProfessionalDocumentStatus,
@@ -14,6 +17,7 @@ import {
   AdminLessonChangeHistoryItem,
   FullTutorApplication,
   TutorAdminNote,
+  TutorAdminStatsResponse,
   TutorApplicationMetrics,
 } from '@mezon-tutors/shared';
 import { calculateAverageDurationHours } from '../../common/utils/time.util';
@@ -486,6 +490,119 @@ export class TutorApplicationService {
       total_pending_change_percent: totalPendingChangePercent,
       approved_today_change_percent: approvedChangePercent,
       avg_review_time_change_percent: avgReviewTimeChangePercent,
+    };
+  }
+
+  async getTutorAdminStats(tutorProfileId: string): Promise<TutorAdminStatsResponse> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorProfileId },
+      select: {
+        userId: true,
+        totalLessonsTaught: true,
+        totalStudents: true,
+        ratingAverage: true,
+        ratingCount: true,
+        activeStatus: true,
+        createdAt: true,
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    const [wallet, trialCounts, subscriptionCounts, completedTrialCount, completedSubCount, activeSubStudents, activeTrialStudents] =
+      await Promise.all([
+        this.prisma.wallet.findUnique({
+          where: { userId: profile.userId },
+          select: {
+            balance: true,
+            pendingBalance: true,
+            pendingWithdrawal: true,
+            totalEarned: true,
+            totalWithdrawn: true,
+          },
+        }),
+        this.prisma.trialLessonBooking.groupBy({
+          by: ['status'],
+          where: { tutorId: tutorProfileId },
+          _count: true,
+        }),
+        this.prisma.subscriptionEnrollment.groupBy({
+          by: ['status'],
+          where: { tutorId: tutorProfileId },
+          _count: true,
+        }),
+        this.prisma.trialLessonBooking.count({
+          where: {
+            tutorId: tutorProfileId,
+            status: ETrialLessonStatus.COMPLETED,
+          },
+        }),
+        this.prisma.subscriptionEnrollment.count({
+          where: {
+            tutorId: tutorProfileId,
+            status: ESubscriptionEnrollmentStatus.ACTIVE,
+          },
+        }),
+        this.prisma.subscriptionEnrollment.findMany({
+          where: { tutorId: tutorProfileId, status: ESubscriptionEnrollmentStatus.ACTIVE },
+          select: { studentId: true },
+          distinct: ['studentId'],
+        }),
+        this.prisma.trialLessonBooking.findMany({
+          where: { tutorId: tutorProfileId, status: ETrialLessonStatus.CONFIRMED },
+          select: { studentId: true },
+          distinct: ['studentId'],
+        }),
+      ]);
+
+    const getCount = (
+      counts: { status: string; _count: number }[],
+      status: string,
+    ) => counts.find((c) => c.status === status)?._count ?? 0;
+
+    const trialCompleted = getCount(trialCounts, ETrialLessonStatus.COMPLETED);
+    const trialUpcoming = getCount(trialCounts, ETrialLessonStatus.CONFIRMED);
+    const trialCancelled = getCount(trialCounts, ETrialLessonStatus.CANCELLED);
+    const trialTotal = trialCounts.reduce((sum, c) => sum + c._count, 0);
+
+    const subActive = getCount(subscriptionCounts, ESubscriptionEnrollmentStatus.ACTIVE);
+    const subCancelled = getCount(subscriptionCounts, ESubscriptionEnrollmentStatus.CANCELLED);
+    const subTotal = subscriptionCounts.reduce((sum, c) => sum + c._count, 0);
+
+    return {
+      wallet: wallet
+        ? {
+            balance: Number(wallet.balance),
+            pendingBalance: Number(wallet.pendingBalance),
+            pendingWithdrawal: Number(wallet.pendingWithdrawal),
+            totalEarned: Number(wallet.totalEarned),
+            totalWithdrawn: Number(wallet.totalWithdrawn),
+          }
+        : null,
+      lessons: {
+        completed: trialCompleted + completedSubCount,
+        upcoming: trialUpcoming + subActive,
+        cancelled: trialCancelled + subCancelled,
+        trial: trialTotal,
+        subscription: subTotal,
+      },
+      students: {
+        total: profile.totalStudents,
+        current: new Set([
+          ...activeSubStudents.map(r => r.studentId),
+          ...activeTrialStudents.map(r => r.studentId),
+        ]).size,
+      },
+      profile: {
+        totalLessonsTaught: profile.totalLessonsTaught,
+        totalStudents: profile.totalStudents,
+        ratingAverage: profile.ratingAverage ? Number(profile.ratingAverage) : 0,
+        ratingCount: profile.ratingCount,
+        activeStatus: profile.activeStatus,
+        joinedAt: profile.createdAt.toISOString(),
+      },
     };
   }
 }

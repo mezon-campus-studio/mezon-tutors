@@ -54,6 +54,11 @@ export class TutorApplicationController {
     return this.tutorApplicationService.getTutorProfile(id);
   }
 
+  @Get('tutor-profiles/:id/stats')
+  async getTutorAdminStats(@Param('id') id: string) {
+    return this.tutorApplicationService.getTutorAdminStats(id);
+  }
+
   @Get('tutor-profiles/:id/lesson-change-history')
   async getLessonChangeHistory(
     @Param('id') id: string

@@ -12,9 +12,14 @@ import {
   AvatarImage,
   Button,
   Spinner,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from "@/components/ui";
 import {
   useAdminTutorApplicationDetail,
+  useAdminTutorStats,
   useApproveTutorApplication,
   useRejectTutorApplication,
 } from "@/services";
@@ -23,6 +28,7 @@ import AdminNotesCard from "./components/AdminNotesCard";
 import ApplicationMetaCard from "./components/ApplicationMetaCard";
 import AvailabilityCard from "./components/AvailabilityCard";
 import LessonChangeHistoryCard from "./components/LessonChangeHistoryCard";
+import TutorStatsTab from "./components/TutorStatsTab";
 import ConfirmDialog from "./components/ConfirmDialog";
 import IdentityVerificationCard from "./components/IdentityVerificationCard";
 import PersonalInfoCard from "./components/PersonalInfoCard";
@@ -62,6 +68,7 @@ export default function AdminTutorApplicationDetailView({
   const [emailNote, setEmailNote] = useState("");
 
   const { data, isLoading, error } = useAdminTutorApplicationDetail(id);
+  const { data: statsData } = useAdminTutorStats(id);
   const approveMutation = useApproveTutorApplication();
   const rejectMutation = useRejectTutorApplication();
 
@@ -178,66 +185,115 @@ export default function AdminTutorApplicationDetailView({
             ) : null}
           </div>
         </div>
-      </div>
-      
-      <div className="mb-6">
-        <LessonChangeHistoryCard
-            tutorId={profile.id}
-            timezoneName={profile.timezone ?? "UTC"}
-          />
-      </div>
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
-          <PersonalInfoCard profile={profile} />
-          <VideoBioCard profile={profile} />
-          <IdentityVerificationCard verification={identityVerification} tutorId={profile.id} />
-          <ProfessionalDocumentsCard documents={professionalDocuments} tutorId={profile.id} />
-          <AvailabilityCard profile={profile} availability={availability} />
+        <hr className="my-4 border-slate-200" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">{t("sections.profileStats.joinedAt")}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">{formatDate(profile.createdAt)}</p>
+          </div>
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">{t("sections.profileStats.rating")}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">
+              {profile.ratingCount > 0
+                ? `${Number(profile.ratingAverage).toFixed(1)} (${profile.ratingCount})`
+                : "—"}
+            </p>
+          </div>
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">{t("sections.profileStats.status")}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">
+              {profile.activeStatus
+                ? t("sections.profileStats.active")
+                : t("sections.profileStats.inactive")}
+            </p>
+          </div>
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">{t("sections.profileStats.currentStudents")}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">
+              {(statsData?.students.current ?? 0).toLocaleString("vi-VN")}
+            </p>
+          </div>
         </div>
-        <div className="space-y-5">
-          <ApplicationMetaCard profile={profile} />
-          <AdminNotesCard tutorId={profile.id} notes={adminNotes} />
-        </div>
-      </div>
 
-      <ConfirmDialog
-        open={confirmAction === "approve"}
-        onOpenChange={(open) => {
-          if (!open) closeConfirmDialog();
-        }}
-        title={tApprove("title")}
-        description={tApprove("description", { name: fullName })}
-        loadingMessage={
-          approveMutation.isPending && willUploadIntroVideoToYoutube
-            ? tApprove("youtubeUploading")
-            : undefined
-        }
-        confirmLabel={tApprove("confirm")}
-        cancelLabel={tModals("cancel")}
-        loading={approveMutation.isPending}
-        onConfirm={handleApprove}
-        emailNote={emailNote}
-        onEmailNoteChange={setEmailNote}
-        emailNoteLabel={tModals("emailNote.label")}
-        emailNotePlaceholder={tModals("emailNote.placeholder")}
-      />
-      <ConfirmDialog
-        open={confirmAction === "reject"}
-        onOpenChange={(open) => {
-          if (!open) closeConfirmDialog();
-        }}
-        title={tReject("title")}
-        description={tReject("description", { name: fullName })}
-        confirmLabel={tReject("confirm")}
-        cancelLabel={tModals("cancel")}
-        variant="destructive"
-        loading={rejectMutation.isPending}
-        onConfirm={handleReject}
-        emailNote={emailNote}
-        onEmailNoteChange={setEmailNote}
-        emailNoteLabel={tModals("emailNote.label")}
-        emailNotePlaceholder={tModals("emailNote.placeholder")}
-      />
+        <Tabs defaultValue="application" className="w-full pt-5">
+          <TabsList className="mb-6">
+            <TabsTrigger value="application">
+              {t("tabs.fullApplication")}
+            </TabsTrigger>
+            <TabsTrigger value="stats">
+              {t("tabs.tutorStats")}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="application" className="space-y-6">
+            <div className="mb-6">
+              <LessonChangeHistoryCard
+                tutorId={profile.id}
+                timezoneName={profile.timezone ?? "UTC"}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+              <div className="space-y-5 lg:col-span-2">
+                <PersonalInfoCard profile={profile} />
+                <VideoBioCard profile={profile} />
+                <IdentityVerificationCard verification={identityVerification} tutorId={profile.id} />
+                <ProfessionalDocumentsCard documents={professionalDocuments} tutorId={profile.id} />
+                <AvailabilityCard profile={profile} availability={availability} />
+              </div>
+              <div className="space-y-5">
+                <ApplicationMetaCard profile={profile} />
+                <AdminNotesCard tutorId={profile.id} notes={adminNotes} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <TutorStatsTab
+              tutorProfileId={profile.id}
+              userId={profile.userId}
+            />
+          </TabsContent>
+        </Tabs>
+
+        <ConfirmDialog
+          open={confirmAction === "approve"}
+          onOpenChange={(open) => {
+            if (!open) closeConfirmDialog();
+          }}
+          title={tApprove("title")}
+          description={tApprove("description", { name: fullName })}
+          loadingMessage={
+            approveMutation.isPending && willUploadIntroVideoToYoutube
+              ? tApprove("youtubeUploading")
+              : undefined
+          }
+          confirmLabel={tApprove("confirm")}
+          cancelLabel={tModals("cancel")}
+          loading={approveMutation.isPending}
+          onConfirm={handleApprove}
+          emailNote={emailNote}
+          onEmailNoteChange={setEmailNote}
+          emailNoteLabel={tModals("emailNote.label")}
+          emailNotePlaceholder={tModals("emailNote.placeholder")}
+        />
+        <ConfirmDialog
+          open={confirmAction === "reject"}
+          onOpenChange={(open) => {
+            if (!open) closeConfirmDialog();
+          }}
+          title={tReject("title")}
+          description={tReject("description", { name: fullName })}
+          confirmLabel={tReject("confirm")}
+          cancelLabel={tModals("cancel")}
+          variant="destructive"
+          loading={rejectMutation.isPending}
+          onConfirm={handleReject}
+          emailNote={emailNote}
+          onEmailNoteChange={setEmailNote}
+          emailNoteLabel={tModals("emailNote.label")}
+          emailNotePlaceholder={tModals("emailNote.placeholder")}
+        />
+      </div>
     </div>
   );
 }

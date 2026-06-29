@@ -14,6 +14,7 @@
     "footer": "© 2026 Tutor Audit Administrative Dashboard. Chỉ sử dụng lưu hành nội bộ.",
     "tabs": {
       "fullApplication": "Hồ sơ đầy đủ",
+      "tutorStats": "Thống kê gia sư",
       "documents": "Tài liệu & Xác thực",
       "identity": "Danh tính",
       "assessment": "Kết quả đánh giá",
@@ -41,6 +42,15 @@
       "education": {
         "title": "Học vấn & Chứng chỉ",
         "verifyCredential": "Xác thực bằng cấp"
+      },
+      "profileStats": {
+        "title": "Hồ sơ & Đánh giá",
+        "joinedAt": "Ngày tham gia",
+        "rating": "Đánh giá",
+        "status": "Trạng thái",
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "currentStudents": "Học sinh hiện tại"
       },
       "lessonChangeHistory": {
         "title": "Lịch sử hủy / đổi lịch",
@@ -86,6 +96,56 @@
           "studentReschedule": "Học sinh tự đổi lịch buổi học",
           "studentTrialReschedule": "Học sinh tự đổi lịch buổi học thử",
           "other": "Khác"
+        }
+      },
+      "tutorStats": {
+        "error": "Không thể tải thống kê.",
+        "wallet": {
+          "title": "Ví",
+          "balance": "Số dư khả dụng",
+          "pendingBalance": "Số dư chờ duyệt",
+          "pendingWithdrawal": "Đang chờ rút",
+          "totalEarned": "Tổng thu nhập",
+          "totalWithdrawn": "Đã rút",
+          "noWallet": "Gia sư này chưa có ví."
+        },
+        "lessons": {
+          "title": "Buổi học",
+          "completed": "Đã hoàn thành",
+          "upcoming": "Sắp tới",
+          "cancelled": "Đã hủy",
+          "totalTrial": "Tổng buổi học thử"
+        }
+      },
+      "transactionHistory": {
+        "title": "Lịch sử giao dịch",
+        "subtitle": "Các giao dịch trong ví của gia sư này.",
+        "empty": "Chưa có giao dịch nào.",
+        "listTitle": "Danh sách giao dịch",
+        "direction": {
+          "CREDIT": "Tiền vào",
+          "DEBIT": "Tiền ra"
+        },
+        "columns": {
+          "type": "Loại",
+          "direction": "Chiều",
+          "amount": "Số tiền",
+          "reference": "Tham chiếu",
+          "createdAt": "Thời gian"
+        },
+        "stats": {
+          "totalCredit": {
+            "title": "Tổng tiền vào"
+          },
+          "totalDebit": {
+            "title": "Tổng tiền ra"
+          },
+          "transactionCount": {
+            "title": "Số giao dịch"
+          },
+          "monthIncome": {
+            "title": "Thu nhập tháng này"
+          }
         }
       },
       "availability": {

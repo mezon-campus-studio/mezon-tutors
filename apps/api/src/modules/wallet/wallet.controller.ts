@@ -82,6 +82,20 @@ export class WalletController {
     );
   }
 
+  @Get('admin/transactions/user/:userId')
+  @UseGuards(AdminGuard)
+  @ApiOperation({ summary: 'Admin: list wallet transactions for a specific user (paginated with stats)' })
+  getUserTransactions(
+    @Param('userId') userId: string,
+    @Query() query: GetAdminWalletTransactionsDto,
+  ) {
+    return this.walletService.getUserTransactions(
+      userId,
+      query.page,
+      query.limit,
+    );
+  }
+
   @Post('withdrawals')
   @HttpCode(HttpStatus.NO_CONTENT)
   @SkipApiResponseWrap()

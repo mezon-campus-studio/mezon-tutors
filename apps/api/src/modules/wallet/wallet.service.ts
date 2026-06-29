@@ -35,6 +35,7 @@ import {
   type AdminWalletTransactionApiItem,
   type AdminWalletTransactionsApiResponse,
   type AdminWalletTransactionStatsApiResponse,
+  type AdminUserWalletTransactionsApiResponse,
   ECurrency as SharedCurrency,
   DEFAULT_TIMEZONE,
   WITHDRAWAL_WINDOW_CLOSED_CODE,
@@ -1275,11 +1276,11 @@ export class WalletService {
       monthTransactionCount,
     ] = await Promise.all([
       this.prisma.transaction.aggregate({
-        _sum: { grossAmount: true },
+        _sum: { amount: true },
         where: { direction: EWalletTransactionDirection.CREDIT, ...where },
       }),
       this.prisma.transaction.aggregate({
-        _sum: { grossAmount: true },
+        _sum: { amount: true },
         where: { direction: EWalletTransactionDirection.DEBIT, ...where },
       }),
       this.prisma.transaction.aggregate({
@@ -1287,7 +1288,7 @@ export class WalletService {
         where: { ...where },
       }),
       this.prisma.transaction.aggregate({
-        _sum: { grossAmount: true },
+        _sum: { amount: true },
         where: {
           direction: EWalletTransactionDirection.CREDIT,
           createdAt: { gte: monthStart },
@@ -1295,7 +1296,7 @@ export class WalletService {
         },
       }),
       this.prisma.transaction.aggregate({
-        _sum: { grossAmount: true },
+        _sum: { amount: true },
         where: {
           direction: EWalletTransactionDirection.DEBIT,
           createdAt: { gte: monthStart },
@@ -1307,11 +1308,11 @@ export class WalletService {
     ]);
 
     return {
-      totalCredit: Number(creditAgg._sum.grossAmount ?? 0n),
-      totalDebit: Number(debitAgg._sum.grossAmount ?? 0n),
+      totalCredit: Number(creditAgg._sum.amount ?? 0n),
+      totalDebit: Number(debitAgg._sum.amount ?? 0n),
       totalPlatformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
-      monthCredit: Number(monthCreditAgg._sum.grossAmount ?? 0n),
-      monthDebit: Number(monthDebitAgg._sum.grossAmount ?? 0n),
+      monthCredit: Number(monthCreditAgg._sum.amount ?? 0n),
+      monthDebit: Number(monthDebitAgg._sum.amount ?? 0n),
       transactionCount,
       monthTransactionCount,
     };
@@ -1384,6 +1385,89 @@ export class WalletService {
     }));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
+  async getUserTransactions(
+    userId: string,
+    page = 1,
+    limit = 15,
+  ): Promise<AdminUserWalletTransactionsApiResponse> {
+    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+    if (!wallet) {
+      const meta = this.buildMeta(0, page, limit);
+      return {
+        items: [],
+        stats: { totalCredit: 0, totalDebit: 0, totalPlatformFee: 0, transactionCount: 0, monthIncome: 0 },
+        meta,
+      };
+    }
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
+    const where: Prisma.TransactionWhereInput = { walletId: wallet.id };
+
+    const [total, rows, creditAgg, debitAgg, platformFeeAgg, monthCreditAgg] = await Promise.all([
+      this.prisma.transaction.count({ where }),
+      this.prisma.transaction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: safeLimit,
+        include: {
+          booking: { select: { id: true } },
+          subscriptionEnrollment: { select: { id: true } },
+        },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { ...where, direction: EWalletTransactionDirection.CREDIT },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { ...where, direction: EWalletTransactionDirection.DEBIT },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { platformFee: true },
+        where,
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { ...where, direction: EWalletTransactionDirection.CREDIT, createdAt: { gte: monthStart } },
+      }),
+    ]);
+
+    const items: AdminWalletTransactionApiItem[] = rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      direction: row.direction,
+      amount: Number(row.amount),
+      grossAmount: row.grossAmount != null ? Number(row.grossAmount) : null,
+      platformFee: row.platformFee != null ? Number(row.platformFee) : null,
+      description: row.description,
+      createdAt: row.createdAt.toISOString(),
+      referenceLabel: row.bookingId
+        ? `Booking ${row.bookingId.slice(0, 8)}`
+        : row.subscriptionEnrollmentId
+          ? `Plan ${row.subscriptionEnrollmentId.slice(0, 8)}`
+          : row.withdrawalId
+            ? `Withdrawal ${row.withdrawalId.slice(0, 8)}`
+            : null,
+    }));
+
+    return {
+      items,
+      stats: {
+        totalCredit: Number(creditAgg._sum.amount ?? 0n),
+        totalDebit: Number(debitAgg._sum.amount ?? 0n),
+        totalPlatformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
+        transactionCount: total,
+        monthIncome: Number(monthCreditAgg._sum.amount ?? 0n),
+      },
+      meta: this.buildMeta(total, safePage, safeLimit),
+    };
   }
 
   async getAllWithdrawals(page = 1, limit = 10): Promise<AdminWalletWithdrawalsApiResponse> {
