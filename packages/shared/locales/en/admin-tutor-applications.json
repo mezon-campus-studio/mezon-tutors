@@ -14,6 +14,7 @@
     "footer": "© 2026 Tutor Audit Administrative Dashboard. Internal Use Only.",
     "tabs": {
       "fullApplication": "Full Application",
+      "tutorStats": "Tutor Stats",
       "documents": "Documents & Identity",
       "identity": "Identity",
       "assessment": "Assessment Results",
@@ -41,6 +42,15 @@
       "education": {
         "title": "Education & Credentials",
         "verifyCredential": "Verify Credential"
+      },
+      "profileStats": {
+        "title": "Profile & Rating",
+        "joinedAt": "Joined",
+        "rating": "Rating",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "currentStudents": "Current students"
       },
       "lessonChangeHistory": {
         "title": "Cancel & reschedule history",
@@ -86,6 +96,56 @@
           "studentReschedule": "Student rescheduled the lesson",
           "studentTrialReschedule": "Student rescheduled the trial lesson",
           "other": "Other"
+        }
+      },
+      "tutorStats": {
+        "error": "Failed to load stats.",
+        "wallet": {
+          "title": "Wallet",
+          "balance": "Available Balance",
+          "pendingBalance": "Pending Balance",
+          "pendingWithdrawal": "Pending Withdrawal",
+          "totalEarned": "Total Earned",
+          "totalWithdrawn": "Total Withdrawn",
+          "noWallet": "This tutor does not have a wallet yet."
+        },
+        "lessons": {
+          "title": "Lessons",
+          "completed": "Completed",
+          "upcoming": "Upcoming",
+          "cancelled": "Cancelled",
+          "totalTrial": "Total Trial Lessons"
+        }
+      },
+      "transactionHistory": {
+        "title": "Transaction history",
+        "subtitle": "Wallet transactions for this tutor.",
+        "empty": "No transactions found.",
+        "listTitle": "Transaction list",
+        "direction": {
+          "CREDIT": "Money in",
+          "DEBIT": "Money out"
+        },
+        "columns": {
+          "type": "Type",
+          "direction": "Direction",
+          "amount": "Amount",
+          "reference": "Reference",
+          "createdAt": "Time"
+        },
+        "stats": {
+          "totalCredit": {
+            "title": "Total money in"
+          },
+          "totalDebit": {
+            "title": "Total money out"
+          },
+          "transactionCount": {
+            "title": "Transactions"
+          },
+          "monthIncome": {
+            "title": "Income this month"
+          }
         }
       },
       "availability": {

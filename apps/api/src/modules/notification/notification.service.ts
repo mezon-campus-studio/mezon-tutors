@@ -1228,7 +1228,7 @@ export class NotificationService {
         i18nKey: NOTIFICATION_META.TUTOR_LESSON_COMPLAINT_SUBMITTED.templateKey,
         i18nParams: {
           studentName: params.studentName,
-          lessonStartAtLabel: params.lessonStartAtLabel,
+          lessonStartAt: params.lessonStartAtLabel,
           reason: params.reason,
         },
         metadata: {

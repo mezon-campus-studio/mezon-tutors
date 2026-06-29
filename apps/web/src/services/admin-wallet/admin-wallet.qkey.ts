@@ -14,4 +14,6 @@ export const adminWalletQueryKey = {
       page,
       filters.direction ?? "all",
     ] as const,
+  userTransactions: (userId: string, page: number) =>
+    [...adminWalletQueryKey.all, "user-transactions", userId, page] as const,
 };

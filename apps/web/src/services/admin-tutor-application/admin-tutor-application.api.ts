@@ -2,6 +2,7 @@ import type {
   AdminLessonChangeHistoryItem,
   FullTutorApplication,
   TutorAdminNote,
+  TutorAdminStatsResponse,
   TutorApplicationMetrics,
   TutorProfile,
 } from "@mezon-tutors/shared";
@@ -41,6 +42,12 @@ export const adminTutorApplicationApi = {
   lessonChangeHistory(tutorId: string): Promise<AdminLessonChangeHistoryItem[]> {
     return apiClient.get<AdminLessonChangeHistoryItem[]>(
       `${BASE}/tutor-profiles/${tutorId}/lesson-change-history`,
+    );
+  },
+
+  stats(tutorProfileId: string): Promise<TutorAdminStatsResponse> {
+    return apiClient.get<TutorAdminStatsResponse>(
+      `${BASE}/tutor-profiles/${tutorProfileId}/stats`,
     );
   },
 
@@ -95,6 +102,14 @@ export const useAdminTutorLessonChangeHistory = (
     queryKey: adminTutorApplicationQueryKey.lessonChangeHistory(tutorId),
     queryFn: () => adminTutorApplicationApi.lessonChangeHistory(tutorId),
     enabled: enabled && !!tutorId,
+  });
+};
+
+export const useAdminTutorStats = (tutorProfileId: string, enabled = true) => {
+  return useQuery({
+    queryKey: adminTutorApplicationQueryKey.stats(tutorProfileId),
+    queryFn: () => adminTutorApplicationApi.stats(tutorProfileId),
+    enabled: enabled && !!tutorProfileId,
   });
 };
 

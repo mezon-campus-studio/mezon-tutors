@@ -149,6 +149,49 @@ export type AdminWalletTransactionApiItem = {
 
 export type AdminWalletTransactionsApiResponse = PaginatedData<AdminWalletTransactionApiItem>;
 
+export type AdminUserWalletTransactionStats = {
+  totalCredit: number;
+  totalDebit: number;
+  totalPlatformFee: number;
+  transactionCount: number;
+  monthIncome: number;
+};
+
+export type TutorAdminStatsWallet = {
+  balance: number;
+  pendingBalance: number;
+  pendingWithdrawal: number;
+  totalEarned: number;
+  totalWithdrawn: number;
+};
+
+export type TutorAdminStatsResponse = {
+  wallet: TutorAdminStatsWallet | null;
+  lessons: {
+    completed: number;
+    upcoming: number;
+    cancelled: number;
+    trial: number;
+    subscription: number;
+  };
+  students: {
+    total: number;
+    current: number;
+  };
+  profile: {
+    totalLessonsTaught: number;
+    totalStudents: number;
+    ratingAverage: number;
+    ratingCount: number;
+    activeStatus: boolean;
+    joinedAt: string;
+  };
+};
+
+export type AdminUserWalletTransactionsApiResponse = PaginatedData<AdminWalletTransactionApiItem> & {
+  stats: AdminUserWalletTransactionStats;
+};
+
 export type AdminWalletTransactionStatsApiResponse = {
   totalCredit: number;
   totalDebit: number;
