@@ -179,7 +179,6 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
       subject,
       introduce: `Xin chao, minh la ${firstName} ${lastName}, tutor mon ${subject}.`,
       experience: `${2 + (i % 9)} nam kinh nghiem day hoc online va offline.`,
-      motivate: 'Tap trung vao nang luc su dung ngon ngu va tu duy logic qua tung buoi hoc.',
       headline: `Tutor ${subject} - ${firstName} ${lastName}`,
       isProfessional: i % 2 === 0,
       verificationStatus: VerificationStatus.APPROVED,

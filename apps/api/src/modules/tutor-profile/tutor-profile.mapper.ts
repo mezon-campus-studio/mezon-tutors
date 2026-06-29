@@ -47,7 +47,6 @@ export function toVerifiedTutorProfileDto(
     subject: tutor.subject,
     introduce: tutor.introduce,
     experience: tutor.experience,
-    motivate: tutor.motivate,
     headline: tutor.headline,
     prices: getTutorPrices(tutor),
     isProfessional: tutor.isProfessional,

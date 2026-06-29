@@ -119,7 +119,6 @@ export function createTutorProfileFormSchema(messages: ProfileFormMessages) {
         message: t('validation.subjectFromList'),
       }),
     headline: z.string().trim().min(1, tPhoto('validation.headlineRequired')),
-    motivate: z.string().trim().min(1, tPhoto('validation.motivateRequired')),
     introduce: z.string().trim().min(1, tPhoto('validation.introduceRequired')),
     videoUrl: z
       .string()
@@ -242,7 +241,6 @@ export function createTutorInfoTabSchema(messages: ProfileFormMessages) {
   const full = createTutorProfileFormSchema(messages);
   return full.pick({
     headline: true,
-    motivate: true,
     introduce: true,
     videoUrl: true,
   });

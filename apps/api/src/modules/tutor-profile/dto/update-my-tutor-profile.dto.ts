@@ -55,9 +55,6 @@ class UpdateTutorInfoSectionDto {
   headline: string;
 
   @IsString()
-  motivate: string;
-
-  @IsString()
   introduce: string;
 
   @IsString()

@@ -278,7 +278,6 @@ model TutorProfile {
   subject            String             @default("")
   introduce          String             @default("")
   experience         String             @default("")
-  motivate           String             @default("")
   headline           String             @default("")
   isProfessional     Boolean            @default(false) @map("is_professional")
   activeStatus       Boolean            @default(true) @map("active_status")

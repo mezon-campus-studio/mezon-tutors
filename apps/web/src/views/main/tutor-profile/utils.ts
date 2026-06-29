@@ -27,7 +27,6 @@ export type MyTutorProfileRecord = {
   subject: string;
   introduce: string;
   experience: string;
-  motivate: string;
   headline: string;
   verificationStatus: string;
   activeStatus: boolean;
@@ -62,7 +61,6 @@ export type TutorProfileFormValues = {
   phone: string;
   subject: string;
   headline: string;
-  motivate: string;
   introduce: string;
   videoUrl: string;
   hourlyRate: string;
@@ -100,7 +98,6 @@ export function profileToFormValues(profile: MyTutorProfileRecord): TutorProfile
     phone: profile.phone,
     subject: profile.subject,
     headline: profile.headline,
-    motivate: profile.motivate,
     introduce: profile.introduce,
     videoUrl: profile.videoUrl ?? '',
     hourlyRate: amount > 0 ? String(amount) : '',
@@ -150,7 +147,6 @@ export function buildUpdateMyProfilePayload(
       section: TUTOR_PROFILE_UPDATE_SECTION.TUTOR_INFO,
       tutorInfo: {
         headline: values.headline,
-        motivate: values.motivate,
         introduce: values.introduce,
         videoUrl: values.videoUrl,
       },

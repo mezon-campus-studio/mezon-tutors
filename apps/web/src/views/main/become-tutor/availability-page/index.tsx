@@ -317,7 +317,6 @@ export default function AvailabilityPage() {
       languages,
       identityPhotoPublicId: resolvePublicIdForSubmit(photo.identity?.publicId),
       headline: photo.headline,
-      motivate: photo.motivate,
       introduce: photo.introduce,
       teachingCertificateName: certification.teachingCertificate.name || undefined,
       teachingYear: certification.teachingCertificate.year || undefined,

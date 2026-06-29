@@ -41,7 +41,6 @@ export class TutorApplicationMapper {
       subject: profile.subject,
       introduce: profile.introduce,
       experience: profile.experience,
-      motivate: profile.motivate,
       headline: profile.headline,
       prices: {
         baseCurrency: profile.trialLessonPrice?.baseCurrency ?? ECurrency.VND,

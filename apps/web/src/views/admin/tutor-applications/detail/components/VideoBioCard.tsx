@@ -33,11 +33,6 @@ export default function VideoBioCard({ profile }: VideoBioCardProps) {
                 {profile.headline || "—"}
               </p>
             </div>
-            {profile.motivate ? (
-              <p className="text-sm leading-relaxed text-slate-700">
-                {profile.motivate}
-              </p>
-            ) : null}
             {profile.introduce ? (
               <p className="text-sm leading-relaxed text-slate-600">
                 {profile.introduce}

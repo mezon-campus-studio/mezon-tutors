@@ -35,7 +35,6 @@ export interface SubmitTutorProfileDto {
 
   identityPhotoPublicId?: string;
   headline: string;
-  motivate: string;
   introduce: string;
 
   teachingCertificateName?: string;
@@ -130,7 +129,6 @@ export type TutorProfile = {
   subject: string;
   introduce: string;
   experience: string;
-  motivate: string;
   headline: string;
   prices: {
     baseCurrency: ECurrency;
@@ -179,7 +177,6 @@ export type TutorApplication = {
   introVideoTitle: string;
   introPreview: string;
   headline: string;
-  motivate: string;
   introduce: string;
   experience: string;
   certificates: TutorCertificate[];
