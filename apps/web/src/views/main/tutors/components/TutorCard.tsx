@@ -167,11 +167,11 @@ export default function TutorCard({
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-1 font-semibold text-violet-700 ring-1 ring-violet-100">
                   <GraduationCap className="size-3.5" />
-                  {tSubject(tutor.subject)}
+                  {tutor.subject ? tSubject(tutor.subject) : t("noSubject")}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-50 px-2.5 py-1 font-semibold text-fuchsia-700 ring-1 ring-fuchsia-100">
                   <MapPin className="size-3.5" />
-                  {tCountry(tutor.country)}
+                  {tutor.country ? tCountry(tutor.country) : t("noCountry")}
                 </span>
               </div>
 

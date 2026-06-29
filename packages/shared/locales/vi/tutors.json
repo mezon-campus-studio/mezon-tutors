@@ -30,6 +30,8 @@
   },
   "TutorCard": {
     "professional": "CHUYÊN NGHIỆP",
+    "noSubject": "Môn dạy",
+    "noCountry": "Quốc gia",
     "teaches": "Dạy {subject}",
     "country": "{country}",
     "speaks": "Sử dụng {languages}",

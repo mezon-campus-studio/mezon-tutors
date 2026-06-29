@@ -30,6 +30,8 @@
   },
   "TutorCard": {
     "professional": "PROFESSIONAL",
+    "noSubject": "Subject",
+    "noCountry": "Country",
     "teaches": "Teaches {subject}",
     "country": "{country}",
     "speaks": "Speaks {languages}",

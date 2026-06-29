@@ -159,6 +159,8 @@
         "description": "Nên chọn phông nền trơn hoặc ít chi tiết để người xem tập trung vào bạn."
       }
     },
+    "previewLabel": "Xem trước chi tiết hồ sơ",
+    "noInformation": "Chưa có thông tin",
     "back": "Quay lại",
     "saveContinue": "Lưu và tiếp tục",
     "validation": {
