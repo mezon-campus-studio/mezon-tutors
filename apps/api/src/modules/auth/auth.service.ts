@@ -340,8 +340,6 @@ export class AuthService {
 
     const { user, idToken } = validated;
 
-    await this.revokeRefreshToken(refreshToken);
-
     const accessPayload: AuthUserPayload = {
       sub: user.id,
       mezonUserId: user.mezonUserId,
@@ -356,7 +354,27 @@ export class AuthService {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const newRefreshToken = await this.createRefreshToken(user.id, idToken);
+    const newRefreshToken = await this.prisma.$transaction(async (tx) => {
+      await tx.refreshToken.updateMany({
+        where: {
+          token: refreshToken,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: new Date(),
+        },
+      });
+  
+      const created = await tx.refreshToken.create({
+        data: {
+          userId: user.id,
+          token: await this.createRefreshToken(user.id, idToken),
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_IN),
+        },
+      });
+  
+      return created.token;
+    });
 
     return {
       accessToken,
