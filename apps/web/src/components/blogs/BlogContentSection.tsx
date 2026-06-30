@@ -81,22 +81,15 @@ export function BlogContentSection({ content, className }: BlogContentSectionPro
 
   return (
     <div className={cn('relative mx-auto max-w-3xl', className)}>
-      <BlogTableOfContents
-        items={items}
-        activeId={activeId}
-        onItemClick={handleTocClick}
-        title={t('toc')}
-      />
-
-      <BlogTableOfContents
-        items={items}
-        activeId={activeId}
-        onItemClick={handleTocClick}
-        title={t('toc')}
-        variant="mobile"
-        className="mb-6 xl:hidden"
-      />
-
+       <BlogTableOfContents
+          items={items}
+          activeId={activeId}
+          onItemClick={handleTocClick}
+          title={t('toc')}
+          variant="mobile"
+          className="mb-6 xl:hidden"
+        />
+        
       <BlogContentHtml content={htmlWithIds} />
     </div>
   );

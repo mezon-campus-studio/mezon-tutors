@@ -164,8 +164,9 @@ const useGetVerifiedTutors = (page: number, limit: number, filters: VerifiedTuto
       filters.maxPrice
     ),
     queryFn: () => tutorProfileApi.getVerifiedTutors(page, limit, filters),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,
-    staleTime: 30 * 1000,
   });
 };
 

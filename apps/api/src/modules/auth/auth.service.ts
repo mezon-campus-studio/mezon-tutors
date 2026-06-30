@@ -22,6 +22,7 @@ import { NotificationService } from '../notification/notification.service';
 
 const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
+const REFRESH_TOKEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const OAUTH_STATE_TTL_MS = 1000 * 60 * 5;
 
 @Injectable()
@@ -354,6 +355,16 @@ export class AuthService {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
+    const jwtConfig = this.appConfig.jwtConfig;
+
+    const rawToken = await this.jwtService.signAsync(
+      { sub: user.id, type: 'refresh', ...(idToken ? { idToken } : {}) },
+      {
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+        secret: jwtConfig.refreshSecret,
+      }
+    );
+
     const newRefreshToken = await this.prisma.$transaction(async (tx) => {
       await tx.refreshToken.updateMany({
         where: {
@@ -364,15 +375,15 @@ export class AuthService {
           revokedAt: new Date(),
         },
       });
-  
+
       const created = await tx.refreshToken.create({
         data: {
           userId: user.id,
-          token: await this.createRefreshToken(user.id, idToken),
-          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_IN),
+          token: rawToken,
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS),
         },
       });
-  
+
       return created.token;
     });
 

@@ -62,6 +62,7 @@ import { CancelLessonDialog } from "./CancelLessonDialog";
 import { ComplainLessonDialog } from "./ComplainLessonDialog";
 import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLessonDialog";
 import { useCreateLessonComplaintMutation } from "@/services/lesson-complaint/lesson-complaint.api";
+import { ReviewModal } from "@/views/main/tutors/detail/review/components/ReviewModal";
 
 type LessonPersonBadgeProps = {
   name: string;
@@ -260,7 +261,7 @@ type PastLessonListItemProps = {
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
   appSettingsRules: AppSettingsRules;
-  onRate: (tutorId: string) => void;
+  onRate: (lesson: LessonItem) => void;
   onComplain: (lesson: LessonItem) => void;
   contactSupportLabel: string;
   isOpeningSupportChat: boolean;
@@ -390,7 +391,7 @@ function PastLessonListItem({
               <Button
                 variant="outline"
                 className="h-9 rounded-full border-amber-200 px-4 text-xs font-semibold text-amber-700 hover:border-amber-300 hover:bg-amber-50"
-                onClick={() => onRate(lesson.tutorId)}
+                onClick={() => onRate(lesson)}
               >
                 <Star className="mr-1.5 size-3.5 fill-amber-400 text-amber-400" />
                 {rateLabel}
@@ -762,7 +763,7 @@ type PastLessonsSectionProps = {
   complaintApprovedLabel: string;
   complaintRejectedLabel: string;
   appSettingsRules: AppSettingsRules;
-  onRate: (tutorId: string) => void;
+  onRate: (lesson: LessonItem) => void;
   onComplain: (lesson: LessonItem) => void;
   contactSupportLabel: string;
   isOpeningSupportChat: boolean;
@@ -844,8 +845,10 @@ export default function MyLessonsPanel({
   const senderId = currentUser?.id ?? "";
   const senderMezonUserId = currentUser?.mezonUserId ?? "";
 
-  const handleRate = (tutorId: string) => {
-    router.push(`/tutors/${tutorId}`);
+  const [reviewLesson, setReviewLesson] = useState<LessonItem | null>(null);
+
+  const handleRate = (lesson: LessonItem) => {
+    setReviewLesson(lesson);
   };
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
@@ -1236,6 +1239,16 @@ export default function MyLessonsPanel({
         lesson={rescheduleSubscriptionLesson}
         open={Boolean(rescheduleSubscriptionLesson)}
         onClose={() => setRescheduleSubscriptionLesson(null)}
+      />
+
+      <ReviewModal
+        tutorId={reviewLesson?.tutorId ?? ""}
+        tutorName={reviewLesson?.tutor ?? ""}
+        isOpen={Boolean(reviewLesson)}
+        onClose={() => {
+          setReviewLesson(null);
+          queryClient.invalidateQueries({ queryKey: ["my-lessons"] });
+        }}
       />
     </div>
   );

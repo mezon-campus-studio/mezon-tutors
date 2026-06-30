@@ -170,14 +170,15 @@ export function ReviewModal({
             variant="outline"
             disabled={isLoading}
             onClick={onClose}
-            className="px-5 py-3 rounded-lg"
+            className="px-5 py-3 rounded-full bg-white border border-slate-200"
           >
             {t("reviewModal.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
+            variant="gradient"
             disabled={isLoading || !comment.trim()}
-            className="bg-indigo-600 text-white hover:bg-indigo-700 px-5 py-3 rounded-lg"
+            className="px-5 py-3 rounded-full"
           >
             {isLoading
               ? t("reviewModal.submitting")
