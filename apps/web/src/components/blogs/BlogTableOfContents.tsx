@@ -96,7 +96,7 @@ export function BlogTableOfContents({
   return (
     <aside
       className={cn(
-        "absolute top-0 bottom-0 right-full hidden w-64 pr-6 xl:block",
+        "absolute top-0 bottom-0 right-full hidden w-64 pr-6 xl:block mb-5",
         className,
       )}
     >

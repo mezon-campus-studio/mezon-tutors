@@ -94,6 +94,8 @@ export const usePublishedBlogs = (
     queryKey: blogQueryKey.list(params),
     queryFn: () => blogApi.listPublished(params),
     enabled,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
 
@@ -262,12 +264,12 @@ export const useToggleBlogUpvote = (slug: string) => {
     mutationFn: () => blogApi.toggleUpvote(slug),
     onSuccess: (data) => {
       queryClient.setQueryData(blogQueryKey.engagement(slug), (current: BlogEngagementDto | undefined) =>
-        current
-          ? { ...current, isUpvoted: data.upvoted, upvoteCount: data.upvoteCount }
-          : {
-              isUpvoted: data.upvoted,
-              upvoteCount: data.upvoteCount,
-              commentCount: 0,
+          current
+            ? { ...current, isUpvoted: data.upvoted, upvoteCount: data.upvoteCount }
+            : {
+                isUpvoted: data.upvoted,
+                upvoteCount: data.upvoteCount,
+                commentCount: 0,
             },
       );
       queryClient.setQueryData(blogQueryKey.detail(slug), (current: BlogPostDetailDto | undefined) =>
@@ -291,10 +293,10 @@ export const useCreateBlogComment = (slug: string) => {
             ? { ...current, commentCount: current.commentCount + 1 }
             : current,
       );
-      queryClient.setQueryData(blogQueryKey.detail(slug), (current: BlogPostDetailDto | undefined) =>
-        current
-          ? { ...current, commentCount: current.commentCount + 1 }
-          : current,
+      queryClient.setQueryData(
+        blogQueryKey.detail(slug),
+        (current: BlogPostDetailDto | undefined) =>
+          current ? { ...current, commentCount: current.commentCount + 1 } : current
       );
     },
   });

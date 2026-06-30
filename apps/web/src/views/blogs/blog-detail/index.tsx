@@ -6,7 +6,7 @@ import { ArrowLeft, Clock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { BlogCommentsDrawer } from '@/components/blogs/BlogCommentsDrawer';
 import { BlogContentSection } from '@/components/blogs/BlogContentSection';
@@ -14,6 +14,9 @@ import { EngagementButtons } from '@/components/blogs/BlogEngagementSection';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { useBlogEngagement, useToggleBlogUpvote } from '@/services/blog/blog.api';
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
+import { BlogTableOfContents } from '@/components/blogs/BlogTableOfContents';
+import { extractTocFromHtml } from '@/lib/blog-toc';
+import { isBlogHtmlContent, plainTextToBlogHtml } from '@/lib/blog-content';
 
 type BlogDetailPageProps = {
   post: BlogPostDetailDto;
@@ -29,6 +32,8 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
   const isLoggedIn = isAuthenticated || Boolean(user);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
 
   const { data: engagement } = useBlogEngagement(post.slug, !isAuthLoading && isLoggedIn);
   const toggleUpvote = useToggleBlogUpvote(post.slug);
@@ -38,6 +43,59 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
   const isUpvoted = engagement?.isUpvoted ?? false;
 
   const publishedLabel = formatBlogDate(post.publishedAt ?? post.createdAt, locale);
+
+  const { items, htmlWithIds } = useMemo(() => {
+    const html = isBlogHtmlContent(post.content) ? post.content : plainTextToBlogHtml(post.content);
+    return extractTocFromHtml(html);
+  }, [post.content]);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    const headingIds = items.map((item) => item.id);
+    const scrollOffset = 96;
+
+    const getHeadings = () =>
+      headingIds
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null);
+
+    const updateActiveId = () => {
+      const headings = getHeadings();
+      if (headings.length === 0) return;
+
+      let nextActiveId = headings[0].id;
+
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= scrollOffset) {
+          nextActiveId = heading.id;
+        } else {
+          break;
+        }
+      }
+
+      setActiveId((current) => (current === nextActiveId ? current : nextActiveId));
+    };
+
+    const frame = requestAnimationFrame(updateActiveId);
+
+    window.addEventListener('scroll', updateActiveId, { passive: true });
+    window.addEventListener('resize', updateActiveId, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', updateActiveId);
+      window.removeEventListener('resize', updateActiveId);
+    };
+  }, [items]);
+
+  const handleTocClick = (id: string) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveId(id);
+  };
 
   const handleUpvote = () => {
     if (!isLoggedIn) {
@@ -55,8 +113,15 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
         className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(124,58,237,0.12),transparent)]"
         aria-hidden
       />
+      <div className="relative mx-auto max-w-3xl">
+        <BlogTableOfContents
+          items={items}
+          activeId={activeId}
+          onItemClick={handleTocClick}
+          title={t('toc')}
+        />
 
-      <article className="relative mx-auto max-w-3xl px-6 py-8 sm:py-12 lg:px-8">
+        <article className="px-6 py-8 sm:py-12 lg:px-8">
         <Link
           href={ROUTES.BLOGS.INDEX}
           className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-violet-700"
@@ -143,6 +208,7 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
           />
         </div>
       </article>
+      </div>
 
       <BlogCommentsDrawer
         slug={post.slug}

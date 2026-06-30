@@ -15,6 +15,7 @@ import { getSeoMessages } from "@/lib/seo-messages";
 import "./globals.css";
 import { Footer, Header } from "@/components/layouts";
 import { AppProvider } from "@/providers";
+import ScrollRestoration from "@/lib/scroll-restoration";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -82,6 +83,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900">
+        <ScrollRestoration />
         <Suspense fallback={null}>
           <IntlServerProvider>
             <AppProvider>
