@@ -114,7 +114,7 @@ export default async function SupportLegalPage({ pageKey }: SupportLegalPageProp
                           key={item}
                           className="flex gap-2.5 text-sm leading-7 text-slate-600 sm:text-base"
                         >
-                          <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)]" />
+                          <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-brand-gradient-135" />
                           <LegalRichText text={item} />
                         </li>
                       ))}
@@ -129,7 +129,7 @@ export default async function SupportLegalPage({ pageKey }: SupportLegalPageProp
                         key={item}
                         className="flex gap-2.5 text-sm leading-7 text-slate-600 sm:text-base"
                       >
-                        <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)]" />
+                        <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-brand-gradient-135" />
                         <LegalRichText text={item} />
                       </li>
                     ))}
@@ -141,7 +141,7 @@ export default async function SupportLegalPage({ pageKey }: SupportLegalPageProp
 
           <div className="mt-10 rounded-2xl border border-violet-100 bg-violet-50/50 p-5 sm:p-6">
             <div className="flex items-start gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                 <Mail className="size-4" />
               </div>
               <div>

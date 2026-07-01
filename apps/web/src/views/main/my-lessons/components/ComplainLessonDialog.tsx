@@ -247,7 +247,7 @@ export function ComplainLessonDialog({
         showCloseButton
         className="gap-0 overflow-hidden rounded-3xl border-violet-100/80 p-0 shadow-2xl shadow-violet-200/30 sm:max-w-[460px]"
       >
-        <div className="relative overflow-hidden bg-[linear-gradient(135deg,#4c1d95_0%,#7c3aed_50%,#db2777_100%)] px-6 pb-5 pt-6">
+        <div className="relative overflow-hidden bg-brand-gradient-135 px-6 pb-5 pt-6">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-2xl"
@@ -285,7 +285,7 @@ export function ComplainLessonDialog({
                       className="rounded-lg object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                  <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
                     {getInitials(lesson.tutor)}
                   </AvatarFallback>
                 </Avatar>
@@ -453,7 +453,7 @@ export function ComplainLessonDialog({
                 {t("dialog.dismiss")}
               </Button>
               <Button
-                className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#4c1d95,#7c3aed,#db2777)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-95 disabled:opacity-50"
+                className="h-10 rounded-full border-0 bg-brand-gradient px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-95 disabled:opacity-50"
                 onClick={handleConfirm}
                 disabled={!reasonKey || isLoading || hasUploading}
               >

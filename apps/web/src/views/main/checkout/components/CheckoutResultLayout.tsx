@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const checkoutGradientButtonClass =
-  'rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-white shadow-lg shadow-violet-300/40 hover:opacity-95';
+  'rounded-full bg-brand-gradient px-8 text-white shadow-lg shadow-violet-300/40 hover:opacity-95';
 
 export const checkoutOutlineButtonClass =
   'rounded-full border-violet-200 bg-white/80 px-8 text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700';

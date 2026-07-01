@@ -193,7 +193,7 @@ export default function ScheduleEventModal({
         <div className="mt-auto flex shrink-0 flex-col gap-2 px-5 py-4">
           <Button
             type="button"
-            className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40"
+            className="h-11 rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-md shadow-violet-300/40"
             onClick={() => onSendMessage()}
           >
             <MessageCircle className="mr-2 size-4" />

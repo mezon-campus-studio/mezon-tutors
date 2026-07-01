@@ -46,7 +46,7 @@ export function StepNavRail({
                   isActive
                     ? `bg-gradient-to-br ${step.accent} text-white shadow-md shadow-violet-300/40`
                     : isDone
-                      ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white"
+                      ? "bg-brand-gradient-135 text-white"
                       : "bg-white text-slate-400 ring-1 ring-slate-200"
                 }`}
               >

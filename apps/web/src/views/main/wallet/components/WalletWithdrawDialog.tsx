@@ -394,7 +394,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
           showCloseButton
           className="max-h-[calc(100vh-0.75rem)] gap-0 overflow-hidden rounded-3xl border-violet-100 p-0 shadow-2xl shadow-violet-200/40 sm:max-w-[460px]"
         >
-          <div className="relative overflow-hidden bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 pb-4 pt-5">
+          <div className="relative overflow-hidden bg-brand-gradient px-5 pb-4 pt-5">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-2xl"
@@ -663,7 +663,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
               {isDetailReview ? (
                 <Button
                   type="button"
-                  className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
+                  className="h-10 rounded-full border-0 bg-brand-gradient px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
                   onClick={() => onOpenChange(false)}
                 >
                   {reviewLabels.close ?? reviewLabels.cancel}
@@ -685,7 +685,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
                       'h-10 rounded-full border-0 px-6 font-semibold text-white shadow-md hover:opacity-90 disabled:opacity-60',
                       isRejectReview
                         ? 'bg-rose-600 shadow-rose-300/40 hover:bg-rose-700'
-                        : 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-violet-300/40'
+                        : 'bg-brand-gradient shadow-violet-300/40'
                     )}
                     disabled={confirmDisabled}
                     onClick={handleConfirm}
@@ -710,7 +710,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
         showCloseButton
         className="max-h-[calc(100vh-0.75rem)] gap-0 overflow-hidden rounded-3xl border-violet-100 p-0 shadow-2xl shadow-violet-200/40 sm:max-w-[520px]"
       >
-        <div className="relative overflow-hidden bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 pb-4 pt-5">
+        <div className="relative overflow-hidden bg-brand-gradient px-5 pb-4 pt-5">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-2xl"
@@ -929,7 +929,7 @@ export default function WalletWithdrawDialog(props: WalletWithdrawDialogProps) {
               </Button>
               <Button
                 type="submit"
-                className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
+                className="h-10 rounded-full border-0 bg-brand-gradient px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
                 disabled={isPending}
               >
                 {isPending ? t('submitting') : t('submit')}

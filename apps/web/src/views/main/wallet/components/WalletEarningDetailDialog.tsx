@@ -268,7 +268,7 @@ export default function WalletEarningDetailDialog({
           <DialogFooter className="gap-2 border-t border-slate-100 pt-3 sm:justify-end">
             <Button
               type="button"
-              className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
+              className="h-10 rounded-full border-0 bg-brand-gradient px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-90"
               onClick={() => onOpenChange(false)}
             >
               {t('close')}

@@ -191,7 +191,7 @@ export function TutorAvailabilitySelection({
               onClick={() => setSelectedDayIndex(index)}
               className={`min-w-fit flex-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                 isActive
-                  ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-sm shadow-violet-300/40'
+                  ? 'bg-brand-gradient text-white shadow-sm shadow-violet-300/40'
                   : 'text-slate-600 hover:bg-white hover:text-violet-700'
               }`}
             >

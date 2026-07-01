@@ -72,7 +72,7 @@ export default function DashboardScheduleMobileList<
               className={cn(
                 'relative flex min-h-14 flex-col items-center justify-center rounded-2xl px-1 pb-2 pt-4 transition-colors',
                 isActive
-                  ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-sm shadow-violet-300/40'
+                  ? 'bg-brand-gradient text-white shadow-sm shadow-violet-300/40'
                   : isToday
                     ? 'border border-violet-200 bg-violet-50/50 text-violet-700'
                     : 'text-slate-600 hover:bg-violet-50',

@@ -106,7 +106,7 @@ export function BecomeTutorShell({
             <div className="mx-auto flex w-full max-w-[960px] flex-col gap-5 md:gap-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                     <GraduationCap className="size-5" />
                   </div>
                   <div className="leading-tight">
@@ -143,7 +143,7 @@ export function BecomeTutorShell({
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-700 sm:text-xs">
                     {stepLabel}
                   </p>
-                  <p className="bg-[linear-gradient(110deg,#7c3aed,#ec4899)] bg-clip-text text-xs font-extrabold text-transparent sm:text-sm">
+                  <p className="text-brand-gradient text-xs font-extrabold sm:text-sm">
                     {progressLabel}
                   </p>
                 </div>
@@ -165,7 +165,7 @@ export function BecomeTutorShell({
                             aria-hidden
                             className={`pointer-events-none absolute top-4 left-1/2 right-[-50%] h-[2px] -translate-y-1/2 ${
                               isCompleted
-                                ? "bg-[linear-gradient(90deg,#7c3aed,#ec4899)]"
+                                ? "bg-brand-gradient-90"
                                 : "bg-violet-100"
                             }`}
                             style={{ width: "100%" }}
@@ -177,7 +177,7 @@ export function BecomeTutorShell({
                             isActive
                               ? `bg-gradient-to-br ${step.accent} text-white shadow-md shadow-violet-300/50 ring-4 ring-violet-100`
                               : isCompleted
-                                ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-sm shadow-violet-300/40"
+                                ? "bg-brand-gradient-135 text-white shadow-sm shadow-violet-300/40"
                                 : "bg-white text-slate-400 ring-1 ring-slate-200"
                           }`}
                         >
@@ -211,7 +211,7 @@ export function BecomeTutorShell({
                   <div className="flex items-center gap-2.5">
                     <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-violet-100">
                       <div
-                        className="h-full rounded-full bg-[linear-gradient(90deg,#7c3aed,#a855f7,#ec4899)] transition-all duration-500"
+                        className="h-full rounded-full bg-brand-gradient-90 transition-all duration-500"
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -261,7 +261,7 @@ export function BecomeTutorShell({
                 size="lg"
                 onClick={onContinue}
                 disabled={continueDisabled}
-                className="group h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:text-sm"
+                className="group h-11 rounded-full bg-brand-gradient px-6 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:text-sm"
               >
                 {continueLabel}
                 <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-0.5" />

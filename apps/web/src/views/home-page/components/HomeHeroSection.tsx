@@ -70,7 +70,7 @@ export default function HomeHeroSection() {
           <div className="space-y-5">
             <h1 className="max-w-[42rem] text-balance text-3xl leading-[1.22] font-extrabold tracking-normal text-slate-950 sm:text-4xl sm:leading-[1.18] lg:text-5xl lg:leading-[1.14]">
               <span className="block">{t('title')}</span>
-              <span className="block pb-1 bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent sm:pb-1.5">
+              <span className="block pb-1 bg-brand-gradient bg-clip-text text-transparent sm:pb-1.5">
                 {t('titleHighlightLead')}
               </span>
               <span className="block">{t('titleHighlightTail')}</span>
@@ -93,7 +93,7 @@ export default function HomeHeroSection() {
                 href="/tutors"
                 className="shrink-0"
               >
-                <Button className="h-12 w-full rounded-md bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] px-5 text-sm font-semibold text-white shadow-lg shadow-violet-300/40 transition-transform hover:scale-[1.01] hover:shadow-violet-400/50 active:scale-[0.99] sm:w-auto">
+                <Button className="h-12 w-full border-none rounded-md bg-brand-gradient px-5 text-sm font-semibold text-white shadow-lg shadow-violet-300/40 transition-transform hover:scale-[1.01] hover:shadow-violet-400/50 active:scale-[0.99] sm:w-auto">
                   {t('search.submit')}
                   <ArrowRight className="ml-2 size-4" />
                 </Button>
@@ -184,7 +184,7 @@ function HomeTutorSearchPreview({ t }: { t: (key: string) => string }) {
                   key={label}
                   className={`rounded-lg px-4 py-4 ${
                     isActive
-                      ? 'bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] text-white shadow-lg shadow-violet-300/35'
+                      ? 'bg-brand-gradient text-white shadow-lg shadow-violet-300/35'
                       : 'bg-slate-50 text-slate-600 ring-1 ring-slate-200/80'
                   }`}
                 >

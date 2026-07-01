@@ -185,7 +185,7 @@ export default function Footer() {
                 className="drop-shadow-[0_6px_16px_rgba(124,58,237,0.28)]"
               />
               <div className="flex flex-col leading-none">
-                <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+                <span className="text-brand-gradient text-2xl font-extrabold tracking-tight">
                   Mezonly
                 </span>
                 <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -241,7 +241,7 @@ export default function Footer() {
                       }}
                       className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-violet-700"
                     >
-                      <span className="size-1 rounded-full bg-slate-300 transition-all group-hover:size-1.5 group-hover:bg-[linear-gradient(135deg,#7c3aed,#ec4899)]" />
+                      <span className="size-1 rounded-full bg-slate-300 transition-all group-hover:size-1.5 group-hover:bg-brand-gradient-135" />
                       {link.label}
                     </Link>
                   </li>

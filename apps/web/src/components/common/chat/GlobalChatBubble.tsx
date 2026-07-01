@@ -227,7 +227,7 @@ export default function GlobalChatBubble() {
   }
 
   const ctaGradientClass =
-    'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50';
+    'bg-brand-gradient text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50';
 
   return (
     <>

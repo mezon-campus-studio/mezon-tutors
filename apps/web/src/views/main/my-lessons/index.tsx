@@ -65,7 +65,7 @@ export default function MyLessonsPage() {
               <button
                 type="button"
                 onClick={() => router.push("/tutors")}
-                className="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto"
+                className="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-brand-gradient px-5 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-10 sm:w-auto"
               >
                 <Plus className="size-4" />
                 {t("header.scheduleLesson")}

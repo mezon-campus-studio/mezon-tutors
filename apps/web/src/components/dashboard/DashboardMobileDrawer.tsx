@@ -167,7 +167,7 @@ export default function DashboardMobileDrawer({
               height={36}
               className="drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
             />
-            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-lg font-extrabold tracking-tight text-transparent">
+            <span className="text-brand-gradient text-lg font-extrabold tracking-tight">
               Mezonly
             </span>
           </Link>
@@ -192,7 +192,7 @@ export default function DashboardMobileDrawer({
                     className="rounded-lg object-cover"
                   />
                 ) : null}
-                <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -298,7 +298,7 @@ export default function DashboardMobileDrawer({
                   {t(`sidebar.${item.labelKey}`)}
                 </span>
                 {active ? (
-                  <span className="ml-auto h-5 w-1 rounded-full bg-[linear-gradient(180deg,#7c3aed,#ec4899)]" />
+                  <span className="ml-auto h-5 w-1 rounded-full bg-brand-gradient-135" />
                 ) : null}
               </Button>
             );

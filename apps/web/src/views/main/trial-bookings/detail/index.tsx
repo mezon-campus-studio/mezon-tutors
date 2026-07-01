@@ -111,7 +111,7 @@ export default function BookingRequestDetailView({
         </h2>
         <p className="mt-2 text-sm text-slate-500">{t('notFound.description')}</p>
         <Link href={ROUTES.DASHBOARD.TRIAL_BOOKING}>
-          <Button className="mt-6 h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-sm font-semibold text-white">
+          <Button className="mt-6 h-10 rounded-full bg-brand-gradient px-5 text-sm font-semibold text-white">
             {t('notFound.back')}
           </Button>
         </Link>
@@ -136,7 +136,7 @@ export default function BookingRequestDetailView({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
-            <div className="relative isolate overflow-hidden bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#db2777_100%)] px-6 py-7 text-white">
+            <div className="relative isolate overflow-hidden bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#d071ff_100%)] px-6 py-7 text-white">
               <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-white/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-16 -left-12 size-48 rounded-full bg-fuchsia-300/30 blur-3xl" />
               <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

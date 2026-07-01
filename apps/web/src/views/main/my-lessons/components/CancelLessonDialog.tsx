@@ -211,7 +211,7 @@ export function CancelLessonDialog({
                       className="rounded-lg object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                  <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
                     {getInitials(target.peerName)}
                   </AvatarFallback>
                 </Avatar>
@@ -346,7 +346,7 @@ export function CancelLessonDialog({
                 {isTutor ? tTutor("dismiss") : t("dialog.dismiss")}
               </Button>
               <Button
-                className="h-11 flex-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
+                className="h-11 flex-1 rounded-full bg-brand-gradient text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
                 disabled={!reason || isLoading}
                 onClick={handleConfirm}
               >

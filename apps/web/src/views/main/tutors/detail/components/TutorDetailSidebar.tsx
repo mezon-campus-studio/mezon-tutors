@@ -90,7 +90,7 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
     <>
       <div className="sticky top-24 flex flex-col gap-4">
         <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
-          <div className="relative overflow-hidden bg-[linear-gradient(135deg,#6d28d9_0%,#9333ea_45%,#db2777_100%)] px-5 py-5 text-white">
+          <div className="relative overflow-hidden bg-brand-gradient-135 px-5 py-5 text-white">
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.18]"
               style={{
@@ -128,7 +128,7 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
             {showContinuePayment && pendingPayment ? (
               <Button
                 onClick={() => continueTutorPendingPayment(pendingPayment, userTimezone)}
-                className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                className="group h-11 w-full rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
               >
                 <CreditCard className="mr-1.5 size-4" />
                 {t("continuePayment")}
@@ -141,8 +141,9 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
               <Button
                 disabled={bookTrialDisabled}
                 title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
+                variant="gradient"
+                className="h-11 w-full rounded-full"
                 onClick={() => setIsTrialBookingSheetOpen(true)}
-                className="group h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
               >
                 <Calendar className="mr-1.5 size-4" />
                 {t("bookTrial")}

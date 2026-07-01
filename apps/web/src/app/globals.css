@@ -7,6 +7,9 @@
 @custom-variant motion-reduce (@media (prefers-reduced-motion: reduce));
 
 @theme inline {
+  --gradient-brand: linear-gradient(110deg, #7c3aed 0%, #a855f7 50%, #B85FE3 100%);
+  --gradient-brand-90: linear-gradient(90deg, #7c3aed, #a855f7, #B85FE3);
+  --gradient-brand-135: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #B85FE3 100%);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-noto-sans);
@@ -166,6 +169,26 @@
   --sidebar-accent-foreground: #ede9fe;
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: #a78bfa;
+}
+
+@utility bg-brand-gradient {
+  background: var(--gradient-brand);
+  background-size: 100% 100%;
+}
+
+@utility bg-brand-gradient-90 {
+  background: var(--gradient-brand-90);
+}
+
+@utility bg-brand-gradient-135 {
+  background: var(--gradient-brand-135);
+}
+
+@utility text-brand-gradient {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-image: var(--gradient-brand);
 }
 
 @layer base {

@@ -78,7 +78,7 @@ export default async function SupportLegalCenterPage() {
                 className="group overflow-hidden rounded-[1.75rem] border border-violet-100 bg-white/85 p-5 shadow-sm shadow-violet-100/40 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md hover:shadow-violet-200/40 sm:p-6"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40 transition-transform group-hover:scale-105">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40 transition-transform group-hover:scale-105">
                     <Icon className="size-5" />
                   </div>
 

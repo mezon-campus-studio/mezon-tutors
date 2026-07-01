@@ -20,7 +20,7 @@ type DashboardViewTabsProps<T extends string> = {
 };
 
 const TAB_INDICATOR_CLASS =
-  'bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-sm shadow-violet-300/40';
+  'bg-brand-gradient shadow-sm shadow-violet-300/40';
 
 export default function DashboardViewTabs<T extends string>({
   tabs,

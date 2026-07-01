@@ -37,7 +37,7 @@ function UploadActionButton({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] font-semibold text-white shadow-md shadow-violet-300/40',
+        'inline-flex shrink-0 items-center rounded-full bg-brand-gradient font-semibold text-white shadow-md shadow-violet-300/40',
         compact ? 'mt-1 h-8 px-4 text-[11px]' : 'mt-2 h-9 px-5 text-xs',
       )}
     >

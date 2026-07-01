@@ -39,7 +39,7 @@ export default function ProfileVideoEmbed({ url, placeholder }: ProfileVideoEmbe
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
             <Video className="size-6" />
           </div>
           {placeholder ? (

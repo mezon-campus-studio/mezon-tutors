@@ -41,7 +41,7 @@ export function CompletionPanel({
     <div className="flex flex-col items-center gap-6 py-4 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="relative">
         <div className="absolute inset-0 animate-ping rounded-full bg-emerald-400/20" />
-        <div className="relative flex size-20 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-xl shadow-violet-300/50">
+        <div className="relative flex size-20 items-center justify-center rounded-full bg-brand-gradient-135 text-white shadow-xl shadow-violet-300/50">
           <Check className="size-10" strokeWidth={3} />
         </div>
       </div>
@@ -65,14 +65,14 @@ export function CompletionPanel({
                 href={primaryHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
               >
                 {primaryLabel}
               </a>
             ) : (
               <Link
                 href={primaryHref}
-                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
               >
                 {primaryLabel}
               </Link>

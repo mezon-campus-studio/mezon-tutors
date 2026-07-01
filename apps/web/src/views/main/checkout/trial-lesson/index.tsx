@@ -384,7 +384,7 @@ export default function TrialLessonCheckoutPage() {
         <div className="space-y-2">
           <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
             {t("title")}{" "}
-            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+            <span className="bg-brand-gradient bg-clip-text text-transparent">
               ✨
             </span>
           </h1>

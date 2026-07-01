@@ -144,7 +144,7 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
         <h2
           className="text-xl font-extrabold tracking-tight sm:text-2xl lg:text-3xl"
           style={{
-            background: 'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
+            background: 'var(--gradient-brand)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -187,7 +187,7 @@ export function DashboardScheduleCalendar<T extends DashboardScheduleCalendarEve
         >
           {labels.today}
         </button>
-        <span className="inline-flex min-h-11 items-center rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-violet-300/40 sm:min-h-0 sm:px-3.5 sm:py-1.5">
+        <span className="inline-flex min-h-11 items-center rounded-full bg-brand-gradient px-4 py-2 text-xs font-bold text-white shadow-sm shadow-violet-300/40 sm:min-h-0 sm:px-3.5 sm:py-1.5">
           {labels.weekBadge}
         </span>
       </div>
