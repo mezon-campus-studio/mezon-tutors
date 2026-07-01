@@ -38,7 +38,7 @@ function WalletBalanceToggle({
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl border border-violet-100 bg-violet-50/40 px-4 py-3">
       <div className="flex min-w-0 items-center gap-2.5">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-sm shadow-violet-200/50">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient-135 text-white shadow-sm shadow-violet-200/50">
           <Wallet className="size-3.5" />
         </div>
         <p className="truncate text-sm font-semibold text-slate-800">{label}</p>
@@ -167,7 +167,7 @@ export function SubscriptionPaymentSummaryCard({
         <div className="rounded-2xl bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-4 py-3 ring-1 ring-violet-100">
           <div className="flex items-center justify-between">
             <p className="text-base font-extrabold text-slate-900">{t("total")}</p>
-            <p className="bg-[linear-gradient(135deg,#7c3aed,#9333ea,#ec4899)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+            <p className="text-brand-gradient text-2xl font-extrabold tracking-tight">
               {totalDisplay}
             </p>
           </div>

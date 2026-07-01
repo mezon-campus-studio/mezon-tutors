@@ -493,7 +493,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
 
         <header className="mb-8 space-y-4">
           <div className="flex items-start gap-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-lg shadow-violet-300/40">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-lg shadow-violet-300/40">
               <CalendarDays className="size-6" />
             </div>
             <div className="space-y-1.5">

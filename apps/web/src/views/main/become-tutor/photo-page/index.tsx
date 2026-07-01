@@ -429,7 +429,7 @@ export default function PhotoPage() {
                       height={56}
                       className="size-14 rounded-xl object-cover object-center shadow-sm ring-1 ring-white"
                     />
-                    <div className="absolute -bottom-1 -right-1 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] px-1.5 py-0.5 text-[8px] font-bold text-white ring-1 ring-white">
+                    <div className="absolute -bottom-1 -right-1 rounded-full bg-brand-gradient-135 px-1.5 py-0.5 text-[8px] font-bold text-white ring-1 ring-white">
                       Pro
                     </div>
                   </div>

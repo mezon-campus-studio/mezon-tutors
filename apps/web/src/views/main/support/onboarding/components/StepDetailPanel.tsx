@@ -153,7 +153,7 @@ function ChecklistRingBorder({ progress }: { progress: number }) {
               />
               <stop
                 offset="100%"
-                stopColor="#ec4899"
+                stopColor="#d071ff"
               />
             </linearGradient>
           </defs>

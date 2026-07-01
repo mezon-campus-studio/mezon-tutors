@@ -222,7 +222,7 @@ export const InviteLandingView = ({ inviteId }: InviteLandingViewProps) => {
                 "group h-16 rounded-full px-8 text-lg font-bold shadow-md transition-all gap-3",
                 isTutorOrAdmin 
                   ? "bg-gray-200 text-gray-500 shadow-none cursor-not-allowed"
-                  : "bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+                  : "bg-brand-gradient text-white shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
               )}
             >
               {isJoining ? (

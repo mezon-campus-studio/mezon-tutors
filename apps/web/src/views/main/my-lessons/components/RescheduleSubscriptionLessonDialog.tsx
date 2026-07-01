@@ -296,7 +296,7 @@ export function RescheduleSubscriptionLessonDialog({
             {t("dialog.dismiss")}
           </Button>
           <Button
-            className="h-11 px-6 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
+            className="h-11 px-6 rounded-full bg-brand-gradient text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:opacity-90 sm:order-2"
             disabled={selectedSlots.length !== 1 || rescheduleMutation.isPending}
             onClick={handleConfirm}
           >

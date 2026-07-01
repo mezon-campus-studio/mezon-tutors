@@ -112,7 +112,7 @@ export default function GlobalSettingsTab({ locale }: GlobalSettingsTabProps) {
           >
             <SelectTrigger
               id="timezone-select"
-              className="h-11 w-full rounded-xl border-violet-100 bg-white text-left"
+              className="h-11 w-full rounded-full border-violet-100 bg-white text-left"
             >
               <SelectValue placeholder={t('timezone.placeholder')}>
                 {selectedTimezoneLabel}
@@ -139,7 +139,7 @@ export default function GlobalSettingsTab({ locale }: GlobalSettingsTabProps) {
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50"
+            className="h-11 rounded-full border-violet-200 text-violet-700 hover:bg-violet-50"
             onClick={handleUseBrowserTimezone}
             disabled={isSaving}
           >
@@ -148,7 +148,8 @@ export default function GlobalSettingsTab({ locale }: GlobalSettingsTabProps) {
 
           <Button
             type="button"
-            className="h-11 rounded-xl bg-[linear-gradient(110deg,#7c3aed,#9333ea,#db2777)] px-5 text-white shadow-sm shadow-violet-300/40 hover:opacity-95"
+            variant="gradient"
+            className="h-11 rounded-full"
             onClick={handleSave}
             disabled={!hasChanges || isSaving}
           >

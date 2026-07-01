@@ -114,7 +114,7 @@ export function TutorSetupChecklistWidget() {
           aria-expanded={open}
           aria-label={t("widget.open")}
           className={cn(
-            "group relative flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full border border-white/20 bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_45%,#ec4899_100%)] px-4 py-3 text-left text-white shadow-[0_12px_40px_-8px_rgba(124,58,237,0.65)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_16px_48px_-8px_rgba(124,58,237,0.75)] active:scale-[0.98] sm:px-5 sm:py-3.5",
+            "group relative flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full border border-white/20 bg-brand-gradient px-4 py-3 text-left text-white shadow-[0_12px_40px_-8px_rgba(124,58,237,0.65)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_16px_48px_-8px_rgba(124,58,237,0.75)] active:scale-[0.98] sm:px-5 sm:py-3.5",
             open && "ring-2 ring-violet-300 ring-offset-2",
           )}
         >
@@ -165,11 +165,11 @@ export function TutorSetupChecklistWidget() {
               className="relative w-full overflow-hidden rounded-2xl border border-violet-200/80 bg-white shadow-2xl shadow-violet-500/25 animate-in slide-in-from-top-4 fade-in zoom-in-95 duration-300"
               aria-label={t("title")}
             >
-              <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(110deg,#7c3aed,#ec4899)]" />
+              <div className="absolute inset-x-0 top-0 h-1 bg-brand-gradient" />
 
               <div className="border-b border-violet-100 bg-[linear-gradient(180deg,#faf5ff_0%,#ffffff_100%)] px-4 py-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-lg shadow-violet-400/40">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-gradient-135 text-white shadow-lg shadow-violet-400/40">
                     <ListChecks className="size-5" />
                   </span>
                   <div className="min-w-0 flex-1 pt-0.5">
@@ -195,7 +195,7 @@ export function TutorSetupChecklistWidget() {
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-violet-100">
                     <div
-                      className="h-full rounded-full bg-[linear-gradient(110deg,#7c3aed,#ec4899)] transition-all duration-500"
+                      className="h-full rounded-full bg-brand-gradient transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>

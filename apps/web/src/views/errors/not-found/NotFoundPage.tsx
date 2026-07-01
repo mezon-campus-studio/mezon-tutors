@@ -69,7 +69,7 @@ export default function NotFoundPage() {
 
           <div className="relative z-10 flex items-center gap-1 sm:gap-2">
             <span
-              className="select-none bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#db2777_100%)] bg-clip-text text-[5.5rem] font-black leading-none tracking-tighter text-transparent drop-shadow-sm sm:text-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
+              className="select-none text-brand-gradient text-[5.5rem] font-black leading-none tracking-tighter drop-shadow-sm sm:text-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
               style={{ animationDelay: "0s" }}
             >
               4
@@ -83,7 +83,7 @@ export default function NotFoundPage() {
               <Compass className="relative size-10 text-violet-600 sm:size-12 motion-safe:[animation:not-found-compass_6s_ease-in-out_infinite]" />
             </div>
             <span
-              className="select-none bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#db2777_100%)] bg-clip-text text-[5.5rem] font-black leading-none tracking-tighter text-transparent drop-shadow-sm sm:text-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
+              className="select-none text-brand-gradient text-[5.5rem] font-black leading-none tracking-tighter drop-shadow-sm sm:text-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
               style={{ animationDelay: "0.6s" }}
             >
               4
@@ -106,7 +106,7 @@ export default function NotFoundPage() {
 
         {pathname && pathname !== "/" ? (
           <p className="mt-3 max-w-md truncate rounded-xl border border-violet-200/60 bg-white/60 px-4 py-2 font-mono text-sm font-medium backdrop-blur-sm">
-            <span className="bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#db2777_100%)] bg-clip-text text-transparent">
+            <span className="text-brand-gradient">
               {pathname}
             </span>
           </p>

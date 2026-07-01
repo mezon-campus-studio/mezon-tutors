@@ -181,7 +181,7 @@ function BookingRequestRowCard({
               className="rounded-lg object-cover"
             />
           ) : null}
-          <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+          <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
             {getInitials(item.studentName)}
           </AvatarFallback>
         </Avatar>
@@ -374,7 +374,7 @@ export default function BookingRequestsTable({
                             className="rounded-lg object-cover"
                           />
                         ) : null}
-                        <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+                        <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
                           {getInitials(item.studentName)}
                         </AvatarFallback>
                       </Avatar>

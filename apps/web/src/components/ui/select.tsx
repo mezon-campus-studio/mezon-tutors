@@ -120,7 +120,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
       </SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator
         render={
-          <span className="pointer-events-none absolute right-2.5 flex size-5 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-sm" />
+          <span className="pointer-events-none absolute right-2.5 flex size-5 items-center justify-center rounded-full bg-brand-gradient-135 text-white shadow-sm" />
         }
       >
         <CheckIcon className="pointer-events-none size-3" strokeWidth={3} />

@@ -121,7 +121,7 @@ function StudentCard({ student, onMessage }: StudentCardProps) {
         <Button
           type="button"
           onClick={() => onMessage(student)}
-          className="h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28"
+          className="h-11 w-full rounded-full bg-brand-gradient px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28"
         >
           <MessageCircle className="mr-1 size-3.5" />
           {t('message')}
@@ -170,7 +170,7 @@ export default function MyScheduleStudentsPanel({ students }: MyScheduleStudents
             <div className="relative flex flex-col items-center gap-3 text-center">
               <div className="relative">
                 <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                   <Users className="size-5" />
                 </div>
               </div>

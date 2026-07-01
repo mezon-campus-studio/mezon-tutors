@@ -307,7 +307,7 @@ export default function VideoPage() {
                 )
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6">
-                  <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+                  <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                     <Video className="size-6" />
                   </div>
                   <p className="max-w-xs text-center text-xs text-slate-500 sm:text-sm">
@@ -453,7 +453,7 @@ export default function VideoPage() {
                     type="button"
                     onClick={handleSubmit(handleAddLink)}
                     disabled={isCheckingVideo}
-                    className="h-11 shrink-0 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+                    className="h-11 shrink-0 rounded-full bg-brand-gradient px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
                   >
                     {isCheckingVideo ? (
                       <Spinner className="mr-1.5 size-4 text-white" />

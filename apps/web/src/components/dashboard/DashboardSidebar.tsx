@@ -157,7 +157,7 @@ export default function DashboardSidebar({
                 className="rounded-lg object-cover"
               />
             ) : null}
-            <AvatarFallback className="rounded-lg bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white">
+            <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
               {userInitials}
             </AvatarFallback>
           </Avatar>
@@ -207,7 +207,7 @@ export default function DashboardSidebar({
               </span>
               <span className="truncate">{t(`sidebar.${item.labelKey}`)}</span>
               {active ? (
-                <span className="ml-auto h-5 w-1 rounded-full bg-[linear-gradient(180deg,#7c3aed,#ec4899)]" />
+                <span className="ml-auto h-5 w-1 rounded-full bg-brand-gradient-135" />
               ) : null}
             </Button>
           );

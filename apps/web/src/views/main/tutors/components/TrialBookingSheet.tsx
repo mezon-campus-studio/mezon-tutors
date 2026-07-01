@@ -656,7 +656,7 @@ export function TrialBookingSheet({
       >
         <SheetHeader className="shrink-0 flex-row items-center justify-between gap-3 border-b border-violet-100 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="hidden size-10 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40 sm:flex">
+            <div className="hidden size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40 sm:flex">
               <Sparkles className="size-5" />
             </div>
             <div className="min-w-0">
@@ -664,7 +664,7 @@ export function TrialBookingSheet({
                 Trial lesson
               </p>
               <SheetTitle className="min-w-0 truncate text-left text-base font-extrabold text-slate-900 sm:text-lg md:text-xl">
-                <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+                <span className="text-brand-gradient">
                   {isReschedule ? t("rescheduleTitle") : t("title")}
                 </span>
               </SheetTitle>
@@ -751,7 +751,7 @@ export function TrialBookingSheet({
                 >
                   <span
                     aria-hidden
-                    className="absolute bottom-1 left-1 top-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
+                    className="absolute bottom-1 left-1 top-1 rounded-full bg-brand-gradient shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
                     style={{
                       width: `calc((100% - 0.5rem) / ${DURATION_OPTIONS.length})`,
                       transform: `translateX(${selectedDurationIndex * 100}%)`,
@@ -820,7 +820,7 @@ export function TrialBookingSheet({
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
                       Total
                     </p>
-                    <p className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold leading-none tracking-tight text-transparent sm:text-3xl">
+                    <p className="text-brand-gradient text-2xl font-extrabold leading-none tracking-tight sm:text-3xl">
                       {formatToCurrency(currency, totalPrice)}
                     </p>
                   </div>
@@ -831,7 +831,7 @@ export function TrialBookingSheet({
                 )}
                 <Button
                   size="lg"
-                  className="group h-11 w-full min-w-0 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:w-auto sm:min-w-32"
+                  className="group h-11 w-full min-w-0 rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:w-auto sm:min-w-32"
                   disabled={isConfirmDisabled}
                   onClick={handleConfirm}
                 >
@@ -928,7 +928,7 @@ export function TrialBookingSheet({
             </Button>
             <Button
               type="button"
-              className="h-11 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 disabled:opacity-70 sm:w-auto"
+              className="h-11 w-full rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50 disabled:opacity-70 sm:w-auto"
               disabled={isSubmittingReschedule}
               onClick={() => void handleConfirmReschedule()}
             >

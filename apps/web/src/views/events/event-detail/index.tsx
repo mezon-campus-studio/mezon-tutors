@@ -138,7 +138,7 @@ function EventHero({
             <HeroEnter delay={160}>
               <div className="space-y-4">
                 <h1 className="whitespace-pre-line text-[1.65rem] font-bold leading-[1.12] tracking-tight sm:text-4xl lg:text-[2.85rem] lg:leading-[1.08]">
-                  <span className="bg-gradient-to-br from-white via-white to-white/75 bg-clip-text text-transparent">
+                  <span className="text-brand-gradient">
                     {content.title}
                   </span>
                 </h1>
@@ -395,7 +395,7 @@ function EventAbout({ event }: { event: EventDetailDto }) {
                   {event.stats.map((stat, index) => (
                     <EventReveal key={stat.id} delay={index * 80}>
                       <div className="group rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/50">
-                        <p className="bg-gradient-to-br from-violet-700 to-fuchsia-600 bg-clip-text text-2xl font-bold text-transparent">
+                        <p className="text-brand-gradient text-2xl font-bold">
                           {stat.value}
                         </p>
                         <p className="mt-1 text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
@@ -486,7 +486,7 @@ function EventRegister({ event }: { event: EventDetailDto }) {
                 <div className="flex flex-col justify-between border-t border-white/8 bg-white/4 p-5 backdrop-blur-sm sm:p-6 lg:border-t-0 lg:border-l lg:p-10">
                   <div className="space-y-5">
                     <div className="flex items-baseline gap-2">
-                      <span className="bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-4xl font-bold text-transparent">
+                      <span className="text-brand-gradient text-4xl font-bold">
                         {content.priceLabel ?? "—"}
                       </span>
                       <span className="text-sm text-white/45">

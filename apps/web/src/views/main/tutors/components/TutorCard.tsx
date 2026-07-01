@@ -130,7 +130,7 @@ export default function TutorCard({
         onClick={preview ? undefined : () => onSelectAction?.(tutor)}
       >
         {isActive ? (
-          <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#7c3aed,#ec4899)]" />
+          <span className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-brand-gradient" />
         ) : null}
 
         <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-stretch md:gap-6">
@@ -147,7 +147,7 @@ export default function TutorCard({
                 className="aspect-square size-28 rounded-2xl object-cover object-center shadow-sm md:size-36"
               />
               {tutor.isProfessional ? (
-                <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] px-2 py-0.5 text-[10px] font-bold text-white shadow-md shadow-violet-300/40">
+                <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1 rounded-full bg-brand-gradient-135 px-2 py-0.5 text-[10px] font-bold text-white shadow-md shadow-violet-300/40">
                   <BadgeCheck className="size-3" strokeWidth={3} />
                   Pro
                 </div>
@@ -214,7 +214,7 @@ export default function TutorCard({
             </div>
 
             <div className="-mt-1 flex items-baseline gap-1">
-              <span className="bg-[linear-gradient(135deg,#7c3aed,#9333ea,#ec4899)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+              <span className="text-brand-gradient text-2xl font-extrabold tracking-tight">
                 {formatToCurrency(currency, lessonPrice)}
               </span>
               <span className="text-xs font-medium text-slate-500">
@@ -226,7 +226,7 @@ export default function TutorCard({
               {showContinuePayment && pendingPayment ? (
                 <Button
                   size="lg"
-                  className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                  className="group/btn h-10 w-full rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
                   onClick={(event) => {
                     event.stopPropagation();
                     continueTutorPendingPayment(pendingPayment, userTimezone);
@@ -256,7 +256,8 @@ export default function TutorCard({
                   size="lg"
                   disabled={preview || bookTrialDisabled}
                   title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
-                  className="group/btn h-10 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                  variant="gradient"
+                  className="h-10 w-full rounded-full"
                   onClick={(event) => {
                     event.stopPropagation();
                     if (!preview) setIsTrialBookingSheetOpen(true);

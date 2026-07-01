@@ -170,7 +170,8 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
               <>
                 <Button
                   type="button"
-                  className="h-11 rounded-xl bg-[linear-gradient(110deg,#7c3aed,#9333ea,#db2777)] px-5 text-white shadow-sm shadow-violet-300/40 hover:opacity-95"
+                  variant="gradient"
+                  className="h-11 rounded-full"
                   onClick={handleSync}
                   disabled={syncMutation.isPending || disconnectMutation.isPending}
                 >
@@ -182,7 +183,7 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-11 rounded-xl border-rose-200 text-rose-700 hover:bg-rose-50"
+                  className="h-11 rounded-full border-rose-200 text-rose-700 hover:bg-rose-50"
                   onClick={() => setShowDisconnectConfirm(true)}
                   disabled={disconnectMutation.isPending || syncMutation.isPending}
                 >
@@ -193,7 +194,8 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
             ) : (
               <Button
                 type="button"
-                className="h-11 rounded-xl bg-[linear-gradient(110deg,#7c3aed,#9333ea,#db2777)] px-5 text-white shadow-sm shadow-violet-300/40 hover:opacity-95"
+                variant="gradient"
+                className="h-11 rounded-full"
                 onClick={handleConnect}
                 disabled={isConnecting || isPending}
               >
@@ -217,7 +219,7 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="h-10 rounded-xl"
+                className="h-10 rounded-full"
                 onClick={() => setShowDisconnectConfirm(false)}
                 disabled={disconnectMutation.isPending}
               >
@@ -225,7 +227,7 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
               </Button>
               <Button
                 type="button"
-                className="h-10 rounded-xl bg-rose-600 text-white hover:bg-rose-700"
+                className="h-10 rounded-full bg-rose-600 text-white hover:bg-rose-700"
                 onClick={handleDisconnect}
                 disabled={disconnectMutation.isPending}
               >

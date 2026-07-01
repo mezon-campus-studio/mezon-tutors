@@ -155,7 +155,7 @@ export default function OnboardingView() {
 
           <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl">
             {t("title")}{" "}
-            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+            <span className="text-brand-gradient">
               {t("titleHighlight")}
             </span>
           </h1>
@@ -180,7 +180,7 @@ export default function OnboardingView() {
                     onClick={() => setSection(item)}
                     className={`relative cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 sm:px-5 ${
                       isActive
-                        ? "bg-[linear-gradient(110deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40"
+                        ? "bg-brand-gradient text-white shadow-md shadow-violet-300/40"
                         : "text-slate-600 hover:text-violet-700"
                     }`}
                   >
@@ -230,13 +230,13 @@ export default function OnboardingView() {
                       total: steps.length,
                     })}
               </p>
-              <p className="bg-[linear-gradient(110deg,#7c3aed,#ec4899)] bg-clip-text text-sm font-extrabold text-transparent">
+              <p className="text-brand-gradient text-sm font-extrabold">
                 {progressPercent}%
               </p>
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-violet-100">
               <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#7c3aed,#a855f7,#ec4899)] transition-all duration-500 ease-out"
+                className="h-full rounded-full bg-brand-gradient-90 transition-all duration-500 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -297,7 +297,7 @@ export default function OnboardingView() {
             <Button
               type="button"
               onClick={handleNext}
-              className="group h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:text-sm"
+              className="group h-11 rounded-full bg-brand-gradient px-6 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:text-sm"
             >
               {activeIndex === steps.length - 1 ? t("finish") : t("next")}
               <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-0.5" />

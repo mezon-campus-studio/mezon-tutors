@@ -111,7 +111,7 @@ export default function WalletPayoutBankDialog({
         showCloseButton
         className="gap-0 overflow-hidden rounded-3xl border-violet-100/80 p-0 shadow-2xl shadow-violet-200/30 sm:max-w-[440px]"
       >
-        <div className="relative overflow-hidden bg-[linear-gradient(135deg,#4c1d95_0%,#7c3aed_55%,#a855f7_100%)] px-6 pb-5 pt-6 text-white">
+        <div className="relative overflow-hidden bg-brand-gradient-135 px-6 pb-5 pt-6 text-white">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/10 blur-2xl"
@@ -250,7 +250,8 @@ export default function WalletPayoutBankDialog({
             </Button>
             <Button
               type="submit"
-              className="h-10 rounded-full border-0 bg-[linear-gradient(110deg,#6d28d9,#7c3aed,#db2777)] px-6 font-semibold text-white shadow-md shadow-violet-300/40 hover:opacity-95"
+              variant="gradient"
+              className="h-10 rounded-full"
               disabled={isPending}
             >
               {isPending ? t('submitting') : t('submit')}

@@ -181,7 +181,7 @@ export default function Header() {
                 height={34}
                 className="size-[34px] shrink-0 drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)] sm:size-[38px]"
               />
-              <span className="truncate bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-lg font-extrabold tracking-tight text-transparent max-[380px]:hidden sm:text-xl">
+              <span className="truncate text-brand-gradient text-lg font-extrabold tracking-tight max-[380px]:hidden sm:text-xl">
                 Mezonly
               </span>
             </Link>
@@ -202,7 +202,7 @@ export default function Header() {
               />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+              <span className="text-brand-gradient text-2xl font-extrabold tracking-tight">
                 Mezonly
               </span>
               <span
@@ -320,7 +320,7 @@ export default function Header() {
                     alt={user?.username ?? "User avatar"}
                   />
                 ) : null}
-                <AvatarFallback className="bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-xs font-bold text-white" onClick={handleAvatarClick}>
+                <AvatarFallback className="bg-brand-gradient-135 text-xs font-bold text-white" onClick={handleAvatarClick}>
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -428,7 +428,7 @@ function CurrencyPopover({
               <div
                 className={`flex size-9 shrink-0 items-center justify-center rounded-xl text-base font-extrabold ${
                   isActive
-                    ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-sm shadow-violet-300/40"
+                    ? "bg-brand-gradient-135 text-white shadow-sm shadow-violet-300/40"
                     : "bg-slate-100 text-slate-700"
                 }`}
               >
@@ -446,7 +446,7 @@ function CurrencyPopover({
                 </p>
               </div>
               {isActive ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white">
+                <div className="flex size-5 items-center justify-center rounded-full bg-brand-gradient-135 text-white">
                   <Check className="size-3" strokeWidth={3} />
                 </div>
               ) : null}
@@ -536,7 +536,7 @@ function LocalePopover({
                 </p>
               </div>
               {isActive ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white">
+                <div className="flex size-5 items-center justify-center rounded-full bg-brand-gradient-135 text-white">
                   <Check className="size-3" strokeWidth={3} />
                 </div>
               ) : null}
@@ -636,7 +636,7 @@ function MobileRegionPopover({
                 </p>
               </div>
               {isActive ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white">
+                <div className="flex size-5 items-center justify-center rounded-full bg-brand-gradient-135 text-white">
                   <Check className="size-3" strokeWidth={3} />
                 </div>
               ) : null}
@@ -671,7 +671,7 @@ function MobileRegionPopover({
               <div
                 className={`flex size-9 shrink-0 items-center justify-center rounded-xl text-base font-extrabold ${
                   isActive
-                    ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-sm shadow-violet-300/40"
+                    ? "bg-brand-gradient-135 text-white shadow-sm shadow-violet-300/40"
                     : "bg-slate-100 text-slate-700"
                 }`}
               >
@@ -689,7 +689,7 @@ function MobileRegionPopover({
                 </p>
               </div>
               {isActive ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white">
+                <div className="flex size-5 items-center justify-center rounded-full bg-brand-gradient-135 text-white">
                   <Check className="size-3" strokeWidth={3} />
                 </div>
               ) : null}

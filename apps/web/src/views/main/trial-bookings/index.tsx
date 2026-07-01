@@ -386,7 +386,7 @@ export default function BookingRequestsView() {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden">
       <div className="mx-auto w-full max-w-[1320px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
         <header className="mb-6 flex items-center gap-3 md:mb-8">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40 sm:size-12">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40 sm:size-12">
             <ClipboardList className="size-5 sm:size-6" />
           </div>
 

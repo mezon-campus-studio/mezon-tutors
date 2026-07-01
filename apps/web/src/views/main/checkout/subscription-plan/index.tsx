@@ -340,7 +340,7 @@ export default function SubscriptionPlanCheckoutPage() {
             {t("back")}
           </Link>
           <Button
-            className="h-11 shrink-0 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6"
+            className="h-11 shrink-0 bg-brand-gradient px-6"
             disabled={!canSubscribe || !selectedPlan}
             onClick={handleContinue}
           >

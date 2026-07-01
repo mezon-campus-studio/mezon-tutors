@@ -257,8 +257,9 @@ export default function FinalPage() {
         <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:justify-center sm:flex-wrap">
           <Button
             size="lg"
-            className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
             onClick={() => router.push(ROUTES.DASHBOARD.TRIAL_BOOKING)}
+            variant="gradient"
+            className="h-11 rounded-full"
           >
             {t('approved.bookingRequests')}
           </Button>
@@ -285,7 +286,8 @@ export default function FinalPage() {
       >
         <Button
           size="lg"
-          className="h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+          variant="gradient"
+          className="h-11 rounded-full"
           onClick={handleLoadProfile}
           disabled={isFetching}
         >

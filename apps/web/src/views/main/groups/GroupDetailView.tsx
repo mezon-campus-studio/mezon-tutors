@@ -241,7 +241,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
 
           <Button 
             onClick={copyInviteLink}
-            className="group h-12 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-2"
+            className="group h-12 rounded-full bg-brand-gradient px-8 text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-2"
           >
             <Share2 className="w-5 h-5" />
             {t('shareInvite')}
@@ -318,7 +318,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
 
       <Dialog open={isCreateChatDialogOpen} onOpenChange={setIsCreateChatDialogOpen}>
         <DialogContent className="overflow-hidden rounded-[28px] border-none bg-white p-0 shadow-2xl shadow-violet-200/50 ring-1 ring-violet-100 sm:max-w-[460px]">
-          <div className="relative bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_48%,#db2777_100%)] px-6 pb-7 pt-6 text-white">
+          <div className="relative bg-brand-gradient-135 px-6 pb-7 pt-6 text-white">
             <div className="absolute inset-x-0 bottom-0 h-px bg-white/25" />
             <div className="flex items-start gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/18 shadow-inner ring-1 ring-white/25">
@@ -350,7 +350,7 @@ export const GroupDetailView = ({ groupId }: GroupDetailViewProps) => {
               <Button
                 onClick={handleCreateGroupChat}
                 disabled={isOpeningGroupChat}
-                className="rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-5 font-bold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+                className="rounded-full bg-brand-gradient px-5 font-bold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
               >
                 {isOpeningGroupChat && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t('groupChat.createAndOpen')}

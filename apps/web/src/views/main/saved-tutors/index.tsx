@@ -131,7 +131,7 @@ export default function SavedTutorsView() {
         <div className="flex flex-col gap-5 md:gap-6">
           <header className="flex flex-col gap-4 rounded-3xl border border-violet-100 bg-white/85 p-5 shadow-sm shadow-violet-100/40 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex min-w-0 items-start gap-3">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                 <Bookmark className="size-6" />
               </div>
               <div className="min-w-0">

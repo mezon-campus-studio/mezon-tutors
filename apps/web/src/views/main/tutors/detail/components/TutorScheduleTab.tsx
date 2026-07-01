@@ -49,7 +49,7 @@ function ScheduleDurationToggle({
     <div className="relative inline-flex w-full max-w-md items-center rounded-full border border-violet-100 bg-white p-1 sm:w-auto">
       <span
         aria-hidden
-        className="absolute bottom-1 left-1 top-1 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
+        className="absolute bottom-1 left-1 top-1 rounded-full bg-brand-gradient shadow-sm shadow-violet-300/40 transition-transform duration-300 ease-out"
         style={{
           width: `calc((100% - 0.5rem) / ${DURATION_OPTIONS.length})`,
           transform: `translateX(${selectedIndex * 100}%)`,

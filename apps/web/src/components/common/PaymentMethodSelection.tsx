@@ -155,7 +155,7 @@ export function PaymentMethodSelection({
                   isDisabled
                     ? "bg-slate-100 ring-1 ring-slate-200"
                     : active
-                      ? "bg-[linear-gradient(135deg,#7c3aed,#ec4899)]"
+                      ? "bg-brand-gradient-135"
                       : "bg-white ring-1 ring-slate-200"
                 }`}
               >
@@ -171,7 +171,7 @@ export function PaymentMethodSelection({
 
       <div className={`space-y-3 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] px-5 py-4 ${payWithWalletOnly ? "" : "border-t border-violet-100"}`}>
         <Button
-          className="group h-12 w-full rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none"
+          className="group h-12 w-full rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none"
           disabled={primaryButtonDisabled}
           onClick={handlePrimaryPress}
         >

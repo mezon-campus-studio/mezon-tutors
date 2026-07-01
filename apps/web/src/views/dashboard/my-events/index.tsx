@@ -76,7 +76,7 @@ export default function MyEventsView() {
         </div>
       ) : events.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-violet-200 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-6 py-16 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-lg shadow-violet-300/40">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-lg shadow-violet-300/40">
             <Sparkles className="size-7" />
           </div>
           <h2 className="mt-5 text-lg font-bold text-slate-900">{t("empty.title")}</h2>

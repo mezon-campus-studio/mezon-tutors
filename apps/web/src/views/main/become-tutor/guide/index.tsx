@@ -25,7 +25,7 @@ import { Badge } from "@/components/ui";
 import { isAuthenticatedAtom, isLoadingAtom } from "@/store";
 
 const CTA_PRIMARY_CLASS =
-  "group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] px-6 text-sm font-semibold tracking-wide text-white shadow-md shadow-violet-300/40 transition-all duration-300 hover:shadow-lg hover:shadow-violet-400/50 active:scale-[0.97]";
+  "group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-brand-gradient px-6 text-sm font-semibold tracking-wide text-white shadow-md shadow-violet-300/40 transition-all duration-300 hover:shadow-lg hover:shadow-violet-400/50 active:scale-[0.97]";
 
 const HIGHLIGHT_ICON_BY_KEY: Record<GuideHighlightIconKey, typeof Wallet> = {
   setOwnRate: Wallet,
@@ -97,7 +97,7 @@ function GuideHighlightCard({ item }: { item: GuideHighlight }) {
 
         <div className="mt-auto flex items-center justify-between border-t border-violet-50 pt-4">
           <span
-            className={`bg-gradient-to-r ${accent} bg-clip-text text-[10px] font-bold uppercase tracking-[0.18em] text-transparent`}
+            className={`text-brand-gradient text-[10px] font-bold uppercase tracking-[0.18em]`}
           >
             {t(item.tagKey)}
           </span>
@@ -141,7 +141,7 @@ export function BecomeTutorGuide() {
 
             <h1 className="text-balance text-3xl font-extrabold leading-tight tracking-tight text-slate-900 animate-in fade-in slide-in-from-bottom-4 duration-700 sm:text-5xl">
               {t("title")}{" "}
-              <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+              <span className="text-brand-gradient">
                 {t("titleHighlight")}
               </span>
             </h1>

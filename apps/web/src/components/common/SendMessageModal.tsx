@@ -146,7 +146,7 @@ export function SendMessageModal({
       <DialogContent className="overflow-hidden gap-0 rounded-3xl border-violet-100 p-0 shadow-2xl shadow-violet-300/30 sm:max-w-lg">
         <DialogHeader className="space-y-0 border-b border-violet-100 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#7c3aed,#ec4899)] text-white shadow-md shadow-violet-300/40">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
               <MessageCircle className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -199,7 +199,7 @@ export function SendMessageModal({
             {t("messageModal.clear")}
           </Button>
           <Button
-            className="group h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none"
+            className="group h-10 rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none"
             onClick={handleSend}
             disabled={isSendingMessage || !messageContent.trim() || isOverLimit}
           >

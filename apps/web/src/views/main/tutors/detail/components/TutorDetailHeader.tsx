@@ -31,7 +31,7 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
               className="size-24 rounded-2xl object-cover object-center shadow-md shadow-violet-200/40 ring-2 ring-white sm:size-28"
             />
             {tutor.isProfessional ? (
-              <div className="absolute -bottom-1 -right-1 flex items-center gap-1 rounded-full bg-[linear-gradient(135deg,#7c3aed,#ec4899)] px-2 py-0.5 text-[10px] font-bold text-white shadow-md shadow-violet-300/40 ring-2 ring-white">
+              <div className="absolute -bottom-1 -right-1 flex items-center gap-1 rounded-full bg-brand-gradient-135 px-2 py-0.5 text-[10px] font-bold text-white shadow-md shadow-violet-300/40 ring-2 ring-white">
                 <BadgeCheck className="size-3" strokeWidth={3} />
                 Pro
               </div>

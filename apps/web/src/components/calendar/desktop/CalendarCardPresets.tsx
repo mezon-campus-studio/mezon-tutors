@@ -68,8 +68,7 @@ function MyLessonsPresetHeader({
         <h2
           className="font-extrabold tracking-tight"
           style={{
-            background:
-              'linear-gradient(110deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%)',
+            background: 'var(--gradient-brand)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -120,7 +119,7 @@ function MyLessonsPresetHeader({
           </button>
         )}
 
-        <div className="rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-3.5 py-1.5 shadow-sm shadow-violet-300/40">
+        <div className="rounded-full bg-brand-gradient px-3.5 py-1.5 shadow-sm shadow-violet-300/40">
           <span className="text-xs font-bold text-white">{weekLabel}</span>
         </div>
       </div>

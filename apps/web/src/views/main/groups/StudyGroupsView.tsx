@@ -121,7 +121,7 @@ const GroupCard = ({
             onClick={handleSelect}
             disabled={!canBook}
             className={cn(
-              "h-10 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-xs font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-1.5",
+              "h-10 rounded-full bg-brand-gradient px-6 text-xs font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-1.5",
               !canBook && "opacity-50 grayscale cursor-not-allowed shadow-none"
             )}
           >
@@ -210,7 +210,7 @@ export const StudyGroupsView = () => {
           <Button 
             onClick={handleCreateGroup}
             disabled={isCreating}
-            className="group h-12 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-8 text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-2"
+            className="group h-12 rounded-full bg-brand-gradient px-8 text-sm font-bold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 gap-2"
           >
             {isCreating ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -287,7 +287,7 @@ export const StudyGroupsView = () => {
             <Button 
               onClick={submitCreateGroup}
               disabled={isCreating || !newGroupName.trim()}
-              className="rounded-full h-11 px-6 bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] text-white font-bold disabled:opacity-50"
+              className="rounded-full h-11 px-6 bg-brand-gradient text-white font-bold disabled:opacity-50"
             >
               {isCreating ? (
                 <>

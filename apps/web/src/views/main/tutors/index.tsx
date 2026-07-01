@@ -382,7 +382,7 @@ export default function TutorsPage() {
         <div className="mb-6 space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             Find your{" "}
-            <span className="bg-[linear-gradient(110deg,#7c3aed_0%,#a855f7_50%,#ec4899_100%)] bg-clip-text text-transparent">
+            <span className="text-brand-gradient">
               perfect tutor
             </span>
           </h1>
@@ -411,7 +411,7 @@ export default function TutorsPage() {
                 {t.rich("Screen.totalLabelNoSubject", {
                   value: totalTutors,
                   highlight: (chunks) => (
-                    <span className="bg-[linear-gradient(110deg,#7c3aed,#ec4899)] bg-clip-text text-xl font-extrabold text-transparent">
+                    <span className="text-brand-gradient text-xl font-extrabold">
                       {chunks}
                     </span>
                   ),
@@ -475,7 +475,7 @@ export default function TutorsPage() {
                     {hasActiveFilters ? (
                       <Button
                         size="lg"
-                        className="group h-11 rounded-full bg-[linear-gradient(110deg,#7c3aed_0%,#9333ea_50%,#db2777_100%)] px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
+                        className="group h-11 rounded-full bg-brand-gradient px-6 text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"
                         onClick={handleResetFilters}
                       >
                         <RotateCcw className="mr-1.5 size-4 transition-transform group-hover:-rotate-180" />

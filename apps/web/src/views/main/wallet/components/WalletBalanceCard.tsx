@@ -28,7 +28,7 @@ function BalanceCardShell({ children, accent = 'violet' }: BalanceCardShellProps
         : 'bg-fuchsia-400/20';
 
   return (
-    <div className="relative min-h-[140px] overflow-hidden rounded-3xl border border-white/20 bg-[linear-gradient(135deg,#4c1d95_0%,#7c3aed_42%,#c026d3_72%,#db2777_100%)] p-6 text-white shadow-xl shadow-violet-500/30 md:min-h-[160px] md:p-7">
+    <div className="relative min-h-[140px] overflow-hidden rounded-3xl border border-white/20 bg-brand-gradient-135 p-6 text-white shadow-xl shadow-violet-500/30 md:min-h-[160px] md:p-7">
       <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-white/10 blur-2xl" />
       <div
         className={`pointer-events-none absolute -bottom-16 right-1/4 size-48 rounded-full blur-3xl ${accentGlow}`}
