@@ -16,6 +16,7 @@ import "./globals.css";
 import { Footer, Header } from "@/components/layouts";
 import { AppProvider } from "@/providers";
 import ScrollRestoration from "@/lib/scroll-restoration";
+import Script from "next/script";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -76,6 +77,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const GA_ID = process.env.NEXT_PUBLIC_GA_ID!;
   return (
     <html
       lang={DEFAULT_LOCALE}
@@ -93,6 +95,16 @@ export default function RootLayout({
             </AppProvider>
           </IntlServerProvider>
         </Suspense>
+        <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}/>
+        <Script id="google-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
       </body>
     </html>
   );
