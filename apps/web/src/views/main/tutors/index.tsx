@@ -32,6 +32,7 @@ import TutorCard from "./components/TutorCard";
 import TutorPreviewCard from "./components/TutorPreviewCard";
 import TutorsFilter from "./components/TutorsFilter";
 import TutorsPagination from "./components/TutorsPagination";
+import ReactGA from "react-ga4";
 
 const DEFAULT_LIMIT = 10;
 const DEFAULT_PAGE = 1;
@@ -268,6 +269,7 @@ export default function TutorsPage() {
   );
 
   const handleTutorCardClick = (tutor: VerifiedTutorProfileDto) => {
+    ReactGA.event("tutor_card_click", { tutor_id: tutor.id, tutor_name: `${tutor.firstName} ${tutor.lastName}` });
     window.open(ROUTES.TUTOR.DETAIL(tutor.id), "_blank");
   };
 

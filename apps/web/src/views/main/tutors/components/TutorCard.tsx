@@ -36,6 +36,7 @@ import { TrialBookingSheet } from "./TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "./SaveTutorButton";
+import ReactGA from "react-ga4";
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -246,7 +247,10 @@ export default function TutorCard({
                     buttonVariants({ variant: "outline" }),
                     "inline-flex h-10 w-full items-center justify-center rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
                   )}
-                  onClick={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
+                  }}
                 >
                   <CalendarRange className="mr-1.5 size-4" />
                   {t("subscribeMonthly")}
@@ -260,6 +264,7 @@ export default function TutorCard({
                   className="h-10 w-full rounded-full"
                   onClick={(event) => {
                     event.stopPropagation();
+                    ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
                     if (!preview) setIsTrialBookingSheetOpen(true);
                   }}
                 >

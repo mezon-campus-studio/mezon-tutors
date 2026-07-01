@@ -33,6 +33,7 @@ import { TrialBookingSheet } from "../../components/TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "../../components/SaveTutorButton";
+import ReactGA from "react-ga4";
 
 type TutorDetailSidebarProps = {
   tutor: TutorAboutDto;
@@ -143,7 +144,10 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
                 title={bookTrialDisabled ? t("bookTrialDisabledHint") : undefined}
                 variant="gradient"
                 className="h-11 w-full rounded-full"
-                onClick={() => setIsTrialBookingSheetOpen(true)}
+                onClick={() => {
+                  ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
+                  setIsTrialBookingSheetOpen(true);
+                }}
               >
                 <Calendar className="mr-1.5 size-4" />
                 {t("bookTrial")}
@@ -158,6 +162,9 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
                     buttonVariants({ variant: "outline" }),
                     "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
                   )}
+                  onClick={() => {
+                    ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
+                  }}
                 >
                   <CalendarRange className="mr-1.5 size-4" />
                   {t("subscribeMonthly")}
@@ -168,6 +175,9 @@ export function TutorDetailSidebar({ tutor }: TutorDetailSidebarProps) {
                     buttonVariants({ variant: "outline" }),
                     "h-11 w-full rounded-full border-violet-200 text-sm font-semibold text-violet-800 shadow-sm hover:border-violet-300 hover:bg-violet-50 hover:text-violet-900",
                   )}
+                  onClick={() => {
+                    ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
+                  }}
                 >
                   <Users className="mr-1.5 size-4" />
                   {t("subscribeGroup")}
