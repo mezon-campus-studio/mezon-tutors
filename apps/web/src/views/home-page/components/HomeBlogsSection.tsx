@@ -25,10 +25,10 @@ export default function HomeBlogsSection() {
   }
 
   return (
-    <section className="border-t border-violet-100/60 bg-[linear-gradient(180deg,#ffffff_0%,#faf8ff_100%)] py-12 sm:py-16">
+    <section className="border-t border-violet-100/60 bg-[linear-gradient(180deg,#ffffff_0%,#faf8ff_100%)] py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mb-8 flex flex-col gap-5 sm:mb-10 md:flex-row md:items-end md:justify-between">
-          <div className="mx-auto max-w-2xl space-y-3 text-center md:mx-0 md:text-left">
+          <div className="mx-auto space-y-3 text-center md:mx-0 md:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
               <BookOpen className="size-3.5" />
               {t("badge")}

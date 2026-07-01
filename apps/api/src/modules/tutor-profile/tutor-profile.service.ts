@@ -1053,6 +1053,7 @@ export class TutorProfileService {
             languages: true,
             user: {
               select: {
+                avatar: true,
                 mezonUserId: true,
                 timezone: true,
               },

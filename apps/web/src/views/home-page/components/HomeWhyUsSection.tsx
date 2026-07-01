@@ -58,7 +58,7 @@ export default function HomeWhyUsSection() {
                 key={feature.key}
                 className={`group relative overflow-hidden rounded-3xl border p-7 transition-all hover:-translate-y-1 ${
                   isHighlight
-                    ? "border-violet-300 bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-xl shadow-violet-300/40"
+                    ? "border-violet-300 bg-brand-gradient text-white shadow-xl shadow-violet-300/40"
                     : "border-violet-100 bg-white shadow-sm hover:shadow-lg hover:shadow-violet-200/50"
                 }`}
               >

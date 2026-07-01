@@ -131,6 +131,12 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
         </Link>
 
         <header className="space-y-5">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl sm:leading-tight">
+            {post.title}
+          </h1>
+
+          {post.excerpt ? <p className="text-lg leading-8 text-slate-600">{post.excerpt}</p> : null}
+
           {post.tags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {post.tags.map((tag) => (
@@ -144,12 +150,6 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
               ))}
             </div>
           ) : null}
-
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl sm:leading-tight">
-            {post.title}
-          </h1>
-
-          {post.excerpt ? <p className="text-lg leading-8 text-slate-600">{post.excerpt}</p> : null}
 
           <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-y border-violet-100 py-4 text-sm text-slate-500">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
