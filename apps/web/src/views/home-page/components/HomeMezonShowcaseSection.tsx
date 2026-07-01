@@ -75,7 +75,7 @@ export default function HomeMezonShowcaseSection() {
             <div className="flex items-center justify-between border-b border-white/5 bg-slate-900/60 px-5 py-4">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-bold">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-brand-gradient text-sm font-bold">
                     MA
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-slate-900 bg-emerald-500" />
@@ -98,7 +98,7 @@ export default function HomeMezonShowcaseSection() {
                 </button>
                 <button
                   type="button"
-                  className="flex size-8 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg shadow-violet-500/40 transition hover:bg-violet-400"
+                  className="flex size-8 items-center justify-center rounded-full bg-brand-gradient text-white shadow-lg shadow-violet-500/40 transition hover:bg-violet-400"
                 >
                   <Video className="size-4" />
                 </button>
@@ -111,7 +111,7 @@ export default function HomeMezonShowcaseSection() {
               </p>
 
               <div className="flex items-end gap-2">
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-[10px] font-bold">
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-[10px] font-bold">
                   MA
                 </div>
                 <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/8 px-4 py-2.5 text-sm text-white/90">
@@ -120,7 +120,7 @@ export default function HomeMezonShowcaseSection() {
               </div>
 
               <div className="flex justify-end">
-                <div className="max-w-[78%] rounded-2xl rounded-br-md bg-gradient-to-br from-violet-500 to-fuchsia-500 px-4 py-2.5 text-sm font-medium shadow-lg shadow-violet-500/30">
+                <div className="max-w-[78%] rounded-2xl rounded-br-md bg-brand-gradient px-4 py-2.5 text-sm font-medium shadow-lg shadow-violet-500/30">
                   {t("preview.yourMessage")}
                   <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-white/80">
                     19:43
@@ -134,7 +134,7 @@ export default function HomeMezonShowcaseSection() {
                   type="button"
                   className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-4 py-2 text-xs font-semibold text-violet-200 transition hover:bg-violet-500/20"
                 >
-                  <span className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500">
+                  <span className="flex size-5 items-center justify-center rounded-full bg-brand-gradient">
                     <Video className="size-3" />
                   </span>
                   {t("preview.joinRoom")}
@@ -151,7 +151,7 @@ export default function HomeMezonShowcaseSection() {
               <span className="flex-1 text-sm text-white/40">Aa</span>
               <button
                 type="button"
-                className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/40"
+                className="flex size-8 items-center justify-center rounded-full bg-brand-gradient shadow-lg shadow-violet-500/40"
               >
                 <Send className="size-4" />
               </button>

@@ -16,8 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function SavedTutorsPage() {
   return (
-    <RoleGuard allowedRoles={["STUDENT"]}>
       <SavedTutorsView />
-    </RoleGuard>
   );
 }

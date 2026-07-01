@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express'
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces'
@@ -114,9 +114,6 @@ export class TutorProfileController {
   @Get('saved')
   async getSavedTutors(@Req() req: Request): Promise<SavedTutorDto[]> {
     const user = req.user as AuthUserPayload
-    if (user.role !== 'STUDENT') {
-      throw new ForbiddenException('Only students can save tutors')
-    }
     return this.tutorProfileService.getSavedTutors(user.sub)
   }
 
@@ -155,9 +152,6 @@ export class TutorProfileController {
   async saveTutor(@Req() req: Request, @Param('id') id: string) {
     await this.validateVerifiedTutor(id)
     const user = req.user as AuthUserPayload
-    if (user.role !== 'STUDENT') {
-      throw new ForbiddenException('Only students can save tutors')
-    }
     return this.tutorProfileService.saveTutor(user.sub, id)
   }
 
@@ -165,9 +159,6 @@ export class TutorProfileController {
   @Delete(':id/save')
   async unsaveTutor(@Req() req: Request, @Param('id') id: string) {
     const user = req.user as AuthUserPayload
-    if (user.role !== 'STUDENT') {
-      throw new ForbiddenException('Only students can save tutors')
-    }
     await this.tutorProfileService.unsaveTutor(user.sub, id)
     return { success: true }
   }

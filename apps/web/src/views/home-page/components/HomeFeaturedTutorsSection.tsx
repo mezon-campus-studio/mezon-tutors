@@ -35,10 +35,10 @@ export default function HomeFeaturedTutorsSection() {
   }
 
   return (
-    <section className="bg-white py-12 sm:py-16">
+    <section className="bg-white py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between sm:mb-10">
-          <div className="max-w-2xl space-y-3">
+          <div className="space-y-3">
             <Badge className="h-auto rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
               {t("badge")}
             </Badge>

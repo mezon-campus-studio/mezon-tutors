@@ -27,7 +27,7 @@ export function SaveTutorButton({
   const user = useAtomValue(userAtom);
   const saveTutor = useSaveTutorMutation();
   const unsaveTutor = useUnsaveTutorMutation();
-  const canSave = Boolean(user?.id) && user?.role === "STUDENT";
+  const canSave = Boolean(user?.id);
   const { data: savedTutors } = useGetSavedTutors(canSave);
   const savedFromCache = savedTutors?.some((tutor) => tutor.id === tutorId);
   const saved = savedFromCache ?? isSaved;
