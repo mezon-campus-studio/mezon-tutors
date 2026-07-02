@@ -3,6 +3,7 @@
 import { ArrowRight, CreditCard, Lock, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import ReactGA from "react-ga4";
 import { Button } from "@/components/ui";
 
 export type PaymentMethodOption = {
@@ -68,6 +69,11 @@ export function PaymentMethodSelection({
     : payDisabled || isPayLoading || isSubmitting;
 
   const handlePrimaryPress = async () => {
+    ReactGA.event("checkout_pay_click", {
+      action: hasContinuePayment ? "continue_payment" : payWithWalletOnly ? "wallet_pay" : "gateway_pay",
+      method: hasContinuePayment ? undefined : selectedMethodId,
+    });
+
     if (hasContinuePayment) {
       onContinuePaymentAction?.();
       return;

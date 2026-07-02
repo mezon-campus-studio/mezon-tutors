@@ -17,6 +17,7 @@ import { Footer, Header } from "@/components/layouts";
 import { AppProvider } from "@/providers";
 import ScrollRestoration from "@/lib/scroll-restoration";
 import Script from "next/script";
+import GoogleAnalyticsProvider from "@/providers/GoogleAnalyticsProvider";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -85,16 +86,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900">
-        <ScrollRestoration />
-        <Suspense fallback={null}>
-          <IntlServerProvider>
-            <AppProvider>
-              <Header />
-              {children}
-              <Footer />
-            </AppProvider>
-          </IntlServerProvider>
-        </Suspense>
+        <GoogleAnalyticsProvider>
+          <ScrollRestoration />
+          <Suspense fallback={null}>
+            <IntlServerProvider>
+              <AppProvider>
+                <Header />
+                {children}
+                <Footer />
+              </AppProvider>
+            </IntlServerProvider>
+          </Suspense>
+        </GoogleAnalyticsProvider>
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}/>
         <Script id="google-tag" strategy="afterInteractive">
           {`
