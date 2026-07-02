@@ -6,6 +6,7 @@ import {
   ECurrency,
   ESubject,
   ETutorSortBy,
+  ESubscriptionLessonSlotStatus,
   MAX_PRICE,
   MIN_PRICE,
   PaginatedResponse,
@@ -27,6 +28,7 @@ import {
 } from '@mezon-tutors/shared';
 import {
   ETrialLessonStatus,
+  ESubscriptionEnrollmentStatus,
   IdentityVerificationStatus,
   Prisma,
   ProfessionalDocumentStatus,
@@ -1003,28 +1005,34 @@ export class TutorProfileService {
     const total = filtered.length
     const totalPages = Math.ceil(total / limit)
     const paged = filtered.slice((page - 1) * limit, page * limit)
-    const savedTutorIds = studentId
-      ? new Set(
-          (
-            await this.prisma.savedTutor.findMany({
-              where: {
-                studentId,
-                tutorId: { in: paged.map(({ tutor }) => tutor.id) },
-              },
+    const tutorIds = paged.map(({ tutor }) => tutor.id)
+
+    const [savedTutorIds, statsMap] = await Promise.all([
+      studentId
+        ? this.prisma.savedTutor
+            .findMany({
+              where: { studentId, tutorId: { in: tutorIds } },
               select: { tutorId: true },
             })
-          ).map((item) => item.tutorId),
-        )
-      : new Set<string>()
+            .then((rows) => new Set(rows.map((r) => r.tutorId)))
+        : Promise.resolve(new Set<string>()),
+      this.computeTutorStats(tutorIds),
+    ])
 
     return {
       data: {
-        items: paged.map(({ tutor }) =>
-          toVerifiedTutorProfileDto(
+        items: paged.map(({ tutor }) => {
+          const dto = toVerifiedTutorProfileDto(
             tutor as unknown as Parameters<typeof toVerifiedTutorProfileDto>[0],
             { isSaved: savedTutorIds.has(tutor.id) },
           )
-        ),
+          const stats = statsMap.get(tutor.id)
+          if (stats) {
+            dto.totalLessonsTaught = stats.totalLessonsTaught
+            dto.totalStudents = stats.totalStudents
+          }
+          return dto
+        }),
         meta: {
           page,
           limit,
@@ -1071,6 +1079,62 @@ export class TutorProfileService {
       ),
       savedAt: item.createdAt.toISOString(),
     }))
+  }
+
+  private async computeTutorStats(
+    tutorIds: string[],
+  ): Promise<Map<string, { totalLessonsTaught: number; totalStudents: number }>> {
+    if (tutorIds.length === 0) return new Map()
+
+    const [trialCompletions, activeEnrollments, trialStudentPairs] = await Promise.all([
+      this.prisma.trialLessonBooking.groupBy({
+        by: ['tutorId'],
+        where: { tutorId: { in: tutorIds }, status: ETrialLessonStatus.COMPLETED },
+        _count: true,
+      }),
+      this.prisma.subscriptionEnrollment.findMany({
+        where: { tutorId: { in: tutorIds }, status: ESubscriptionEnrollmentStatus.ACTIVE },
+        select: { tutorId: true, weeklySlots: true, studentId: true },
+      }),
+      this.prisma.trialLessonBooking.findMany({
+        where: { tutorId: { in: tutorIds }, status: ETrialLessonStatus.COMPLETED },
+        select: { tutorId: true, studentId: true },
+        distinct: ['tutorId', 'studentId'],
+      }),
+    ])
+
+    const completedTrialMap = new Map(trialCompletions.map((r) => [r.tutorId, r._count]))
+
+    const subSlotsMap = new Map<string, number>()
+    const subStudentsMap = new Map<string, Set<string>>()
+    for (const e of activeEnrollments) {
+      const count =
+        ((e.weeklySlots as unknown as Array<{ status?: string }>) ?? []).filter(
+          (s) => s.status === ESubscriptionLessonSlotStatus.COMPLETED,
+        ).length
+      subSlotsMap.set(e.tutorId, (subSlotsMap.get(e.tutorId) ?? 0) + count)
+      if (!subStudentsMap.has(e.tutorId)) subStudentsMap.set(e.tutorId, new Set())
+      subStudentsMap.get(e.tutorId)!.add(e.studentId)
+    }
+
+    const trialStudentsMap = new Map<string, Set<string>>()
+    for (const r of trialStudentPairs) {
+      if (!trialStudentsMap.has(r.tutorId)) trialStudentsMap.set(r.tutorId, new Set())
+      trialStudentsMap.get(r.tutorId)!.add(r.studentId)
+    }
+
+    const statsMap = new Map<string, { totalLessonsTaught: number; totalStudents: number }>()
+    for (const id of tutorIds) {
+      const completedTrials = completedTrialMap.get(id) ?? 0
+      const completedSubs = subSlotsMap.get(id) ?? 0
+      const subStudents = subStudentsMap.get(id)
+      const trialStudents = trialStudentsMap.get(id)
+      statsMap.set(id, {
+        totalLessonsTaught: completedTrials + completedSubs,
+        totalStudents: new Set([...(subStudents ?? []), ...(trialStudents ?? [])]).size,
+      })
+    }
+    return statsMap
   }
 
   async saveTutor(studentId: string, tutorId: string): Promise<{ success: true }> {
@@ -1133,24 +1197,38 @@ export class TutorProfileService {
       throw new NotFoundException(`Tutor with ID ${id} not found`)
     }
 
-    const bookedLessonsLast48h = await this.prisma.trialLessonBooking.count({
-      where: {
-        tutorId: tutor.id,
-        status: {
-          in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED],
-        },
-        startAt: {
-          gte: dayjs().subtract(48, 'hour').toDate(),
-        },
-      },
-    })
+    const [bookedLessonsLast48h, statsMap] = await Promise.all([
+      (async () => {
+        const [trialBooked, subActivated] = await Promise.all([
+          this.prisma.trialLessonBooking.count({
+            where: {
+              tutorId: tutor.id,
+              status: { in: [ETrialLessonStatus.PENDING, ETrialLessonStatus.CONFIRMED] },
+              startAt: { gte: dayjs().subtract(48, 'hour').toDate() },
+            },
+          }),
+          this.prisma.subscriptionEnrollment
+            .findMany({
+              where: {
+                tutorId: tutor.id,
+                status: ESubscriptionEnrollmentStatus.ACTIVE,
+                createdAt: { gte: dayjs().subtract(48, 'hour').toDate() },
+              },
+              select: { lessonsPerWeek: true },
+            })
+            .then((rows) => rows.reduce((sum, e) => sum + e.lessonsPerWeek, 0)),
+        ])
+        return trialBooked + subActivated
+      })(),
+      this.computeTutorStats([tutor.id]).then((m) => m.get(tutor.id)!),
+    ])
 
     return {
       ...toVerifiedTutorProfileDto(tutor),
       stats: {
         bookedLessonsLast48h,
-        totalLessonsTaught: tutor.totalLessonsTaught,
-        totalStudents: tutor.totalStudents,
+        totalLessonsTaught: statsMap.totalLessonsTaught,
+        totalStudents: statsMap.totalStudents,
       },
     }
   }

@@ -119,9 +119,9 @@ function StudentCard({ student, onMessage }: StudentCardProps) {
         ) : null}
 
         <Button
-          type="button"
+          variant="gradient"
           onClick={() => onMessage(student)}
-          className="h-11 w-full rounded-full bg-brand-gradient px-4 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 sm:h-9 sm:w-auto sm:min-w-28"
+          className="h-11 rounded-full px-4"
         >
           <MessageCircle className="mr-1 size-3.5" />
           {t('message')}

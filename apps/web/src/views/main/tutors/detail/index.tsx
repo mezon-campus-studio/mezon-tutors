@@ -3,14 +3,12 @@
 import { useTranslations } from "next-intl";
 import {
   useGetVerifiedTutorAbout,
-  useGetVerifiedTutorResources,
   useGetVerifiedTutorResume,
   useGetVerifiedTutorReviews,
 } from "@/services";
 import { TutorAboutTab } from "./components/TutorAboutTab";
 import { TutorDetailHeader } from "./components/TutorDetailHeader";
 import { TutorDetailSidebar } from "./components/TutorDetailSidebar";
-import { TutorResourcesTab } from "./components/TutorResourcesTab";
 import { TutorResumeTab } from "./components/TutorResumeTab";
 import { TutorReviewsTab } from "./components/TutorReviewsTab";
 import { TutorScheduleTab } from "./components/TutorScheduleTab";
@@ -33,11 +31,6 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
     isLoading: isLoadingReviews,
     isError: isErrorReviews,
   } = useGetVerifiedTutorReviews(tutorId, true);
-  const {
-    data: resourcesData,
-    isLoading: isLoadingResources,
-    isError: isErrorResources,
-  } = useGetVerifiedTutorResources(tutorId, true);
   const {
     data: resumeData,
     isLoading: isLoadingResume,
@@ -75,12 +68,10 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
             <div className="flex-1 w-full flex flex-col gap-6">
               <TutorDetailHeader tutor={aboutData} />
 
-              {/* About Section */}
               <section className="bg-white border border-gray-200 rounded-2xl p-6">
                 <TutorAboutTab tutor={aboutData} />
               </section>
 
-              {/* Resume Section */}
               {!isErrorResume && (isLoadingResume || hasResumeItems) ? (
                 <section className="bg-white border border-gray-200 rounded-2xl p-6">
                   {isLoadingResume ? (
@@ -91,12 +82,10 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
                 </section>
               ) : null}
 
-              {/* Schedule Section */}
               <section className="bg-white border border-gray-200 rounded-2xl p-6">
                 <TutorScheduleTab tutor={aboutData} />
               </section>
 
-              {/* Reviews Section */}
               <section className="bg-white border border-gray-200 rounded-2xl p-6">
                 {isLoadingReviews ? (
                   <p className="text-gray-500">{t("loading")}</p>
@@ -114,23 +103,6 @@ export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
                 ) : null}
               </section>
 
-              {/* Resources Section */}
-              <section className="bg-white border border-gray-200 rounded-2xl p-6">
-                {isLoadingResources ? (
-                  <p className="text-gray-500">{t("loading")}</p>
-                ) : isErrorResources ? (
-                  <p className="text-gray-500">{t("loadError")}</p>
-                ) : aboutData && resourcesData ? (
-                  <TutorResourcesTab
-                    tutor={{
-                      ...aboutData,
-                      resources: resourcesData.resources,
-                    }}
-                  />
-                ) : null}
-              </section>
-
-              {/* Similar Tutors Section */}
               <SimilarTutorsSection tutor={aboutData} />
             </div>
 

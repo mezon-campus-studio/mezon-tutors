@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { detectBrowserTimezone, resolveUserTimezone } from '@/lib/timezone';
 import {
@@ -34,6 +34,7 @@ import {
   type TrialLessonBookingRequestItem,
 } from '@/services';
 import { userAtom } from '@/store';
+import { SendMessageModal } from '@/components/common/SendMessageModal';
 import BookingRequestStatusBadge from '../components/BookingRequestStatusBadge';
 
 type BookingRequestDetailViewProps = {
@@ -65,6 +66,7 @@ export default function BookingRequestDetailView({
     user?.timezone,
     detectBrowserTimezone(),
   );
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
 
   const { data, isLoading } = useGetMyTrialLessonBookingRequests({
     page: 1,
@@ -270,8 +272,9 @@ export default function BookingRequestDetailView({
 
             <div className="mt-4 flex flex-col gap-2.5">
               <Button
-                variant="outline"
-                className="h-11 rounded-full border-violet-200 bg-white text-sm font-semibold text-violet-700 hover:border-violet-300 hover:bg-violet-50"
+                variant="gradient"
+                className="h-11 rounded-full"
+                onClick={() => setMessageModalOpen(true)}
               >
                 <MessageCircle className="mr-2 size-4" />
                 {tList('actions.message')}
@@ -287,6 +290,16 @@ export default function BookingRequestDetailView({
             </div>
           </div>
         </aside>
+
+        <SendMessageModal
+          open={messageModalOpen}
+          title={booking.studentName}
+          senderId={user?.id ?? ''}
+          senderMezonUserId={user?.mezonUserId ?? ''}
+          recipientId={booking.studentId}
+          recipientMezonUserId={booking.studentMezonUserId ?? ''}
+          onOpenChangeAction={setMessageModalOpen}
+        />
       </div>
     </div>
   );
