@@ -64,10 +64,10 @@ export function ReviewCard({
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-xl p-4 ${compact ? "" : "min-h-[180px]"}`}
+      className={`rounded-2xl border border-gray-200 bg-white p-5 ${compact ? "" : "min-h-[160px]"}`}
     >
-      <div className={`flex gap-3 items-start ${compact ? "" : "h-full"}`}>
-        <Avatar className="size-11 shrink-0 rounded-full border border-gray-100 shadow-sm">
+      <div className={`flex items-start gap-3 ${compact ? "" : "h-full"}`}>
+        <Avatar className="size-11 shrink-0 rounded-full border border-gray-100">
           {reviewerAvatarUrl ? (
             <AvatarImage
               src={reviewerAvatarUrl}
@@ -81,53 +81,51 @@ export function ReviewCard({
         </Avatar>
 
         <div
-          className={`flex-1 flex flex-col gap-2 ${compact ? "" : "h-full"}`}
+          className={`flex flex-1 flex-col gap-2 ${compact ? "" : "h-full"}`}
         >
-          <div className="flex justify-between items-start gap-2 flex-wrap">
+          <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex-1">
-              <p className="text-gray-900 font-bold">{review.reviewerName}</p>
-              <div className="flex items-center gap-1">
+              <p className="font-bold text-gray-900">{review.reviewerName}</p>
+              <div className="flex items-center gap-2">
+                <ReviewStarRating
+                  rating={review.rating}
+                  readonly
+                  size={14}
+                  gap={2}
+                />
                 <span className="text-xs text-gray-500">
                   {formatDateDMY(review.createdAt)}
                 </span>
-                {isEdited && (
+                {isEdited ? (
                   <span className="text-xs text-gray-500">(edited)</span>
-                )}
+                ) : null}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <ReviewStarRating
-                rating={review.rating}
-                readonly
-                size={16}
-                gap={2}
-              />
-              {isOwnReview && onEdit && (
-                <Button variant="outline" size="icon-sm" onClick={onEdit}>
-                  <Edit2 size={16} className="text-gray-600" />
-                </Button>
-              )}
-            </div>
+            {isOwnReview && onEdit ? (
+              <Button variant="outline" size="icon-sm" onClick={onEdit}>
+                <Edit2 size={16} className="text-gray-600" />
+              </Button>
+            ) : null}
           </div>
 
           <div className={compact ? "" : "flex-1"}>
-            <p className={`text-gray-600 ${isExpanded ? "" : "line-clamp-4"}`}>
+            <p className={`text-sm leading-6 text-gray-600 ${isExpanded ? "" : "line-clamp-4"}`}>
               {displayComment}
             </p>
           </div>
 
-          {shouldTruncate && !showFullComment && (
+          {shouldTruncate && !showFullComment ? (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="px-0 h-auto self-start"
+              className="h-auto self-start px-0"
             >
-              <span className="text-xs text-indigo-600">
+              <span className="text-xs text-violet-600">
                 {isExpanded ? t("showLess") : t("showMore")}
               </span>
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
