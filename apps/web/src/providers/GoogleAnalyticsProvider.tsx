@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import ReactGA from "react-ga4";
 import { initGA } from "@/lib/google-analytics/analytics";
 
-export default function GAProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function GAListener() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -27,5 +23,20 @@ export default function GAProvider({
     });
   }, [pathname, searchParams]);
 
-  return children;
+  return null;
+}
+
+export default function GAProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <GAListener />
+      </Suspense>
+      {children}
+    </>
+  );
 }
