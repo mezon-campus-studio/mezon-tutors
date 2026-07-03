@@ -577,7 +577,6 @@ export class TutorProfileService {
         introduce: dto.introduce,
         experience: dto.specialization,
         headline: dto.headline,
-        isProfessional: !!this.normalizeCloudinaryPublicId(dto.teachingCertificatePublicId),
         verificationStatus: VerificationStatus.PENDING,
       } as unknown as Prisma.TutorProfileUpdateInput,
     });

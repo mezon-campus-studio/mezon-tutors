@@ -51,10 +51,13 @@ export function TutorAboutTab({
               {headline}
             </h2>
 
-            <div className="mt-3 min-h-0 flex-1 overflow-hidden">
-              <p className="line-clamp-9 text-sm leading-7 text-gray-600 sm:text-base">
+            <div className="relative mt-3 min-h-0 flex-1 overflow-hidden">
+              <p className="text-sm leading-7 text-gray-600 sm:text-base">
                 {intro}
               </p>
+              {showReadMore ? (
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent" />
+              ) : null}
             </div>
 
             {showReadMore ? (

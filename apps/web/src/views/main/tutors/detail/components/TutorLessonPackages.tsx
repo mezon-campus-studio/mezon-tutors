@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  calculateGroupSubscriptionPrice,
   ECurrency,
   formatToCurrency,
   ROUTES,
@@ -203,12 +204,19 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
     ? `${formatToCurrency(booking.currency, baseSubscriptionPrice)}+`
     : "—";
 
-  const groupPriceLabel =
+  const groupPricingPreview =
     baseSubscriptionPrice != null
-      ? `${formatToCurrency(
-          booking.currency,
-          Math.round(baseSubscriptionPrice * groupDiscountRate),
-        )}+`
+      ? calculateGroupSubscriptionPrice({
+          baseMonthlyPrice: baseSubscriptionPrice,
+          memberCount: 2,
+          groupDiscountRate,
+          platformFeeRate: 0,
+        })
+      : null;
+
+  const groupPriceLabel =
+    groupPricingPreview != null
+      ? `${formatToCurrency(booking.currency, Math.round(groupPricingPreview.grossAmount / groupPricingPreview.memberCount))}+`
       : "—";
 
   const groupDiscountBadge =

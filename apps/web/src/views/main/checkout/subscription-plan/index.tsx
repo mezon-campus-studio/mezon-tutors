@@ -333,14 +333,15 @@ export default function SubscriptionPlanCheckoutPage() {
           <Link
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "h-11 shrink-0 px-6",
+              "h-11 shrink-0 px-6 rounded-full",
             )}
             href={tutorId ? ROUTES.TUTOR.DETAIL(tutorId) : ROUTES.TUTOR.INDEX}
           >
             {t("back")}
           </Link>
           <Button
-            className="h-11 shrink-0 bg-brand-gradient px-6"
+            variant="gradient"
+            className="h-11 shrink-0 px-6 rounded-full"
             disabled={!canSubscribe || !selectedPlan}
             onClick={handleContinue}
           >
