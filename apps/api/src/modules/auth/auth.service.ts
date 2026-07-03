@@ -7,7 +7,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { Prisma } from '@prisma/client';
 import type { User } from '@mezon-tutors/db';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AppConfigService } from '../../shared/services/app-config.service';
@@ -235,12 +236,12 @@ export class AuthService {
     });
   }
 
-  async createRefreshToken(userId: string, idToken?: string | null): Promise<string> {
+  async createRefreshToken(userId: string, idToken?: string | null, tx?: Prisma.TransactionClient): Promise<string> {
     const jwtConfig = this.appConfig.jwtConfig;
     const expiresIn = REFRESH_TOKEN_EXPIRES_IN;
 
     const token = await this.jwtService.signAsync(
-      { sub: userId, type: 'refresh', ...(idToken ? { idToken } : {}) },
+      { sub: userId, type: 'refresh', jti: randomUUID(), ...(idToken ? { idToken } : {}) },
       {
         expiresIn,
         secret: jwtConfig.refreshSecret,
@@ -250,7 +251,8 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
 
-    await this.prisma.refreshToken.create({
+    const client = tx ?? this.prisma;
+    await client.refreshToken.create({
       data: {
         userId,
         token,
@@ -355,18 +357,8 @@ export class AuthService {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const jwtConfig = this.appConfig.jwtConfig;
-
-    const rawToken = await this.jwtService.signAsync(
-      { sub: user.id, type: 'refresh', ...(idToken ? { idToken } : {}) },
-      {
-        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-        secret: jwtConfig.refreshSecret,
-      }
-    );
-
     const newRefreshToken = await this.prisma.$transaction(async (tx) => {
-      await tx.refreshToken.updateMany({
+      const { count } = await tx.refreshToken.updateMany({
         where: {
           token: refreshToken,
           revokedAt: null,
@@ -376,15 +368,11 @@ export class AuthService {
         },
       });
 
-      const created = await tx.refreshToken.create({
-        data: {
-          userId: user.id,
-          token: rawToken,
-          expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE_MS),
-        },
-      });
+      if (count === 0) {
+        throw new UnauthorizedException('Refresh token has already been used');
+      }
 
-      return created.token;
+      return this.createRefreshToken(user.id, idToken, tx);
     });
 
     return {
