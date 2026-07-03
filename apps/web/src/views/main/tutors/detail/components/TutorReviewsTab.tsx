@@ -18,6 +18,7 @@ export function TutorReviewsTab({ tutor }: TutorReviewsTabProps) {
       tutorName={`${tutor.firstName} ${tutor.lastName}`}
       ratingAverage={tutor.ratingAverage}
       ratingCount={tutor.ratingCount}
+      totalStudents={tutor.stats.totalStudents}
       reviews={tutor.reviews}
     />
   );

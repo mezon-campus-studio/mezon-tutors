@@ -2,6 +2,7 @@
 
 import { REVIEW_DISPLAY_CONFIG } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
+import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui";
@@ -18,6 +19,7 @@ interface ReviewsSectionProps {
   tutorName: string;
   ratingAverage: number;
   ratingCount: number;
+  totalStudents?: number;
   reviews: Array<{
     id: string;
     reviewerId: string;
@@ -35,6 +37,7 @@ export function ReviewsSection({
   tutorName,
   ratingAverage,
   ratingCount,
+  totalStudents,
   reviews,
 }: ReviewsSectionProps) {
   const t = useTranslations("Tutors.Detail");
@@ -76,7 +79,7 @@ export function ReviewsSection({
     () =>
       sortedReviews.slice(
         0,
-        isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT,
+        isMobile ? 2 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT,
       ),
     [sortedReviews, isMobile],
   );
@@ -98,28 +101,29 @@ export function ReviewsSection({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-between items-center gap-3 flex-wrap">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
-          className={`text-gray-900 font-bold ${isMobile ? "text-xl" : "text-2xl"}`}
+          className={`font-bold text-gray-900 ${isMobile ? "text-xl" : "text-2xl"}`}
         >
           {t("whatStudentsSay")}
         </h2>
-        {showPostReviewButton && (
+        {showPostReviewButton ? (
           <Button
             size="sm"
             variant="outline"
             onClick={() => setIsPostReviewOpen(true)}
-            className="rounded-full border-violet-200 text-violet-700 hover:bg-violet-50"
+            className="rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50"
           >
             {myReviewFromList ? t("editReview") : t("postReview")}
-          </Button> 
-        )}
+          </Button>
+        ) : null}
       </div>
 
       <ReviewsSummary
         ratingAverage={ratingAverage}
         ratingCount={ratingCount}
+        totalStudents={totalStudents}
         isMobile={isMobile}
       />
 
@@ -127,12 +131,8 @@ export function ReviewsSection({
         <p className="text-gray-500">{t("reviewsEmpty")}</p>
       ) : (
         <>
-          <p className="text-sm text-gray-500">
-            {t("basedOnReviews", { count: ratingCount })}
-          </p>
-
           {isMobile ? (
-            <div className="flex flex-col gap-3 w-full">
+            <div className="flex w-full flex-col gap-3">
               {visibleReviews.map((review) => (
                 <ReviewCard
                   key={review.id}
@@ -143,8 +143,8 @@ export function ReviewsSection({
               ))}
             </div>
           ) : (
-            <div className="flex gap-3 items-start w-full">
-              <div className="flex-1 flex flex-col gap-3">
+            <div className="flex w-full items-start gap-4">
+              <div className="flex flex-1 flex-col gap-4">
                 {leftColumnReviews.map((review) => (
                   <ReviewCard
                     key={review.id}
@@ -154,7 +154,7 @@ export function ReviewsSection({
                   />
                 ))}
               </div>
-              <div className="flex-1 flex flex-col gap-3">
+              <div className="flex flex-1 flex-col gap-4">
                 {rightColumnReviews.map((review) => (
                   <ReviewCard
                     key={review.id}
@@ -168,13 +168,14 @@ export function ReviewsSection({
           )}
 
           {reviews.length >
-            (isMobile ? 1 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT) && (
+            (isMobile ? 2 : REVIEW_DISPLAY_CONFIG.INITIAL_VISIBLE_COUNT) && (
             <Button
               variant="outline"
               onClick={() => setIsAllReviewsOpen(true)}
-              className={`self-center mt-2 ${isMobile ? "w-full rounded-xl py-3" : "rounded-lg py-2"}`}
+              className={`mt-2 self-center rounded-xl ${isMobile ? "w-full py-3" : "px-8 py-2"}`}
             >
-              {t("showAllReviews", { count: reviews.length })}
+              {t("showMore")}
+              <ChevronDown className="ml-2 size-4" />
             </Button>
           )}
         </>

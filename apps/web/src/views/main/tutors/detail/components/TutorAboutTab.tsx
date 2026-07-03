@@ -1,112 +1,109 @@
 "use client";
 
-import type { TutorAboutDto } from "@mezon-tutors/shared";
-import { Languages, Sparkles, User } from "lucide-react";
+import type { TutorAboutDto, TutorResumeDto } from "@mezon-tutors/shared";
+import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import VideoPreview from "../../components/VideoPreview";
+import { useTutorBooking } from "../hooks/TutorBookingContext";
+import { TutorAboutDetailModal } from "./TutorAboutDetailModal";
+import { TutorProfileTags } from "./TutorProfileTags";
+import { TutorResumePreview } from "./TutorResumePreview";
 
 type TutorAboutTabProps = {
   tutor: TutorAboutDto;
+  resume?: TutorResumeDto | null;
+  isLoadingResume?: boolean;
 };
 
-const PROFICIENCY_ACCENT: Record<string, string> = {
-  NATIVE: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  NEAR_NATIVE: "bg-violet-50 text-violet-700 ring-violet-100",
-  ADVANCED: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100",
-  UPPER_INTERMEDIATE: "bg-blue-50 text-blue-700 ring-blue-100",
-  INTERMEDIATE: "bg-indigo-50 text-indigo-700 ring-indigo-100",
-  PRE_INTERMEDIATE: "bg-amber-50 text-amber-700 ring-amber-100",
-  BEGINNER: "bg-slate-50 text-slate-700 ring-slate-200",
-};
+const VIDEO_HEIGHT = 280;
 
-function SectionTitle({
-  icon: Icon,
-  eyebrow,
-  title,
-}: {
-  icon: typeof User;
-  eyebrow: string;
-  title: string;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
-        <Icon className="size-4" />
-      </div>
-      <div className="leading-tight">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-          {eyebrow}
-        </p>
-        <h2 className="text-lg font-extrabold text-slate-900">{title}</h2>
-      </div>
-    </div>
-  );
-}
-
-export function TutorAboutTab({ tutor }: TutorAboutTabProps) {
+export function TutorAboutTab({
+  tutor,
+  resume,
+  isLoadingResume = false,
+}: TutorAboutTabProps) {
   const t = useTranslations("Tutors.Detail");
-  const tCardLabels = useTranslations("Tutors.TutorCard");
-  const tLanguage = useTranslations("Tutors.Filter.Language");
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const booking = useTutorBooking();
+
+  const headline = tutor.headline || t("defaultHeadline");
+  const intro = tutor.introduce || t("emptySection");
+
+  const hasResumePreview =
+    (resume?.education.length ?? 0) > 0 ||
+    (resume?.certifications.length ?? 0) > 0;
+
+  const showReadMore =
+    intro.length > 200 ||
+    Boolean(tutor.experience?.trim()) ||
+    hasResumePreview ||
+    isLoadingResume;
 
   return (
-    <div className="flex flex-col gap-7">
-      <VideoPreview
-        videoUrl={tutor.videoUrl}
-        height={360}
-        title={t("videoIntroTitle")}
-      />
+    <>
+      <div className="flex flex-col gap-6">
+        <div className="grid items-stretch gap-6 lg:grid-cols-2">
+          <div className="flex h-[280px] min-h-0 flex-col overflow-hidden">
+            <h2 className="shrink-0 text-lg font-bold leading-snug text-gray-900 sm:text-xl">
+              {headline}
+            </h2>
 
-      <div className="flex flex-col gap-3">
-        <SectionTitle
-          icon={User}
-          eyebrow="Introduction"
-          title={t("aboutTitle")}
-        />
-        <p className="text-sm leading-7 text-slate-700 sm:text-base">
-          {tutor.introduce || t("emptySection")}
-        </p>
-      </div>
+            <div className="mt-3 min-h-0 flex-1 overflow-hidden">
+              <p className="line-clamp-9 text-sm leading-7 text-gray-600 sm:text-base">
+                {intro}
+              </p>
+            </div>
 
-      {tutor.experience ? (
-        <div className="flex flex-col gap-3">
-          <SectionTitle
-            icon={Sparkles}
-            eyebrow="Experience"
-            title={t("experienceTitle")}
-          />
-          <p className="text-sm leading-7 text-slate-700 sm:text-base">
-            {tutor.experience}
-          </p>
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-3">
-        <SectionTitle
-          icon={Languages}
-          eyebrow="Spoken"
-          title={t("languagesTitle")}
-        />
-        <div className="flex flex-wrap gap-2">
-          {tutor.languages.map((language) => {
-            const accent =
-              PROFICIENCY_ACCENT[language.proficiency as string] ??
-              "bg-slate-50 text-slate-700 ring-slate-200";
-            return (
-              <span
-                key={`${language.languageCode}-${language.proficiency}`}
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${accent}`}
+            {showReadMore ? (
+              <button
+                type="button"
+                onClick={() => setIsDetailOpen(true)}
+                className="cursor-pointer mt-2 shrink-0 self-start text-sm font-semibold text-violet-600 hover:text-violet-700"
               >
-                <span className="font-bold">
-                  {tLanguage(language.languageCode as unknown as string)}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
-                  {tCardLabels(`proficiency.${language.proficiency}`)}
-                </span>
-              </span>
-            );
-          })}
+                {t("readMore")}
+              </button>
+            ) : null}
+          </div>
+
+          <VideoPreview
+            videoUrl={tutor.videoUrl}
+            height={VIDEO_HEIGHT}
+            title={t("videoIntroTitle")}
+          />
+        </div>
+
+        <TutorResumePreview resume={resume} isLoading={isLoadingResume} />
+
+        <div className="border-t border-gray-200" />
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <TutorProfileTags tutor={tutor} className="min-w-0 flex-1" />
+
+          {!booking.isOwnProfile ? (
+            <Button
+              variant="gradient"
+              disabled={!booking.senderId}
+              onClick={() => booking.setIsMessageModalOpen(true)}
+              className={cn(
+                "h-11 shrink-0 rounded-full px-5 text-sm font-semibold sm:ml-4",
+              )}
+            >
+              <MessageCircle className="mr-2 size-4" />
+              {t("contactTeacher")}
+            </Button>
+          ) : null}
         </div>
       </div>
-    </div>
+
+      <TutorAboutDetailModal
+        tutor={tutor}
+        resume={resume}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+      />
+    </>
   );
 }
