@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
@@ -16,6 +17,16 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('trust proxy', 1);
   const configService = app.get(AppConfigService);
+
+  if (!configService.runsBackgroundJobs) {
+    const schedulerRegistry = app.get(SchedulerRegistry);
+    for (const name of Array.from(schedulerRegistry.getCronJobs().keys())) {
+      schedulerRegistry.deleteCronJob(name);
+    }
+    console.info(
+      `[AppRole] role=${configService.appRole}: cron schedulers disabled on this instance`
+    );
+  }
 
   if (configService.corsDelegateToProxy) {
     app.use(stripCorsResponseHeadersMiddleware);

@@ -26,6 +26,7 @@ import { UpdateMyTutorProfileBodyDto } from './dto/update-my-tutor-profile.dto'
 import { UpdateActiveStatusBodyDto } from './dto/update-active-status.dto'
 import { UpdateTutorSetupChecklistBodyDto } from './dto/update-tutor-setup-checklist.dto'
 import { PrismaService } from '../../prisma/prisma.service'
+import { PublicCache } from '../../common/decorators/public-cache.decorator'
 
 @Controller('tutor-profiles')
 @ApiTags('Tutor Profile')
@@ -102,6 +103,7 @@ export class TutorProfileController {
   }
 
   @Get('verified')
+  @PublicCache({ maxAge: 30, sMaxAge: 60, staleWhileRevalidate: 120, anonymousOnly: true })
   async getVerifiedTutors(
     @Req() req: Request,
     @Query() query: VerifiedTutorQueryDto
@@ -118,30 +120,35 @@ export class TutorProfileController {
   }
 
   @Get(':id/about')
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorAbout(@Param('id') id: string): Promise<TutorAboutDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorAbout(id)
   }
 
   @Get(':id/schedule')
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorSchedule(@Param('id') id: string): Promise<TutorScheduleDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorSchedule(id)
   }
 
   @Get(':id/reviews')
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorReviews(@Param('id') id: string): Promise<TutorReviewsDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorReviews(id)
   }
 
   @Get(':id/resources')
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorResources(@Param('id') id: string): Promise<TutorResourcesDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorResources(id)
   }
 
   @Get(':id/resume')
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorResume(@Param('id') id: string): Promise<TutorResumeDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorResume(id)

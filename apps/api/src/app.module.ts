@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SharedModule } from './shared/shared.module';
 import { HealthController } from './health.controller';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { CacheControlInterceptor } from './common/interceptors/cache-control.interceptor';
 import { AuthModule } from './modules/auth/auth.module';
 import { TutorProfileModule } from './modules/tutor-profile/tutor-profile.module';
 import { TutorAvailabilityModule } from './modules/tutor-availability/tutor-availability.module';
@@ -47,7 +48,7 @@ import { LearningLogModule } from './modules/learning-log/learning-log.module';
         {
           name: 'default',
           ttl: 60000,
-          limit: 120,
+          limit: 300,
         },
       ],
     }),
@@ -86,6 +87,10 @@ import { LearningLogModule } from './modules/learning-log/learning-log.module';
   ],
   controllers: [HealthController],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheControlInterceptor,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

@@ -9,6 +9,7 @@ import { Message } from 'mezon-sdk/dist/cjs/mezon-client/structures/Message';
 export class MezonBotService implements OnModuleInit {
   private client: MezonClient;
   private loggedIn = false;
+  private connecting = false;
 
   constructor(private readonly appConfig: AppConfigService) {
     if (!this.isConfigured()) {
@@ -21,8 +22,15 @@ export class MezonBotService implements OnModuleInit {
     });
   }
 
-  async onModuleInit() {
-    await this.login();
+  onModuleInit() {
+    if (!this.appConfig.runsBackgroundJobs) {
+      console.info(
+        `[MezonBot] role=${this.appConfig.appRole}: bot connection disabled on this instance`
+      );
+      return;
+    }
+
+    void this.connectWithRetry();
   }
 
   async login(): Promise<void> {
@@ -37,6 +45,38 @@ export class MezonBotService implements OnModuleInit {
       console.error('Error initializing MezonBotService:', error);
       throw error;
     }
+  }
+
+  private async connectWithRetry(): Promise<void> {
+    if (this.connecting) {
+      return;
+    }
+    this.connecting = true;
+
+    const maxDelayMs = 60_000;
+    let attempt = 0;
+
+    try {
+      while (!this.loggedIn) {
+        try {
+          await this.login();
+          console.info('[MezonBot] Connected to Mezon gateway');
+        } catch {
+          attempt += 1;
+          const delayMs = Math.min(5_000 * 2 ** (attempt - 1), maxDelayMs);
+          console.error(
+            `[MezonBot] Connection cycle ${attempt} failed; retrying in ${delayMs / 1000}s`
+          );
+          await this.sleep(delayMs);
+        }
+      }
+    } finally {
+      this.connecting = false;
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   isConfigured() {

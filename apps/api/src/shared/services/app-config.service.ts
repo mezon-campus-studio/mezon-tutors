@@ -2,14 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 
-/**
- * Environment variable schema with Zod validation
- * All required variables will throw clear errors if missing
- */
 const envSchema = z.object({
   // Server
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  APP_ROLE: z.enum(['all', 'web', 'worker']).default('all'),
   CORS_ORIGINS: z.string().optional(),
   /** When unset, production defaults to true (nginx owns CORS on the VPS). */
   CORS_DELEGATE_TO_PROXY: z.string().optional(),
@@ -130,6 +127,7 @@ export class AppConfigService {
     const rawEnv = {
       PORT: this.configService.get('PORT'),
       NODE_ENV: this.configService.get('NODE_ENV'),
+      APP_ROLE: this.configService.get('APP_ROLE'),
       CORS_ORIGINS: this.configService.get('CORS_ORIGINS'),
       CORS_DELEGATE_TO_PROXY: this.configService.get('CORS_DELEGATE_TO_PROXY'),
       FRONTEND_URL: this.configService.get('FRONTEND_URL'),
@@ -190,6 +188,14 @@ export class AppConfigService {
 
   get nodeEnv(): string {
     return this.env.NODE_ENV;
+  }
+
+  get appRole(): 'all' | 'web' | 'worker' {
+    return this.env.APP_ROLE;
+  }
+
+  get runsBackgroundJobs(): boolean {
+    return this.env.APP_ROLE !== 'web';
   }
 
   get corsOrigins(): string | undefined {

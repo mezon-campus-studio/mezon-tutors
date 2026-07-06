@@ -11,12 +11,14 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { SkipApiResponseWrap } from '../../common/decorators/skip-api-response-wrap.decorator';
 import { WebhookService } from './webhook.service';
 
 type GatewayQuery = Record<string, string | string[] | undefined>;
 
+@SkipThrottle()
 @Controller('webhook')
 @ApiTags('Webhook')
 export class WebhookController {

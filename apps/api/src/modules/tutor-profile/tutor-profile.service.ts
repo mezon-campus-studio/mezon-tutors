@@ -882,67 +882,12 @@ export class TutorProfileService {
       where.country = country;
     }
 
-    type TutorWithComputedPrice = Prisma.TutorProfileGetPayload<{
-      include: {
-        languages: true;
-        user: {
-          select: {
-            mezonUserId: true;
-            timezone: true;
-          };
-        };
-      };
-    }> & {
-      trialLessonPrice?: {
-        usd: Prisma.Decimal;
-        vnd: bigint;
-        php: Prisma.Decimal;
-      } | null;
-    };
-
-    const allTutors = (await this.prisma.tutorProfile.findMany({
-      where,
-      include: {
-        trialLessonPrice: true,
-        languages: true,
-        user: {
-          select: {
-            mezonUserId: true,
-            timezone: true,
-            avatar: true,
-          },
-        },
-      } as unknown as Prisma.TutorProfileInclude,
-    })) as unknown as TutorWithComputedPrice[];
-
-    const getTutorPriceByCurrency = (
-      tutor: TutorWithComputedPrice,
-      targetCurrency: ECurrency
-    ): number | null => {
-      if (!tutor.trialLessonPrice) {
-        return null;
-      }
-
-      switch (targetCurrency) {
-        case ECurrency.USD:
-          return Number(tutor.trialLessonPrice.usd);
-        case ECurrency.PHP:
-          return Number(tutor.trialLessonPrice.php);
-        case ECurrency.VND:
-          return Number(tutor.trialLessonPrice.vnd);
-      }
+    const priceColumnByCurrency: Record<ECurrency, 'usd' | 'vnd' | 'php'> = {
+      [ECurrency.USD]: 'usd',
+      [ECurrency.VND]: 'vnd',
+      [ECurrency.PHP]: 'php',
     }
-
-    const tutorsWithComputedPrices = allTutors.map((tutor) => {
-      const priceInQueryCurrency = getTutorPriceByCurrency(tutor, currency)
-      const priceInVnd = getTutorPriceByCurrency(tutor, ECurrency.VND)
-
-      return {
-        tutor,
-        priceInQueryCurrency,
-        priceInVnd,
-      }
-    })
+    const priceColumn = priceColumnByCurrency[currency]
 
     const priceFloor = MIN_PRICE[currency]
     const priceCeiling = MAX_PRICE[currency]
@@ -955,56 +900,69 @@ export class TutorProfileService {
       !Number.isNaN(maxPrice) &&
       maxPrice < priceCeiling
 
-    const filtered = tutorsWithComputedPrices.filter((x) => {
-      if (x.priceInQueryCurrency == null) return true
+    if (hasMin || hasMax) {
+      const toColumnValue = (value: number) =>
+        priceColumn === 'vnd' ? BigInt(Math.trunc(value)) : value
+      const range: Record<string, unknown> = {}
+      if (hasMin) range.gte = toColumnValue(minPrice as number)
+      if (hasMax) range.lte = toColumnValue(maxPrice as number)
 
-      if (hasMin && x.priceInQueryCurrency < minPrice) return false
-      if (hasMax && x.priceInQueryCurrency > maxPrice) return false
-      return true
-    })
+      where.OR = [
+        { trialLessonPrice: { is: null } },
+        { trialLessonPrice: { [priceColumn]: range } },
+      ] as unknown as Prisma.TutorProfileWhereInput['OR']
+    }
 
-    const getPriceSortValue = (x: (typeof filtered)[number]) =>
-      x.priceInQueryCurrency ?? Number.MAX_SAFE_INTEGER
+    const idTieBreaker = { id: 'asc' } as const
+    const priceOrderBy = (direction: 'asc' | 'desc') =>
+      ({
+        trialLessonPrice: { [priceColumn]: direction },
+      }) as unknown as Prisma.TutorProfileOrderByWithRelationInput
 
-    const sortSecondaryIdAsc = (a: (typeof filtered)[number], b: (typeof filtered)[number]) =>
-      a.tutor.id.localeCompare(b.tutor.id)
+    let orderBy: Prisma.TutorProfileOrderByWithRelationInput[]
+    switch (sortBy) {
+      case ETutorSortBy.HIGHEST_PRICE:
+        orderBy = [priceOrderBy('desc'), idTieBreaker]
+        break
+      case ETutorSortBy.LOWEST_PRICE:
+        orderBy = [priceOrderBy('asc'), idTieBreaker]
+        break
+      case ETutorSortBy.NUMBER_OF_REVIEWS:
+        orderBy = [{ ratingCount: 'desc' }, idTieBreaker]
+        break
+      case ETutorSortBy.BEST_RATING:
+        orderBy = [{ ratingAverage: 'desc' }, idTieBreaker]
+        break
+      case ETutorSortBy.TOP_PICKS:
+        orderBy = [{ totalStudents: 'desc' }, idTieBreaker]
+        break
+      default:
+        orderBy = [{ ratingAverage: 'desc' }, { ratingCount: 'desc' }, idTieBreaker]
+    }
 
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case ETutorSortBy.HIGHEST_PRICE: {
-          const diff = getPriceSortValue(b) - getPriceSortValue(a)
-          return diff !== 0 ? diff : sortSecondaryIdAsc(a, b)
-        }
-        case ETutorSortBy.LOWEST_PRICE: {
-          const diff = getPriceSortValue(a) - getPriceSortValue(b)
-          return diff !== 0 ? diff : sortSecondaryIdAsc(a, b)
-        }
-        case ETutorSortBy.NUMBER_OF_REVIEWS: {
-          const diff = b.tutor.ratingCount - a.tutor.ratingCount
-          return diff !== 0 ? diff : sortSecondaryIdAsc(a, b)
-        }
-        case ETutorSortBy.BEST_RATING: {
-          const diff = Number(b.tutor.ratingAverage) - Number(a.tutor.ratingAverage)
-          return diff !== 0 ? diff : sortSecondaryIdAsc(a, b)
-        }
-        case ETutorSortBy.TOP_PICKS: {
-          const diff = b.tutor.totalStudents - a.tutor.totalStudents
-          return diff !== 0 ? diff : sortSecondaryIdAsc(a, b)
-        }
-        default: {
-          const diffRatingAvg = Number(b.tutor.ratingAverage) - Number(a.tutor.ratingAverage)
-          if (diffRatingAvg !== 0) return diffRatingAvg
-          const diffRatingCount = b.tutor.ratingCount - a.tutor.ratingCount
-          if (diffRatingCount !== 0) return diffRatingCount
-          return sortSecondaryIdAsc(a, b)
-        }
-      }
-    })
+    const [total, paged] = await Promise.all([
+      this.prisma.tutorProfile.count({ where }),
+      this.prisma.tutorProfile.findMany({
+        where,
+        include: {
+          trialLessonPrice: true,
+          languages: true,
+          user: {
+            select: {
+              mezonUserId: true,
+              timezone: true,
+              avatar: true,
+            },
+          },
+        } as unknown as Prisma.TutorProfileInclude,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ])
 
-    const total = filtered.length
     const totalPages = Math.ceil(total / limit)
-    const paged = filtered.slice((page - 1) * limit, page * limit)
-    const tutorIds = paged.map(({ tutor }) => tutor.id)
+    const tutorIds = paged.map((tutor) => tutor.id)
 
     const [savedTutorIds, statsMap] = await Promise.all([
       studentId
@@ -1020,7 +978,7 @@ export class TutorProfileService {
 
     return {
       data: {
-        items: paged.map(({ tutor }) => {
+        items: paged.map((tutor) => {
           const dto = toVerifiedTutorProfileDto(
             tutor as unknown as Parameters<typeof toVerifiedTutorProfileDto>[0],
             { isSaved: savedTutorIds.has(tutor.id) },
@@ -1281,6 +1239,9 @@ export class TutorProfileService {
       orderBy: {
         createdAt: 'desc',
       },
+      // Safeguard against an unbounded payload for a highly-reviewed tutor.
+      // Uses the existing [tutorId, createdAt] index; returns the most recent 200.
+      take: 200,
     })
 
     return {

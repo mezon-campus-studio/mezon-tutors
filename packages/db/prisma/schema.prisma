@@ -306,6 +306,9 @@ model TutorProfile {
   setupChecklist        TutorSetupChecklist?
   savedBy               SavedTutor[]
 
+  @@index([verificationStatus, subject], map: "tutor_profiles_verif_subject_idx")
+  @@index([verificationStatus, country], map: "tutor_profiles_verif_country_idx")
+  @@index([verificationStatus, ratingAverage, ratingCount], map: "tutor_profiles_verif_rating_idx")
   @@map("tutor_profiles")
 }
 
