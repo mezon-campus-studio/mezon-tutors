@@ -4,6 +4,8 @@ import { accessTokenAtom } from "@/store/token.atom";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_API_ENDPOINT;
 
+const DEFAULT_API_TIMEOUT_MS = 10000;
+
 export class ApiError extends Error {
   status: number;
   body: unknown;
@@ -27,9 +29,26 @@ export function resetRefreshTokenLock(): void {
   refreshPromise = null;
 }
 
+function isUnauthorizedError(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    return error.status === 401;
+  }
+  if (error instanceof AxiosError) {
+    return error.response?.status === 401;
+  }
+  return false;
+}
+
+export function clearAuthSession(): void {
+  resetRefreshTokenLock();
+  store.set(accessTokenAtom, null);
+  void credentialsApiClient.post('/auth/logout').catch(() => {});
+}
+
 export const credentialsApiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
+  timeout: DEFAULT_API_TIMEOUT_MS,
 });
 
 credentialsApiClient.interceptors.response.use(
@@ -69,6 +88,7 @@ function unwrapApiEnvelope(response: { status: number; data: unknown }) {
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: DEFAULT_API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -77,6 +97,7 @@ export const apiClient = axios.create({
 /** Public reads — no cookies so credentialed CORS is not required. */
 export const publicApiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: DEFAULT_API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -122,7 +143,7 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (isAuthRefreshRequest(originalRequest)) {
-        store.set(accessTokenAtom, null);
+        clearAuthSession();
         const finalStatus = error.response?.status || 500;
         const body = error.response?.data || null;
         return Promise.reject(new ApiError(finalStatus, error.message, body));
@@ -136,7 +157,15 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient.request(originalRequest);
       } catch (refreshError) {
-        store.set(accessTokenAtom, null);
+        if (isUnauthorizedError(refreshError)) {
+          clearAuthSession();
+        } else {
+          store.set(accessTokenAtom, null);
+        }
+
+        if (refreshError instanceof ApiError) {
+          return Promise.reject(refreshError);
+        }
 
         if (refreshError instanceof AxiosError) {
           const refreshStatus = refreshError.response?.status || 500;
