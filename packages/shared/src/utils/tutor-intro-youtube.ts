@@ -57,13 +57,14 @@ export function buildTutorIntroYoutubeMetadata(
     introLines.push(headline);
   }
 
-  const descriptionBlocks: string[] = [introLines.join('\n')];
+  const descriptionBlocks: string[] = [];
 
   const profileBaseUrl = options?.profileBaseUrl?.replace(/\/$/, '').trim();
   if (profile.tutorId && profileBaseUrl) {
     descriptionBlocks.push(`${profileBaseUrl}/tutors/${profile.tutorId}`);
   }
 
+  descriptionBlocks.push(introLines.join('\n'));
   descriptionBlocks.push('Published on Mezonly');
 
   const description = truncateText(

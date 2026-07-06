@@ -261,7 +261,8 @@ export function BecomeTutorShell({
                 size="lg"
                 onClick={onContinue}
                 disabled={continueDisabled}
-                className="group h-11 rounded-full bg-brand-gradient px-6 text-xs font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400 disabled:shadow-none sm:text-sm"
+                variant="gradient"
+                className="group h-11 rounded-full px-6 text-xs font-semibold"
               >
                 {continueLabel}
                 <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-0.5" />

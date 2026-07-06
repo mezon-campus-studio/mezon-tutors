@@ -65,6 +65,15 @@ export function TutorAboutDetailModal({
   const education = resume?.education ?? [];
   const certifications = resume?.certifications ?? [];
 
+  const hasEducation = education.length > 0;
+  const hasCertifications = certifications.length > 0;
+
+  const tabs = [
+    { value: "about", label: t("tabs.about") },
+    ...(hasEducation ? [{ value: "education", label: t("resumeTabs.education") }] : []),
+    ...(hasCertifications ? [{ value: "certifications", label: t("resumeTabs.certifications") }] : []),
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[min(85vh,720px)] w-full flex-col overflow-hidden p-0 sm:max-w-2xl">
@@ -80,15 +89,11 @@ export function TutorAboutDetailModal({
               variant="line"
               className="inline-flex h-auto w-fit gap-0 overflow-hidden !rounded-full border border-violet-100 bg-white/90 p-0 shadow-sm shadow-violet-100/40"
             >
-              <TabsTrigger value="about" className={tabTriggerClassName}>
-                {t("tabs.about")}
-              </TabsTrigger>
-              <TabsTrigger value="education" className={tabTriggerClassName}>
-                {t("resumeTabs.education")}
-              </TabsTrigger>
-              <TabsTrigger value="certifications" className={tabTriggerClassName}>
-                {t("resumeTabs.certifications")}
-              </TabsTrigger>
+              {tabs.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value} className={tabTriggerClassName}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
 
@@ -107,21 +112,25 @@ export function TutorAboutDetailModal({
               </AboutSection>
             </TabsContent>
 
-            <TabsContent value="education" className="mt-0">
-              <ResumeEntryList
-                items={education}
-                emptyLabel={t("resumeEmptyEducation")}
-                verifiedLabel={t("resumeDegreeVerified")}
-              />
-            </TabsContent>
+            {hasEducation ? (
+              <TabsContent value="education" className="mt-0">
+                <ResumeEntryList
+                  items={education}
+                  emptyLabel={t("resumeEmptyEducation")}
+                  verifiedLabel={t("resumeDegreeVerified")}
+                />
+              </TabsContent>
+            ) : null}
 
-            <TabsContent value="certifications" className="mt-0">
-              <ResumeEntryList
-                items={certifications}
-                emptyLabel={t("resumeEmptyCertifications")}
-                verifiedLabel={t("resumeVerified")}
-              />
-            </TabsContent>
+            {hasCertifications ? (
+              <TabsContent value="certifications" className="mt-0">
+                <ResumeEntryList
+                  items={certifications}
+                  emptyLabel={t("resumeEmptyCertifications")}
+                  verifiedLabel={t("resumeVerified")}
+                />
+              </TabsContent>
+            ) : null}
           </div>
         </Tabs>
       </DialogContent>
