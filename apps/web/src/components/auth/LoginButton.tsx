@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
 import { Button } from "../ui";
 import { isLoadingAtom, isAuthenticatedAtom } from "@/store/auth.atom";
 import { useAtomValue } from "jotai";
@@ -20,7 +20,7 @@ export function LoginButton({ label }: LoginButtonProps) {
     redirectToMezonOAuthLogin(detectBrowserTimezone());
   };
 
-  if (isAuthLoading || isAuthenticated) return null;
+  if (isAuthenticated) return null;
 
   return (
     <Button
@@ -30,10 +30,24 @@ export function LoginButton({ label }: LoginButtonProps) {
       onClick={() => {
         void handleLoginClick();
       }}
+      disabled={isAuthLoading}
+      aria-busy={isAuthLoading}
     >
       <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(110deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] transition-transform duration-700 ease-out group-hover:translate-x-full" />
-      <LogIn className="relative size-4 min-[420px]:hidden" aria-hidden />
-      <span className="relative hidden min-[420px]:inline sm:inline">{label}</span>
+      {isAuthLoading ? (
+        <>
+          <Loader2 className="relative size-4 animate-spin min-[420px]:hidden" aria-hidden />
+          <span className="relative hidden min-[420px]:inline-flex sm:inline-flex items-center gap-1.5">
+            <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+            {label}
+          </span>
+        </>
+      ) : (
+        <>
+          <LogIn className="relative size-4 min-[420px]:hidden" aria-hidden />
+          <span className="relative hidden min-[420px]:inline sm:inline">{label}</span>
+        </>
+      )}
     </Button>
   );
 }

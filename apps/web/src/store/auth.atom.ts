@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { authService } from "@/services";
+import { authService, clearAuthSession } from "@/services";
 import { accessTokenAtom } from "./token.atom";
 
 function isUnauthorizedError(error: unknown): boolean {
@@ -77,7 +77,7 @@ export const initAuthAtom = atom(null, async (get, set) => {
           ({ accessToken: token } = await authService.refreshToken());
         } catch (error) {
           if (isUnauthorizedError(error)) {
-            set(accessTokenAtom, null);
+            clearAuthSession();
             set(userAtom, null);
           } else {
             set(userAtom, null);
@@ -94,7 +94,7 @@ export const initAuthAtom = atom(null, async (get, set) => {
         set(userAtom, toAuthUser(data));
       } catch (error) {
         if (isUnauthorizedError(error)) {
-          set(accessTokenAtom, null);
+          clearAuthSession();
           set(userAtom, null);
         } else {
           set(userAtom, null);
