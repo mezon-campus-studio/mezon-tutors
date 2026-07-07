@@ -13,7 +13,7 @@
       "payments": "Payments",
       "transactions": "Transactions",
       "reports": "Reports",
-      "logout": "Logout"
+      "backToDashboard": "Back to Dashboard"
     },
     "loggedInAs": "Logged in as",
     "adminUser": "Admin User",
