@@ -16,7 +16,9 @@ import type {
   EventMetricsDto,
   EventPublishStatusFilter,
 } from '@mezon-tutors/shared';
-import { AdminGuard } from '../../common/guards/admin.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@mezon-tutors/db';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { RejectEventDto } from './dto/reject-event.dto';
@@ -24,7 +26,8 @@ import { EventService } from './event.service';
 
 @Controller('admin')
 @ApiTags('Admin - Events')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.CTV)
 @ApiBearerAuth()
 export class AdminEventController {
   constructor(private readonly eventService: EventService) {}

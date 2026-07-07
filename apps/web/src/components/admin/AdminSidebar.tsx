@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ADMIN_MENU_ITEMS,
+  getAdminMenuItemsByRole,
   type AdminMenuKey,
   ROUTES,
 } from "@mezon-tutors/shared";
@@ -109,7 +109,7 @@ export default function AdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {ADMIN_MENU_ITEMS.map((item) => {
+              {getAdminMenuItemsByRole(user?.role).map((item) => {
                 const Icon = ICON_MAP[item.iconKey];
                 const isActive =
                   item.href !== "#" &&

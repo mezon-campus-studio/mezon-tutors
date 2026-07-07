@@ -20,7 +20,7 @@ export default function AdminRootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "CTV"]}>
       <AdminLayout>{children}</AdminLayout>
     </RoleGuard>
   );

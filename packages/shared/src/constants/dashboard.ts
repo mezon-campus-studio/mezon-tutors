@@ -45,13 +45,14 @@ export type DashboardMenuLabelKey =
   | 'tutorPolicy'
   | 'settings'
 
-export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN'] as const;
+export const DASHBOARD_ROLES = ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'] as const;
 export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
 
 export const DASHBOARD_ROLE_TITLES: Record<DashboardRole, string> = {
   STUDENT: 'Student Dashboard',
   TUTOR: 'Tutor Dashboard',
   ADMIN: 'Student Dashboard',
+  CTV: 'Student Dashboard',
 };
 
 export type DashboardMenuItem = {
@@ -210,8 +211,8 @@ export function getDashboardMenuItemsByRole(role: string | null | undefined): Da
 }
 
 export function getDefaultDashboardHref(role: string | null | undefined): string {
-  if (role === 'ADMIN') {
-    return ROUTES.DASHBOARD.MY_LESSONS;
+  if (role === 'ADMIN' || role === 'CTV') {
+    return ROUTES.ADMIN.TUTOR_APPLICATIONS;
   }
   if (role === 'TUTOR') {
     return ROUTES.DASHBOARD.TUTOR_PROFILE;

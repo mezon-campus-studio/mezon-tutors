@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Param, Body, UseGuards, Res, NotFoundException } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../../common/guards/admin.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@mezon-tutors/db';
 import { TutorApplicationService } from './tutor-application.service';
 import { CreateAdminNoteDto } from './dto/create-admin-note.dto';
 import { TutorApplicationDecisionDto } from './dto/tutor-application-decision.dto';
@@ -20,7 +22,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Controller('admin')
 @ApiTags('Admin - Tutor applications')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.CTV)
 @ApiBearerAuth()
 export class TutorApplicationController {
   constructor(
