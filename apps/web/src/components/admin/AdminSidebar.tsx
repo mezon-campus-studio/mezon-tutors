@@ -63,13 +63,8 @@ export default function AdminSidebar() {
   const user = useAtomValue(userAtom);
   const setUser = useSetAtom(userAtom);
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      setUser(null);
-      router.push(ROUTES.HOME.index);
-    }
+  const handleBackToDashboard = async () => {
+    router.push(ROUTES.DASHBOARD.INDEX);
   };
 
   const userInitials =
@@ -168,12 +163,12 @@ export default function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip={t("sidebar.logout")}
+              tooltip={t("sidebar.backToDashboard")}
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              onClick={handleLogout}
+              onClick={handleBackToDashboard}
             >
               <LogOut className="h-4 w-4" />
-              <span>{t("sidebar.logout")}</span>
+              <span>{t("sidebar.backToDashboard")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

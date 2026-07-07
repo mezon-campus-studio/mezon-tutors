@@ -20,10 +20,8 @@ export default function DashboardPage() {
       router.replace(ROUTES.DASHBOARD.MY_LESSONS);
     } else if (user.role === 'TUTOR') {
       router.replace(ROUTES.DASHBOARD.TUTOR_PROFILE);
-    } else if (user.role === 'ADMIN') {
+    } else if (user.role === 'ADMIN' || user.role === 'CTV') {
       router.replace(ROUTES.DASHBOARD.MY_LESSONS);
-    } else if (user.role === 'CTV') {
-      router.replace(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }
   }, [user, router]);
 

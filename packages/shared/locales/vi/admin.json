@@ -13,7 +13,7 @@
       "payments": "Thanh toán",
       "transactions": "Giao dịch",
       "reports": "Báo cáo",
-      "logout": "Đăng xuất"
+      "backToDashboard": "Quay về bảng điều khiển"
     },
     "loggedInAs": "Đăng nhập dưới tên",
     "adminUser": "Quản trị viên",

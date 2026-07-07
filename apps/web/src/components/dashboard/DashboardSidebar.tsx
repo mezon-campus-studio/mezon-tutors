@@ -104,7 +104,7 @@ export default function DashboardSidebar({
   const onboardingItem = menuItems.find((item) => item.key === "onboarding");
   const tutorPolicyItem = menuItems.find((item) => item.key === "tutor-policy");
   const logoutItem = menuItems.find((item) => item.key === "logout");
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" || userRole === "CTV";
   const dashboardTitle =
     userRole && userRole in DASHBOARD_ROLE_TITLES
       ? DASHBOARD_ROLE_TITLES[userRole as DashboardRole]

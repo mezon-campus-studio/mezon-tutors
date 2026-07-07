@@ -71,7 +71,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'myLessons',
     iconKey: 'document',
     href: ROUTES.DASHBOARD.MY_LESSONS,
-    roles: ['STUDENT', 'ADMIN'],
+    roles: ['STUDENT', 'ADMIN', 'CTV'],
   },
   {
     key: 'my-groups',
@@ -87,7 +87,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'pendingBookings',
     iconKey: 'bookingRequests',
     href: ROUTES.DASHBOARD.PENDING_BOOKINGS,
-    roles: ['STUDENT', 'ADMIN'],
+    roles: ['STUDENT', 'ADMIN', 'CTV'],
   },
   {
     key: 'complaints',
@@ -95,7 +95,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'complaints',
     iconKey: 'complaints',
     href: ROUTES.DASHBOARD.COMPLAINTS,
-    roles: ['STUDENT', 'ADMIN'],
+    roles: ['STUDENT', 'ADMIN', 'CTV'],
   },
   {
     key: 'tutor-profile',
@@ -135,7 +135,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'wallet',
     iconKey: 'wallet',
     href: ROUTES.DASHBOARD.WALLET,
-    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
   },
   {
     key: 'my-events',
@@ -143,7 +143,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'events',
     iconKey: 'events',
     href: ROUTES.DASHBOARD.MY_EVENTS,
-    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
   },
   {
     key: 'my-blogs',
@@ -151,7 +151,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'blogs',
     iconKey: 'blogs',
     href: ROUTES.DASHBOARD.MY_BLOGS,
-    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
   },
   {
     key: 'settings',
@@ -159,7 +159,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'settings',
     iconKey: 'settings',
     href: ROUTES.DASHBOARD.SETTINGS,
-    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
   },
   {
     key: 'become-tutor',
@@ -167,7 +167,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'becomeTutor',
     iconKey: 'becomeTutor',
     href: ROUTES.BECOME_TUTOR.INDEX,
-    roles: ['STUDENT', 'ADMIN'],
+    roles: ['STUDENT', 'ADMIN', 'CTV'],
   },
   {
     key: 'onboarding',
@@ -190,7 +190,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     type: 'action',
     labelKey: 'logout',
     iconKey: 'logout',
-    roles: ['STUDENT', 'TUTOR', 'ADMIN'],
+    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
   },
 ];
 
@@ -212,7 +212,7 @@ export function getDashboardMenuItemsByRole(role: string | null | undefined): Da
 
 export function getDefaultDashboardHref(role: string | null | undefined): string {
   if (role === 'ADMIN' || role === 'CTV') {
-    return ROUTES.ADMIN.TUTOR_APPLICATIONS;
+    return ROUTES.DASHBOARD.MY_LESSONS;
   }
   if (role === 'TUTOR') {
     return ROUTES.DASHBOARD.TUTOR_PROFILE;
