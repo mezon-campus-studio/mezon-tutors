@@ -100,7 +100,7 @@ export function RolePathRedirect() {
     }
 
     if (pathname.startsWith("/dashboard/wallet")) {
-      if (role !== "STUDENT" && role !== "TUTOR" && role !== "ADMIN") {
+      if (role !== "STUDENT" && role !== "TUTOR") {
         router.replace(home);
       }
       return;
