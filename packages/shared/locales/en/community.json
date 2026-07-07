@@ -1,0 +1,190 @@
+{
+  "Community": {
+    "meta": {
+      "title": "Community",
+      "description": "Share, ask questions, and practice together with the Mezon Tutors learning community."
+    },
+    "header": "Community",
+    "feed": {
+      "title": "Learning Community",
+      "subtitle": "Share experiences, ask questions, and complete exercises with fellow learners.",
+      "create": "Create post",
+      "searchPlaceholder": "Search posts, topics, exercises...",
+      "searchByKeyword": "Search by keyword",
+      "createPost": "Create a post ...",
+      "tabs": {
+        "following": "Following",
+        "for_you": "For You",
+        "post": "Posts",
+        "exercise": "Exercise",
+        "question": "Questions"
+      },
+      "sort": {
+        "latest": "Latest",
+        "trending": "Trending",
+        "most_upvoted": "Most upvoted"
+      },
+      "filter": {
+        "all": "All",
+        "post": "Posts",
+        "question": "Questions",
+        "exercise": "Exercises"
+      },
+      "loadMore": "Load more",
+      "loading": "Loading...",
+      "empty": {
+        "title": "No posts yet",
+        "description": "Be the first to share something with the community."
+      },
+      "popularTags": "Popular tags"
+    },
+    "postTypes": {
+      "POST": "Post",
+      "QUESTION": "Question",
+      "EXERCISE": "Exercise"
+    },
+    "exerciseTypes": {
+      "MULTIPLE_CHOICE": "Multiple choice",
+      "FILL_IN_BLANK": "Fill in the blank",
+      "READING": "Reading",
+      "LISTENING": "Listening"
+    },
+    "difficulty": {
+      "BEGINNER": "Beginner",
+      "INTERMEDIATE": "Intermediate",
+      "ADVANCED": "Advanced"
+    },
+    "card": {
+      "submissions": "{count} submissions",
+      "comments": "{count} comments",
+      "upvotes": "{count} upvotes"
+    },
+    "tag": {
+      "meta": {
+        "title": "Community tag",
+        "description": "Posts tagged with {tag} on Mezon Tutors."
+      },
+      "back": "Back to community",
+      "count": "{count} posts",
+      "empty": {
+        "title": "No posts in this tag",
+        "description": "There are no community posts with this tag yet."
+      }
+    },
+    "detail": {
+      "back": "Back to community",
+      "publishedAt": "{date}",
+      "by": "by {name}",
+      "delete": "Delete post",
+      "deleteConfirm": "Are you sure you want to delete this post?",
+      "deleted": "Post deleted",
+      "deleteFailed": "Failed to delete post",
+      "exercise": {
+        "submissions": "{count} people tried",
+        "explanation": "Explanation",
+        "submit": "Login to submit answer",
+        "submitting": "Submitting...",
+        "submitted": "Answer submitted",
+        "alreadySubmitted": "You have already submitted this exercise",
+        "submitFailed": "Failed to submit answer",
+        "myAttempts": "My attempts",
+        "attempt": "Attempt {number}",
+        "score": "Score: {score}%",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "pendingReview": "Pending review",
+        "selectOption": "Select your answer",
+        "fillBlank": "Fill in the blanks",
+        "readingPrompt": "Read the passage and answer",
+        "listeningPrompt": "Listen and answer"
+      },
+      "engagement": {
+        "upvote": "Upvote",
+        "bookmark": "Bookmark",
+        "comments": "{count} comments",
+        "commentPlaceholder": "Write a comment...",
+        "submitComment": "Post comment",
+        "submitting": "Posting...",
+        "deleteComment": "Delete",
+        "reply": "Reply",
+        "replies": "{count} replies",
+        "replyPlaceholder": "Reply to",
+        "cancel": "Cancel",
+        "loginToInteract": "Login to interact",
+        "login": "Login",
+        "emptyComments": "No comments yet. Be the first!",
+        "commentRequired": "Please enter a comment.",
+        "commentFailed": "Failed to post comment.",
+        "upvoteFailed": "Failed to upvote.",
+        "deleteFailed": "Failed to delete comment.",
+        "deletedComment": "[deleted]"
+      }
+    },
+    "create": {
+      "title": "Create community post",
+      "subtitle": "Your post will be published immediately.",
+      "back": "Back to community",
+      "fields": {
+        "type": "Post type",
+        "content": "Content",
+        "tags": "Tags",
+        "images": "Images",
+        "addTagPlaceholder": "Add a tag...",
+        "createTag": "Create \"{name}\""
+      },
+      "exercise": {
+        "title": "Exercise settings",
+        "type": "Exercise type",
+        "difficulty": "Difficulty",
+        "explanation": "Explanation (optional)",
+        "explanationPlaceholder": "Explain the exercise...",
+        "options": "Answer options",
+        "addOption": "Add option",
+        "correctOption": "Correct answer",
+        "passageText": "Passage text",
+        "passageTextPlaceholder": "Enter the passage text...",
+        "selectTextHint": "Select a word or phrase, then click \"Make blank\"",
+        "selectTextError": "Please select a word or phrase first",
+        "makeBlank": "Make blank",
+        "blanks": "Blanks",
+        "blankAnswers": "Accepted answers (comma-separated)",
+        "prompt": "Passage",
+        "readingPassagePlaceholder": "Enter the reading passage...",
+        "audioSource": "Audio source",
+        "uploadAudio": "Upload audio",
+        "removeAudio": "Remove audio",
+        "questions": "Questions",
+        "questionNumber": "Question {number}",
+        "questionPrompt": "Question prompt",
+        "addQuestion": "Add question",
+        "optionRequired": "Option is required",
+        "optionDuplicate": "Options must be different",
+        "correctAnswerRequired": "Select the correct answer",
+        "minimumOptions": "At least 2 options are required",
+        "blankAnswersRequired": "Answer is required",
+        "passageRequired": "Passage is required",
+        "audioRequired": "Audio is required",
+        "questionRequired": "Question prompt is required"
+      },
+      "submit": "Publish",
+      "submitting": "Publishing...",
+      "success": "Post published!",
+      "failed": "Failed to create post",
+      "modal": {
+        "placeholderPost": "Share your learning experience...",
+        "placeholderQuestion": "What do you want to ask?",
+        "placeholderExercise": "Describe the exercise...",
+        "submit": "Post",
+        "close": "Close"
+      },
+      "errors": {
+        "contentRequired": "Content is required",
+        "exerciseRequired": "Exercise settings are required"
+      }
+    },
+    "bookmarks": {
+      "title": "Saved posts",
+      "empty": "No bookmarked posts yet."
+    }
+  }
+}

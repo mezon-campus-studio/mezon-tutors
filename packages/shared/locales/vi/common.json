@@ -2,6 +2,7 @@
   "Header": {
     "title": "Quy trình gia sư",
     "findTutors": "Tìm gia sư",
+    "community": "Cộng đồng",
     "myLessons": "Lớp học của tôi",
     "practice": "Luyện tập",
     "mySchedule": "Lịch dạy",
@@ -35,6 +36,7 @@
     },
     "community": {
       "title": "Cộng đồng",
+      "hub": "Trang cộng đồng",
       "becomeTutor": "Trở thành gia sư",
       "blog": "Blog",
       "events": "Sự kiện"

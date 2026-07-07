@@ -37,6 +37,7 @@ import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { CommonModule } from './common/common.module';
 import { StudyGroupModule } from './modules/study-group/study-group.module';
 import { LearningLogModule } from './modules/learning-log/learning-log.module';
+import { CommunityModule } from './modules/community/community.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { LearningLogModule } from './modules/learning-log/learning-log.module';
     VocabularyModule,
     StudyGroupModule,
     LearningLogModule,
+    CommunityModule,
   ],
   controllers: [HealthController],
   providers: [

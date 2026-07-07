@@ -1,0 +1,190 @@
+{
+  "Community": {
+    "meta": {
+      "title": "Cộng đồng",
+      "description": "Chia sẻ, đặt câu hỏi và luyện tập cùng cộng đồng học tập Mezon Tutors."
+    },
+    "header": "Cộng đồng",
+    "feed": {
+      "title": "Cộng đồng học tập",
+      "subtitle": "Chia sẻ kinh nghiệm, đặt câu hỏi và làm bài tập cùng mọi người.",
+      "create": "Tạo bài viết",
+      "searchPlaceholder": "Tìm bài viết, chủ đề, bài tập...",
+      "searchByKeyword": "Tìm theo từ khóa",
+      "createPost": "Tạo bài viết ...",
+      "tabs": {
+        "following": "Đang theo dõi",
+        "for_you": "Dành cho bạn",
+        "post": "Bài viết",
+        "exercise": "Bài tập",
+        "question": "Câu hỏi"
+      },
+      "sort": {
+        "latest": "Mới nhất",
+        "trending": "Xu hướng",
+        "most_upvoted": "Nhiều upvote"
+      },
+      "filter": {
+        "all": "Tất cả",
+        "post": "Bài viết",
+        "question": "Câu hỏi",
+        "exercise": "Bài tập"
+      },
+      "loadMore": "Xem thêm",
+      "loading": "Đang tải...",
+      "empty": {
+        "title": "Chưa có bài viết",
+        "description": "Hãy là người đầu tiên chia sẻ với cộng đồng."
+      },
+      "popularTags": "Thẻ phổ biến"
+    },
+    "postTypes": {
+      "POST": "Bài viết",
+      "QUESTION": "Câu hỏi",
+      "EXERCISE": "Bài tập"
+    },
+    "exerciseTypes": {
+      "MULTIPLE_CHOICE": "Trắc nghiệm",
+      "FILL_IN_BLANK": "Điền vào chỗ trống",
+      "READING": "Đọc hiểu",
+      "LISTENING": "Nghe"
+    },
+    "difficulty": {
+      "BEGINNER": "Cơ bản",
+      "INTERMEDIATE": "Trung cấp",
+      "ADVANCED": "Nâng cao"
+    },
+    "card": {
+      "submissions": "{count} lượt làm",
+      "comments": "{count} bình luận",
+      "upvotes": "{count} upvote"
+    },
+    "tag": {
+      "meta": {
+        "title": "Thẻ cộng đồng",
+        "description": "Bài viết được gắn thẻ {tag} trên Mezon Tutors."
+      },
+      "back": "Về cộng đồng",
+      "count": "{count} bài viết",
+      "empty": {
+        "title": "Không có bài viết nào",
+        "description": "Chưa có bài viết nào được gắn thẻ này."
+      }
+    },
+    "detail": {
+      "back": "Về cộng đồng",
+      "publishedAt": "{date}",
+      "by": "bởi {name}",
+      "delete": "Xóa bài viết",
+      "deleteConfirm": "Bạn có chắc muốn xóa bài viết này?",
+      "deleted": "Đã xóa bài viết",
+      "deleteFailed": "Không thể xóa bài viết",
+      "exercise": {
+        "submissions": "{count} người đã làm",
+        "explanation": "Giải thích",
+        "submit": "Đăng nhập để nộp bài",
+        "submitting": "Đang nộp...",
+        "submitted": "Đã nộp bài",
+        "alreadySubmitted": "Bạn đã nộp bài tập này rồi",
+        "submitFailed": "Không thể nộp bài",
+        "myAttempts": "Các lần làm của tôi",
+        "attempt": "Lần {number}",
+        "score": "Điểm: {score}%",
+        "correct": "Đúng",
+        "incorrect": "Sai",
+        "pendingReview": "Chờ chấm",
+        "selectOption": "Chọn đáp án",
+        "fillBlank": "Điền vào chỗ trống",
+        "readingPrompt": "Đọc đoạn văn và trả lời",
+        "listeningPrompt": "Nghe và trả lời"
+      },
+      "engagement": {
+        "upvote": "Upvote",
+        "bookmark": "Lưu",
+        "comments": "{count} bình luận",
+        "commentPlaceholder": "Viết bình luận...",
+        "submitComment": "Đăng bình luận",
+        "submitting": "Đang đăng...",
+        "deleteComment": "Xóa",
+        "reply": "Trả lời",
+        "replies": "{count} trả lời",
+        "replyPlaceholder": "Trả lời",
+        "cancel": "Hủy",
+        "loginToInteract": "Đăng nhập để tương tác",
+        "login": "Đăng nhập",
+        "emptyComments": "Chưa có bình luận. Hãy là người đầu tiên!",
+        "commentRequired": "Vui lòng nhập bình luận.",
+        "commentFailed": "Không thể đăng bình luận.",
+        "upvoteFailed": "Không thể upvote.",
+        "deleteFailed": "Không thể xóa bình luận.",
+        "deletedComment": "[đã xóa]"
+      }
+    },
+    "create": {
+      "title": "Tạo bài viết cộng đồng",
+      "subtitle": "Bài viết sẽ được đăng ngay lập tức.",
+      "back": "Về cộng đồng",
+      "fields": {
+        "type": "Loại bài viết",
+        "content": "Nội dung",
+        "tags": "Thẻ",
+        "images": "Hình ảnh",
+        "addTagPlaceholder": "Thêm thẻ...",
+        "createTag": "Tạo \"{name}\""
+      },
+      "exercise": {
+        "title": "Cài đặt bài tập",
+        "type": "Loại bài tập",
+        "difficulty": "Độ khó",
+        "explanation": "Giải thích (tùy chọn)",
+        "explanationPlaceholder": "Giải thích bài tập...",
+        "options": "Các đáp án",
+        "addOption": "Thêm đáp án",
+        "correctOption": "Đáp án đúng",
+        "passageText": "Đoạn văn",
+        "passageTextPlaceholder": "Nhập đoạn văn...",
+        "selectTextHint": "Bôi đen từ hoặc cụm từ, sau đó bấm \"Tạo chỗ trống\"",
+        "selectTextError": "Vui lòng bôi đen từ hoặc cụm từ trước",
+        "makeBlank": "Tạo chỗ trống",
+        "blanks": "Các chỗ trống",
+        "blankAnswers": "Đáp án chấp nhận (phân cách bằng dấu phẩy)",
+        "prompt": "Đoạn văn",
+        "readingPassagePlaceholder": "Nhập đoạn văn đọc hiểu...",
+        "audioSource": "Nguồn âm thanh",
+        "uploadAudio": "Tải lên âm thanh",
+        "removeAudio": "Xóa âm thanh",
+        "questions": "Câu hỏi",
+        "questionNumber": "Câu {number}",
+        "questionPrompt": "Nội dung câu hỏi",
+        "addQuestion": "Thêm câu hỏi",
+        "optionRequired": "Vui lòng nhập đáp án",
+        "optionDuplicate": "Các đáp án không được trùng nhau",
+        "correctAnswerRequired": "Vui lòng chọn đáp án đúng",
+        "minimumOptions": "Cần ít nhất 2 đáp án",
+        "blankAnswersRequired": "Vui lòng nhập đáp án",
+        "passageRequired": "Vui lòng nhập đoạn văn",
+        "audioRequired": "Vui lòng tải lên file âm thanh",
+        "questionRequired": "Vui lòng nhập nội dung câu hỏi"
+      },
+      "submit": "Đăng bài",
+      "submitting": "Đang đăng...",
+      "success": "Đã đăng bài!",
+      "failed": "Không thể tạo bài viết",
+      "modal": {
+        "placeholderPost": "Chia sẻ trải nghiệm học tập của bạn...",
+        "placeholderQuestion": "Bạn muốn hỏi gì?",
+        "placeholderExercise": "Mô tả bài tập...",
+        "submit": "Nộp",
+        "close": "Đóng"
+      },
+      "errors": {
+        "contentRequired": "Vui lòng nhập nội dung",
+        "exerciseRequired": "Vui lòng cấu hình bài tập"
+      }
+    },
+    "bookmarks": {
+      "title": "Bài đã lưu",
+      "empty": "Chưa có bài viết nào được lưu."
+    }
+  }
+}

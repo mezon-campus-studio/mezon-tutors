@@ -19,6 +19,7 @@ export * from './types/support-api';
 export * from './types/event';
 export * from './types/event-api';
 export * from './types/blog-api';
+export * from './types/community-api';
 export * from './types/vocabulary-api';
 
 // Enums
@@ -52,6 +53,7 @@ export * from './constants/home';
 export * from './constants/events';
 export * from './constants/event-api';
 export * from './constants/blog-api';
+export * from './constants/community-api';
 export * from './constants/currency';
 export * from './constants/footer';
 export * from './constants/header';

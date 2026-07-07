@@ -47,6 +47,7 @@ export default function Header() {
   const navItems = useMemo(() => {
     const base: Array<{ label: string; href: string; requiresAuth: boolean }> = [
       { label: t("findTutors"), href: ROUTES.TUTOR.INDEX, requiresAuth: false },
+      { label: t("community"), href: ROUTES.COMMUNITY.INDEX, requiresAuth: false },
     ];
     if (user?.role !== "TUTOR") {
       base.push({

@@ -87,7 +87,9 @@ export function ImageAttachmentGallery({
     }
   }, [isOpen, activeIndex, images.length]);
 
-  const openGallery = (index: number) => {
+  const openGallery = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     setActiveIndex(index);
     setIsOpen(true);
   };
@@ -136,9 +138,9 @@ export function ImageAttachmentGallery({
             <button
               key={`${imageKey}-${index}`}
               type="button"
-              onClick={() => openGallery(index)}
+              onClick={(e) => openGallery(index, e)}
               className={cn(
-                "group relative size-20 overflow-hidden rounded-xl border border-violet-100 bg-violet-50/40 transition hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300",
+                "group cursor-pointer relative size-20 overflow-hidden rounded-xl border border-violet-100 bg-violet-50/40 transition hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300",
                 previewClassName,
               )}
             >
