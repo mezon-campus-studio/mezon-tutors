@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { ROUTES } from '@mezon-tutors/shared';
 import { createNoIndexMetadata } from '@/lib/seo';
 import { getSeoMessages } from '@/lib/seo-messages';
-import { RoleGuard } from '@/components/guards/RoleGuard';
 import SettingsView from '@/views/main/settings';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,10 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Page() {
   return (
-    <RoleGuard allowedRoles={['STUDENT', 'TUTOR', 'ADMIN']}>
-      <Suspense fallback={null}>
-        <SettingsView />
-      </Suspense>
-    </RoleGuard>
+    <Suspense fallback={null}>
+      <SettingsView />
+    </Suspense>
   );
 }

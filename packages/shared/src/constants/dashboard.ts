@@ -135,7 +135,7 @@ export const DASHBOARD_MENU_ITEMS: DashboardMenuItem[] = [
     labelKey: 'wallet',
     iconKey: 'wallet',
     href: ROUTES.DASHBOARD.WALLET,
-    roles: ['STUDENT', 'TUTOR', 'ADMIN', 'CTV'],
+    roles: ['STUDENT', 'TUTOR'],
   },
   {
     key: 'my-events',
