@@ -138,6 +138,7 @@ export default function Footer() {
       key: "community",
       title: t("community.title"),
       links: [
+        { label: t("community.hub"), href: ROUTES.COMMUNITY.INDEX },
         { label: t("community.becomeTutor"), href: "/become-tutor" },
         { label: t("community.blog"), href: ROUTES.BLOGS.INDEX },
         { label: t("community.events"), href: ROUTES.HOME.events, sectionId: "events" },

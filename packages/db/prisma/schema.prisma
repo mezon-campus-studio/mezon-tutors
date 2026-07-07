@@ -186,6 +186,14 @@ model User {
   blogPostUpvotes                  BlogPostUpvote[]                 @relation("BlogPostUpvoteUser")
   blogPostCommentUpvotes           BlogPostCommentUpvote[]          @relation("BlogPostCommentUpvoteUser")
   learningLogs                     LearningLog[]
+  communityPosts                   CommunityPost[]                  @relation("CommunityPostAuthor")
+  communityComments                CommunityComment[]               @relation("CommunityCommentAuthor")
+  communityPostUpvotes             CommunityPostUpvote[]            @relation("CommunityPostUpvoteUser")
+  communityCommentUpvotes          CommunityCommentUpvote[]         @relation("CommunityCommentUpvoteUser")
+  communityBookmarks               CommunityBookmark[]
+  communityExerciseSubmissions     CommunityExerciseSubmission[]
+  communityReports                 CommunityReport[]                @relation("CommunityReporter")
+  communityReportsReviewed         CommunityReport[]                @relation("CommunityReportReviewer")
 
   @@map("users")
 }
@@ -1016,4 +1024,250 @@ model LearningLog {
 
   @@index([studentId, dateKey(sort: Desc)])
   @@map("learning_logs")
+}
+
+enum CommunityPostType {
+  POST
+  QUESTION
+  EXERCISE
+}
+
+enum CommunityExerciseType {
+  MULTIPLE_CHOICE
+  FILL_IN_BLANK
+  READING
+  LISTENING
+}
+
+enum CommunityExerciseDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CommunityMediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum CommunityReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE
+  MISINFORMATION
+  OTHER
+}
+
+enum CommunityReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+  ACTION_TAKEN
+}
+
+model CommunityTag {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug      String   @unique @db.VarChar(80)
+  name      String   @db.VarChar(80)
+  postCount Int      @default(0) @map("post_count")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  posts CommunityPost[]
+
+  @@map("community_tags")
+}
+
+model CommunityPost {
+  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type            CommunityPostType
+  authorId        String             @map("author_id") @db.Uuid
+  content         String             @db.Text
+  publishedAt     DateTime           @default(now()) @map("published_at")
+  deletedAt       DateTime?          @map("deleted_at")
+
+  upvoteCount     Int                @default(0) @map("upvote_count")
+  commentCount    Int                @default(0) @map("comment_count")
+  bookmarkCount   Int                @default(0) @map("bookmark_count")
+  submissionCount Int                @default(0) @map("submission_count")
+
+  hotScore        Float              @default(0) @map("hot_score")
+  lastActivityAt  DateTime           @default(now()) @map("last_activity_at")
+
+  bestAnswerCommentId String?        @unique @map("best_answer_comment_id") @db.Uuid
+
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  author            User                      @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  exercise          CommunityExercise?
+  media             CommunityPostMedia[]
+  tags              CommunityTag[]
+  comments          CommunityComment[]
+  upvotes           CommunityPostUpvote[]
+  bookmarks         CommunityBookmark[]
+  reports           CommunityReport[]
+  bestAnswerComment CommunityComment?         @relation("CommunityBestAnswer", fields: [bestAnswerCommentId], references: [id], onDelete: SetNull)
+
+  @@index([publishedAt(sort: Desc)])
+  @@index([type, publishedAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([hotScore(sort: Desc), publishedAt(sort: Desc)])
+  @@index([upvoteCount(sort: Desc), publishedAt(sort: Desc)])
+  @@index([lastActivityAt(sort: Desc)])
+  @@map("community_posts")
+}
+
+model CommunityExercise {
+  id            String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId        String                      @unique @map("post_id") @db.Uuid
+  exerciseType  CommunityExerciseType       @map("exercise_type")
+  difficulty    CommunityExerciseDifficulty @default(INTERMEDIATE)
+  explanation   String?                     @db.Text
+  payload       Json
+  correctAnswer Json?                       @map("correct_answer")
+
+  createdAt     DateTime                    @default(now()) @map("created_at")
+  updatedAt     DateTime                    @updatedAt @map("updated_at")
+
+  post        CommunityPost                 @relation(fields: [postId], references: [id], onDelete: Cascade)
+  submissions CommunityExerciseSubmission[]
+
+  @@index([exerciseType])
+  @@map("community_exercises")
+}
+
+model CommunityPostMedia {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String             @map("post_id") @db.Uuid
+  type      CommunityMediaType
+  url       String             @db.Text
+  sortOrder Int                @default(0) @map("sort_order")
+  metadata  Json?
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, sortOrder])
+  @@map("community_post_media")
+}
+
+model CommunityComment {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId      String    @map("post_id") @db.Uuid
+  authorId    String    @map("author_id") @db.Uuid
+  parentId    String?   @map("parent_id") @db.Uuid
+  rootId      String?   @map("root_id") @db.Uuid
+  depth       Int       @default(0)
+  content     String    @db.Text
+  deletedAt   DateTime? @map("deleted_at")
+
+  upvoteCount Int       @default(0) @map("upvote_count")
+  replyCount  Int       @default(0) @map("reply_count")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  post            CommunityPost              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author          User                       @relation("CommunityCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent          CommunityComment?          @relation("CommunityCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         CommunityComment[]         @relation("CommunityCommentReplies")
+  root            CommunityComment?          @relation("CommunityCommentThread", fields: [rootId], references: [id], onDelete: Cascade)
+  threadComments  CommunityComment[]         @relation("CommunityCommentThread")
+  upvotes         CommunityCommentUpvote[]
+  reports         CommunityReport[]
+  bestAnswerFor   CommunityPost?             @relation("CommunityBestAnswer")
+
+  @@index([postId, createdAt])
+  @@index([postId, rootId, createdAt])
+  @@index([parentId])
+  @@index([authorId])
+  @@map("community_comments")
+}
+
+model CommunityPostUpvote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation("CommunityPostUpvoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+  @@map("community_post_upvotes")
+}
+
+model CommunityCommentUpvote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commentId String   @map("comment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment CommunityComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User             @relation("CommunityCommentUpvoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@map("community_comment_upvotes")
+}
+
+model CommunityExerciseSubmission {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  exerciseId String   @map("exercise_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  answer    Json
+  score     Float?
+  isCorrect Boolean? @map("is_correct")
+  aiFeedback Json?   @map("ai_feedback")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  exercise CommunityExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([exerciseId, userId])
+  @@index([exerciseId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("community_exercise_submissions")
+}
+
+model CommunityBookmark {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("community_bookmarks")
+}
+
+model CommunityReport {
+  id           String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId       String?               @map("post_id") @db.Uuid
+  commentId    String?               @map("comment_id") @db.Uuid
+  reporterId   String                @map("reporter_id") @db.Uuid
+  reason       CommunityReportReason
+  description  String?               @db.Text
+  status       CommunityReportStatus @default(PENDING)
+  reviewedById String?               @map("reviewed_by_id") @db.Uuid
+  reviewedAt   DateTime?             @map("reviewed_at")
+  createdAt    DateTime              @default(now()) @map("created_at")
+
+  post       CommunityPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment    CommunityComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporter   User              @relation("CommunityReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy User?             @relation("CommunityReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([postId])
+  @@index([commentId])
+  @@map("community_reports")
 }

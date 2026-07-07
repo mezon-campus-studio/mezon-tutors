@@ -22,6 +22,11 @@ export const ROUTES = {
     TAG: (slug: string) => `/blogs/tag/${slug}`,
     EDIT: (id: string) => `/dashboard/blogs/${id}/edit`,
   },
+  COMMUNITY: {
+    INDEX: '/community',
+    DETAIL: (id: string) => `/community/${id}`,
+    TAG: (slug: string) => `/community/tag/${slug}`,
+  },
   TUTOR: {
     INDEX: '/tutors',
     DETAIL: (id: string | number) => `/tutors/${id}`,

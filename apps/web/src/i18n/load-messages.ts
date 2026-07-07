@@ -15,6 +15,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
   { messageKey: "Events", file: "events", pick: (payload) => payload.Events },
   { messageKey: "Blogs", file: "blog", pick: (payload) => payload.Blogs },
+  { messageKey: "Community", file: "community", pick: (payload) => payload.Community },
   { messageKey: "TutorProfile", file: "tutor-profile" },
   { messageKey: "Tutors", file: "tutors" },
   { messageKey: "BecomeTutorGuide", file: "become-tutor-guide" },

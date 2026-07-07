@@ -2,6 +2,7 @@
   "Header": {
     "title": "TutorFlow",
     "findTutors": "Find Tutors",
+    "community": "Community",
     "myLessons": "My Lessons",
     "practice": "Practice",
     "mySchedule": "My Schedule",
@@ -35,6 +36,7 @@
     },
     "community": {
       "title": "Community",
+      "hub": "Community hub",
       "becomeTutor": "Become a tutor",
       "blog": "Blog",
       "events": "Events"
