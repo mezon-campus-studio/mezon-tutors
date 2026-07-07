@@ -25,6 +25,7 @@ const ACCESS_TOKEN_EXPIRES_IN = '60m';
 const REFRESH_TOKEN_EXPIRES_IN = '30d';
 const REFRESH_TOKEN_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const OAUTH_STATE_TTL_MS = 1000 * 60 * 5;
+const REFRESH_REUSE_GRACE_MS = 15_000;
 
 @Injectable()
 export class AuthService {
@@ -286,7 +287,7 @@ export class AuthService {
           expiresAt: { gt: now },
           OR: [
             { revokedAt: null },
-            { revokedAt: { gte: new Date(now.getTime() - 15_000) } },
+            { revokedAt: { gte: new Date(now.getTime() - REFRESH_REUSE_GRACE_MS) } },
           ],
         },
       });
@@ -357,7 +358,7 @@ export class AuthService {
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
     });
 
-    const newRefreshToken = await this.prisma.$transaction(async (tx) => {
+    const rotatedRefreshToken = await this.prisma.$transaction(async (tx) => {
       const { count } = await tx.refreshToken.updateMany({
         where: {
           token: refreshToken,
@@ -369,6 +370,15 @@ export class AuthService {
       });
 
       if (count === 0) {
+        const existing = await tx.refreshToken.findFirst({
+          where: { token: refreshToken },
+        });
+        const revokedWithinGrace =
+          existing?.revokedAt != null &&
+          existing.revokedAt.getTime() >= Date.now() - REFRESH_REUSE_GRACE_MS;
+        if (revokedWithinGrace) {
+          return null;
+        }
         throw new UnauthorizedException('Refresh token has already been used');
       }
 
@@ -377,7 +387,7 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken: newRefreshToken,
+      ...(rotatedRefreshToken ? { refreshToken: rotatedRefreshToken } : {}),
     };
   }
 

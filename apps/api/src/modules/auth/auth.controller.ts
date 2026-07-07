@@ -227,7 +227,9 @@ export class AuthController {
 
     const tokens = await this.authService.refreshAccessToken(refreshToken);
 
-    res.cookie('refresh_token', tokens.refreshToken, this.getRefreshCookieOptions());
+    if (tokens.refreshToken) {
+      res.cookie('refresh_token', tokens.refreshToken, this.getRefreshCookieOptions());
+    }
 
     return { accessToken: tokens.accessToken };
   }

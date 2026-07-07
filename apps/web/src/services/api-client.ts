@@ -42,7 +42,6 @@ function isUnauthorizedError(error: unknown): boolean {
 export function clearAuthSession(): void {
   resetRefreshTokenLock();
   store.set(accessTokenAtom, null);
-  void credentialsApiClient.post('/auth/logout').catch(() => {});
 }
 
 export const credentialsApiClient = axios.create({

@@ -3,7 +3,7 @@ import { ROUTES } from '@mezon-tutors/shared';
 import { notFound } from 'next/navigation';
 import { createPageMetadata } from '@/lib/seo';
 import { getSeoLocale } from '@/lib/seo-messages';
-import { fetchCommunityTagBySlug, fetchCommunityTags, fetchCommunityFeed } from '@/services';
+import { fetchCommunityTagBySlug, fetchCommunityFeed } from '@/services';
 import CommunityTagPage from '@/views/community/community-tag';
 
 type PageProps = {
@@ -35,9 +35,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
-  const [tag, tags, feed] = await Promise.all([
+  const [tag, feed] = await Promise.all([
     fetchCommunityTagBySlug(slug),
-    fetchCommunityTags(),
     fetchCommunityFeed({ tag: slug, sort: 'latest', limit: 50 }),
   ]);
 
@@ -45,5 +44,5 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  return <CommunityTagPage tag={tag} tags={tags} posts={feed.data} />;
+  return <CommunityTagPage tag={tag} posts={feed.data} />;
 }
