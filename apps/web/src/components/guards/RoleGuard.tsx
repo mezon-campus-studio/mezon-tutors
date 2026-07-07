@@ -72,7 +72,7 @@ export function RolePathRedirect() {
     }
 
     if (pathname.startsWith("/admin")) {
-      if (role !== "ADMIN") {
+      if (role !== "ADMIN" && role !== "CTV") {
         router.replace(home);
       }
       return;

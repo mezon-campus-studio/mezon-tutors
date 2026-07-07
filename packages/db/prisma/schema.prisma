@@ -11,6 +11,7 @@ enum Role {
   STUDENT
   TUTOR
   ADMIN
+  CTV
 }
 
 enum VerificationStatus {

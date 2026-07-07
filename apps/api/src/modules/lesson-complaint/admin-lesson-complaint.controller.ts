@@ -2,7 +2,9 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req, UseGuard
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { AdminGuard } from '../../common/guards/admin.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@mezon-tutors/db';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import type {
   AdminLessonComplaintListItem,
@@ -16,7 +18,8 @@ import { ReviewLessonComplaintDto } from './dto/review-lesson-complaint.dto';
 
 @Controller('admin')
 @ApiTags('Admin - Lesson complaints')
-@UseGuards(JwtAuthGuard, AdminGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.CTV)
 @ApiBearerAuth()
 export class AdminLessonComplaintController {
   constructor(private readonly lessonComplaintService: LessonComplaintService) {}

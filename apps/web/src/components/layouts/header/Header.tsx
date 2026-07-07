@@ -139,6 +139,8 @@ export default function Header() {
       router.push(ROUTES.DASHBOARD.TRIAL_BOOKING);
     } else if (user.role === "ADMIN") {
       router.push(ROUTES.DASHBOARD.MY_LESSONS);
+    } else if (user.role === "CTV") {
+      router.push(ROUTES.ADMIN.TUTOR_APPLICATIONS);
     }
   }, [user?.role, router]);
 

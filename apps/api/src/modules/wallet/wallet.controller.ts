@@ -1,7 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Put, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { AdminGuard } from '../../common/guards/admin.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@mezon-tutors/db';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { CreateWalletWithdrawalDto } from './dto/create-wallet-withdrawal.dto';
@@ -58,21 +60,24 @@ export class WalletController {
   }
 
   @Get('admin/withdrawals')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: list all withdrawals (paginated)' })
   getAllWithdrawals(@Query() query: GetWalletWithdrawalsDto) {
     return this.walletService.getAllWithdrawals(query.page, query.limit);
   }
 
   @Get('admin/transactions/stats')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: wallet transaction statistics' })
   getAdminTransactionStats() {
     return this.walletService.getAdminTransactionStats();
   }
 
   @Get('admin/transactions')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: list all wallet transactions (paginated)' })
   getAllTransactions(@Query() query: GetAdminWalletTransactionsDto) {
     return this.walletService.getAllTransactions(
@@ -83,7 +88,8 @@ export class WalletController {
   }
 
   @Get('admin/transactions/user/:userId')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: list wallet transactions for a specific user (paginated with stats)' })
   getUserTransactions(
     @Param('userId') userId: string,
@@ -113,7 +119,8 @@ export class WalletController {
   }
 
   @Put('withdrawals/:id/approve')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: approve withdrawal and settle funds' })
   approveWithdrawal(@Param('id') id: string, @Body() body: ApproveWithdrawalAdminDto) {
     return this.walletService.approveWithdrawal(id, {
@@ -124,7 +131,8 @@ export class WalletController {
   }
 
   @Put('withdrawals/:id/reject')
-  @UseGuards(AdminGuard)
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: reject withdrawal and return funds to balance' })
   rejectWithdrawal(@Param('id') id: string, @Body() body: UpdateWithdrawalAdminDto) {
     return this.walletService.rejectWithdrawal(id, body.adminNote);
