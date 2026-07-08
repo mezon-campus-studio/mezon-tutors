@@ -1,11 +1,9 @@
 "use client";
 
+import type { TutorAboutDto } from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
-import {
-  useGetVerifiedTutorAbout,
-  useGetVerifiedTutorResume,
-  useGetVerifiedTutorReviews,
-} from "@/services";
+import { useGetVerifiedTutorResume, useGetVerifiedTutorReviews } from "@/services";
+import { Skeleton } from "@/components/ui";
 import { TutorAboutTab } from "./components/TutorAboutTab";
 import { TutorBookingModals } from "./components/TutorBookingModals";
 import { TutorDetailHeader } from "./components/TutorDetailHeader";
@@ -18,43 +16,13 @@ import { TutorBookingProvider, useTutorBooking } from "./hooks/TutorBookingConte
 
 type TutorDetailPageProps = {
   tutorId: string;
+  aboutData: TutorAboutDto;
 };
 
-export default function TutorDetailPage({ tutorId }: TutorDetailPageProps) {
-  const t = useTranslations("Tutors.Detail");
-
-  const {
-    data: aboutData,
-    isLoading: isLoadingAbout,
-    isError: isErrorAbout,
-  } = useGetVerifiedTutorAbout(tutorId);
-
-  const shouldShowEmpty =
-    !tutorId || isErrorAbout || (!isLoadingAbout && !aboutData);
-
+export default function TutorDetailPage({ tutorId, aboutData }: TutorDetailPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      {isLoadingAbout ? (
-        <div className="mx-auto max-w-5xl px-4 py-6">
-          <div className="flex min-h-[260px] w-full items-center justify-center rounded-2xl border border-gray-200 bg-white">
-            <p className="text-gray-500">{t("loading")}</p>
-          </div>
-        </div>
-      ) : null}
-
-      {shouldShowEmpty ? (
-        <div className="mx-auto max-w-5xl px-4 py-6">
-          <div className="py-12 text-center">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {t("notFound")}
-            </h2>
-          </div>
-        </div>
-      ) : null}
-
-      {aboutData ? (
-        <TutorDetailPageBody aboutData={aboutData} tutorId={tutorId} />
-      ) : null}
+      <TutorDetailPageBody aboutData={aboutData} tutorId={tutorId} />
     </div>
   );
 }
@@ -63,7 +31,7 @@ function TutorDetailPageBody({
   aboutData,
   tutorId,
 }: {
-  aboutData: NonNullable<ReturnType<typeof useGetVerifiedTutorAbout>["data"]>;
+  aboutData: TutorAboutDto;
   tutorId: string;
 }) {
   const t = useTranslations("Tutors.Detail");
@@ -97,6 +65,34 @@ function TutorDetailPageBody({
   );
 }
 
+function PackagesSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-7 w-32" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Skeleton className="h-[148px] rounded-2xl" />
+        <Skeleton className="h-[148px] rounded-2xl" />
+        <Skeleton className="h-[148px] rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+function TutorReviewsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-5 w-20" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    </div>
+  );
+}
+
 function TutorDetailPageContent({
   aboutData,
   reviewsData,
@@ -106,7 +102,7 @@ function TutorDetailPageContent({
   isLoadingResume,
   t,
 }: {
-  aboutData: NonNullable<ReturnType<typeof useGetVerifiedTutorAbout>["data"]>;
+  aboutData: TutorAboutDto;
   reviewsData: ReturnType<typeof useGetVerifiedTutorReviews>["data"];
   isLoadingReviews: boolean;
   isErrorReviews: boolean;
@@ -127,9 +123,15 @@ function TutorDetailPageContent({
           />
         </SectionCard>
 
-        <SectionCard>
-          <TutorLessonPackages tutor={aboutData} />
-        </SectionCard>
+        {!booking.isOwnProfile ? (
+          <SectionCard>
+            {true ? (
+              <TutorLessonPackages tutor={aboutData} />
+            ) : (
+              <PackagesSkeleton />
+            )}
+          </SectionCard>
+        ) : null}
 
         <SectionCard>
           <TutorScheduleTab tutor={aboutData} />
@@ -137,7 +139,7 @@ function TutorDetailPageContent({
 
         <SectionCard>
           {isLoadingReviews ? (
-            <p className="text-gray-500">{t("loading")}</p>
+            <TutorReviewsSkeleton />
           ) : isErrorReviews ? (
             <p className="text-gray-500">{t("loadingReviews")}</p>
           ) : reviewsData ? (

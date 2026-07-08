@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  calculateGroupSubscriptionPrice,
   ECurrency,
   formatToCurrency,
   ROUTES,
@@ -13,6 +12,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePublicAppSettings } from "@/services";
 import { useTutorBooking } from "../hooks/TutorBookingContext";
 
@@ -27,6 +27,8 @@ type LessonCardProps = {
   subtitle: string;
   priceLabel: string;
   priceSuffix?: string;
+  secondPriceLabel?: string;
+  secondPriceSuffix?: string;
   href?: string;
   onClick?: () => void;
   icon?: "document" | "group";
@@ -74,6 +76,8 @@ function LessonCard({
   subtitle,
   priceLabel,
   priceSuffix,
+  secondPriceLabel,
+  secondPriceSuffix,
   href,
   onClick,
   icon = "document",
@@ -85,16 +89,15 @@ function LessonCard({
   const TrailingIcon = icon === "group" ? Users : FileText;
   const styles = variantStyles[variant];
 
-  const content = (
-    <div
-      title={disabled ? disabledHint : undefined}
-      className={cn(
-        "flex min-h-[148px] flex-col justify-between rounded-2xl border p-5 transition-all",
-        disabled
-          ? "cursor-not-allowed border-gray-100 bg-gray-50 opacity-60"
-          : cn("cursor-pointer", styles.card),
-      )}
-    >
+  const cardClasses = cn(
+    "flex min-h-[148px] flex-col justify-between rounded-2xl border p-5 transition-all",
+    disabled
+      ? "cursor-not-allowed border-gray-100 bg-gray-50 opacity-60"
+      : cn("cursor-pointer", styles.card),
+  );
+
+  const cardInner = (
+    <>
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -116,34 +119,60 @@ function LessonCard({
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-baseline gap-1.5">
-          <span
-            className={cn(
-              "text-sm font-bold",
-              disabled ? "text-gray-400" : styles.price,
-            )}
-          >
-            {priceLabel}
-          </span>
-          {priceSuffix ? (
-            <span className="text-sm font-medium text-slate-500">{priceSuffix}</span>
-          ) : null}
-          {badge && !disabled ? (
+        <div className="flex flex-col gap-0.5">
+          <div className="flex flex-wrap items-baseline gap-1.5">
             <span
               className={cn(
-                "rounded-full px-2 py-0.5 text-xs font-semibold",
-                styles.badge,
+                "text-sm font-bold",
+                disabled ? "text-gray-400" : styles.price,
               )}
             >
-              {badge}
+              {priceLabel}
             </span>
+            {priceSuffix ? (
+              <span className="text-sm font-medium text-slate-500">{priceSuffix}</span>
+            ) : null}
+            {badge && !disabled ? (
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-semibold",
+                  styles.badge,
+                )}
+              >
+                {badge}
+              </span>
+            ) : null}
+          </div>
+          {secondPriceLabel ? (
+            <div className="flex flex-wrap items-baseline gap-1.5">
+              <span
+                className={cn(
+                  "text-sm font-bold",
+                  disabled ? "text-gray-400" : styles.price,
+                )}
+              >
+                {secondPriceLabel}
+              </span>
+              {secondPriceSuffix ? (
+                <span className="text-sm font-medium text-slate-500">{secondPriceSuffix}</span>
+              ) : null}
+            </div>
           ) : null}
         </div>
         <ChevronRight
           className={cn("size-4", disabled ? "text-gray-300" : styles.icon)}
         />
       </div>
-    </div>
+    </>
+  );
+
+  const content = disabled && disabledHint ? (
+    <Tooltip>
+      <TooltipTrigger render={<div className={cardClasses}>{cardInner}</div>} />
+      <TooltipContent>{disabledHint}</TooltipContent>
+    </Tooltip>
+  ) : (
+    <div className={cardClasses}>{cardInner}</div>
   );
 
   if (disabled) {
@@ -200,23 +229,24 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
     ? planPrice(primaryPlan, booking.currency)
     : null;
 
-  const subscriptionPriceLabel = baseSubscriptionPrice
-    ? `${formatToCurrency(booking.currency, baseSubscriptionPrice)}+`
-    : "—";
+  const perLessonPrice =
+    primaryPlan && baseSubscriptionPrice != null
+      ? Math.round(baseSubscriptionPrice / (primaryPlan.lessonsPerWeek * 4))
+      : null;
 
-  const groupPricingPreview =
-    baseSubscriptionPrice != null
-      ? calculateGroupSubscriptionPrice({
-          baseMonthlyPrice: baseSubscriptionPrice,
-          memberCount: 2,
-          groupDiscountRate,
-          platformFeeRate: 0,
-        })
+  const perLessonLabel =
+    perLessonPrice != null
+      ? `${formatToCurrency(booking.currency, perLessonPrice)}+`
+      : "—";
+
+  const discountedPerLessonPrice =
+    perLessonPrice != null
+      ? Math.round(perLessonPrice * groupDiscountRate)
       : null;
 
   const groupPriceLabel =
-    groupPricingPreview != null
-      ? `${formatToCurrency(booking.currency, Math.round(groupPricingPreview.grossAmount / groupPricingPreview.memberCount))}+`
+    discountedPerLessonPrice != null
+      ? `${formatToCurrency(booking.currency, discountedPerLessonPrice)}+`
       : "—";
 
   const groupDiscountBadge =
@@ -265,7 +295,10 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
         variant: "trial" as const,
         title: t("trialLesson"),
         subtitle: t("trialLessonSubtitle"),
-        priceLabel: `${formatToCurrency(booking.currency, booking.lessonPrice)}+`,
+        priceLabel: `${formatToCurrency(booking.currency, Math.round(booking.lessonPrice / 2))}`,
+        priceSuffix: t("perHalfTrialLesson"),
+        secondPriceLabel: `${formatToCurrency(booking.currency, booking.lessonPrice)}`,
+        secondPriceSuffix: t("perTrialLesson"),
         onClick: () => booking.setIsTrialBookingSheetOpen(true),
         disabled: !trialEnabled,
         disabledHint: trialDisabledHint,
@@ -275,7 +308,8 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
         variant: "monthly" as const,
         title: t("subscribeMonthly"),
         subtitle: t("monthlyPlanSubtitle"),
-        priceLabel: subscriptionPriceLabel,
+        priceLabel: perLessonLabel,
+        priceSuffix: t("perSubLesson"),
         href: `${ROUTES.CHECKOUT.SUBSCRIPTION_PLAN}?tutorId=${encodeURIComponent(tutor.id)}`,
         disabled: !subscribeEnabled,
         disabledHint: subscribeDisabledHint,
@@ -286,7 +320,7 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
         title: t("subscribeGroup"),
         subtitle: t("groupPlanSubtitle"),
         priceLabel: groupPriceLabel,
-        priceSuffix: t("perStudent"),
+        priceSuffix: t("perGroupLesson"),
         href: `${ROUTES.DASHBOARD.GROUPS}?tutorId=${tutor.id}`,
         icon: "group" as const,
         disabled: !subscribeEnabled,
@@ -298,8 +332,7 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
     booking,
     groupDiscountBadge,
     groupPriceLabel,
-    primaryPlan,
-    subscriptionPriceLabel,
+    perLessonLabel,
     t,
     tutor.id,
   ]);

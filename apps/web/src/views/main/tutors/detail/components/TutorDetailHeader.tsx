@@ -1,7 +1,7 @@
 "use client";
 
 import type { TutorAboutDto } from "@mezon-tutors/shared";
-import { ROUTES } from "@mezon-tutors/shared";
+import { ECurrency, formatToCurrency, ROUTES } from "@mezon-tutors/shared";
 import {
   Calendar,
   CalendarRange,
@@ -15,8 +15,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import ReactGA from "react-ga4";
-import { Button } from "@/components/ui";
+import { Button, Skeleton } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCurrency } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "../../components/SaveTutorButton";
 import { useTutorBooking } from "../hooks/TutorBookingContext";
@@ -54,8 +56,16 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
   const t = useTranslations("Tutors.Detail");
   const tSubject = useTranslations("Tutors.Filter.Subject");
   const booking = useTutorBooking();
+  const { currency } = useCurrency();
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
   const isHighDemand = tutor.stats.bookedLessonsLast48h >= 3;
+
+  const lessonPrice =
+    currency === ECurrency.USD
+      ? (tutor.prices.usd ?? 0)
+      : currency === ECurrency.PHP
+        ? (tutor.prices.php ?? 0)
+        : (tutor.prices.vnd ?? 0);
 
   return (
     <section className="w-full border-b border-gray-200 bg-white">
@@ -85,12 +95,27 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
               <div className="mt-3">
                 <TutorProfileTags tutor={tutor} showSubject={false} />
               </div>
+              <div className="mt-3 ml-1 flex items-baseline gap-1">
+                <span className="text-brand-gradient text-3xl font-extrabold tracking-tight">
+                  {formatToCurrency(currency, lessonPrice)}
+                </span>
+                <span className="text-xs font-medium text-slate-500">
+                  {t("perLesson")}
+                </span>
+              </div>
             </div>
           </div>
 
           {!booking.isOwnProfile ? (
             <div className="flex shrink-0 flex-col items-stretch gap-2 sm:min-w-[220px] lg:items-end lg:pt-1">
-              {booking.showContinuePayment && booking.pendingPayment ? (
+              {!booking.isBookingReady ? (
+                <div className="flex w-full flex-col gap-2">
+                  <Skeleton className="h-[48px] rounded-full"/>
+                  {booking.showMonthlyActions && (
+                    <Skeleton className="h-[48px] rounded-full"/>
+                  )}
+                </div>
+              ) : booking.showContinuePayment && booking.pendingPayment ? (
                 <Button
                   className="h-11 w-full rounded-full text-sm font-semibold lg:w-auto"
                   variant="gradient"
@@ -104,23 +129,25 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
                   {t("temporarilyBusy")}
                 </span>
               ) : booking.showBookTrial ? (
-                <Button
-                  variant="gradient"
-                  disabled={booking.bookTrialDisabled}
-                  title={
-                    booking.bookTrialDisabled
-                      ? t("bookTrialDisabledHint")
-                      : undefined
-                  }
-                  className="h-11 w-full rounded-full px-5 text-sm font-semibold lg:w-auto"
-                  onClick={() => {
-                    ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
-                    booking.setIsTrialBookingSheetOpen(true);
-                  }}
-                >
-                  <Calendar className="mr-1.5 size-4" />
-                  {t("bookTrial")}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger render={
+                    <Button
+                      variant="gradient"
+                      disabled={booking.bookTrialDisabled}
+                      className="h-11 w-full rounded-full px-5 text-sm font-semibold lg:w-auto"
+                      onClick={() => {
+                        ReactGA.event("view_schedule_click", { tutor_id: tutor.id });
+                        booking.setIsTrialBookingSheetOpen(true);
+                      }}
+                    >
+                      <Calendar className="mr-1.5 size-4" />
+                      {t("bookTrial")}
+                    </Button>
+                  } />
+                  {booking.bookTrialDisabled && (
+                    <TooltipContent>{t("bookTrialDisabledHint")}</TooltipContent>
+                  )}
+                </Tooltip>
               ) : null}
 
               {booking.showSubscribe ? (
@@ -157,7 +184,7 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
           ) : null}
         </div>
 
-        <div className="mt-6 border-t border-gray-100">
+        <div className="mt-4 border-t border-gray-100">
           <div className="flex flex-col divide-y divide-gray-100 sm:flex-row sm:divide-x sm:divide-y-0">
             {!booking.isOwnProfile ? (
               <SaveTutorButton

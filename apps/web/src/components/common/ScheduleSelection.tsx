@@ -2,8 +2,9 @@
 
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   FALLBACK_TIMEZONE,
   formatUtcOffsetLabel,
@@ -672,18 +673,14 @@ export function ScheduleSelection({
                     const isSelected = selectedSet.has(slotKey);
                     const isClickable =
                       !readOnly && selectableCellSet.has(slotKey);
+                    const showTitle =
+                      (isClickable || onReadOnlyCellClick) && selectableCellTitle;
 
-                    return (
+                    const btn = (
                       <button
-                        key={slotKey}
                         type="button"
                         onClick={() => handleCellSelect(day.id, slot.startTime)}
                         disabled={readOnly && !isSelected && !onReadOnlyCellClick}
-                        title={
-                          (isClickable || onReadOnlyCellClick) && selectableCellTitle
-                            ? selectableCellTitle
-                            : undefined
-                        }
                         className={cn(
                           "text-sm font-medium underline decoration-1 underline-offset-4 transition-colors",
                           isSelected
@@ -698,6 +695,17 @@ export function ScheduleSelection({
                       >
                         {slot.startTime}
                       </button>
+                    );
+
+                    return (
+                      <Fragment key={slotKey}>
+                        {showTitle ? (
+                          <Tooltip>
+                            <TooltipTrigger render={btn} />
+                            <TooltipContent>{selectableCellTitle}</TooltipContent>
+                          </Tooltip>
+                        ) : btn}
+                      </Fragment>
                     );
                   })}
                 </div>
@@ -896,13 +904,11 @@ export function ScheduleSelection({
                     ? selectableCellTitle
                     : undefined;
 
-                return (
+                const btn = (
                   <button
-                    key={key}
                     type="button"
                     onClick={() => handleCellSelect(day.id, startTime)}
                     disabled={disabled}
-                    title={cellTitle}
                     className={cn(
                       "relative isolate h-10 overflow-hidden border-r transition-colors last:border-r-0 disabled:opacity-100 disabled:saturate-100",
                       isSelectable && !disabled && "cursor-pointer",
@@ -925,6 +931,17 @@ export function ScheduleSelection({
                       />
                     ) : null}
                   </button>
+                );
+
+                return (
+                  <Fragment key={key}>
+                    {cellTitle ? (
+                      <Tooltip>
+                        <TooltipTrigger render={btn} />
+                        <TooltipContent>{selectableCellTitle}</TooltipContent>
+                      </Tooltip>
+                    ) : btn}
+                  </Fragment>
                 );
               })}
             </div>
