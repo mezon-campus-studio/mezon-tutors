@@ -31,12 +31,13 @@ import {
   useUserTimezone,
 } from "@/hooks";
 import { useGetSubscriptionEligibility, useGetSubscriptionPlansByTutor } from "@/services";
-import { userAtom } from "@/store/auth.atom";
+import { isLoadingAtom, userAtom } from "@/store/auth.atom";
 import { TrialBookingSheet } from "./TrialBookingSheet";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "./SaveTutorButton";
 import ReactGA from "react-ga4";
+import { ProfessionalBadge } from "@/components/icons";
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -60,6 +61,7 @@ export default function TutorCard({
   const { currency } = useCurrency();
   const userTimezone = useUserTimezone();
   const currentUser = useAtomValue(userAtom);
+  const isAuthLoading = useAtomValue(isLoadingAtom);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isTrialBookingSheetOpen, setIsTrialBookingSheetOpen] = useState(false);
 
@@ -70,15 +72,21 @@ export default function TutorCard({
   const isOwnProfile =
     !preview && Boolean(currentUser?.id && currentUser.id === tutor.userId);
   const canFetchSub = Boolean(currentUser?.id && !isOwnProfile && !preview);
-  const { data: elig, isPending: eligPending } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
-  const { data: subscriptionPlans } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
-  const { pendingPayment } = useTutorPendingPayment(tutor.id, canFetchSub);
+  const { data: elig, isFetched: eligFetched } = useGetSubscriptionEligibility(tutor.id, canFetchSub);
+  const { data: subscriptionPlans, isFetched: plansFetched } = useGetSubscriptionPlansByTutor(tutor.id, canFetchSub);
+  const { pendingPayment, isPending: ppPending } = useTutorPendingPayment(tutor.id, canFetchSub);
   const hasSubscriptionPlans = Boolean(subscriptionPlans?.length);
   const trialDone =
     elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
   const showContinuePayment = canFetchSub && Boolean(pendingPayment);
   const showMonthlyActions = tutor.activeStatus !== false;
   const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false;
+
+  const isBookingReady =
+    preview ||
+    (!isAuthLoading &&
+      (!canFetchSub || (eligFetched && plansFetched && !ppPending)));
+
   const wouldShowSubscribeIfActive =
     canFetchSub &&
     !showContinuePayment &&
@@ -95,7 +103,9 @@ export default function TutorCard({
     (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
   const bookTrialDisabled =
     canFetchSub &&
-    (eligPending || (elig?.trialStatus != null && elig.trialStatus !== "COMPLETED"));
+    elig != null &&
+    elig?.trialStatus != null &&
+    elig?.trialStatus !== "COMPLETED";
 
   const tutorPrices = (
     tutor as unknown as {
@@ -123,9 +133,9 @@ export default function TutorCard({
             ? 'cursor-default border-violet-100'
             : 'cursor-pointer',
           !preview &&
-            (isActive
-              ? 'border-violet-300 shadow-lg shadow-violet-200/40 ring-2 ring-violet-200/60'
-              : 'border-slate-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40'),
+          (isActive
+            ? 'border-violet-300 shadow-lg shadow-violet-200/40 ring-2 ring-violet-200/60'
+            : 'border-slate-100 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40'),
         )}
         onMouseEnter={preview ? undefined : () => onHoverAction?.(tutor)}
         onClick={preview ? undefined : () => onSelectAction?.(tutor)}
@@ -148,9 +158,8 @@ export default function TutorCard({
                 className="aspect-square size-28 rounded-2xl object-cover object-center shadow-sm md:size-36"
               />
               {tutor.isProfessional ? (
-                <div className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1 rounded-full bg-brand-gradient-135 px-2 py-0.5 text-[10px] font-bold text-white shadow-md shadow-violet-300/40">
-                  <BadgeCheck className="size-3" strokeWidth={3} />
-                  Pro
+                <div className="absolute -bottom-3 -right-3 flex items-center gap-1 rounded-full bg-brand-gradient-135shadow-md shadow-violet-300/40">
+                  <ProfessionalBadge className="size-8" strokeWidth={3} />
                 </div>
               ) : null}
             </div>
@@ -224,7 +233,11 @@ export default function TutorCard({
             </div>
 
             <div className="mt-auto flex flex-col gap-2 pt-3">
-              {showContinuePayment && pendingPayment ? (
+              {!isBookingReady ? (
+                <div className="flex flex-col gap-2">
+                  <div className="h-10 w-full animate-pulse rounded-full bg-gray-200" />
+                </div>
+              ) : showContinuePayment && pendingPayment ? (
                 <Button
                   size="lg"
                   className="group/btn h-10 w-full rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-md shadow-violet-300/40 transition-all hover:shadow-lg hover:shadow-violet-400/50"

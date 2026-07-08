@@ -19,7 +19,7 @@ import { CalendarClock, Clock, Sparkles, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ScheduleSelection,
   type SelectedScheduleSlot,
@@ -698,9 +698,12 @@ export function TrialBookingSheet({
               lessonDurationMinutes={duration}
               value={selectedScheduleSlots}
               onChange={handleScheduleSelectionChange}
-              onWeekChange={({ weekOffset: nextWeekOffset }) => {
-                setWeekOffset(nextWeekOffset);
-              }}
+              onWeekChange={useCallback(
+                ({ weekOffset: nextWeekOffset }: { weekOffset: number }) => {
+                  setWeekOffset(nextWeekOffset);
+                },
+                [],
+              )}
             />
           </div>
 

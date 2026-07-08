@@ -23,24 +23,28 @@ import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "../../components/SaveTutorButton";
 import { useTutorBooking } from "../hooks/TutorBookingContext";
 import { TutorProfileTags } from "./TutorProfileTags";
+import { CommunityBadge, ProfessionalBadge } from "@/components/icons";
+import { ComponentType, SVGProps } from "react";
 
 type TutorDetailHeaderProps = {
   tutor: TutorAboutDto;
 };
+
+type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
 function StatItem({
   icon: Icon,
   title,
   subtitle,
 }: {
-  icon: typeof Flame;
+  icon: IconType;
   title: string;
   subtitle: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3 px-4 py-4 sm:px-6">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-        <Icon className="size-5" />
+    <div className="flex min-w-0 items-center gap-3 px-4 py-4 sm:px-6">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+        <Icon className="size-6" />
       </div>
       <div className="min-w-0">
         <p className="truncate text-sm font-bold text-gray-900 sm:text-base">
@@ -58,7 +62,7 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
   const booking = useTutorBooking();
   const { currency } = useCurrency();
   const name = `${tutor.firstName} ${tutor.lastName}`.trim();
-  const isHighDemand = tutor.stats.bookedLessonsLast48h >= 3;
+  const isPro = tutor.isProfessional;
 
   const lessonPrice =
     currency === ECurrency.USD
@@ -110,9 +114,9 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
             <div className="flex shrink-0 flex-col items-stretch gap-2 sm:min-w-[220px] lg:items-end lg:pt-1">
               {!booking.isBookingReady ? (
                 <div className="flex w-full flex-col gap-2">
-                  <Skeleton className="h-[48px] rounded-full"/>
+                  <Skeleton className="h-[48px] rounded-full" />
                   {booking.showMonthlyActions && (
-                    <Skeleton className="h-[48px] rounded-full"/>
+                    <Skeleton className="h-[48px] rounded-full" />
                   )}
                 </div>
               ) : booking.showContinuePayment && booking.pendingPayment ? (
@@ -185,7 +189,7 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
         </div>
 
         <div className="mt-4 border-t border-gray-100">
-          <div className="flex flex-col divide-y divide-gray-100 sm:flex-row sm:divide-x sm:divide-y-0">
+          <div className="flex flex-col divide-y divide-gray-100 sm:flex-row sm:justify-center sm:divide-x sm:divide-y-0">
             {!booking.isOwnProfile ? (
               <SaveTutorButton
                 layout="stat"
@@ -199,16 +203,12 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
             ) : null}
 
             <StatItem
-              icon={Flame}
+              icon={isPro ? ProfessionalBadge : CommunityBadge}
               title={
-                isHighDemand
-                  ? t("highDemand")
-                  : t("bookedLast48h", {
-                      count: tutor.stats.bookedLessonsLast48h,
-                    })
+                isPro ? t("professionalTitle") : t("communityTitle")
               }
               subtitle={
-                isHighDemand ? t("topBookedRecently") : t("statsRecentBookings")
+                isPro ? t("professionalSubtitle") : t("communitySubtitle")
               }
             />
 

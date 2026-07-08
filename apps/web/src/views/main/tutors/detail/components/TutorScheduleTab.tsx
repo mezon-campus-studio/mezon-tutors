@@ -12,7 +12,7 @@ import { useAtomValue } from 'jotai';
 import { Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   ScheduleSelection,
@@ -293,9 +293,12 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
           value={bookedScheduleSlots}
           selectableCellTitle={getCellTitle()}
           onChange={handleSlotSelect}
-          onWeekChange={({ weekOffset: nextWeekOffset }) => {
-            setWeekOffset(nextWeekOffset);
-          }}
+          onWeekChange={useCallback(
+            ({ weekOffset: nextWeekOffset }: { weekOffset: number }) => {
+              setWeekOffset(nextWeekOffset);
+            },
+            [],
+          )}
         />
       </div>
     </div>

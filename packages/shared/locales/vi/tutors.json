@@ -11,13 +11,20 @@
     "highest_price": "Giá giảm dần",
     "lowest_price": "Giá tăng dần",
     "number_of_reviews": "Số lượng đánh giá",
-    "best_rating": "Đánh giá cao"
+    "best_rating": "Đánh giá cao",
+    "heroTitle": "Tìm <highlight>gia sư phù hợp</highlight> cho bạn",
+    "heroSubtitle": "Xem danh sách gia sư đã xác minh, đặt buổi học thử trong vài giây, học trực tiếp trên Mezon.",
+    "emptyTitle": "Không có gia sư nào phù hợp với bộ lọc của bạn",
+    "emptyDescription": "Hãy thử điều chỉnh môn học, quốc gia hoặc khoảng giá để xem thêm gia sư. Khung giờ phổ biến nhất là buổi tối &amp; cuối tuần.",
+    "clearFilters": "Xóa tất cả bộ lọc",
+    "noTutorsNoFilter": "Mỗi tuần đều có gia sư mới tham gia — hãy quay lại sau nhé."
   },
   "PreviewCard": {
     "selectTutor": "Chọn gia sư để xem preview.",
     "viewSchedule": "Xem toàn bộ lịch dạy",
     "seeProfile": "Xem hồ sơ đầy đủ",
-    "popularThisWeek": "Phổ biến tuần này - {count} học viên đã đặt trong 24h qua"
+    "popularThisWeek": "Phổ biến tuần này - {count} học viên đã đặt trong 24h qua",
+    "hoverHint": "Di chuột qua thẻ gia sư để xem trước"
   },
   "Pagination": {
     "previous": "Trước",
@@ -365,7 +372,7 @@
     "perLesson": "/ buổi học",
     "perHalfTrialLesson": "/ 30 phút",
     "perTrialLesson": "/ 60 phút",
-    "perSubLesson": "/buổi /người",
+    "perSubLesson": "/buổi",
     "perGroupLesson": "/buổi /người",
     "bookTrial": "Đặt buổi học thử",
     "subscribeMonthly": "Đăng ký học theo tháng",
@@ -453,6 +460,10 @@
     "statsFavoriteHint": "Thêm vào danh sách yêu thích",
     "statsFavoriteSavedHint": "Đã lưu trong danh sách của bạn",
     "highDemand": "Được săn đón",
+    "professionalTitle": "Gia sư chuyên nghiệp",
+    "professionalSubtitle": "Gia sư đã được chứng nhận",
+    "communityTitle": "Gia sư cộng đồng",
+    "communitySubtitle": "Học tập linh hoạt",
     "topBookedRecently": "Được đặt nhiều gần đây",
     "statsTotalLessons": "Tổng buổi học",
     "statsTotalStudents": "Tổng học viên",

@@ -50,15 +50,19 @@ export function ReviewModal({
   const createReview = useCreateReview();
   const updateReview = useUpdateReview();
 
+  const existingReviewId = existingReview?.id;
+  const existingRating = existingReview?.rating;
+  const existingComment = existingReview?.comment;
+
   useEffect(() => {
-    if (existingReview) {
-      setRating(existingReview.rating);
-      setComment(existingReview.comment);
+    if (existingReviewId) {
+      setRating(existingRating ?? 5);
+      setComment(existingComment ?? "");
     } else {
       setRating(5);
       setComment("");
     }
-  }, [existingReview, isOpen]);
+  }, [existingReviewId, existingRating, existingComment, isOpen]);
 
   const validateComment = (text: string): boolean => {
     const trimmed = text.trim();

@@ -37,10 +37,8 @@ export function TutorAboutTab({
     (resume?.certifications.length ?? 0) > 0;
 
   const showReadMore =
-    intro.length > 200 ||
-    Boolean(tutor.experience?.trim()) ||
-    hasResumePreview ||
-    isLoadingResume;
+    intro.length > 450 ||
+    hasResumePreview;
 
   return (
     <>
