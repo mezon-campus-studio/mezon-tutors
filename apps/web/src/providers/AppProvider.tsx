@@ -6,6 +6,7 @@ import { MezonChannelAppAuthHandler } from '@/components/auth/MezonChannelAppAut
 import { RolePathRedirect } from '@/components/guards/RoleGuard';
 import GlobalChatBubble from '@/components/common/chat/GlobalChatBubble';
 import { Toaster } from '@/components/ui';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { MezonLightProvider } from './MezonLightProvider';
 import { QueryProvider } from './QueryProvider';
 import HomeOAuthSuccessHandler from '@/views/home-page/components/HomeOAuthSuccessHandler';
@@ -17,11 +18,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       <MezonChannelAppAuthHandler />
       <AuthInitializer />
       <RolePathRedirect />
-      <MezonLightProvider>
-        {children}
-        <GlobalChatBubble />
-        <Toaster />
-      </MezonLightProvider>
+      <TooltipProvider>
+        <MezonLightProvider>
+          {children}
+          <GlobalChatBubble />
+          <Toaster />
+        </MezonLightProvider>
+      </TooltipProvider>
     </QueryProvider>
   );
 }

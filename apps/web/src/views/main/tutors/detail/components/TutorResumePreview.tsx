@@ -2,6 +2,7 @@
 
 import type { TutorResumeDto } from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
+import { Skeleton } from "@/components/ui";
 import { ResumeEntryList } from "./resume/ResumeEntry";
 
 const PREVIEW_COUNT = 2;
@@ -18,7 +19,18 @@ export function TutorResumePreview({
   const t = useTranslations("Tutors.Detail");
 
   if (isLoading) {
-    return <p className="text-sm text-gray-500">{t("loading")}</p>;
+    return (
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+      </div>
+    );
   }
 
   const education = resume?.education ?? [];

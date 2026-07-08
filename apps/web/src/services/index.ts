@@ -7,6 +7,7 @@ export * from "./mezon-light/mezon-light.service";
 export * from "./mezon-light/mezon-light.socket";
 export * from "./tutor-profile/tutor-profile.api";
 export * from "./tutor-profile/tutor-profile.qkey";
+export * from "./tutor-profile/tutor-profile.server";
 export * from "./trial-lesson-booking/trial-lesson-booking.api";
 export * from "./review/review.api";
 export * from "./storage/storage.service";
