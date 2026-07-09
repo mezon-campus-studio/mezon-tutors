@@ -20,7 +20,7 @@ import type {
   CommunitySearchResultDto,
   CommunityTagListItemDto,
   CreateCommunityPostPayload,
-  ToggleCommunityBookmarkResultDto,
+  ToggleCommunityFollowResultDto,
   ToggleCommunityUpvoteResultDto,
   UpdateCommunityPostPayload,
 } from '@mezon-tutors/shared';
@@ -158,24 +158,16 @@ export class CommunityService {
     }
 
     const postIds = posts.map((p) => p.id);
-    const [upvotes, bookmarks] = await Promise.all([
-      this.prisma.communityPostUpvote.findMany({
-        where: { postId: { in: postIds }, userId },
-        select: { postId: true },
-      }),
-      this.prisma.communityBookmark.findMany({
-        where: { postId: { in: postIds }, userId },
-        select: { postId: true },
-      }),
-    ]);
+    const upvotes = await this.prisma.communityPostUpvote.findMany({
+      where: { postId: { in: postIds }, userId },
+      select: { postId: true },
+    });
 
     const upvotedSet = new Set(upvotes.map((u) => u.postId));
-    const bookmarkedSet = new Set(bookmarks.map((b) => b.postId));
 
     return posts.map((post) =>
       toCommunityPostListItemDto(post, {
         isUpvoted: upvotedSet.has(post.id),
-        isBookmarked: bookmarkedSet.has(post.id),
         isMine: post.authorId === userId,
       }),
     );
@@ -186,6 +178,7 @@ export class CommunityService {
     type?: CommunityPostType;
     tag?: string;
     authorId?: string;
+    following?: boolean;
     cursor?: string;
     limit?: number;
     userId?: string;
@@ -200,6 +193,18 @@ export class CommunityService {
       ...(params.tag && {
         tags: { some: { slug: params.tag } },
       }),
+      ...(params.following && params.userId
+        ? {
+            authorId: {
+              in: (
+                await this.prisma.communityFollow.findMany({
+                  where: { followerId: params.userId },
+                  select: { followeeId: true },
+                })
+              ).map((f) => f.followeeId),
+            },
+          }
+        : {}),
     };
 
     let orderBy: Prisma.CommunityPostOrderByWithRelationInput[];
@@ -345,20 +350,14 @@ export class CommunityService {
 
   async getById(id: string, userId?: string): Promise<CommunityPostDetailDto> {
     const post = await this.getActivePostOrThrow(id);
-    const [upvote, bookmark] = userId
-      ? await Promise.all([
-          this.prisma.communityPostUpvote.findUnique({
-            where: { postId_userId: { postId: id, userId } },
-          }),
-          this.prisma.communityBookmark.findUnique({
-            where: { postId_userId: { postId: id, userId } },
-          }),
-        ])
-      : [null, null];
+    const upvote = userId
+      ? await this.prisma.communityPostUpvote.findUnique({
+          where: { postId_userId: { postId: id, userId } },
+        })
+      : null;
 
     return toCommunityPostDetailDto(post, {
       isUpvoted: Boolean(upvote),
-      isBookmarked: Boolean(bookmark),
       isMine: userId === post.authorId,
     });
   }
@@ -422,7 +421,6 @@ export class CommunityService {
     return toCommunityPostDetailDto(post as CommunityPostWithRelations, {
       isMine: true,
       isUpvoted: false,
-      isBookmarked: false,
     });
   }
 
@@ -779,76 +777,60 @@ export class CommunityService {
     });
   }
 
-  async toggleBookmark(
-    userId: string,
-    postId: string,
-  ): Promise<ToggleCommunityBookmarkResultDto> {
-    await this.getActivePostOrThrow(postId);
-
-    return this.prisma.$transaction(async (tx) => {
-      const existing = await tx.communityBookmark.findUnique({
-        where: { postId_userId: { postId, userId } },
-      });
-
-      if (existing) {
-        await tx.communityBookmark.delete({ where: { id: existing.id } });
-        const post = await tx.communityPost.update({
-          where: { id: postId },
-          data: { bookmarkCount: { decrement: 1 } },
-          select: { bookmarkCount: true },
-        });
-        return { bookmarked: false, bookmarkCount: post.bookmarkCount };
-      }
-
-      await tx.communityBookmark.create({ data: { postId, userId } });
-      const post = await tx.communityPost.update({
-        where: { id: postId },
-        data: { bookmarkCount: { increment: 1 } },
-        select: { bookmarkCount: true },
-      });
-      return { bookmarked: true, bookmarkCount: post.bookmarkCount };
-    });
-  }
-
-  async listBookmarks(userId: string): Promise<CommunityPostListItemDto[]> {
-    const bookmarks = await this.prisma.communityBookmark.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        post: { include: communityPostInclude },
-      },
-    });
-
-    return bookmarks
-      .filter((b) => b.post.deletedAt === null)
-      .map((b) =>
-        toCommunityPostListItemDto(b.post as CommunityPostWithRelations, {
-          isBookmarked: true,
-          isMine: b.post.authorId === userId,
-        }),
-      );
-  }
-
   async getEngagement(
     userId: string,
     postId: string,
   ): Promise<CommunityEngagementDto> {
     const post = await this.getActivePostOrThrow(postId);
-    const [upvote, bookmark] = await Promise.all([
-      this.prisma.communityPostUpvote.findUnique({
-        where: { postId_userId: { postId, userId } },
-      }),
-      this.prisma.communityBookmark.findUnique({
-        where: { postId_userId: { postId, userId } },
-      }),
-    ]);
+    const upvote = await this.prisma.communityPostUpvote.findUnique({
+      where: { postId_userId: { postId, userId } },
+    });
 
     return {
       upvoteCount: post.upvoteCount,
       commentCount: post.commentCount,
       isUpvoted: Boolean(upvote),
-      isBookmarked: Boolean(bookmark),
     };
+  }
+
+  async toggleFollow(
+    userId: string,
+    targetUserId: string,
+  ): Promise<ToggleCommunityFollowResultDto> {
+    if (userId === targetUserId) {
+      throw new BadRequestException('You cannot follow yourself');
+    }
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const existing = await this.prisma.communityFollow.findUnique({
+      where: {
+        followerId_followeeId: { followerId: userId, followeeId: targetUserId },
+      },
+    });
+
+    if (existing) {
+      await this.prisma.communityFollow.delete({ where: { id: existing.id } });
+      return { following: false };
+    }
+
+    await this.prisma.communityFollow.create({
+      data: { followerId: userId, followeeId: targetUserId },
+    });
+    return { following: true };
+  }
+
+  async getFollowingUserIds(userId: string): Promise<string[]> {
+    const follows = await this.prisma.communityFollow.findMany({
+      where: { followerId: userId },
+      select: { followeeId: true },
+    });
+    return follows.map((f) => f.followeeId);
   }
 
   async submitExercise(

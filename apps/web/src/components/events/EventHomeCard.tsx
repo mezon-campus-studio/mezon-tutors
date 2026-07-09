@@ -375,8 +375,8 @@ function RegisterButton({
       className={cn(
         "h-10 w-full rounded-full px-5 text-xs font-semibold text-white shadow-sm transition-all duration-300 active:scale-[0.98]",
         isPast
-          ? "bg-slate-700 hover:bg-slate-800"
-          : "bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-300/25 hover:brightness-105",
+          ? "bg-violet-500 hover:bg-violet-400"
+          : "bg-brand-gradient shadow-violet-300/25 hover:brightness-105",
       )}
     >
       <span className="flex items-center justify-center gap-1.5">

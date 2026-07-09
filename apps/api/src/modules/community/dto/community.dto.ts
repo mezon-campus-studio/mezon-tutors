@@ -171,6 +171,10 @@ export class CommunityFeedQueryDto {
   type?: CommunityPostType;
 
   @IsOptional()
+  @Type(() => Boolean)
+  following?: boolean;
+
+  @IsOptional()
   @IsString()
   tag?: string;
 

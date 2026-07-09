@@ -190,7 +190,8 @@ model User {
   communityComments                CommunityComment[]               @relation("CommunityCommentAuthor")
   communityPostUpvotes             CommunityPostUpvote[]            @relation("CommunityPostUpvoteUser")
   communityCommentUpvotes          CommunityCommentUpvote[]         @relation("CommunityCommentUpvoteUser")
-  communityBookmarks               CommunityBookmark[]
+  communityFollowing              CommunityFollow[]              @relation("CommunityFollowSource")
+  communityFollowers              CommunityFollow[]              @relation("CommunityFollowTarget")
   communityExerciseSubmissions     CommunityExerciseSubmission[]
   communityReports                 CommunityReport[]                @relation("CommunityReporter")
   communityReportsReviewed         CommunityReport[]                @relation("CommunityReportReviewer")
@@ -1088,7 +1089,6 @@ model CommunityPost {
 
   upvoteCount     Int                @default(0) @map("upvote_count")
   commentCount    Int                @default(0) @map("comment_count")
-  bookmarkCount   Int                @default(0) @map("bookmark_count")
   submissionCount Int                @default(0) @map("submission_count")
 
   hotScore        Float              @default(0) @map("hot_score")
@@ -1105,7 +1105,6 @@ model CommunityPost {
   tags              CommunityTag[]
   comments          CommunityComment[]
   upvotes           CommunityPostUpvote[]
-  bookmarks         CommunityBookmark[]
   reports           CommunityReport[]
   bestAnswerComment CommunityComment?         @relation("CommunityBestAnswer", fields: [bestAnswerCommentId], references: [id], onDelete: SetNull)
 
@@ -1235,18 +1234,19 @@ model CommunityExerciseSubmission {
   @@map("community_exercise_submissions")
 }
 
-model CommunityBookmark {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at")
+model CommunityFollow {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  followerId String   @map("follower_id") @db.Uuid
+  followeeId String   @map("followee_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  follower User @relation("CommunityFollowSource", fields: [followerId], references: [id], onDelete: Cascade)
+  followee User @relation("CommunityFollowTarget", fields: [followeeId], references: [id], onDelete: Cascade)
 
-  @@unique([postId, userId])
-  @@index([userId, createdAt(sort: Desc)])
-  @@map("community_bookmarks")
+  @@unique([followerId, followeeId])
+  @@index([followerId, createdAt(sort: Desc)])
+  @@index([followeeId, createdAt(sort: Desc)])
+  @@map("community_follows")
 }
 
 model CommunityReport {

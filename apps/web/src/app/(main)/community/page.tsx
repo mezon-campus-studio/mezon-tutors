@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ROUTES } from '@mezon-tutors/shared';
+import { ROUTES, type CommunityFeedSort, type CommunityPostType } from '@mezon-tutors/shared';
 import { createPageMetadata } from '@/lib/seo';
 import { getSeoLocale } from '@/lib/seo-messages';
 import { fetchCommunityFeed } from '@/services';
@@ -21,8 +21,17 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function Page() {
-  const feed = await fetchCommunityFeed({ sort: 'latest', limit: 10 });
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; sort?: string }>;
+}) {
+  const params = await searchParams;
+  const feed = await fetchCommunityFeed({
+    sort: (params.sort as CommunityFeedSort) ?? 'latest',
+    type: (params.type as CommunityPostType) ?? undefined,
+    limit: 10,
+  });
   return (
     <CommunityFeedPage
       initialPosts={feed.data}

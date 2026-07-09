@@ -59,7 +59,6 @@ export function toCommunityPostListItemDto(
   post: CommunityPostWithRelations,
   options?: {
     isUpvoted?: boolean;
-    isBookmarked?: boolean;
     isMine?: boolean;
   },
 ): CommunityPostListItemDto {
@@ -70,7 +69,6 @@ export function toCommunityPostListItemDto(
     publishedAt: post.publishedAt.toISOString(),
     upvoteCount: post.upvoteCount,
     commentCount: post.commentCount,
-    bookmarkCount: post.bookmarkCount,
     submissionCount: post.submissionCount,
     tags: post.tags.map((tag) => ({
       id: tag.id,
@@ -90,7 +88,6 @@ export function toCommunityPostListItemDto(
         }
       : null,
     isUpvoted: options?.isUpvoted,
-    isBookmarked: options?.isBookmarked,
     isMine: options?.isMine,
   };
 }
@@ -99,7 +96,6 @@ export function toCommunityPostDetailDto(
   post: CommunityPostWithRelations,
   options?: {
     isUpvoted?: boolean;
-    isBookmarked?: boolean;
     isMine?: boolean;
   },
 ): CommunityPostDetailDto {
