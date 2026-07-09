@@ -97,7 +97,7 @@ function LoadingTutorCards() {
 
 function LoadingPreviewCard() {
   return (
-    <Card className="border-violet-100">
+    <Card className="border-violet-100 bg-white">
       <CardContent className="space-y-5 p-6">
         <Skeleton className="h-14 w-48" />
         <Skeleton className="aspect-video w-full rounded-2xl" />
@@ -383,14 +383,14 @@ export default function TutorsPage() {
       <div className="mx-auto w-full max-w-7xl px-6 pb-12 pt-10 lg:px-10">
         <div className="mb-6 space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Find your{" "}
-            <span className="text-brand-gradient">
-              perfect tutor
-            </span>
+            {t.rich("Screen.heroTitle", {
+              highlight: (chunks) => (
+                <span className="text-brand-gradient">{chunks}</span>
+              ),
+            })}
           </h1>
           <p className="text-sm text-slate-600 sm:text-base">
-            Browse verified tutors, book a trial in seconds, learn live on
-            Mezon.
+            {t("Screen.heroSubtitle")}
           </p>
         </div>
 
@@ -467,12 +467,10 @@ export default function TutorsPage() {
                       </div>
                     </div>
                     <h3 className="mb-2 text-xl font-extrabold text-slate-900 sm:text-2xl">
-                      No tutors match your filters
+                      {t("Screen.emptyTitle")}
                     </h3>
                     <p className="mb-6 text-sm leading-6 text-slate-600">
-                      Try adjusting your subject, country or price range to see
-                      more tutors. Most popular slots are evenings &amp;
-                      weekends.
+                      {t("Screen.emptyDescription")}
                     </p>
                     {hasActiveFilters ? (
                       <Button
@@ -481,11 +479,11 @@ export default function TutorsPage() {
                         onClick={handleResetFilters}
                       >
                         <RotateCcw className="mr-1.5 size-4 transition-transform group-hover:-rotate-180" />
-                        Clear all filters
+                        {t("Screen.clearFilters")}
                       </Button>
                     ) : (
                       <p className="text-xs font-medium text-slate-400">
-                        New tutors join every week — check back soon.
+                        {t("Screen.noTutorsNoFilter")}
                       </p>
                     )}
                   </div>
@@ -526,6 +524,7 @@ export default function TutorsPage() {
               <LoadingPreviewCard />
             ) : (
               <div
+                className="relative z-10 rounded-xl bg-white"
                 style={{
                   transform: `translate3d(0, ${previewOffsetY}px, 0)`,
                   transition: `transform ${PREVIEW_ANIM_MS}ms ease`,

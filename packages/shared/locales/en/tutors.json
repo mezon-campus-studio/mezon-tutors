@@ -11,13 +11,20 @@
     "highest_price": "Price decreasing",
     "lowest_price": "Price increasing",
     "number_of_reviews": "Number of Reviews",
-    "best_rating": "Top Rated"
+    "best_rating": "Top Rated",
+    "heroTitle": "Find your <highlight>perfect tutor</highlight>",
+    "heroSubtitle": "Browse verified tutors, book a trial in seconds, learn live on Mezon.",
+    "emptyTitle": "No tutors match your filters",
+    "emptyDescription": "Try adjusting your subject, country or price range to see more tutors. Most popular slots are evenings &amp; weekends.",
+    "clearFilters": "Clear all filters",
+    "noTutorsNoFilter": "New tutors join every week — check back soon."
   },
   "PreviewCard": {
     "selectTutor": "Select a tutor to preview.",
     "viewSchedule": "View full schedule",
     "seeProfile": "See full profile",
-    "popularThisWeek": "Popular this week · {count} students booked in last 24h"
+    "popularThisWeek": "Popular this week · {count} students booked in last 24h",
+    "hoverHint": "Hover any tutor card to preview here"
   },
   "Pagination": {
     "previous": "Previous",
@@ -366,7 +373,7 @@
     "perStudent": "/person",
     "perHalfTrialLesson": "/ 30 min",
     "perTrialLesson": "/ 60 min",
-    "perSubLesson": "/lesson /person",
+    "perSubLesson": "/lesson",
     "perGroupLesson": "/lesson /person",
     "bookTrial": "Book trial lesson",
     "subscribeMonthly": "Subscribe monthly",
@@ -454,6 +461,10 @@
     "statsFavoriteHint": "Add to your saved list",
     "statsFavoriteSavedHint": "Saved to your list",
     "highDemand": "High demand",
+    "professionalTitle": "Professional Tutor",
+    "professionalSubtitle": "Certified Tutor",
+    "communityTitle": "Community Tutor",
+    "communitySubtitle": "Flexible learning",
     "topBookedRecently": "Top booked recently",
     "statsTotalLessons": "Total lessons",
     "statsTotalStudents": "Total students",

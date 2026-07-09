@@ -22,7 +22,7 @@ export default function TutorPreviewCard({
 
   if (!tutor) {
     return (
-      <Card className="overflow-hidden border-violet-100 py-0">
+      <Card className="overflow-hidden border-violet-100 bg-white py-0">
         <CardContent className="relative px-6 py-10">
           <div className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)]" />
@@ -39,7 +39,7 @@ export default function TutorPreviewCard({
               {t("selectTutor")}
             </p>
             <p className="text-xs text-slate-500">
-              Hover any tutor card to preview here
+              {t("hoverHint")}
             </p>
           </div>
         </CardContent>

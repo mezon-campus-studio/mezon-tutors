@@ -68,7 +68,7 @@ export function SaveTutorButton({
         aria-label={label}
         aria-pressed={saved}
         className={cn(
-          "flex min-w-0 flex-1 items-center gap-3 px-4 py-4 text-left transition-colors sm:px-6",
+          "flex min-w-0 items-center gap-3 px-4 py-4 text-left transition-colors sm:px-6",
           canSave && !disabled && !isPending
             ? "cursor-pointer hover:bg-violet-50/60"
             : "cursor-default",

@@ -295,6 +295,8 @@ export function ScheduleSelection({
   };
   const [internalValue, setInternalValue] =
     useState<SelectedScheduleSlot[]>(defaultValue);
+  const onWeekChangeRef = useRef(onWeekChange);
+  onWeekChangeRef.current = onWeekChange;
   const baseWeekStart = useMemo(
     () => getWeekStartMondayInTimezone(timezone),
     [timezone],
@@ -311,15 +313,16 @@ export function ScheduleSelection({
   }, [baseWeekStart, weekOffset]);
 
   useEffect(() => {
-    if (!weekDates.length || !onWeekChange) {
+    const cb = onWeekChangeRef.current;
+    if (!weekDates.length || !cb) {
       return;
     }
-    onWeekChange({
+    cb({
       weekOffset,
       startDate: weekDates[0].id,
       endDate: weekDates[DAY_COUNT - 1].id,
     });
-  }, [onWeekChange, weekDates, weekOffset]);
+  }, [weekDates, weekOffset]);
 
   const weekRangeLabel = useMemo(() => {
     if (!weekDates.length) {
