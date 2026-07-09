@@ -1,6 +1,6 @@
 'use client';
 
-import type { CommunityExerciseDto, CommunityExerciseSubmissionDto } from '@mezon-tutors/shared';
+import { ROUTES, type CommunityExerciseDto, type CommunityExerciseSubmissionDto } from '@mezon-tutors/shared';
 import { useAtomValue } from 'jotai';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { LoginButton } from '@/components/auth/LoginButton';
 import { Button, Input, Label } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { detectBrowserTimezone } from '@/lib/timezone';
+import { redirectToMezonOAuthLogin } from '@/lib/mezon-oauth-redirect';
 import {
   useMyCommunitySubmissions,
   useSubmitCommunityExercise,
@@ -18,6 +20,7 @@ import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
 type ExerciseSubmissionPanelProps = {
   postId: string;
   exercise: CommunityExerciseDto;
+  submissions?: CommunityExerciseSubmissionDto[];
 };
 
 type McqOption = { id: string; text: string };
@@ -163,7 +166,7 @@ function FillInBlankResult({ segments, submission, correctAnswers }: {
   );
 }
 
-export function ExerciseSubmissionPanel({ postId, exercise }: ExerciseSubmissionPanelProps) {
+export function ExerciseSubmissionPanel({ postId, exercise, submissions: initialSubmissions }: ExerciseSubmissionPanelProps) {
   const t = useTranslations('Community.detail.exercise');
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
@@ -171,7 +174,8 @@ export function ExerciseSubmissionPanel({ postId, exercise }: ExerciseSubmission
   const isLoggedIn = isAuthenticated || Boolean(user);
 
   const submit = useSubmitCommunityExercise(postId);
-  const { data: submissions = [] } = useMyCommunitySubmissions(postId, isLoggedIn);
+  const { data: fetchedSubmissions = [] } = useMyCommunitySubmissions(postId, isLoggedIn && !initialSubmissions);
+  const submissions = initialSubmissions ?? fetchedSubmissions;
 
   const latestSubmission = submissions.length > 0 ? submissions[submissions.length - 1] : undefined;
   const displaySubmission = submit.data ?? latestSubmission;
@@ -299,172 +303,168 @@ export function ExerciseSubmissionPanel({ postId, exercise }: ExerciseSubmission
         </div>
       ) : null}
 
-      {isAuthLoading ? null : !isLoggedIn ? (
-        <div className="mt-6 rounded-xl border border-dashed border-amber-200 bg-white px-4 py-6 text-center">
-          <LoginButton label={t('submit')} />
-        </div>
-      ) : (
-        <div className="mt-6 space-y-4">
-          {exercise.exerciseType === 'MULTIPLE_CHOICE' ? (
-            isSubmitted ? (
-              <MultipleChoiceResult
-                options={options}
-                submission={displaySubmission}
-                correctAnswerIds={correctAnswerIds._root ?? []}
-              />
-            ) : (
-              <div className="space-y-2">
-                <Label>{t('selectOption')}</Label>
-                {options.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setSelectedOption(opt.id)}
-                    className={cn(
-                      'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
-                      selectedOption === opt.id
-                        ? 'border-violet-400 bg-violet-50 text-violet-900'
-                        : 'border-slate-200 bg-white hover:border-violet-200',
-                    )}
-                  >
-                    {opt.text}
-                  </button>
-                ))}
-              </div>
-            )
-          ) : null}
-
-          {exercise.exerciseType === 'FILL_IN_BLANK' ? (
-            isSubmitted ? (
-              <div className="space-y-3">
-                <Label>{t('fillBlank')}</Label>
-                <FillInBlankResult
-                  segments={segments}
-                  submission={displaySubmission}
-                  correctAnswers={correctAnswerIds}
-                />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <Label>{t('fillBlank')}</Label>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-8 text-slate-800">
-                  {segments.map((segment, index) =>
-                    segment.type === 'text' ? (
-                      <span key={`text-${index}`}>{segment.text}</span>
-                    ) : (
-                      <Input
-                        key={segment.id}
-                        value={blankValues[segment.id] ?? ''}
-                        onChange={(e) =>
-                          setBlankValues((prev) => ({ ...prev, [segment.id]: e.target.value }))
-                        }
-                        className="mx-1 inline-block h-8 w-28 align-middle text-sm"
-                        placeholder="..."
-                      />
-                    ),
+      <div className="mt-6 space-y-4">
+        {exercise.exerciseType === 'MULTIPLE_CHOICE' ? (
+          isSubmitted ? (
+            <MultipleChoiceResult
+              options={options}
+              submission={displaySubmission}
+              correctAnswerIds={correctAnswerIds._root ?? []}
+            />
+          ) : (
+            <div className="space-y-2">
+              <Label>{t('selectOption')}</Label>
+              {options.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSelectedOption(opt.id)}
+                  className={cn(
+                    'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
+                    selectedOption === opt.id
+                      ? 'border-violet-400 bg-violet-50 text-violet-900'
+                      : 'border-slate-200 bg-white hover:border-violet-200',
                   )}
-                </div>
-              </div>
-            )
-          ) : null}
+                >
+                  {opt.text}
+                </button>
+              ))}
+            </div>
+          )
+        ) : null}
 
-          {exercise.exerciseType === 'READING' ? (
-            <div className="space-y-4">
+        {exercise.exerciseType === 'FILL_IN_BLANK' ? (
+          isSubmitted ? (
+            <div className="space-y-3">
+              <Label>{t('fillBlank')}</Label>
+              <FillInBlankResult
+                segments={segments}
+                submission={displaySubmission}
+                correctAnswers={correctAnswerIds}
+              />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Label>{t('fillBlank')}</Label>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm leading-8 text-slate-800">
+                {segments.map((segment, index) =>
+                  segment.type === 'text' ? (
+                    <span key={`text-${index}`}>{segment.text}</span>
+                  ) : (
+                    <Input
+                      key={segment.id}
+                      value={blankValues[segment.id] ?? ''}
+                      onChange={(e) =>
+                        setBlankValues((prev) => ({ ...prev, [segment.id]: e.target.value }))
+                      }
+                      className="mx-1 inline-block h-8 w-28 align-middle text-sm"
+                      placeholder="..."
+                    />
+                  ),
+                )}
+              </div>
+            </div>
+          )
+        ) : null}
+
+        {exercise.exerciseType === 'READING' ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <Label className="mb-2 block">{t('readingPrompt')}</Label>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{passage}</p>
+            </div>
+            {passageQuestions.map((question, index) => {
+              const questionAnswer = (displaySubmission?.answer?.questions as { id: string; optionIds: string[] }[] | undefined)
+                ?.find((q) => q.id === question.id);
+              return (
+              isSubmitted ? (
+                <MultipleChoiceResult
+                  key={question.id}
+                  options={question.options}
+                  submission={displaySubmission}
+                  correctAnswerIds={correctAnswerIds[question.id] ?? []}
+                  selectedOptionId={questionAnswer?.optionIds?.[0]}
+                />
+              ) : (
+                <div key={question.id} className="space-y-2">
+                  <Label>
+                    {index + 1}. {question.prompt}
+                  </Label>
+                  {question.options.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() =>
+                        setQuestionAnswers((prev) => ({ ...prev, [question.id]: opt.id }))
+                      }
+                      className={cn(
+                        'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
+                        questionAnswers[question.id] === opt.id
+                          ? 'border-violet-400 bg-violet-50 text-violet-900'
+                          : 'border-slate-200 bg-white hover:border-violet-200',
+                      )}
+                    >
+                      {opt.text}
+                    </button>
+                  ))}
+                </div>
+              )
+            );
+            })}
+          </div>
+        ) : null}
+
+        {exercise.exerciseType === 'LISTENING' ? (
+          <div className="space-y-4">
+            {audioUrl ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <Label className="mb-2 block">{t('readingPrompt')}</Label>
-                <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{passage}</p>
+                <Label className="mb-2 block">{t('listeningPrompt')}</Label>
+                <audio controls src={audioUrl} className="w-full" />
               </div>
-              {passageQuestions.map((question, index) => {
-                const questionAnswer = (displaySubmission?.answer?.questions as { id: string; optionIds: string[] }[] | undefined)
-                  ?.find((q) => q.id === question.id);
-                return (
-                isSubmitted ? (
-                  <MultipleChoiceResult
-                    key={question.id}
-                    options={question.options}
-                    submission={displaySubmission}
-                    correctAnswerIds={correctAnswerIds[question.id] ?? []}
-                    selectedOptionId={questionAnswer?.optionIds?.[0]}
-                  />
-                ) : (
-                  <div key={question.id} className="space-y-2">
-                    <Label>
-                      {index + 1}. {question.prompt}
-                    </Label>
-                    {question.options.map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() =>
-                          setQuestionAnswers((prev) => ({ ...prev, [question.id]: opt.id }))
-                        }
-                        className={cn(
-                          'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
-                          questionAnswers[question.id] === opt.id
-                            ? 'border-violet-400 bg-violet-50 text-violet-900'
-                            : 'border-slate-200 bg-white hover:border-violet-200',
-                        )}
-                      >
-                        {opt.text}
-                      </button>
-                    ))}
-                  </div>
-                )
-              );
-              })}
-            </div>
-          ) : null}
-
-          {exercise.exerciseType === 'LISTENING' ? (
-            <div className="space-y-4">
-              {audioUrl ? (
-                <div className="rounded-xl border border-slate-200 bg-white p-4">
-                  <Label className="mb-2 block">{t('listeningPrompt')}</Label>
-                  <audio controls src={audioUrl} className="w-full" />
+            ) : null}
+            {passageQuestions.map((question, index) => {
+              const questionAnswer = (displaySubmission?.answer?.questions as { id: string; optionIds: string[] }[] | undefined)
+                ?.find((q) => q.id === question.id);
+              return (
+              isSubmitted ? (
+                <MultipleChoiceResult
+                  key={question.id}
+                  options={question.options}
+                  submission={displaySubmission}
+                  correctAnswerIds={correctAnswerIds[question.id] ?? []}
+                  selectedOptionId={questionAnswer?.optionIds?.[0]}
+                />
+              ) : (
+                <div key={question.id} className="space-y-2">
+                  <Label>
+                    {index + 1}. {question.prompt}
+                  </Label>
+                  {question.options.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() =>
+                        setQuestionAnswers((prev) => ({ ...prev, [question.id]: opt.id }))
+                      }
+                      className={cn(
+                        'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
+                        questionAnswers[question.id] === opt.id
+                          ? 'border-violet-400 bg-violet-50 text-violet-900'
+                          : 'border-slate-200 bg-white hover:border-violet-200',
+                      )}
+                    >
+                      {opt.text}
+                    </button>
+                  ))}
                 </div>
-              ) : null}
-              {passageQuestions.map((question, index) => {
-                const questionAnswer = (displaySubmission?.answer?.questions as { id: string; optionIds: string[] }[] | undefined)
-                  ?.find((q) => q.id === question.id);
-                return (
-                isSubmitted ? (
-                  <MultipleChoiceResult
-                    key={question.id}
-                    options={question.options}
-                    submission={displaySubmission}
-                    correctAnswerIds={correctAnswerIds[question.id] ?? []}
-                    selectedOptionId={questionAnswer?.optionIds?.[0]}
-                  />
-                ) : (
-                  <div key={question.id} className="space-y-2">
-                    <Label>
-                      {index + 1}. {question.prompt}
-                    </Label>
-                    {question.options.map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() =>
-                          setQuestionAnswers((prev) => ({ ...prev, [question.id]: opt.id }))
-                        }
-                        className={cn(
-                          'flex w-full rounded-xl border px-4 py-3 text-left text-sm transition-colors',
-                          questionAnswers[question.id] === opt.id
-                            ? 'border-violet-400 bg-violet-50 text-violet-900'
-                            : 'border-slate-200 bg-white hover:border-violet-200',
-                        )}
-                      >
-                        {opt.text}
-                      </button>
-                    ))}
-                  </div>
-                )
-              );
-              })}
-            </div>
-          ) : null}
+              )
+            );
+            })}
+          </div>
+        ) : null}
 
-          {!isSubmitted ? (
+        {!isSubmitted && !isAuthLoading ? (
+          isLoggedIn ? (
             <Button
               type="button"
               variant="gradient"
@@ -481,9 +481,18 @@ export function ExerciseSubmissionPanel({ postId, exercise }: ExerciseSubmission
                 t('submit')
               )}
             </Button>
-          ) : null}
-        </div>
-      )}
+          ) : (
+            <Button
+              type="button"
+              variant="gradient"
+              className="rounded-full"
+              onClick={() => redirectToMezonOAuthLogin(detectBrowserTimezone(), ROUTES.COMMUNITY.DETAIL(postId))}
+            >
+              {t('loginToSubmit')}
+            </Button>
+          )
+        ) : null}
+      </div>
     </section>
   );
 }

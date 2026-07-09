@@ -16,8 +16,9 @@ import { CommunityCreatePostModal } from '@/components/community/CommunityCreate
 import { CommunityFeedToolbar, getActiveTabFromParams } from '@/components/community/CommunityFeedToolbar';
 import type { CommunityFeedTab } from '@/components/community/CommunityFeedToolbar';
 import { CommunityPostCard } from '@/components/community/CommunityPostCard';
-import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
-import { useCommunityFeed, useCommunitySearch } from '@/services';
+import { CommunitySearchModal } from '@/components/community/CommunitySearchModal';
+import { Avatar, AvatarFallback, AvatarImage, Button, toast } from '@/components/ui';
+import { useCommunityFeed } from '@/services';
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
 
 type CommunityFeedPageProps = {
@@ -38,19 +39,14 @@ export default function CommunityFeedPage({
   const isAuthLoading = useAtomValue(isLoadingAtom);
   const isLoggedIn = isAuthenticated || Boolean(user);
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
-  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(searchParams.get('create') === '1');
   const [createType, setCreateType] = useState<CommunityPostType>('POST');
 
   const sort = (searchParams.get('sort') as CommunityFeedSort) || 'latest';
   const typeParam = searchParams.get('type') as CommunityPostType | null;
-  const activeTab = getActiveTabFromParams(typeParam);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const feedParam = searchParams.get('feed');
+  const activeTab = feedParam === 'following' ? 'following' : getActiveTabFromParams(typeParam);
 
   useEffect(() => {
     if (searchParams.get('create') !== '1') return;
@@ -64,38 +60,24 @@ export default function CommunityFeedPage({
     setCreateOpen(true);
   }, [searchParams, isAuthLoading, isLoggedIn, router]);
 
-  const isSearching = debouncedSearch.trim().length > 0;
-
+  const isFollowingTab = activeTab === 'following';
   const feedQuery = useCommunityFeed(
     {
       sort,
-      type: typeParam ?? undefined,
+      type: isFollowingTab ? undefined : (typeParam ?? undefined),
+      following: isFollowingTab || undefined,
       limit: 10,
     },
-    !isSearching,
-  );
-
-  const searchQueryResult = useCommunitySearch(
-    {
-      q: debouncedSearch.trim() || undefined,
-      type: typeParam ?? undefined,
-      page: 1,
-      limit: 20,
-    },
-    isSearching,
   );
 
   const posts = useMemo(() => {
-    if (isSearching) return searchQueryResult.data?.data ?? [];
     if (feedQuery.data?.pages?.length) {
       return feedQuery.data.pages.flatMap((p) => p.data);
     }
     return initialPosts;
-  }, [isSearching, searchQueryResult.data, feedQuery.data, initialPosts]);
+  }, [feedQuery.data, initialPosts]);
 
-  const hasMore = isSearching
-    ? (searchQueryResult.data?.meta.hasNext ?? false)
-    : (feedQuery.hasNextPage ?? initialHasMore);
+  const hasMore = feedQuery.hasNextPage ?? initialHasMore;
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -111,8 +93,14 @@ export default function CommunityFeedPage({
   );
 
   const handleTabChange = (tab: CommunityFeedTab, type?: CommunityPostType) => {
-    updateParams({ type: type ?? null });
+    if (tab === 'following') {
+      updateParams({ type: null, feed: 'following' });
+    } else {
+      updateParams({ type: type ?? null, feed: null });
+    }
   };
+
+  const handleSearchOpen = () => setSearchOpen(true);
 
   const handleCreateOpenChange = (open: boolean) => {
     setCreateOpen(open);
@@ -128,7 +116,7 @@ export default function CommunityFeedPage({
   const handleCreateClick = (type?: CommunityPostType) => {
     if (isAuthLoading) return;
     if (!isLoggedIn) {
-      router.push(`/?login=required&next=${encodeURIComponent(ROUTES.COMMUNITY.INDEX)}`);
+      toast.error(t('loginRequired'));
       return;
     }
     setCreateType(type ?? 'POST');
@@ -136,19 +124,15 @@ export default function CommunityFeedPage({
   };
 
   const loadMore = () => {
-    if (!isSearching) feedQuery.fetchNextPage();
+    feedQuery.fetchNextPage();
   };
 
   return (
     <div className="min-h-screen bg-muted">
       <CommunityFeedToolbar
         activeTab={activeTab}
-        searchQuery={searchQuery}
-        isSearching={
-          (feedQuery.isFetching || searchQueryResult.isFetching) && !feedQuery.isFetchingNextPage
-        }
         onTabChange={handleTabChange}
-        onSearchChange={setSearchQuery}
+        onSearchOpen={handleSearchOpen}
       />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 my-6 ">
@@ -170,7 +154,7 @@ export default function CommunityFeedPage({
               </div>
             )}
 
-            {!isSearching && hasMore ? (
+            {hasMore ? (
               <div className="pt-3 text-center border-t border-neutral-200">
                 <Button
                   variant="ghost"
@@ -197,7 +181,7 @@ export default function CommunityFeedPage({
                 <div className="flex items-center gap-3 pb-4">
                   <Avatar className="size-10 shrink-0">
                     <AvatarImage src={user?.avatar ?? undefined} alt="" />
-                    <AvatarFallback className="bg-amber-300 text-sm font-semibold text-white">
+                    <AvatarFallback className="bg-violet-500 text-sm font-semibold text-white">
                       {displayName ? displayName[0].toUpperCase() : 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -217,6 +201,11 @@ export default function CommunityFeedPage({
         open={createOpen}
         onOpenChange={handleCreateOpenChange}
         defaultType={createType}
+      />
+
+      <CommunitySearchModal
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
       />
     </div>
   );

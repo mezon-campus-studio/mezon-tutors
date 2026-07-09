@@ -20,8 +20,9 @@ import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import {
   useCommunityEngagement,
   useDeleteCommunityPost,
-  useToggleCommunityBookmark,
+  useToggleCommunityFollow,
   useToggleCommunityUpvote,
+  useCommunityFollowingIds,
 } from '@/services';
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
 
@@ -49,15 +50,16 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   }, [searchParams]);
 
   const { data: engagement } = useCommunityEngagement(post.id, !isAuthLoading && isLoggedIn);
+  const { data: followingIds = [] } = useCommunityFollowingIds(isLoggedIn && !isAuthLoading);
   const toggleUpvote = useToggleCommunityUpvote(post.id);
-  const toggleBookmark = useToggleCommunityBookmark(post.id);
+  const toggleFollow = useToggleCommunityFollow();
   const deletePost = useDeleteCommunityPost();
 
   const upvoteCount = engagement?.upvoteCount ?? post.upvoteCount;
   const commentCount = engagement?.commentCount ?? post.commentCount;
   const isUpvoted = engagement?.isUpvoted ?? post.isUpvoted ?? false;
-  const isBookmarked = engagement?.isBookmarked ?? post.isBookmarked ?? false;
-  const isMine = post.isMine ?? user?.id === post.author.id;
+  const isMine = user?.id === post.author.id;
+  const isFollowing = followingIds.includes(post.author.id);
 
   const dateLabel = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
     day: 'numeric',
@@ -73,12 +75,12 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
     toggleUpvote.mutate(undefined, { onError: () => toast.error(et('upvoteFailed')) });
   };
 
-  const handleBookmark = () => {
+  const handleFollow = () => {
     if (!isLoggedIn) {
       toast.error(et('loginToInteract'));
       return;
     }
-    toggleBookmark.mutate();
+    toggleFollow.mutate(post.author.id);
   };
 
   const handleDelete = () => {
@@ -95,17 +97,25 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   return (
     <main className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_30%)]">
       <div className="relative mx-auto max-w-3xl px-6 py-8 sm:py-12">
-        <Link
-          href={ROUTES.COMMUNITY.INDEX}
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-violet-700"
-        >
-          <ArrowLeft className="size-4" />
-          {t('back')}
-        </Link>
-
         <article>
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <CommunityPostTypeBadge type={post.type} />
+          <div className='flex justify-between'>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <CommunityPostTypeBadge type={post.type} />
+            </div>
+
+            {isMine ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-full"
+                onClick={handleDelete}
+                disabled={deletePost.isPending}
+              >
+                <Trash2 className="mr-1 size-4" />
+                {t('delete')}
+              </Button>
+            ) : null}
           </div>
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-y border-violet-100 py-4">
@@ -123,13 +133,20 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
               upvoteCount={upvoteCount}
               commentCount={commentCount}
               isUpvoted={isUpvoted}
-              isBookmarked={isBookmarked}
               isUpvotePending={toggleUpvote.isPending}
-              isBookmarkPending={toggleBookmark.isPending}
               onUpvote={handleUpvote}
-              onBookmark={handleBookmark}
               onOpenComments={() => setDrawerOpen(true)}
             />
+            {!isMine ? (
+              <Button
+                onClick={handleFollow}
+                variant={isFollowing ? "outline" : "gradient"}
+                disabled={toggleFollow.isPending}
+                className='rounded-full px-3 py-2'
+              >
+                {isFollowing ? t('following') : t('follow')}
+              </Button>
+            ) : null}
           </div>
 
           <div className="prose prose-slate mt-8 max-w-none whitespace-pre-wrap text-base leading-8 text-slate-700">
@@ -172,24 +189,9 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
               upvoteCount={upvoteCount}
               commentCount={commentCount}
               isUpvoted={isUpvoted}
-              isBookmarked={isBookmarked}
               onUpvote={handleUpvote}
-              onBookmark={handleBookmark}
               onOpenComments={() => setDrawerOpen(true)}
             />
-            {isMine ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={handleDelete}
-                disabled={deletePost.isPending}
-              >
-                <Trash2 className="mr-1 size-4" />
-                {t('delete')}
-              </Button>
-            ) : null}
           </div>
         </article>
       </div>

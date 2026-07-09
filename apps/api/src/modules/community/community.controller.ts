@@ -22,7 +22,7 @@ import type {
   CommunityPostListItemDto,
   CommunitySearchResultDto,
   CommunityTagListItemDto,
-  ToggleCommunityBookmarkResultDto,
+  ToggleCommunityFollowResultDto,
   ToggleCommunityUpvoteResultDto,
 } from '@mezon-tutors/shared';
 import type { CommunityFeedSort } from '@mezon-tutors/shared';
@@ -59,6 +59,7 @@ export class PublicCommunityController {
       type: query.type as CommunityPostType | undefined,
       tag: query.tag,
       authorId: query.authorId,
+      following: query.following,
       cursor: query.cursor,
       limit: query.limit,
       userId: user?.sub,
@@ -179,21 +180,21 @@ export class UserCommunityController {
     return this.communityService.togglePostUpvote(user.sub, id);
   }
 
-  @Post('posts/:id/bookmark')
-  @ApiOperation({ summary: 'Toggle bookmark on a community post' })
-  toggleBookmark(
+  @Post('users/:id/follow')
+  @ApiOperation({ summary: 'Toggle follow on a user' })
+  toggleFollow(
     @Req() req: Request,
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<ToggleCommunityBookmarkResultDto> {
+  ): Promise<ToggleCommunityFollowResultDto> {
     const user = req.user as AuthUserPayload;
-    return this.communityService.toggleBookmark(user.sub, id);
+    return this.communityService.toggleFollow(user.sub, id);
   }
 
-  @Get('bookmarks')
-  @ApiOperation({ summary: 'List bookmarked posts' })
-  listBookmarks(@Req() req: Request): Promise<CommunityPostListItemDto[]> {
+  @Get('following/ids')
+  @ApiOperation({ summary: 'Get IDs of users I follow' })
+  getFollowingIds(@Req() req: Request): Promise<string[]> {
     const user = req.user as AuthUserPayload;
-    return this.communityService.listBookmarks(user.sub);
+    return this.communityService.getFollowingUserIds(user.sub);
   }
 
   @Post('posts/:id/comments')

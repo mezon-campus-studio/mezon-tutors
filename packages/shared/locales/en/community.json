@@ -32,6 +32,7 @@
       },
       "loadMore": "Load more",
       "loading": "Loading...",
+      "loginRequired": "Please login to continue",
       "empty": {
         "title": "No posts yet",
         "description": "Be the first to share something with the community."
@@ -75,6 +76,8 @@
       "back": "Back to community",
       "publishedAt": "{date}",
       "by": "by {name}",
+      "follow": "Follow",
+      "following": "Following",
       "delete": "Delete post",
       "deleteConfirm": "Are you sure you want to delete this post?",
       "deleted": "Post deleted",
@@ -82,7 +85,8 @@
       "exercise": {
         "submissions": "{count} people tried",
         "explanation": "Explanation",
-        "submit": "Login to submit answer",
+        "submit": "Submit answer",
+        "loginToSubmit": "Login to submit answer",
         "submitting": "Submitting...",
         "submitted": "Answer submitted",
         "alreadySubmitted": "You have already submitted this exercise",

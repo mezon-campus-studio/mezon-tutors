@@ -8,13 +8,15 @@ import { ArrowBigUp, Dumbbell, FileEdit, Hash, HelpCircle, MessageSquare } from 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import { useAtomValue } from 'jotai';
 import {
   ImageAttachmentGallery,
   toImageGalleryItems,
 } from '@/components/common/ImageAttachmentGallery';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { useCommunityPost, useToggleCommunityUpvote } from '@/services';
+import { useCommunityPost, useMyCommunitySubmissions, useToggleCommunityUpvote } from '@/services';
+import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
 import { ExerciseSubmissionPanel } from './ExerciseSubmissionPanel';
 
 type CommunityPostCardProps = {
@@ -65,6 +67,10 @@ function formatRelativeTime(iso: string, locale: string) {
 export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
   const locale = useLocale();
   const router = useRouter();
+  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const isAuthLoading = useAtomValue(isLoadingAtom);
+  const user = useAtomValue(userAtom);
+  const isLoggedIn = isAuthenticated || Boolean(user);
   const accent = getAvatarAccent(post.author.username);
   const typeConfig = TYPE_CONFIG[post.type];
   const toggleUpvote = useToggleCommunityUpvote(post.id);
@@ -72,6 +78,7 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
   const isLongContent = post.content.length > 200;
   const isExercise = post.type === 'EXERCISE';
   const { data: postDetail } = useCommunityPost(post.id, isExercise);
+  const { data: submissions = [] } = useMyCommunitySubmissions(post.id, isExercise && isLoggedIn);
 
   const handleCardClick = () => {
     router.push(ROUTES.COMMUNITY.DETAIL(post.id));
@@ -127,7 +134,7 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
 
         {isExercise && postDetail?.exercise ? (
           <div className="mt-3" onClick={(e) => e.stopPropagation()} role="presentation">
-            <ExerciseSubmissionPanel postId={post.id} exercise={postDetail.exercise} />
+            <ExerciseSubmissionPanel postId={post.id} exercise={postDetail.exercise} submissions={submissions} />
           </div>
         ) : null}
 

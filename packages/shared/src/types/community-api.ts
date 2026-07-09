@@ -59,7 +59,6 @@ export type CommunityPostListItemDto = {
   publishedAt: string;
   upvoteCount: number;
   commentCount: number;
-  bookmarkCount: number;
   submissionCount: number;
   tags: CommunityTagDto[];
   author: CommunityAuthorDto;
@@ -69,7 +68,6 @@ export type CommunityPostListItemDto = {
     'exerciseType' | 'difficulty'
   > | null;
   isUpvoted?: boolean;
-  isBookmarked?: boolean;
   isMine?: boolean;
 };
 
@@ -106,7 +104,6 @@ export type CommunityEngagementDto = {
   upvoteCount: number;
   commentCount: number;
   isUpvoted: boolean;
-  isBookmarked: boolean;
 };
 
 export type ToggleCommunityUpvoteResultDto = {
@@ -114,9 +111,8 @@ export type ToggleCommunityUpvoteResultDto = {
   upvoteCount: number;
 };
 
-export type ToggleCommunityBookmarkResultDto = {
-  bookmarked: boolean;
-  bookmarkCount: number;
+export type ToggleCommunityFollowResultDto = {
+  following: boolean;
 };
 
 export type CommunityExerciseSubmissionDto = {

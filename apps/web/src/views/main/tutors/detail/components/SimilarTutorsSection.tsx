@@ -18,7 +18,6 @@ export function SimilarTutorsSection({ tutor }: SimilarTutorsSectionProps) {
   const { data, isPending, isError } = useGetVerifiedTutors(1, 5, {
     sortBy: ETutorSortBy.BEST_RATING,
     subject: tutor.subject as ESubject,
-    country: tutor.country as ECountry,
     currency,
   });
 

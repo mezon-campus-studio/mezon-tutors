@@ -5,10 +5,10 @@ function buildOAuthStartUrl(path: string, params: Record<string, string>) {
   return `${API_BASE}${path}?${search.toString()}`;
 }
 
-export function redirectToMezonOAuthLogin(timezone: string) {
-  const returnTo = window.location.pathname || "/";
+export function redirectToMezonOAuthLogin(timezone: string, returnTo?: string) {
+  const redirectPath = returnTo || window.location.pathname || "/";
   window.location.href = buildOAuthStartUrl("/auth/mezon-oauth/start", {
-    returnTo,
+    returnTo: redirectPath,
     timezone,
   });
 }

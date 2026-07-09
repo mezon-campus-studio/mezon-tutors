@@ -7,6 +7,7 @@ export const communityQueryKey = {
     type?: CommunityPostType;
     tag?: string;
     authorId?: string;
+    following?: boolean;
   }) => [...communityQueryKey.all, 'feed', params ?? {}] as const,
   search: (params?: Record<string, unknown>) =>
     [...communityQueryKey.all, 'search', params ?? {}] as const,
@@ -14,7 +15,7 @@ export const communityQueryKey = {
   tags: () => [...communityQueryKey.all, 'tags'] as const,
   comments: (postId: string) => [...communityQueryKey.all, 'comments', postId] as const,
   engagement: (postId: string) => [...communityQueryKey.all, 'engagement', postId] as const,
-  bookmarks: () => [...communityQueryKey.all, 'bookmarks'] as const,
+  following: () => [...communityQueryKey.all, 'following'] as const,
   mySubmissions: (postId: string) =>
     [...communityQueryKey.all, 'submissions', postId] as const,
 };

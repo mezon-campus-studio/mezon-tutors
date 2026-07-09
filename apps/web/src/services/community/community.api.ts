@@ -13,7 +13,7 @@ import type {
   CreateCommunityPostPayload,
   CreateCommunityReportPayload,
   CreateCommunitySubmissionPayload,
-  ToggleCommunityBookmarkResultDto,
+  ToggleCommunityFollowResultDto,
   ToggleCommunityUpvoteResultDto,
   UpdateCommunityPostPayload,
 } from '@mezon-tutors/shared';
@@ -22,6 +22,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from '@tanstack/react-query';
 import { apiClient, publicApiClient } from '@/services/api-client';
 import { communityQueryKey } from './community.qkey';
@@ -34,6 +35,7 @@ export const communityApi = {
     type?: CommunityPostType;
     tag?: string;
     authorId?: string;
+    following?: boolean;
     cursor?: string;
     limit?: number;
   }) => apiClient.get<CommunityFeedResultDto>(`${BASE}/feed`, { params }),
@@ -70,11 +72,11 @@ export const communityApi = {
   toggleUpvote: (postId: string) =>
     apiClient.post<ToggleCommunityUpvoteResultDto>(`${BASE}/posts/${postId}/upvote`),
 
-  toggleBookmark: (postId: string) =>
-    apiClient.post<ToggleCommunityBookmarkResultDto>(`${BASE}/posts/${postId}/bookmark`),
+  toggleFollow: (userId: string) =>
+    apiClient.post<ToggleCommunityFollowResultDto>(`${BASE}/users/${userId}/follow`),
 
-  listBookmarks: () =>
-    apiClient.get<CommunityPostListItemDto[]>(`${BASE}/bookmarks`),
+  getFollowingIds: () =>
+    apiClient.get<string[]>(`${BASE}/following/ids`),
 
   createComment: (postId: string, payload: CreateCommunityCommentPayload) =>
     apiClient.post<CommunityCommentDto>(`${BASE}/posts/${postId}/comments`, payload),
@@ -110,6 +112,7 @@ export const useCommunityFeed = (
     type?: CommunityPostType;
     tag?: string;
     authorId?: string;
+    following?: boolean;
     limit?: number;
   },
   enabled = true,
@@ -122,6 +125,7 @@ export const useCommunityFeed = (
     getNextPageParam: (last) => last.meta.nextCursor ?? undefined,
     enabled,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
 export const useCommunitySearch = (
@@ -226,32 +230,24 @@ export const useToggleCommunityUpvote = (postId: string) => {
   });
 };
 
-export const useToggleCommunityBookmark = (postId: string) => {
+export const useToggleCommunityFollow = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => communityApi.toggleBookmark(postId),
-    onSuccess: (data) => {
-      queryClient.setQueryData(
-        communityQueryKey.engagement(postId),
-        (current: CommunityEngagementDto | undefined) =>
-          current
-            ? { ...current, isBookmarked: data.bookmarked, bookmarkCount: data.bookmarkCount }
-            : current,
-      );
-      queryClient.setQueryData(
-        communityQueryKey.detail(postId),
-        (current: CommunityPostDetailDto | undefined) =>
-          current
-            ? {
-                ...current,
-                bookmarkCount: data.bookmarkCount,
-                isBookmarked: data.bookmarked,
-              }
-            : current,
-      );
+    mutationFn: (userId: string) => communityApi.toggleFollow(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKey.following() });
+      queryClient.invalidateQueries({ queryKey: communityQueryKey.feed() });
     },
   });
 };
+
+export const useCommunityFollowingIds = (enabled = true) =>
+  useQuery({
+    queryKey: communityQueryKey.following(),
+    queryFn: () => communityApi.getFollowingIds(),
+    enabled,
+    staleTime: 60_000,
+  });
 
 export const useCreateCommunityComment = (postId: string) => {
   const queryClient = useQueryClient();
@@ -316,9 +312,4 @@ export const useMyCommunitySubmissions = (postId: string, enabled = true) =>
     enabled: enabled && Boolean(postId),
   });
 
-export const useCommunityBookmarks = (enabled = true) =>
-  useQuery({
-    queryKey: communityQueryKey.bookmarks(),
-    queryFn: () => communityApi.listBookmarks(),
-    enabled,
-  });
+

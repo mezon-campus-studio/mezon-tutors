@@ -32,6 +32,7 @@
       },
       "loadMore": "Xem thêm",
       "loading": "Đang tải...",
+      "loginRequired": "Vui lòng đăng nhập để tiếp tục",
       "empty": {
         "title": "Chưa có bài viết",
         "description": "Hãy là người đầu tiên chia sẻ với cộng đồng."
@@ -75,6 +76,8 @@
       "back": "Về cộng đồng",
       "publishedAt": "{date}",
       "by": "bởi {name}",
+      "follow": "Theo dõi",
+      "following": "Đang theo dõi",
       "delete": "Xóa bài viết",
       "deleteConfirm": "Bạn có chắc muốn xóa bài viết này?",
       "deleted": "Đã xóa bài viết",
@@ -82,7 +85,8 @@
       "exercise": {
         "submissions": "{count} người đã làm",
         "explanation": "Giải thích",
-        "submit": "Đăng nhập để nộp bài",
+        "submit": "Nộp bài",
+        "loginToSubmit": "Đăng nhập để nộp bài",
         "submitting": "Đang nộp...",
         "submitted": "Đã nộp bài",
         "alreadySubmitted": "Bạn đã nộp bài tập này rồi",
@@ -174,7 +178,7 @@
         "placeholderPost": "Chia sẻ trải nghiệm học tập của bạn...",
         "placeholderQuestion": "Bạn muốn hỏi gì?",
         "placeholderExercise": "Mô tả bài tập...",
-        "submit": "Nộp",
+        "submit": "Đăng",
         "close": "Đóng"
       },
       "errors": {

@@ -3,6 +3,7 @@
 import {
   CLOUDINARY_FOLDER,
   COMMUNITY_CONTENT_LIMITS,
+  ROUTES,
   type CommunityPostType,
   type CreateCommunityPostPayload,
   type CommunityExerciseType,
@@ -11,6 +12,7 @@ import {
 import { useAtomValue } from 'jotai';
 import { Hash, ImagePlus, Loader2, Trash2, Vote, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -70,6 +72,7 @@ export function CommunityCreatePostModal({ open, onOpenChange, defaultType = 'PO
   const tp = useTranslations('Community.postTypes');
   const tex = useTranslations('Community.exerciseTypes');
   const tdiff = useTranslations('Community.difficulty');
+  const router = useRouter();
   const user = useAtomValue(userAtom);
   const createPost = useCreateCommunityPost();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,9 +166,10 @@ export function CommunityCreatePostModal({ open, onOpenChange, defaultType = 'PO
     };
 
     createPost.mutate(payload, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         toast.success(t('success'));
         onOpenChange(false);
+        router.push(ROUTES.COMMUNITY.DETAIL(data.id));
       },
       onError: () => toast.error(t('failed')),
     });

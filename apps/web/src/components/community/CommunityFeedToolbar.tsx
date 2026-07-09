@@ -1,7 +1,7 @@
 'use client';
 
 import { type CommunityPostType } from '@mezon-tutors/shared';
-import { Loader2, PenLine, Search } from 'lucide-react';
+import { PenLine, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +12,7 @@ const TABS: Array<{
   type?: CommunityPostType;
   disabled?: boolean;
 }> = [
-  { id: 'following', disabled: true },
+  { id: 'following' },
   { id: 'for_you' },
   { id: 'post', type: 'POST' },
   { id: 'exercise', type: 'EXERCISE' },
@@ -21,10 +21,8 @@ const TABS: Array<{
 
 type CommunityFeedToolbarProps = {
   activeTab: CommunityFeedTab;
-  searchQuery: string;
-  isSearching?: boolean;
   onTabChange: (tab: CommunityFeedTab, type?: CommunityPostType) => void;
-  onSearchChange: (query: string) => void;
+  onSearchOpen: () => void;
   onCreateClick?: () => void;
 };
 
@@ -39,10 +37,8 @@ export function getActiveTabFromParams(
 
 export function CommunityFeedToolbar({
   activeTab,
-  searchQuery,
-  isSearching,
   onTabChange,
-  onSearchChange,
+  onSearchOpen,
   onCreateClick,
 }: CommunityFeedToolbarProps) {
   const t = useTranslations('Community.feed');
@@ -94,19 +90,16 @@ export function CommunityFeedToolbar({
               <PenLine className="size-[18px] stroke-[1.75]" />
             </button>
           ) : null}
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-primary" />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={t('searchByKeyword')}
-              className="h-9 w-full min-w-[180px] rounded-full border border-primary bg-white pl-9 pr-3 text-sm text-neutral-800 outline-none placeholder:text-neutral-400 focus:border-primary sm:w-52"
-            />
-            {isSearching ? (
-              <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-primary" />
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={onSearchOpen}
+            className="relative cursor-pointer"
+          >
+            <div className="h-9 w-full min-w-[180px] rounded-full border border-primary bg-white pl-9 pr-3 text-sm text-neutral-400 sm:w-52 flex items-center">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-primary shrink-0" />
+              <span className="truncate">{t('searchByKeyword')}</span>
+            </div>
+          </button>
         </div>
         </div>
       </div>
