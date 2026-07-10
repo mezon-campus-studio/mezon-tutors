@@ -40,16 +40,20 @@ export default function CommunityFeedPage({
   const isLoggedIn = isAuthenticated || Boolean(user);
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(searchParams.get('create') === '1');
+  const [createOpen, setCreateOpen] = useState(false);
   const [createType, setCreateType] = useState<CommunityPostType>('POST');
 
-  const sort = (searchParams.get('sort') as CommunityFeedSort) || 'latest';
-  const typeParam = searchParams.get('type') as CommunityPostType | null;
-  const feedParam = searchParams.get('feed');
-  const activeTab = feedParam === 'following' ? 'following' : getActiveTabFromParams(typeParam);
+  const sort = useMemo(() => (searchParams.get('sort') as CommunityFeedSort) || 'latest', [searchParams]);
+  const typeParam = useMemo(() => searchParams.get('type') as CommunityPostType | null, [searchParams]);
+  const feedParam = useMemo(() => searchParams.get('feed'), [searchParams]);
+  const createParam = useMemo(() => searchParams.get('create'), [searchParams]);
+  const activeTab = useMemo(
+    () => feedParam === 'following' ? 'following' : getActiveTabFromParams(typeParam),
+    [feedParam, typeParam],
+  );
 
   useEffect(() => {
-    if (searchParams.get('create') !== '1') return;
+    if (createParam !== '1') return;
     if (isAuthLoading) return;
     if (!isLoggedIn) {
       router.replace(
@@ -58,17 +62,19 @@ export default function CommunityFeedPage({
       return;
     }
     setCreateOpen(true);
-  }, [searchParams, isAuthLoading, isLoggedIn, router]);
+  }, [createParam, isAuthLoading, isLoggedIn, router]);
 
   const isFollowingTab = activeTab === 'following';
-  const feedQuery = useCommunityFeed(
-    {
+  const feedParams = useMemo(
+    () => ({
       sort,
       type: isFollowingTab ? undefined : (typeParam ?? undefined),
       following: isFollowingTab || undefined,
       limit: 10,
-    },
+    }),
+    [sort, typeParam, isFollowingTab],
   );
+  const feedQuery = useCommunityFeed(feedParams);
 
   const posts = useMemo(() => {
     if (feedQuery.data?.pages?.length) {
@@ -81,7 +87,7 @@ export default function CommunityFeedPage({
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       for (const [key, value] of Object.entries(updates)) {
         if (value) params.set(key, value);
         else params.delete(key);
@@ -89,7 +95,7 @@ export default function CommunityFeedPage({
       const qs = params.toString();
       router.replace(qs ? `${ROUTES.COMMUNITY.INDEX}?${qs}` : ROUTES.COMMUNITY.INDEX);
     },
-    [router, searchParams],
+    [router],
   );
 
   const handleTabChange = (tab: CommunityFeedTab, type?: CommunityPostType) => {
@@ -104,7 +110,7 @@ export default function CommunityFeedPage({
 
   const handleCreateOpenChange = (open: boolean) => {
     setCreateOpen(open);
-    if (!open && searchParams.get('create')) {
+    if (!open && createParam) {
       updateParams({ create: null });
     }
   };

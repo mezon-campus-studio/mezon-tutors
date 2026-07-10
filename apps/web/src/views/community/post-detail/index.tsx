@@ -2,11 +2,11 @@
 
 import { ROUTES, type CommunityPostDetailDto } from '@mezon-tutors/shared';
 import { useAtomValue } from 'jotai';
-import { ArrowLeft, Hash, Trash2 } from 'lucide-react';
+import { Hash, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   ImageAttachmentGallery,
@@ -19,10 +19,10 @@ import { ExerciseSubmissionPanel } from '@/components/community/ExerciseSubmissi
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import {
   useCommunityEngagement,
+  useCommunityFollowingIds,
   useDeleteCommunityPost,
   useToggleCommunityFollow,
   useToggleCommunityUpvote,
-  useCommunityFollowingIds,
 } from '@/services';
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
 
@@ -41,50 +41,61 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   const user = useAtomValue(userAtom);
   const isLoggedIn = isAuthenticated || Boolean(user);
 
-  const [drawerOpen, setDrawerOpen] = useState(searchParams.get('comments') === '1');
+  const commentsParam = useMemo(() => searchParams.get('comments'), [searchParams]);
+  const [drawerOpen, setDrawerOpen] = useState(commentsParam === '1');
 
   useEffect(() => {
-    if (searchParams.get('comments') === '1') {
+    if (commentsParam === '1') {
       setDrawerOpen(true);
     }
-  }, [searchParams]);
+  }, [commentsParam]);
 
-  const { data: engagement } = useCommunityEngagement(post.id, !isAuthLoading && isLoggedIn);
-  const { data: followingIds = [] } = useCommunityFollowingIds(isLoggedIn && !isAuthLoading);
+  const { data: engagement } = useCommunityEngagement(
+    post.id,
+    !isAuthLoading && isLoggedIn,
+  );
+  const { data: followingIds = [], isLoading: isFollowingLoading } =
+    useCommunityFollowingIds(isLoggedIn && !isAuthLoading);
   const toggleUpvote = useToggleCommunityUpvote(post.id);
   const toggleFollow = useToggleCommunityFollow();
   const deletePost = useDeleteCommunityPost();
 
+  const isMine = user?.id === post.author.id;
+  const isFollowing = followingIds.includes(post.author.id);
   const upvoteCount = engagement?.upvoteCount ?? post.upvoteCount;
   const commentCount = engagement?.commentCount ?? post.commentCount;
   const isUpvoted = engagement?.isUpvoted ?? post.isUpvoted ?? false;
-  const isMine = user?.id === post.author.id;
-  const isFollowing = followingIds.includes(post.author.id);
 
-  const dateLabel = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(post.publishedAt));
+  const dateLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(new Date(post.publishedAt)),
+    [locale, post.publishedAt],
+  );
 
-  const handleUpvote = () => {
+  const handleUpvote = useCallback(() => {
     if (!isLoggedIn) {
       toast.error(et('loginToInteract'));
       return;
     }
-    toggleUpvote.mutate(undefined, { onError: () => toast.error(et('upvoteFailed')) });
-  };
+    toggleUpvote.mutate(undefined, {
+      onError: () => toast.error(et("upvoteFailed")),
+    });
+  }, [isLoggedIn, toggleUpvote, et]);
 
-  const handleFollow = () => {
+  const handleFollow = useCallback(() => {
     if (!isLoggedIn) {
       toast.error(et('loginToInteract'));
       return;
     }
     toggleFollow.mutate(post.author.id);
-  };
+  }, [isLoggedIn, toggleFollow, post.author.id, et]);
 
-  const handleDelete = () => {
-    if (!window.confirm(t('deleteConfirm'))) return;
+  const handleDelete = useCallback(() => {
+    if (!window.confirm(t("deleteConfirm"))) return;
     deletePost.mutate(post.id, {
       onSuccess: () => {
         toast.success(t('deleted'));
@@ -92,7 +103,9 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
       },
       onError: () => toast.error(t('deleteFailed')),
     });
-  };
+  }, [t, deletePost, post.id, router]);
+
+  const handleOpenComments = useCallback(() => setDrawerOpen(true), []);
 
   return (
     <main className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_30%)]">
@@ -122,31 +135,38 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
             <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
               <span className="inline-flex items-center gap-2 font-medium text-slate-700">
                 <Avatar className="size-9 border border-violet-100">
-                  <AvatarImage src={post.author.avatar} alt={post.author.username} />
-                  <AvatarFallback>{post.author.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarImage
+                    src={post.author.avatar}
+                    alt={post.author.username}
+                  />
+                  <AvatarFallback>
+                    {post.author.username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 {t('by', { name: post.author.username })}
               </span>
               <span>{t('publishedAt', { date: dateLabel })}</span>
             </div>
-            <CommunityEngagementButtons
-              upvoteCount={upvoteCount}
-              commentCount={commentCount}
-              isUpvoted={isUpvoted}
-              isUpvotePending={toggleUpvote.isPending}
-              onUpvote={handleUpvote}
-              onOpenComments={() => setDrawerOpen(true)}
-            />
-            {!isMine ? (
-              <Button
-                onClick={handleFollow}
-                variant={isFollowing ? "outline" : "gradient"}
-                disabled={toggleFollow.isPending}
-                className='rounded-full px-3 py-2'
-              >
-                {isFollowing ? t('following') : t('follow')}
-              </Button>
-            ) : null}
+            <div className='flex text-center justify-center gap-4'>
+              {!isAuthLoading && !isMine && !isFollowingLoading ? (
+                <Button
+                  onClick={handleFollow}
+                  variant={isFollowing ? "outline" : "gradient"}
+                  disabled={toggleFollow.isPending}
+                  className="rounded-full px-3 py-2"
+                >
+                  {isFollowing ? t("following") : t("follow")}
+                </Button>
+              ) : null}
+              <CommunityEngagementButtons
+                upvoteCount={upvoteCount}
+                commentCount={commentCount}
+                isUpvoted={isUpvoted}
+                isUpvotePending={toggleUpvote.isPending}
+                onUpvote={handleUpvote}
+                onOpenComments={handleOpenComments}
+              />
+            </div>
           </div>
 
           <div className="prose prose-slate mt-8 max-w-none whitespace-pre-wrap text-base leading-8 text-slate-700">
@@ -190,7 +210,7 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
               commentCount={commentCount}
               isUpvoted={isUpvoted}
               onUpvote={handleUpvote}
-              onOpenComments={() => setDrawerOpen(true)}
+              onOpenComments={handleOpenComments}
             />
           </div>
         </article>
