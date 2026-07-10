@@ -66,13 +66,6 @@ export default function CreateBlogView({ blogId }: CreateBlogViewProps = {}) {
   const [uploadingOg, setUploadingOg] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !isLoggedIn) {
-      const nextPath = isEditMode && blogId ? ROUTES.BLOGS.EDIT(blogId) : ROUTES.BLOGS.CREATE;
-      router.replace(`/?login=required&next=${encodeURIComponent(nextPath)}`);
-    }
-  }, [isAuthLoading, isLoggedIn, router, isEditMode, blogId]);
-
-  useEffect(() => {
     if (slugManuallyEdited) return;
     setSlug(slugify(title));
   }, [title, slugManuallyEdited]);

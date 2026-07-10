@@ -26,7 +26,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { toast } from "sonner";
 import UploadFile from "@/components/common/UploadFile";
@@ -69,6 +69,43 @@ const INPUT_CLASS =
   "h-11 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60";
 const TEXTAREA_CLASS =
   "rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60";
+
+const FIELD_MAX_LENGTH: Record<string, number> = {
+  title: 200,
+  tagline: 500,
+  theme: 100,
+  cardTag: 100,
+  priceLabel: 100,
+  cardDescription: 500,
+  registrationUrl: 500,
+  venue: 200,
+  city: 100,
+  country: 100,
+  aboutTitle: 200,
+  aboutBody: 2000,
+  aboutHighlight: 500,
+  seoTitle: 200,
+  seoDescription: 500,
+  registerTitle: 200,
+  registerDescription: 500,
+  marquee: 200,
+  organizerName: 200,
+  organizerRole: 200,
+  organizerCategory: 200,
+  organizerBio: 500,
+  galleryCaption: 200,
+  statValue: 100,
+  statLabel: 200,
+};
+
+const REQUIRED_FIELDS = new Set([
+  "title",
+  "tagline",
+  "theme",
+  "startAt",
+  "registrationUrl",
+  "aboutBody",
+]);
 
 const EMPTY_ORGANIZER = (): OrganizerDraft => ({
   name: "",
@@ -317,16 +354,21 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
   const [uploadingOrganizerIndex, setUploadingOrganizerIndex] = useState<number | null>(null);
   const [uploadingGalleryIndex, setUploadingGalleryIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    void initAuth();
-  }, [initAuth]);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (!isAuthLoading && !isLoggedIn) {
-      const nextPath = isEditMode && eventId ? ROUTES.EVENTS.EDIT(eventId) : ROUTES.EVENTS.CREATE;
-      router.replace(`/?login=required&next=${encodeURIComponent(nextPath)}`);
-    }
-  }, [isAuthLoading, isLoggedIn, router, isEditMode, eventId]);
+  const touch = useCallback((name: string) => () => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  }, []);
+
+  const getError = useCallback(
+    (name: string, value: string, maxLength?: number): string | null => {
+      if (!touched[name]) return null;
+      if (maxLength && value.length > maxLength) return t("errors.tooLong", { limit: maxLength });
+      if (REQUIRED_FIELDS.has(name) && !value.trim()) return t("errors.required");
+      return null;
+    },
+    [touched, t],
+  );
 
   useEffect(() => {
     if (!isEditMode || !existingEvent || formInitialized) return;
@@ -400,6 +442,35 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (isLocked) return;
+
+    const allTouched: Record<string, boolean> = {};
+    for (const field of REQUIRED_FIELDS) {
+      allTouched[field] = true;
+    }
+    setTouched((prev) => ({ ...prev, ...allTouched }));
+
+    const fieldChecks: [string, string][] = [
+      ["title", title],
+      ["tagline", tagline],
+      ["theme", theme],
+      ["startAt", startAt],
+      ["registrationUrl", registrationUrl],
+      ["aboutBody", aboutBody],
+    ];
+
+    const firstEmpty = fieldChecks.find(([, value]) => !value.trim());
+    if (firstEmpty) {
+      const [name] = firstEmpty;
+      const element = document.getElementById(`field-${name}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        const input = element.querySelector<HTMLElement>(
+          'input, textarea, [data-slot="input"], [data-slot="textarea"]',
+        );
+        input?.focus();
+      }
+      return;
+    }
 
     if (!coverImageUrl || !ogImageUrl) {
       toast.error(t("errors.imagesRequired"));
@@ -550,6 +621,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
         <form
           id="create-event-form"
           onSubmit={handleSubmit}
+          noValidate
           className={cn("space-y-5", isLocked && "pointer-events-none opacity-60")}
         >
           <EventFormSection
@@ -559,41 +631,83 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
           >
             <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] xl:items-start">
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label={t("fields.title")} className="sm:col-span-2">
+                <FormField
+                  label={t("fields.title")}
+                  className="sm:col-span-2"
+                  error={getError("title", title, FIELD_MAX_LENGTH.title)}
+                  currentLength={title.length}
+                  maxLength={FIELD_MAX_LENGTH.title}
+                  required
+                  fieldName="title"
+                >
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    onBlur={touch("title")}
                     required
+                    maxLength={FIELD_MAX_LENGTH.title}
                     placeholder={t("preview.titlePlaceholder")}
                     className={INPUT_CLASS}
                   />
                 </FormField>
-                <FormField label={t("fields.tagline")} className="sm:col-span-2">
+                <FormField
+                  label={t("fields.tagline")}
+                  className="sm:col-span-2"
+                  error={getError("tagline", tagline, FIELD_MAX_LENGTH.tagline)}
+                  currentLength={tagline.length}
+                  maxLength={FIELD_MAX_LENGTH.tagline}
+                  required
+                  fieldName="tagline"
+                >
                   <Textarea
                     value={tagline}
                     onChange={(e) => setTagline(e.target.value)}
+                    onBlur={touch("tagline")}
                     required
                     rows={2}
+                    maxLength={FIELD_MAX_LENGTH.tagline}
                     placeholder={t("preview.taglinePlaceholder")}
                     className={TEXTAREA_CLASS}
                   />
                 </FormField>
-                <FormField label={t("fields.theme")}>
+                <FormField
+                  label={t("fields.theme")}
+                  error={getError("theme", theme, FIELD_MAX_LENGTH.theme)}
+                  currentLength={theme.length}
+                  maxLength={FIELD_MAX_LENGTH.theme}
+                  required
+                  fieldName="theme"
+                >
                   <Input
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
+                    onBlur={touch("theme")}
                     required
+                    maxLength={FIELD_MAX_LENGTH.theme}
                     className={INPUT_CLASS}
                   />
                 </FormField>
-                <FormField label={t("fields.cardTag")}>
+                <FormField
+                  label={t("fields.cardTag")}
+                  error={getError("cardTag", cardTag, FIELD_MAX_LENGTH.cardTag)}
+                  currentLength={cardTag.length}
+                  maxLength={FIELD_MAX_LENGTH.cardTag}
+                >
                   <Input
                     value={cardTag}
                     onChange={(e) => setCardTag(e.target.value)}
+                    onBlur={touch("cardTag")}
+                    maxLength={FIELD_MAX_LENGTH.cardTag}
                     className={INPUT_CLASS}
                   />
                 </FormField>
-                <FormField label={t("fields.priceLabel")} className="sm:col-span-2">
+                <FormField
+                  label={t("fields.priceLabel")}
+                  className="sm:col-span-2"
+                  error={!priceIsFree ? getError("priceLabel", priceLabel, FIELD_MAX_LENGTH.priceLabel) : null}
+                  currentLength={!priceIsFree ? priceLabel.length : undefined}
+                  maxLength={!priceIsFree ? FIELD_MAX_LENGTH.priceLabel : undefined}
+                >
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
                       <PriceOptionButton
@@ -611,6 +725,8 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                       <Input
                         value={priceLabel}
                         onChange={(e) => setPriceLabel(e.target.value)}
+                        onBlur={touch("priceLabel")}
+                        maxLength={FIELD_MAX_LENGTH.priceLabel}
                         placeholder={t("fields.priceCustomPlaceholder")}
                         className={INPUT_CLASS}
                       />
@@ -621,11 +737,19 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     )}
                   </div>
                 </FormField>
-                <FormField label={t("fields.cardDescription")} className="sm:col-span-2">
+                <FormField
+                  label={t("fields.cardDescription")}
+                  className="sm:col-span-2"
+                  error={getError("cardDescription", cardDescription, FIELD_MAX_LENGTH.cardDescription)}
+                  currentLength={cardDescription.length}
+                  maxLength={FIELD_MAX_LENGTH.cardDescription}
+                >
                   <Textarea
                     value={cardDescription}
                     onChange={(e) => setCardDescription(e.target.value)}
+                    onBlur={touch("cardDescription")}
                     rows={2}
+                    maxLength={FIELD_MAX_LENGTH.cardDescription}
                     className={TEXTAREA_CLASS}
                   />
                 </FormField>
@@ -668,11 +792,17 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
 
           <EventFormSection icon={Clock} eyebrow="02" title={t("sections.schedule")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label={t("fields.startAt")}>
+              <FormField
+                label={t("fields.startAt")}
+                error={getError("startAt", startAt)}
+                required
+                fieldName="startAt"
+              >
                 <Input
                   type="datetime-local"
                   value={startAt}
                   onChange={(e) => setStartAt(e.target.value)}
+                  onBlur={touch("startAt")}
                   required
                   className={INPUT_CLASS}
                 />
@@ -693,12 +823,22 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   className={INPUT_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.registrationUrl")} className="sm:col-span-2">
+              <FormField
+                label={t("fields.registrationUrl")}
+                className="sm:col-span-2"
+                error={getError("registrationUrl", registrationUrl, FIELD_MAX_LENGTH.registrationUrl)}
+                currentLength={registrationUrl.length}
+                maxLength={FIELD_MAX_LENGTH.registrationUrl}
+                required
+                fieldName="registrationUrl"
+              >
                 <Input
                   type="url"
                   value={registrationUrl}
                   onChange={(e) => setRegistrationUrl(e.target.value)}
+                  onBlur={touch("registrationUrl")}
                   required
+                  maxLength={FIELD_MAX_LENGTH.registrationUrl}
                   className={INPUT_CLASS}
                 />
               </FormField>
@@ -735,25 +875,46 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                 </button>
               </div>
 
-              <FormField label={t("fields.venue")}>
+              <FormField
+                label={t("fields.venue")}
+                error={getError("venue", venue, FIELD_MAX_LENGTH.venue)}
+                currentLength={venue.length}
+                maxLength={FIELD_MAX_LENGTH.venue}
+              >
                 <Input
                   value={venue}
                   onChange={(e) => setVenue(e.target.value)}
+                  onBlur={touch("venue")}
                   disabled={isOnline}
+                  maxLength={FIELD_MAX_LENGTH.venue}
                   className={cn(INPUT_CLASS, isOnline && "opacity-50")}
                 />
               </FormField>
-              <FormField label={t("fields.city")}>
+              <FormField
+                label={t("fields.city")}
+                error={getError("city", city, FIELD_MAX_LENGTH.city)}
+                currentLength={city.length}
+                maxLength={FIELD_MAX_LENGTH.city}
+              >
                 <Input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
+                  onBlur={touch("city")}
+                  maxLength={FIELD_MAX_LENGTH.city}
                   className={INPUT_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.country")}>
+              <FormField
+                label={t("fields.country")}
+                error={getError("country", country, FIELD_MAX_LENGTH.country)}
+                currentLength={country.length}
+                maxLength={FIELD_MAX_LENGTH.country}
+              >
                 <Input
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
+                  onBlur={touch("country")}
+                  maxLength={FIELD_MAX_LENGTH.country}
                   className={INPUT_CLASS}
                 />
               </FormField>
@@ -762,66 +923,124 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
 
           <EventFormSection icon={FileText} eyebrow="03" title={t("sections.content")}>
             <div className="grid gap-4">
-              <FormField label={t("fields.aboutTitle")}>
+              <FormField
+                label={t("fields.aboutTitle")}
+                error={getError("aboutTitle", aboutTitle, FIELD_MAX_LENGTH.aboutTitle)}
+                currentLength={aboutTitle.length}
+                maxLength={FIELD_MAX_LENGTH.aboutTitle}
+              >
                 <Input
                   value={aboutTitle}
                   onChange={(e) => setAboutTitle(e.target.value)}
+                  onBlur={touch("aboutTitle")}
+                  maxLength={FIELD_MAX_LENGTH.aboutTitle}
                   className={INPUT_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.aboutBody")}>
+              <FormField
+                label={t("fields.aboutBody")}
+                error={getError("aboutBody", aboutBody, FIELD_MAX_LENGTH.aboutBody)}
+                currentLength={aboutBody.length}
+                maxLength={FIELD_MAX_LENGTH.aboutBody}
+                required
+                fieldName="aboutBody"
+              >
                 <Textarea
                   value={aboutBody}
                   onChange={(e) => setAboutBody(e.target.value)}
+                  onBlur={touch("aboutBody")}
                   required
                   rows={4}
+                  maxLength={FIELD_MAX_LENGTH.aboutBody}
                   className={TEXTAREA_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.aboutHighlight")}>
+              <FormField
+                label={t("fields.aboutHighlight")}
+                error={getError("aboutHighlight", aboutHighlight, FIELD_MAX_LENGTH.aboutHighlight)}
+                currentLength={aboutHighlight.length}
+                maxLength={FIELD_MAX_LENGTH.aboutHighlight}
+              >
                 <Textarea
                   value={aboutHighlight}
                   onChange={(e) => setAboutHighlight(e.target.value)}
+                  onBlur={touch("aboutHighlight")}
                   rows={2}
+                  maxLength={FIELD_MAX_LENGTH.aboutHighlight}
                   className={TEXTAREA_CLASS}
                 />
               </FormField>
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label={t("fields.seoTitle")}>
+                <FormField
+                  label={t("fields.seoTitle")}
+                  error={getError("seoTitle", seoTitle, FIELD_MAX_LENGTH.seoTitle)}
+                  currentLength={seoTitle.length}
+                  maxLength={FIELD_MAX_LENGTH.seoTitle}
+                >
                   <Input
                     value={seoTitle}
                     onChange={(e) => setSeoTitle(e.target.value)}
+                    onBlur={touch("seoTitle")}
+                    maxLength={FIELD_MAX_LENGTH.seoTitle}
                     className={INPUT_CLASS}
                   />
                 </FormField>
-                <FormField label={t("fields.registerTitle")}>
+                <FormField
+                  label={t("fields.registerTitle")}
+                  error={getError("registerTitle", registerTitle, FIELD_MAX_LENGTH.registerTitle)}
+                  currentLength={registerTitle.length}
+                  maxLength={FIELD_MAX_LENGTH.registerTitle}
+                >
                   <Input
                     value={registerTitle}
                     onChange={(e) => setRegisterTitle(e.target.value)}
+                    onBlur={touch("registerTitle")}
+                    maxLength={FIELD_MAX_LENGTH.registerTitle}
                     className={INPUT_CLASS}
                   />
                 </FormField>
               </div>
-              <FormField label={t("fields.seoDescription")}>
+              <FormField
+                label={t("fields.seoDescription")}
+                error={getError("seoDescription", seoDescription, FIELD_MAX_LENGTH.seoDescription)}
+                currentLength={seoDescription.length}
+                maxLength={FIELD_MAX_LENGTH.seoDescription}
+              >
                 <Textarea
                   value={seoDescription}
                   onChange={(e) => setSeoDescription(e.target.value)}
+                  onBlur={touch("seoDescription")}
                   rows={2}
+                  maxLength={FIELD_MAX_LENGTH.seoDescription}
                   className={TEXTAREA_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.registerDescription")}>
+              <FormField
+                label={t("fields.registerDescription")}
+                error={getError("registerDescription", registerDescription, FIELD_MAX_LENGTH.registerDescription)}
+                currentLength={registerDescription.length}
+                maxLength={FIELD_MAX_LENGTH.registerDescription}
+              >
                 <Textarea
                   value={registerDescription}
                   onChange={(e) => setRegisterDescription(e.target.value)}
+                  onBlur={touch("registerDescription")}
                   rows={2}
+                  maxLength={FIELD_MAX_LENGTH.registerDescription}
                   className={TEXTAREA_CLASS}
                 />
               </FormField>
-              <FormField label={t("fields.marquee")}>
+              <FormField
+                label={t("fields.marquee")}
+                error={getError("marquee", marquee, FIELD_MAX_LENGTH.marquee)}
+                currentLength={marquee.length}
+                maxLength={FIELD_MAX_LENGTH.marquee}
+              >
                 <Input
                   value={marquee}
                   onChange={(e) => setMarquee(e.target.value)}
+                  onBlur={touch("marquee")}
+                  maxLength={FIELD_MAX_LENGTH.marquee}
                   className={INPUT_CLASS}
                 />
               </FormField>
@@ -892,7 +1111,12 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     ) : null}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <FormField label={t("fields.organizerName")}>
+                    <FormField
+                      label={t("fields.organizerName")}
+                      error={getError(`organizerName_${index}`, organizer.name, FIELD_MAX_LENGTH.organizerName)}
+                      currentLength={organizer.name.length}
+                      maxLength={FIELD_MAX_LENGTH.organizerName}
+                    >
                       <Input
                         value={organizer.name}
                         onChange={(e) =>
@@ -902,10 +1126,17 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                             ),
                           )
                         }
+                        onBlur={touch(`organizerName_${index}`)}
+                        maxLength={FIELD_MAX_LENGTH.organizerName}
                         className={INPUT_CLASS}
                       />
                     </FormField>
-                    <FormField label={t("fields.organizerRole")}>
+                    <FormField
+                      label={t("fields.organizerRole")}
+                      error={getError(`organizerRole_${index}`, organizer.role, FIELD_MAX_LENGTH.organizerRole)}
+                      currentLength={organizer.role.length}
+                      maxLength={FIELD_MAX_LENGTH.organizerRole}
+                    >
                       <Input
                         value={organizer.role}
                         onChange={(e) =>
@@ -915,10 +1146,17 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                             ),
                           )
                         }
+                        onBlur={touch(`organizerRole_${index}`)}
+                        maxLength={FIELD_MAX_LENGTH.organizerRole}
                         className={INPUT_CLASS}
                       />
                     </FormField>
-                    <FormField label={t("fields.organizerCategory")}>
+                    <FormField
+                      label={t("fields.organizerCategory")}
+                      error={getError(`organizerCategory_${index}`, organizer.category, FIELD_MAX_LENGTH.organizerCategory)}
+                      currentLength={organizer.category.length}
+                      maxLength={FIELD_MAX_LENGTH.organizerCategory}
+                    >
                       <Input
                         value={organizer.category}
                         onChange={(e) =>
@@ -928,10 +1166,18 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                             ),
                           )
                         }
+                        onBlur={touch(`organizerCategory_${index}`)}
+                        maxLength={FIELD_MAX_LENGTH.organizerCategory}
                         className={INPUT_CLASS}
                       />
                     </FormField>
-                    <FormField label={t("fields.organizerBio")} className="sm:col-span-2">
+                    <FormField
+                      label={t("fields.organizerBio")}
+                      className="sm:col-span-2"
+                      error={getError(`organizerBio_${index}`, organizer.bio, FIELD_MAX_LENGTH.organizerBio)}
+                      currentLength={organizer.bio.length}
+                      maxLength={FIELD_MAX_LENGTH.organizerBio}
+                    >
                       <Textarea
                         value={organizer.bio}
                         onChange={(e) =>
@@ -941,7 +1187,9 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                             ),
                           )
                         }
+                        onBlur={touch(`organizerBio_${index}`)}
                         rows={2}
+                        maxLength={FIELD_MAX_LENGTH.organizerBio}
                         className={TEXTAREA_CLASS}
                       />
                     </FormField>
@@ -1014,7 +1262,12 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                         }
                       }}
                     />
-                    <FormField label={t("fields.galleryCaption")}>
+                    <FormField
+                      label={t("fields.galleryCaption")}
+                      error={getError(`galleryCaption_${index}`, image.captionVi, FIELD_MAX_LENGTH.galleryCaption)}
+                      currentLength={image.captionVi.length}
+                      maxLength={FIELD_MAX_LENGTH.galleryCaption}
+                    >
                       <Input
                         value={image.captionVi}
                         onChange={(e) =>
@@ -1024,6 +1277,8 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                             ),
                           )
                         }
+                        onBlur={touch(`galleryCaption_${index}`)}
+                        maxLength={FIELD_MAX_LENGTH.galleryCaption}
                         className={INPUT_CLASS}
                       />
                     </FormField>
@@ -1057,7 +1312,13 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   key={index}
                   className="flex flex-col gap-3 rounded-2xl border border-violet-100/80 bg-white p-4 sm:flex-row sm:items-end"
                 >
-                  <FormField label={t("fields.statValue")} className="flex-1">
+                  <FormField
+                    label={t("fields.statValue")}
+                    className="flex-1"
+                    error={getError(`statValue_${index}`, stat.value, FIELD_MAX_LENGTH.statValue)}
+                    currentLength={stat.value.length}
+                    maxLength={FIELD_MAX_LENGTH.statValue}
+                  >
                     <Input
                       value={stat.value}
                       onChange={(e) =>
@@ -1067,10 +1328,18 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                           ),
                         )
                       }
+                      onBlur={touch(`statValue_${index}`)}
+                      maxLength={FIELD_MAX_LENGTH.statValue}
                       className={INPUT_CLASS}
                     />
                   </FormField>
-                  <FormField label={t("fields.statLabel")} className="flex-[1.4]">
+                  <FormField
+                    label={t("fields.statLabel")}
+                    className="flex-[1.4]"
+                    error={getError(`statLabel_${index}`, stat.labelVi, FIELD_MAX_LENGTH.statLabel)}
+                    currentLength={stat.labelVi.length}
+                    maxLength={FIELD_MAX_LENGTH.statLabel}
+                  >
                     <Input
                       value={stat.labelVi}
                       onChange={(e) =>
@@ -1080,6 +1349,8 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                           ),
                         )
                       }
+                      onBlur={touch(`statLabel_${index}`)}
+                      maxLength={FIELD_MAX_LENGTH.statLabel}
                       className={INPUT_CLASS}
                     />
                   </FormField>
@@ -1167,15 +1438,50 @@ function FormField({
   label,
   children,
   className,
+  error,
+  currentLength,
+  maxLength,
+  required,
+  fieldName,
 }: {
   label: string;
   children: ReactNode;
   className?: string;
+  error?: string | null;
+  currentLength?: number;
+  maxLength?: number;
+  required?: boolean;
+  fieldName?: string;
 }) {
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <Label className="text-xs font-semibold text-slate-700">{label}</Label>
+    <div
+      id={fieldName ? `field-${fieldName}` : undefined}
+      className={cn("space-y-1.5", className)}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <Label className="text-xs font-semibold text-slate-700">
+          {label}
+          {required ? (
+            <span className="ml-0.5 text-rose-500">*</span>
+          ) : null}
+        </Label>
+        {maxLength !== undefined && currentLength !== undefined ? (
+          <span
+            className={cn(
+              "shrink-0 text-[11px] tabular-nums",
+              currentLength > maxLength
+                ? "font-semibold text-rose-500"
+                : "text-slate-400",
+            )}
+          >
+            {currentLength}/{maxLength}
+          </span>
+        ) : null}
+      </div>
       {children}
+      {error ? (
+        <p className="text-[11px] leading-4 text-rose-500">{error}</p>
+      ) : null}
     </div>
   );
 }

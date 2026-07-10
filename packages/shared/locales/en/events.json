@@ -280,6 +280,9 @@
       "pendingNote": "Your event stays pending until an admin publishes it.",
       "uploadHint": "PNG/JPG, up to {maxMb}MB",
       "organizerLabel": "Member {index}",
+      "charLimit": "{current}/{limit}",
+      "charLimitOver": "{current}/{limit}",
+      "charLimitOverHint": "Reduce by {over} characters",
       "preview": {
         "homeLabel": "Homepage preview",
         "homeHint": "The event card updates live as you type.",
@@ -346,7 +349,9 @@
       "errors": {
         "imagesRequired": "Please upload cover and OGP images.",
         "organizerRequired": "At least one organizer with a photo is required.",
-        "submitFailed": "Failed to submit event. Please try again."
+        "submitFailed": "Failed to submit event. Please try again.",
+        "required": "This field is required",
+        "tooLong": "Maximum {limit} characters"
       },
       "success": "Event submitted. An admin will review it soon.",
       "successPage": {

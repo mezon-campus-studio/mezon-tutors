@@ -280,6 +280,9 @@
       "pendingNote": "Sự kiện sẽ ở trạng thái chờ duyệt cho đến khi admin publish.",
       "uploadHint": "PNG/JPG, tối đa {maxMb}MB",
       "organizerLabel": "Thành viên {index}",
+      "charLimit": "{current}/{limit}",
+      "charLimitOver": "{current}/{limit}",
+      "charLimitOverHint": "Giảm đi {over} ký tự",
       "preview": {
         "homeLabel": "Xem trước trên trang chủ",
         "homeHint": "Thẻ sự kiện cập nhật theo thời gian thực khi bạn nhập.",
@@ -346,7 +349,9 @@
       "errors": {
         "imagesRequired": "Vui lòng tải ảnh cover và ảnh OGP.",
         "organizerRequired": "Cần ít nhất một thành viên ban tổ chức với ảnh.",
-        "submitFailed": "Gửi sự kiện thất bại. Vui lòng thử lại."
+        "submitFailed": "Gửi sự kiện thất bại. Vui lòng thử lại.",
+        "required": "Trường này là bắt buộc",
+        "tooLong": "Tối đa {limit} ký tự"
       },
       "success": "Đã gửi sự kiện. Admin sẽ xem xét trong thời gian sớm nhất.",
       "successPage": {
