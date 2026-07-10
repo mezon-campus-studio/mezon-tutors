@@ -318,17 +318,6 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
   const [uploadingGalleryIndex, setUploadingGalleryIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    void initAuth();
-  }, [initAuth]);
-
-  useEffect(() => {
-    if (!isAuthLoading && !isLoggedIn) {
-      const nextPath = isEditMode && eventId ? ROUTES.EVENTS.EDIT(eventId) : ROUTES.EVENTS.CREATE;
-      router.replace(`/?login=required&next=${encodeURIComponent(nextPath)}`);
-    }
-  }, [isAuthLoading, isLoggedIn, router, isEditMode, eventId]);
-
-  useEffect(() => {
     if (!isEditMode || !existingEvent || formInitialized) return;
 
     const freeLabels = [t("fields.priceFree"), "Free", "Miễn phí"];
