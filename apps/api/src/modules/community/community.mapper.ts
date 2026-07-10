@@ -60,6 +60,9 @@ export function toCommunityPostListItemDto(
   options?: {
     isUpvoted?: boolean;
     isMine?: boolean;
+    correctCount?: number;
+    incorrectCount?: number;
+    mySubmissionResult?: 'correct' | 'incorrect' | 'unanswered';
   },
 ): CommunityPostListItemDto {
   return {
@@ -70,6 +73,8 @@ export function toCommunityPostListItemDto(
     upvoteCount: post.upvoteCount,
     commentCount: post.commentCount,
     submissionCount: post.submissionCount,
+    correctCount: options?.correctCount,
+    incorrectCount: options?.incorrectCount,
     tags: post.tags.map((tag) => ({
       id: tag.id,
       slug: tag.slug,
@@ -89,6 +94,7 @@ export function toCommunityPostListItemDto(
       : null,
     isUpvoted: options?.isUpvoted,
     isMine: options?.isMine,
+    mySubmissionResult: options?.mySubmissionResult,
   };
 }
 
@@ -97,6 +103,9 @@ export function toCommunityPostDetailDto(
   options?: {
     isUpvoted?: boolean;
     isMine?: boolean;
+    correctCount?: number;
+    incorrectCount?: number;
+    mySubmissionResult?: 'correct' | 'incorrect' | 'unanswered';
   },
 ): CommunityPostDetailDto {
   const base = toCommunityPostListItemDto(post, options);

@@ -60,6 +60,8 @@ export type CommunityPostListItemDto = {
   upvoteCount: number;
   commentCount: number;
   submissionCount: number;
+  correctCount?: number;
+  incorrectCount?: number;
   tags: CommunityTagDto[];
   author: CommunityAuthorDto;
   media: CommunityMediaDto[];
@@ -69,6 +71,7 @@ export type CommunityPostListItemDto = {
   > | null;
   isUpvoted?: boolean;
   isMine?: boolean;
+  mySubmissionResult?: 'correct' | 'incorrect' | 'unanswered';
 };
 
 export type CommunityPostDetailDto = CommunityPostListItemDto & {

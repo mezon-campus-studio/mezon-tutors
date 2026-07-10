@@ -26,7 +26,7 @@ type CommunityPostCardProps = {
 
 const MAX_PREVIEW_VISIBLE = 3;
 
-const TYPE_CONFIG: Record<string, { icon: React.ReactNode; bg: string; fg: string }> = {
+const TYPE_CONFIG = {
   POST: {
     icon: <FileEdit className="size-4 stroke-[2.5]" />,
     bg: 'bg-blue-100',
@@ -42,7 +42,7 @@ const TYPE_CONFIG: Record<string, { icon: React.ReactNode; bg: string; fg: strin
     bg: 'bg-purple-100',
     fg: 'text-purple-600',
   },
-};
+} as const;
 
 const AVATAR_ACCENT = [
   'bg-amber-100 text-amber-700',
@@ -67,18 +67,26 @@ function formatRelativeTime(iso: string, locale: string) {
 export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
   const locale = useLocale();
   const router = useRouter();
-  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
-  const isAuthLoading = useAtomValue(isLoadingAtom);
-  const user = useAtomValue(userAtom);
-  const isLoggedIn = isAuthenticated || Boolean(user);
+  const [expanded, setExpanded] = useState(false);
+  const isLongContent = post.content.length > 200;
+  const isExercise = post.type === "EXERCISE";
   const accent = getAvatarAccent(post.author.username);
   const typeConfig = TYPE_CONFIG[post.type];
   const toggleUpvote = useToggleCommunityUpvote(post.id);
-  const [expanded, setExpanded] = useState(false);
-  const isLongContent = post.content.length > 200;
-  const isExercise = post.type === 'EXERCISE';
-  const { data: postDetail } = useCommunityPost(post.id, isExercise);
-  const { data: submissions = [] } = useMyCommunitySubmissions(post.id, isExercise && isLoggedIn);
+  const correctCount = post.correctCount;
+  const incorrectCount = post.incorrectCount;
+  const difficultyLabel =
+    isExercise && post.exercise?.difficulty
+      ? post.exercise.difficulty.charAt(0).toUpperCase() +
+        post.exercise.difficulty.slice(1).toLowerCase()
+      : null;
+
+  const exerciseCardBg =
+    post.mySubmissionResult === 'correct'
+      ? 'bg-emerald-50 border-emerald-100'
+      : post.mySubmissionResult === 'incorrect'
+        ? 'bg-red-50 border-red-100'
+        : 'bg-neutral-100 border-neutral-100';
 
   const handleCardClick = () => {
     router.push(ROUTES.COMMUNITY.DETAIL(post.id));
@@ -88,9 +96,9 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
     <article
       className={cn('cursor-pointer border-b border-neutral-200 last:border-b-0', className)}
       onClick={handleCardClick}
-      role="link"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') handleCardClick(); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleCardClick();
+      }}
     >
       <div className="px-1 py-5 sm:px-2">
         <div className="flex items-center gap-3">
@@ -103,7 +111,13 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
           <span className="text-[15px] font-semibold text-neutral-900">
             {post.author.username}
           </span>
-          <span className={cn('ml-auto flex size-8 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.fg)}>
+          <span
+            className={cn(
+              "ml-auto flex size-8 items-center justify-center rounded-lg",
+              typeConfig.bg,
+              typeConfig.fg,
+            )}
+          >
             {typeConfig.icon}
           </span>
         </div>
@@ -132,10 +146,78 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
           ) : null}
         </div>
 
-        {isExercise && postDetail?.exercise ? (
-          <div className="mt-3" onClick={(e) => e.stopPropagation()} role="presentation">
-            <ExerciseSubmissionPanel postId={post.id} exercise={postDetail.exercise} submissions={submissions} />
-          </div>
+        {isExercise ? (
+          <Link
+            href={ROUTES.COMMUNITY.DETAIL(post.id)}
+            onClick={(e) => e.stopPropagation()}
+            className={cn("mt-3 block rounded-xl border p-3 text-sm transition-colors hover:opacity-80", exerciseCardBg)}
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-medium text-violet-700">
+                <Dumbbell className="size-4 shrink-0" />
+                {difficultyLabel || "Exercise"}
+              </span>
+              <span className="text-xs font-semibold text-violet-700">
+                {post.submissionCount}
+              </span>
+            </div>
+            {post.submissionCount > 0 ? (
+              <>
+                <div className="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-neutral-200/60">
+                  {correctCount != null && incorrectCount != null ? (
+                    <>
+                      {(correctCount / (correctCount + incorrectCount)) * 100 >
+                      0 ? (
+                        <div
+                          className="h-full rounded-l-full bg-emerald-500 transition-all"
+                          style={{
+                            width: `${(correctCount / (correctCount + incorrectCount)) * 100}%`,
+                          }}
+                        />
+                      ) : null}
+                      {incorrectCount > 0 ? (
+                        <div
+                          className={cn(
+                            "h-full bg-red-400 transition-all",
+                            correctCount > 0 ? "rounded-r-full" : "rounded-full",
+                          )}
+                          style={{
+                            width: `${(incorrectCount / (correctCount + incorrectCount)) * 100}%`,
+                          }}
+                        />
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="h-full w-full rounded-full transition-all" />
+                  )}
+                </div>
+                <div className="mt-1.5 flex items-center justify-between text-xs">
+                  <span className="font-medium text-emerald-500">
+                    {correctCount != null &&
+                    (correctCount + (incorrectCount ?? 0)) > 0
+                      ? Math.round(
+                          (correctCount /
+                            (correctCount + (incorrectCount ?? 0))) *
+                            100,
+                        )
+                      : 0}
+                    %
+                  </span>
+                  <span className="font-medium text-red-500">
+                    {incorrectCount != null &&
+                    ((correctCount ?? 0) + incorrectCount) > 0
+                      ? Math.round(
+                          (incorrectCount /
+                            ((correctCount ?? 0) + incorrectCount)) *
+                            100,
+                        )
+                      : 0}
+                    %
+                  </span>
+                </div>
+              </>
+            ) : null}
+          </Link>
         ) : null}
 
         {post.media.length > 0 ? (
@@ -167,7 +249,9 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
         ) : null}
 
         <div className="mt-3 flex items-center justify-between text-sm text-neutral-400">
-          <time dateTime={post.publishedAt}>{formatRelativeTime(post.publishedAt, locale)}</time>
+          <time dateTime={post.publishedAt}>
+            {formatRelativeTime(post.publishedAt, locale)}
+          </time>
           <div className="flex items-center gap-5">
             <button
               type="button"
@@ -189,12 +273,29 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
                 toggleUpvote.mutate();
               }}
               className={cn(
-                'inline-flex items-center gap-1.5 transition-colors cursor-pointer',
-                post.isUpvoted ? 'text-brand' : 'text-neutral-400 hover:text-primary',
+                "inline-flex items-center gap-1.5 transition-colors cursor-pointer",
+                post.isUpvoted
+                  ? "text-brand"
+                  : "text-neutral-400 hover:text-primary",
               )}
             >
-              <ArrowBigUp className={cn('size-5 stroke-[1.75]', post.isUpvoted && 'fill-current text-primary')} aria-hidden />
-              <span className="text-sm font-medium" style={{ color: post.isUpvoted ? 'var(--primary)' : 'var(--neutral-400)' }}>{post.upvoteCount}</span>
+              <ArrowBigUp
+                className={cn(
+                  "size-5 stroke-[1.75]",
+                  post.isUpvoted && "fill-current text-primary",
+                )}
+                aria-hidden
+              />
+              <span
+                className="text-sm font-medium"
+                style={{
+                  color: post.isUpvoted
+                    ? "var(--primary)"
+                    : "var(--neutral-400)",
+                }}
+              >
+                {post.upvoteCount}
+              </span>
             </button>
           </div>
         </div>

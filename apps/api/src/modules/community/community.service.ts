@@ -149,28 +149,113 @@ export class CommunityService {
     return post as CommunityPostWithRelations;
   }
 
+  private async getExerciseSubmissionCounts(
+    exerciseIds: string[],
+  ): Promise<Map<string, { correctCount: number; incorrectCount: number }>> {
+    if (exerciseIds.length === 0) return new Map();
+
+    const stats = await this.prisma.communityExerciseSubmission.groupBy({
+      by: ['exerciseId', 'isCorrect'],
+      where: { exerciseId: { in: exerciseIds } },
+      _count: { _all: true },
+    });
+
+    const map = new Map<
+      string,
+      { correctCount: number; incorrectCount: number }
+    >();
+    for (const id of exerciseIds) {
+      map.set(id, { correctCount: 0, incorrectCount: 0 });
+    }
+    for (const stat of stats) {
+      const entry = map.get(stat.exerciseId);
+      if (entry) {
+        if (stat.isCorrect === true) {
+          entry.correctCount = stat._count._all;
+        } else if (stat.isCorrect === false) {
+          entry.incorrectCount = stat._count._all;
+        }
+      }
+    }
+    return map;
+  }
+
+  private async getMySubmissionResults(
+    exerciseIds: string[],
+    userId: string,
+  ): Promise<Map<string, 'correct' | 'incorrect' | 'unanswered'>> {
+    const map = new Map<string, 'correct' | 'incorrect' | 'unanswered'>();
+    for (const id of exerciseIds) {
+      map.set(id, 'unanswered');
+    }
+
+    const submissions = await this.prisma.communityExerciseSubmission.findMany({
+      where: { exerciseId: { in: exerciseIds }, userId },
+      select: { exerciseId: true, isCorrect: true },
+    });
+
+    for (const sub of submissions) {
+      if (sub.isCorrect === true) {
+        map.set(sub.exerciseId, 'correct');
+      } else if (sub.isCorrect === false) {
+        map.set(sub.exerciseId, 'incorrect');
+      }
+    }
+    return map;
+  }
+
   private async mapPostsWithUserState(
     posts: CommunityPostWithRelations[],
     userId?: string,
   ): Promise<CommunityPostListItemDto[]> {
-    if (!userId || posts.length === 0) {
-      return posts.map((post) => toCommunityPostListItemDto(post));
-    }
+    if (posts.length === 0) return [];
 
     const postIds = posts.map((p) => p.id);
-    const upvotes = await this.prisma.communityPostUpvote.findMany({
-      where: { postId: { in: postIds }, userId },
-      select: { postId: true },
-    });
+
+    const upvotePromise = userId
+      ? this.prisma.communityPostUpvote.findMany({
+          where: { postId: { in: postIds }, userId },
+          select: { postId: true },
+        })
+      : Promise.resolve([]);
+
+    const exerciseIds = posts
+      .filter((p) => p.exercise)
+      .map((p) => p.exercise!.id);
+
+    const submissionStatsPromise =
+      exerciseIds.length > 0
+        ? this.getExerciseSubmissionCounts(exerciseIds)
+        : Promise.resolve(new Map<string, { correctCount: number; incorrectCount: number }>());
+
+    const myResultsPromise =
+      userId && exerciseIds.length > 0
+        ? this.getMySubmissionResults(exerciseIds, userId)
+        : Promise.resolve(new Map<string, 'correct' | 'incorrect' | 'unanswered'>());
+
+    const [upvotes, submissionStats, myResults] = await Promise.all([
+      upvotePromise,
+      submissionStatsPromise,
+      myResultsPromise,
+    ]);
 
     const upvotedSet = new Set(upvotes.map((u) => u.postId));
 
-    return posts.map((post) =>
-      toCommunityPostListItemDto(post, {
+    return posts.map((post) => {
+      const stats = post.exercise
+        ? submissionStats.get(post.exercise.id)
+        : undefined;
+      const myResult = post.exercise
+        ? myResults.get(post.exercise.id)
+        : undefined;
+      return toCommunityPostListItemDto(post, {
         isUpvoted: upvotedSet.has(post.id),
         isMine: post.authorId === userId,
-      }),
-    );
+        correctCount: stats?.correctCount,
+        incorrectCount: stats?.incorrectCount,
+        mySubmissionResult: myResult,
+      });
+    });
   }
 
   async listFeed(params: {
@@ -356,9 +441,31 @@ export class CommunityService {
         })
       : null;
 
+    let correctCount: number | undefined;
+    let incorrectCount: number | undefined;
+    let mySubmissionResult: 'correct' | 'incorrect' | 'unanswered' | undefined;
+
+    if (post.exercise) {
+      const [stats, myResult] = await Promise.all([
+        this.getExerciseSubmissionCounts([post.exercise.id]),
+        userId
+          ? this.getMySubmissionResults([post.exercise.id], userId)
+          : Promise.resolve(
+              new Map<string, 'correct' | 'incorrect' | 'unanswered'>(),
+            ),
+      ]);
+      const entry = stats.get(post.exercise.id);
+      correctCount = entry?.correctCount;
+      incorrectCount = entry?.incorrectCount;
+      mySubmissionResult = userId ? myResult.get(post.exercise.id) : undefined;
+    }
+
     return toCommunityPostDetailDto(post, {
       isUpvoted: Boolean(upvote),
       isMine: userId === post.authorId,
+      correctCount,
+      incorrectCount,
+      mySubmissionResult,
     });
   }
 
@@ -510,8 +617,9 @@ export class CommunityService {
       include: communityPostInclude,
     });
 
-    return posts.map((post) =>
-      toCommunityPostListItemDto(post as CommunityPostWithRelations, { isMine: true }),
+    return this.mapPostsWithUserState(
+      posts as CommunityPostWithRelations[],
+      userId,
     );
   }
 
