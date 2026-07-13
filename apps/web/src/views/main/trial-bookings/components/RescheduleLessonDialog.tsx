@@ -21,6 +21,7 @@ import {
   AvatarImage,
   Label,
 } from "@/components/ui";
+import { getAvatarGradient } from "@/lib/avatar-utils";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 
 export type TutorRescheduleLessonTarget = {
@@ -30,6 +31,7 @@ export type TutorRescheduleLessonTarget = {
   dateLabel: string;
   timeLabel: string;
   subject?: string;
+  groupName?: string;
 };
 
 type RescheduleLessonDialogProps = {
@@ -119,7 +121,7 @@ export function RescheduleLessonDialog({
                       className="rounded-lg object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
+                  <AvatarFallback className={`rounded-lg bg-gradient-to-br ${getAvatarGradient(lessonKind, lesson.groupName)} text-xs font-bold text-white`}>
                     {getInitials(lesson.studentName)}
                   </AvatarFallback>
                 </Avatar>

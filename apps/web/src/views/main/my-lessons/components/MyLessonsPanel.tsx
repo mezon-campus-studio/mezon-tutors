@@ -23,6 +23,7 @@ import { useMezonLight } from "@/providers";
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, toast } from "@/components/ui";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import { cn } from "@/lib/utils";
+import { getAvatarGradient } from "@/lib/avatar-utils";
 import { ActionMenu } from "@/components/common/ActionMenu";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
@@ -67,6 +68,8 @@ import { ReviewModal } from "@/views/main/tutors/detail/review/components/Review
 type LessonPersonBadgeProps = {
   name: string;
   avatar: string;
+  source?: string;
+  groupName?: string;
 };
 
 function isCancelledLesson(lesson: LessonItem): boolean {
@@ -229,7 +232,7 @@ function LessonStatusBadge({
   );
 }
 
-function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
+function LessonPersonBadge({ name, avatar, source, groupName }: LessonPersonBadgeProps) {
   const initials =
     name
       .split(" ")
@@ -241,7 +244,7 @@ function LessonPersonBadge({ name, avatar }: LessonPersonBadgeProps) {
   return (
     <Avatar className="size-14 shrink-0 rounded-2xl ring-2 ring-white shadow-sm shadow-violet-200/40">
       {avatar ? <AvatarImage src={avatar} alt={name} className="object-cover" /> : null}
-      <AvatarFallback className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 text-sm font-bold text-white">
+      <AvatarFallback className={`rounded-2xl bg-gradient-to-br ${getAvatarGradient(source, groupName)} text-sm font-bold text-white`}>
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -297,7 +300,7 @@ function PastLessonListItem({
   return (
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-4 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
+        <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} source={lesson.source} groupName={lesson.groupName} />
         <div className="min-w-0 flex flex-col gap-0.5">
           {lesson.groupName && (
               <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">
@@ -538,7 +541,7 @@ function UpcomingLessonItem({
     <div className="group flex w-full flex-col gap-0 rounded-2xl border border-violet-100 bg-white transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40">
       <div className="flex w-full flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} />
+          <LessonPersonBadge name={lesson.tutor} avatar={lesson.tutorAvatar} source={lesson.source} groupName={lesson.groupName} />
           <div className="min-w-0 flex flex-col gap-0.5">
             {lesson.groupName && (
               <p className="mt-1 text-[11px] font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block w-fit">

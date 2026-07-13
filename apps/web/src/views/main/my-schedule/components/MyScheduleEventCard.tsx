@@ -1,5 +1,6 @@
 'use client';
 
+import { getAvatarGradient } from '@/lib/avatar-utils';
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -127,11 +128,7 @@ export default function MyScheduleEventCard({
             className={cn(
               'rounded-md font-bold text-white',
               isList ? 'text-xs' : 'text-[8px] sm:text-[9px]',
-              hasGroup
-                ? 'bg-linear-to-br from-indigo-600 to-cyan-700'
-                : isPlan
-                  ? 'bg-linear-to-br from-fuchsia-600 to-violet-600'
-                  : 'bg-linear-to-br from-amber-500 to-orange-600',
+              `bg-linear-to-br ${getAvatarGradient(event.lessonKind, event.groupName)}`,
             )}
           >
             {initials(event.studentName)}

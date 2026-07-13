@@ -9,6 +9,7 @@ import { useAtomValue } from "jotai";
 import { SendMessageModal } from "@/components/common/SendMessageModal";
 import { DashboardScheduleCalendar } from "@/components/schedule";
 import { userAtom } from "@/store";
+import { getAvatarGradient } from "@/lib/avatar-utils";
 import MyScheduleEventCard from "./MyScheduleEventCard";
 import ScheduleEventModal from "./ScheduleEventModal";
 
@@ -137,6 +138,7 @@ export default function MyScheduleCalendarSection({
         timeLabel={pickedEvent?.timeLabel ?? ""}
         avatarUrl={pickedEvent?.studentAvatarUrl}
         avatarAlt={pickedEvent?.studentName}
+        avatarGradient={pickedEvent ? getAvatarGradient(pickedEvent.lessonKind, pickedEvent.groupName) : undefined}
         detailRows={scheduleEventDetailRows}
         onSendMessage={() => setMessageOpen(true)}
       />

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui';
 import { formatTutorNextLessonLabel } from '@/components/calendar/utils/format-locale';
 import { SendMessageModal } from '@/components/common/SendMessageModal';
+import { getAvatarGradient } from '@/lib/avatar-utils';
 import { useUserTimezone } from '@/hooks';
 import { ROUTES } from '@mezon-tutors/shared';
 import { userAtom } from '@/store';
@@ -67,7 +68,7 @@ function StudentCard({ student, onMessage }: StudentCardProps) {
               className="rounded-2xl object-cover"
             />
           ) : null}
-          <AvatarFallback className="rounded-2xl bg-linear-to-br from-violet-600 to-fuchsia-600 text-base font-bold text-white">
+          <AvatarFallback className={`rounded-2xl bg-linear-to-br ${student.hasSubscription ? getAvatarGradient('subscription') : getAvatarGradient('trial')} text-base font-bold text-white`}>
             {initials(student.name)}
           </AvatarFallback>
         </Avatar>

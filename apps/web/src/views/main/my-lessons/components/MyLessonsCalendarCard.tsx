@@ -8,6 +8,7 @@ import { parseYmdInTimezone } from '@/lib/timezone';
 import { useLocale, useTranslations } from 'next-intl';
 import type { LessonItem, MyLessonsCalendarMeta } from '@/services';
 import { userAtom } from '@/store/auth.atom';
+import { getAvatarGradient } from '@/lib/avatar-utils';
 import ScheduleEventModal from '@/views/main/my-schedule/components/ScheduleEventModal';
 import { SendMessageModal } from '@/components/common/SendMessageModal';
 import MyLessonsEventCard from './MyLessonsEventCard';
@@ -86,6 +87,7 @@ export default function MyLessonsCalendarCard({
   }, [pickedLesson, tModal, tDash]);
 
   const tutorPeerFirstName = pickedLesson?.tutor.trim().split(/\s+/)[0] ?? '';
+  const eventGradient = pickedLesson ? getAvatarGradient(pickedLesson.source, pickedLesson.groupName) : undefined;
 
   return (
     <>
@@ -131,6 +133,7 @@ export default function MyLessonsCalendarCard({
         timeLabel={pickedLesson?.timeLabel ?? ''}
         avatarUrl={pickedLesson?.tutorAvatar}
         avatarAlt={pickedLesson?.tutor}
+        avatarGradient={eventGradient}
         detailRows={lessonModalDetailRows}
         viewProfileHref={pickedLesson ? ROUTES.TUTOR.DETAIL(pickedLesson.tutorId) : undefined}
         onSendMessage={() => setMessageOpen(true)}

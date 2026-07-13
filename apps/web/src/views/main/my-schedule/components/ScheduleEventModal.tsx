@@ -25,6 +25,7 @@ type ScheduleEventModalProps = {
   viewProfileHref?: string;
   avatarUrl?: string | null;
   avatarAlt?: string;
+  avatarGradient?: string;
   detailRows?: ScheduleEventModalDetailRow[];
 };
 
@@ -59,6 +60,7 @@ export default function ScheduleEventModal({
   viewProfileHref,
   avatarUrl,
   avatarAlt,
+  avatarGradient,
   detailRows,
 }: ScheduleEventModalProps) {
   const t = useTranslations('Dashboard.scheduleEventModal');
@@ -150,6 +152,7 @@ export default function ScheduleEventModal({
   if (!mounted || !open) return null;
 
   const alt = avatarAlt ?? peerName;
+  const gradient = avatarGradient ?? 'from-violet-600 to-fuchsia-600';
 
   return createPortal(
     <>
@@ -168,7 +171,7 @@ export default function ScheduleEventModal({
           <div className="mt-2 flex gap-3">
             <Avatar className="size-14 shrink-0 rounded-2xl border-2 border-white shadow-md ring-1 ring-violet-100">
               {avatarUrl ? <AvatarImage src={avatarUrl} alt={alt} className="object-cover" /> : null}
-              <AvatarFallback className="rounded-2xl bg-linear-to-br from-violet-600 to-fuchsia-600 text-lg font-bold text-white">
+              <AvatarFallback className={`rounded-2xl bg-linear-to-br ${gradient} text-lg font-bold text-white`}>
                 {peerInitials(peerName)}
               </AvatarFallback>
             </Avatar>
