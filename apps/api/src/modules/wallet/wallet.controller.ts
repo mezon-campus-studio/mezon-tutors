@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Put, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -71,8 +71,15 @@ export class WalletController {
   @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: wallet transaction statistics' })
-  getAdminTransactionStats() {
-    return this.walletService.getAdminTransactionStats();
+  @ApiQuery({ name: 'tutorId', required: false })
+  @ApiQuery({ name: 'startDate', required: false })
+  @ApiQuery({ name: 'endDate', required: false })
+  getAdminTransactionStats(
+    @Query('tutorId') tutorId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.walletService.getAdminTransactionStats(tutorId, startDate, endDate);
   }
 
   @Get('admin/transactions')
@@ -80,11 +87,23 @@ export class WalletController {
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Admin: list all wallet transactions (paginated)' })
   getAllTransactions(@Query() query: GetAdminWalletTransactionsDto) {
-    return this.walletService.getAllTransactions(
-      query.page,
-      query.limit,
-      query.direction,
-    );
+    return this.walletService.getAllTransactions({
+      page: query.page,
+      limit: query.limit,
+      direction: query.direction,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      tutorId: query.tutorId,
+    });
+  }
+
+  @Get('admin/tutors')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Admin: search tutors for transaction filter' })
+  @ApiQuery({ name: 'search', required: false })
+  searchTutors(@Query('search') search?: string) {
+    return this.walletService.searchTutors(search);
   }
 
   @Get('admin/transactions/user/:userId')

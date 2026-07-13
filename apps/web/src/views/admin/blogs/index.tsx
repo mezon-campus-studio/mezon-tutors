@@ -36,7 +36,7 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 export default function AdminBlogsView() {
   const t = useTranslations("Admin.Blogs");
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<BlogPublishStatusFilter>("PENDING");
+  const [status, setStatus] = useState<BlogPublishStatusFilter>("all");
   const { data: posts = [], isLoading } = useAdminBlogs(status);
   const { data: metrics } = useAdminBlogMetrics();
 

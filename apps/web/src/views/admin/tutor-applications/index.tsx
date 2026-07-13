@@ -29,13 +29,6 @@ import MetricsCards from "./components/MetricsCards";
 import ConfirmDialog from "./detail/components/ConfirmDialog";
 import TutorsPagination from "@/views/main/tutors/components/TutorsPagination";
 
-const statusFilterLabel: Record<AdminTutorApplicationStatusFilter, string> = {
-  all: "All",
-  PENDING: "Pending",
-  APPROVED: "Approved",
-  REJECTED: "Rejected",
-};
-
 type ConfirmAction = {
   type: "approve" | "reject";
   id: string;
@@ -192,12 +185,14 @@ export default function AdminTutorApplicationsView() {
             }}
           >
             <SelectTrigger className="h-10 w-40">
-              <SelectValue />
+              <SelectValue>
+                {(value: string) => t(`statusFilter.${value}`)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {ADMIN_TUTOR_APPLICATION_STATUS_FILTERS.map((value) => (
                 <SelectItem key={value} value={value}>
-                  {statusFilterLabel[value]}
+                  {t(`statusFilter.${value}`)}
                 </SelectItem>
               ))}
             </SelectContent>

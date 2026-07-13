@@ -1260,21 +1260,87 @@ export class WalletService {
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
   }
 
-  async getAdminTransactionStats(): Promise<AdminWalletTransactionStatsApiResponse> {
+  async getAdminTransactionStats(tutorId?: string, startDate?: string, endDate?: string): Promise<AdminWalletTransactionStatsApiResponse> {
     const where: Prisma.TransactionWhereInput = {
       type: { in: [EWalletTransactionType.BOOKING_PAYMENT, EWalletTransactionType.WITHDRAWAL] },
+      ...(tutorId ? {
+        wallet: {
+          user: {
+            id: tutorId,
+            role: Role.TUTOR,
+          },
+        },
+      } : {}),
+      ...(startDate || endDate ? {
+        createdAt: {
+          ...(startDate ? { gte: new Date(startDate) } : {}),
+          ...(endDate ? { lte: new Date(endDate) } : {}),
+        },
+      } : {}),
     };
 
-    const monthStart = this.monthStart();
+    if (startDate || endDate) {
+      const [creditAgg, debitAgg, platformFeeAgg, count] = await Promise.all([
+        this.prisma.transaction.aggregate({
+          _sum: { amount: true },
+          where: { direction: EWalletTransactionDirection.CREDIT, ...where },
+        }),
+        this.prisma.transaction.aggregate({
+          _sum: { amount: true },
+          where: { direction: EWalletTransactionDirection.DEBIT, ...where },
+        }),
+        this.prisma.transaction.aggregate({
+          _sum: { platformFee: true },
+          where,
+        }),
+        this.prisma.transaction.count({ where }),
+      ]);
+
+      const stats = {
+        credit: Number(creditAgg._sum.amount ?? 0n),
+        debit: Number(debitAgg._sum.amount ?? 0n),
+        platformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
+        transactionCount: count,
+      };
+
+      return { today: stats, week: stats, month: stats, total: stats };
+    }
+
+    const todayStart = dayjs().startOf('day').toDate();
+    const todayEnd = dayjs().endOf('day').toDate();
+    const weekStart = dayjs().startOf('week').toDate();
+    const weekEnd = dayjs().endOf('week').toDate();
+    const monthStart = dayjs().startOf('month').toDate();
+    const monthEnd = dayjs().endOf('month').toDate();
+
+    const periodAgg = (gte: Date, lte: Date) => Promise.all([
+      this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { direction: EWalletTransactionDirection.CREDIT, createdAt: { gte, lte }, ...where },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { direction: EWalletTransactionDirection.DEBIT, createdAt: { gte, lte }, ...where },
+      }),
+      this.prisma.transaction.aggregate({
+        _sum: { platformFee: true },
+        where: { createdAt: { gte, lte }, ...where },
+      }),
+      this.prisma.transaction.count({ where: { createdAt: { gte, lte }, ...where } }),
+    ]);
+
     const [
-      creditAgg,
-      debitAgg,
-      platformFeeAgg,
-      monthCreditAgg,
-      monthDebitAgg,
-      transactionCount,
-      monthTransactionCount,
+      [todayCreditAgg, todayDebitAgg, todayPlatformFeeAgg, todayCount],
+      [weekCreditAgg, weekDebitAgg, weekPlatformFeeAgg, weekCount],
+      [monthCreditAgg, monthDebitAgg, monthPlatformFeeAgg, monthCount],
+      totalCreditAgg,
+      totalDebitAgg,
+      totalPlatformFeeAgg,
+      totalCount,
     ] = await Promise.all([
+      periodAgg(todayStart, todayEnd),
+      periodAgg(weekStart, weekEnd),
+      periodAgg(monthStart, monthEnd),
       this.prisma.transaction.aggregate({
         _sum: { amount: true },
         where: { direction: EWalletTransactionDirection.CREDIT, ...where },
@@ -1285,49 +1351,59 @@ export class WalletService {
       }),
       this.prisma.transaction.aggregate({
         _sum: { platformFee: true },
-        where: { ...where },
-      }),
-      this.prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: {
-          direction: EWalletTransactionDirection.CREDIT,
-          createdAt: { gte: monthStart },
-          ...where
-        },
-      }),
-      this.prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: {
-          direction: EWalletTransactionDirection.DEBIT,
-          createdAt: { gte: monthStart },
-          ...where
-        },
+        where,
       }),
       this.prisma.transaction.count({ where }),
-      this.prisma.transaction.count({ where: { createdAt: { gte: monthStart }, ...where } }),
     ]);
 
+    const toStats = (
+      credit: typeof todayCreditAgg,
+      debit: typeof todayDebitAgg,
+      pf: typeof todayPlatformFeeAgg,
+      count: number,
+    ) => ({
+      credit: Number(credit._sum.amount ?? 0n),
+      debit: Number(debit._sum.amount ?? 0n),
+      platformFee: Number(pf._sum.platformFee ?? 0n),
+      transactionCount: count,
+    });
+
     return {
-      totalCredit: Number(creditAgg._sum.amount ?? 0n),
-      totalDebit: Number(debitAgg._sum.amount ?? 0n),
-      totalPlatformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
-      monthCredit: Number(monthCreditAgg._sum.amount ?? 0n),
-      monthDebit: Number(monthDebitAgg._sum.amount ?? 0n),
-      transactionCount,
-      monthTransactionCount,
+      today: toStats(todayCreditAgg, todayDebitAgg, todayPlatformFeeAgg, todayCount),
+      week: toStats(weekCreditAgg, weekDebitAgg, weekPlatformFeeAgg, weekCount),
+      month: toStats(monthCreditAgg, monthDebitAgg, monthPlatformFeeAgg, monthCount),
+      total: toStats(totalCreditAgg, totalDebitAgg, totalPlatformFeeAgg, totalCount),
     };
   }
 
-  async getAllTransactions(
-    page = 1,
-    limit = 15,
-    direction?: EWalletTransactionDirection,
-  ): Promise<AdminWalletTransactionsApiResponse> {
+  async getAllTransactions(params: {
+    page?: number;
+    limit?: number;
+    direction?: EWalletTransactionDirection;
+    startDate?: string;
+    endDate?: string;
+    tutorId?: string;
+  } = {}): Promise<AdminWalletTransactionsApiResponse> {
+    const { page = 1, limit = 15, direction, startDate, endDate, tutorId } = params;
     const { skip, page: safePage, limit: safeLimit } = this.paginate(page, limit);
 
     const where: Prisma.TransactionWhereInput = {
       type: { in: [EWalletTransactionType.BOOKING_PAYMENT, EWalletTransactionType.WITHDRAWAL] },
       ...(direction ? { direction } : {}),
+      ...(startDate || endDate ? {
+        createdAt: {
+          ...(startDate ? { gte: new Date(startDate) } : {}),
+          ...(endDate ? { lte: new Date(endDate) } : {}),
+        },
+      } : {}),
+      ...(tutorId ? {
+        wallet: {
+          user: {
+            id: tutorId,
+            role: Role.TUTOR,
+          },
+        },
+      } : {}),
     };
 
     const [total, rows] = await Promise.all([
@@ -1385,6 +1461,44 @@ export class WalletService {
     }));
 
     return { items, meta: this.buildMeta(total, safePage, safeLimit) };
+  }
+
+  async searchTutors(search?: string): Promise<Array<{ id: string; username: string; displayName: string; email: string | null }>> {
+    const where: Prisma.UserWhereInput = {
+      role: Role.TUTOR,
+      ...(search ? {
+        OR: [
+          { username: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+          { tutorProfile: {
+            OR: [
+              { firstName: { contains: search, mode: 'insensitive' } },
+              { lastName: { contains: search, mode: 'insensitive' } },
+            ],
+          }},
+        ],
+      } : {}),
+    };
+
+    const users = await this.prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        tutorProfile: { select: { firstName: true, lastName: true } },
+      },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return users.map((u) => ({
+      id: u.id,
+      username: u.username,
+      displayName: this.formatWithdrawalRequesterName(u),
+      email: u.email,
+    }));
   }
 
   async getUserTransactions(

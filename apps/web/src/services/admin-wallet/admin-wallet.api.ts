@@ -17,6 +17,16 @@ const BASE = "/wallet";
 
 export type AdminTransactionsFilters = {
   direction?: WalletTransactionDirection;
+  startDate?: string;
+  endDate?: string;
+  tutorId?: string;
+};
+
+export type TutorSearchItem = {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string | null;
 };
 
 export const adminWalletApi = {
@@ -27,23 +37,30 @@ export const adminWalletApi = {
     >(`${BASE}/admin/withdrawals`, { params: { page, limit: 10 } });
   },
 
-  getTransactionStats(): Promise<AdminWalletTransactionStatsApiResponse> {
+  getTransactionStats(tutorId?: string, startDate?: string, endDate?: string): Promise<AdminWalletTransactionStatsApiResponse> {
+    const params: Record<string, string> = {};
+    if (tutorId) params.tutorId = tutorId;
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
     return apiClient.get<
       ApiResponse<AdminWalletTransactionStatsApiResponse>,
       AdminWalletTransactionStatsApiResponse
-    >(`${BASE}/admin/transactions/stats`);
+    >(`${BASE}/admin/transactions/stats`, { params });
   },
 
   getTransactions(
     page: number,
     filters: AdminTransactionsFilters = {},
   ): Promise<AdminWalletTransactionsApiResponse> {
+    const params: Record<string, string | number | undefined> = { page, limit: 15 };
+    if (filters.direction) params.direction = filters.direction;
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
+    if (filters.tutorId) params.tutorId = filters.tutorId;
     return apiClient.get<
       ApiResponse<AdminWalletTransactionsApiResponse>,
       AdminWalletTransactionsApiResponse
-    >(`${BASE}/admin/transactions`, {
-      params: { page, limit: 15, ...filters },
-    });
+    >(`${BASE}/admin/transactions`, { params });
   },
 
   getUserTransactions(
@@ -56,6 +73,13 @@ export const adminWalletApi = {
     >(`${BASE}/admin/transactions/user/${userId}`, {
       params: { page, limit: 10 },
     });
+  },
+
+  searchTutors(search?: string): Promise<TutorSearchItem[]> {
+    return apiClient.get<
+      ApiResponse<TutorSearchItem[]>,
+      TutorSearchItem[]
+    >(`${BASE}/admin/tutors`, { params: { search } });
   },
 
   approveWithdrawal(
@@ -78,11 +102,12 @@ export function useAdminWalletWithdrawals(page: number) {
   });
 }
 
-export function useAdminWalletTransactionStats() {
+export function useAdminWalletTransactionStats(tutorId?: string, startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: adminWalletQueryKey.transactionStats(),
-    queryFn: () => adminWalletApi.getTransactionStats(),
+    queryKey: adminWalletQueryKey.transactionStats(tutorId, startDate, endDate),
+    queryFn: () => adminWalletApi.getTransactionStats(tutorId, startDate, endDate),
     staleTime: 30 * 1000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -94,6 +119,7 @@ export function useAdminWalletTransactions(
     queryKey: adminWalletQueryKey.transactions(page, filters),
     queryFn: () => adminWalletApi.getTransactions(page, filters),
     staleTime: 30 * 1000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -102,6 +128,15 @@ export function useAdminUserTransactions(userId: string, page: number) {
     queryKey: adminWalletQueryKey.userTransactions(userId, page),
     queryFn: () => adminWalletApi.getUserTransactions(userId, page),
     staleTime: 30 * 1000,
+  });
+}
+
+export function useSearchTutors(search: string) {
+  return useQuery({
+    queryKey: adminWalletQueryKey.tutors(search),
+    queryFn: () => adminWalletApi.searchTutors(search || undefined),
+    staleTime: 30 * 1000,
+    enabled: true,
   });
 }
 

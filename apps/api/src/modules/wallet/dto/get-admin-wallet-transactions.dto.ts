@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { EWalletTransactionDirection } from '@mezon-tutors/db';
 
 export class GetAdminWalletTransactionsDto {
@@ -19,4 +19,16 @@ export class GetAdminWalletTransactionsDto {
   @IsOptional()
   @IsEnum(EWalletTransactionDirection)
   direction?: EWalletTransactionDirection;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsUUID()
+  tutorId?: string;
 }

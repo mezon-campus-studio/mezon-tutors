@@ -21,6 +21,12 @@
       "searchPlaceholder": "Search applications...",
       "title": "Tutor Applications",
       "description": "Review and manage new tutor onboarding requests.",
+      "statusFilter": {
+        "all": "All",
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
       "metrics": {
         "totalPending": {
           "title": "Total Pending",
@@ -244,26 +250,50 @@
       "title": "Transactions",
       "description": "Track money in and out across all platform wallets.",
       "metrics": {
-        "totalCredit": {
-          "title": "Total money in",
-          "helper": "This month: {amount}"
+        "tab": {
+          "today": "Today",
+          "week": "This week",
+          "month": "This month",
+          "total": "Total"
         },
-        "totalDebit": {
-          "title": "Total money out",
-          "helper": "This month: {amount}"
+        "today": {
+          "credit": { "title": "Money in" },
+          "debit": { "title": "Money out" },
+          "platformFee": { "title": "Platform fees" },
+          "transactionCount": { "title": "Transactions" }
         },
-        "platformFee": {
-          "title": "Platform fees",
-          "helper": "Total fees collected from transactions"
+        "week": {
+          "credit": { "title": "Money in" },
+          "debit": { "title": "Money out" },
+          "platformFee": { "title": "Platform fees" },
+          "transactionCount": { "title": "Transactions" }
         },
-        "transactionCount": {
-          "title": "Transactions",
-          "helper": "This month: {count} transactions"
+        "month": {
+          "credit": { "title": "Money in" },
+          "debit": { "title": "Money out" },
+          "platformFee": { "title": "Platform fees" },
+          "transactionCount": { "title": "Transactions" }
+        },
+        "total": {
+          "credit": { "title": "Total money in" },
+          "debit": { "title": "Total money out" },
+          "platformFee": { "title": "Total platform fees" },
+          "transactionCount": { "title": "Total transactions" }
         }
       },
       "filters": {
         "allTypes": "All types",
-        "allDirections": "All directions"
+        "allDirections": "All directions",
+        "period": {
+          "today": "Today",
+          "week": "This week",
+          "month": "This month",
+          "all": "Total",
+          "custom": "Custom date"
+        },
+        "tutorPlaceholder": "Search tutor...",
+        "clearDate": "Clear date",
+        "clearFilters": "Clear filters"
       },
       "list": {
         "title": "Transaction history",

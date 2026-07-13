@@ -192,14 +192,18 @@ export type AdminUserWalletTransactionsApiResponse = PaginatedData<AdminWalletTr
   stats: AdminUserWalletTransactionStats;
 };
 
-export type AdminWalletTransactionStatsApiResponse = {
-  totalCredit: number;
-  totalDebit: number;
-  totalPlatformFee: number;
-  monthCredit: number;
-  monthDebit: number;
+export type PeriodStats = {
+  credit: number;
+  debit: number;
+  platformFee: number;
   transactionCount: number;
-  monthTransactionCount: number;
+};
+
+export type AdminWalletTransactionStatsApiResponse = {
+  today: PeriodStats;
+  week: PeriodStats;
+  month: PeriodStats;
+  total: PeriodStats;
 };
 
 export type WalletTransactionsApiResponse = PaginatedData<WalletTransactionApiItem>;
