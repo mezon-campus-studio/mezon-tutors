@@ -161,6 +161,7 @@ function itemToCancelTarget(
     startAt: item.startAt,
     grossAmount: item.grossAmount > 0 ? item.grossAmount : undefined,
     currency: ECurrency.VND,
+    groupName: item.groupName,
   };
 }
 
@@ -180,6 +181,7 @@ function itemToRescheduleTarget(
     dateLabel: start.isValid() ? start.format('ddd, MMM DD') : '—',
     timeLabel: start.isValid() ? `${start.format('HH:mm')} - ${end.format('HH:mm')}` : '—',
     subject: planLessonLabel,
+    groupName: item.groupName,
   };
 }
 

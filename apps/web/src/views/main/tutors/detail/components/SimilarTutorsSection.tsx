@@ -15,7 +15,7 @@ export function SimilarTutorsSection({ tutor }: SimilarTutorsSectionProps) {
   const t = useTranslations("Tutors.Detail");
   const { currency } = useCurrency();
 
-  const { data, isPending, isError } = useGetVerifiedTutors(1, 5, {
+  const { data, isPending, isError } = useGetVerifiedTutors(1, 3, {
     sortBy: ETutorSortBy.BEST_RATING,
     subject: tutor.subject as ESubject,
     currency,

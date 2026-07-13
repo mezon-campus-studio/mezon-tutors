@@ -138,7 +138,7 @@ export default function BookingRequestDetailView({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
-            <div className="relative isolate overflow-hidden bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_45%,#d071ff_100%)] px-6 py-7 text-white">
+            <div className="relative isolate overflow-hidden bg-linear-to-br from-amber-500 to-orange-600 px-6 py-7 text-white">
               <div className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-white/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-16 -left-12 size-48 rounded-full bg-fuchsia-300/30 blur-3xl" />
               <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -151,7 +151,7 @@ export default function BookingRequestDetailView({
                         className="rounded-xl object-cover"
                       />
                     ) : null}
-                    <AvatarFallback className="rounded-xl bg-white/20 text-base font-bold text-white">
+                    <AvatarFallback className="rounded-xl bg-linear-to-br from-amber-500 to-orange-600 text-base font-bold text-white">
                       {getInitials(booking.studentName)}
                     </AvatarFallback>
                   </Avatar>

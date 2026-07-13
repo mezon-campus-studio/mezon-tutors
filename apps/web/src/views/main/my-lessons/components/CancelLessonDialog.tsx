@@ -22,6 +22,7 @@ import {
   Label,
 } from "@/components/ui";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
+import { getAvatarGradient } from "@/lib/avatar-utils";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import { ECurrency, formatToCurrency, isTrialLessonRefundEligible } from "@mezon-tutors/shared";
 import { usePublicAppSettings } from "@/services";
@@ -37,6 +38,7 @@ export type TrialCancelLessonTarget = {
   startAt: string;
   grossAmount?: number;
   currency?: string;
+  groupName?: string;
 };
 
 type CancelLessonDialogProps = {
@@ -75,6 +77,7 @@ function lessonToTarget(
     startAt: lesson.startAt ?? "",
     grossAmount: lesson.grossAmount,
     currency: lesson.currency,
+    groupName: "groupName" in lesson ? lesson.groupName : undefined,
   };
 }
 
@@ -211,7 +214,7 @@ export function CancelLessonDialog({
                       className="rounded-lg object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
+                  <AvatarFallback className={`rounded-lg bg-gradient-to-br ${getAvatarGradient(target.source, target.groupName)} text-xs font-bold text-white`}>
                     {getInitials(target.peerName)}
                   </AvatarFallback>
                 </Avatar>

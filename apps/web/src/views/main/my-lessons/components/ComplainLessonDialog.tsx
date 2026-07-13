@@ -21,6 +21,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui";
+import { getAvatarGradient } from "@/lib/avatar-utils";
 import { formatLessonDateLabel } from "@/components/calendar/utils/format-locale";
 import type { LessonItem } from "@/services/my-lessons/my-lessons.api";
 import { cloudinaryService } from "@/services/cloudinary/cloudinary.service";
@@ -285,7 +286,7 @@ export function ComplainLessonDialog({
                       className="rounded-lg object-cover"
                     />
                   ) : null}
-                  <AvatarFallback className="rounded-lg bg-brand-gradient-135 text-xs font-bold text-white">
+                  <AvatarFallback className={`rounded-lg bg-gradient-to-br ${getAvatarGradient(lesson.source, lesson.groupName)} text-xs font-bold text-white`}>
                     {getInitials(lesson.tutor)}
                   </AvatarFallback>
                 </Avatar>

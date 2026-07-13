@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { getAvatarGradient } from '@/lib/avatar-utils';
 import { useTranslations } from 'next-intl';
 import type { LessonItem } from '@/services';
 
@@ -113,7 +114,7 @@ export default function MyLessonsEventCard({
             className={cn(
               'rounded-md font-bold text-white',
               isList ? 'text-xs' : 'text-[8px] sm:text-[9px]',
-              isPlan ? 'bg-linear-to-br from-fuchsia-600 to-violet-600' : 'bg-linear-to-br from-amber-500 to-orange-600',
+              `bg-linear-to-br ${getAvatarGradient(lesson.source, lesson.groupName)}`,
             )}
           >
             {initials(lesson.tutor)}
