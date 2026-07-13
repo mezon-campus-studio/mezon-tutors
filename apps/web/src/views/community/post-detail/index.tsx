@@ -2,7 +2,7 @@
 
 import { ROUTES, type CommunityPostDetailDto } from '@mezon-tutors/shared';
 import { useAtomValue } from 'jotai';
-import { Hash, Trash2 } from 'lucide-react';
+import { ArrowLeftIcon, Hash, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -25,6 +25,7 @@ import {
   useToggleCommunityUpvote,
 } from '@/services';
 import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
+import { useQueryClient } from '@tanstack/react-query';
 
 type CommunityPostDetailPageProps = {
   post: CommunityPostDetailDto;
@@ -59,6 +60,7 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   const toggleUpvote = useToggleCommunityUpvote(post.id);
   const toggleFollow = useToggleCommunityFollow();
   const deletePost = useDeleteCommunityPost();
+  const QueryClient = useQueryClient();
 
   const isMine = user?.id === post.author.id;
   const isFollowing = followingIds.includes(post.author.id);
@@ -97,7 +99,10 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   const handleDelete = useCallback(() => {
     if (!window.confirm(t("deleteConfirm"))) return;
     deletePost.mutate(post.id, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await QueryClient.invalidateQueries({
+          queryKey: ["posts"],
+        });
         toast.success(t('deleted'));
         router.push(ROUTES.COMMUNITY.INDEX);
       },
@@ -105,12 +110,20 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
     });
   }, [t, deletePost, post.id, router]);
 
+  const handleBack = () => {
+    window.history.back();
+  }
+
   const handleOpenComments = useCallback(() => setDrawerOpen(true), []);
 
   return (
     <main className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_30%)]">
       <div className="relative mx-auto max-w-3xl px-6 py-8 sm:py-12">
         <article>
+          <div className='mb-4 flex items-center gap-2 text-sm font-medium cursor-pointer text-slate-500 hover:text-violet-700' onClick={handleBack}>
+            <ArrowLeftIcon className='size-4' />
+            <span>{t('back')}</span>
+          </div>
           <div className='flex justify-between'>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <CommunityPostTypeBadge type={post.type} />

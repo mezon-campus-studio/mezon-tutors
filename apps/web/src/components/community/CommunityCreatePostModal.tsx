@@ -43,9 +43,10 @@ import {
   Textarea,
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { cloudinaryService, useCreateCommunityPost } from '@/services';
+import { cloudinaryService, communityQueryKey, useCreateCommunityPost } from '@/services';
 import type { AuthUser } from '@/store';
 import { userAtom } from '@/store';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MODAL_POST_TYPES: CommunityPostType[] = ['POST', 'QUESTION', 'EXERCISE'];
 const MAX_IMAGES = 10;
@@ -77,6 +78,7 @@ export function CommunityCreatePostModal({ open, onOpenChange, defaultType = 'PO
   const createPost = useCreateCommunityPost();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const queryClient = useQueryClient();
 
   const autoResizeTextarea = () => {
     const el = textareaRef.current;
@@ -166,10 +168,22 @@ export function CommunityCreatePostModal({ open, onOpenChange, defaultType = 'PO
     };
 
     createPost.mutate(payload, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         toast.success(t('success'));
         onOpenChange(false);
         router.push(ROUTES.COMMUNITY.DETAIL(data.id));
+
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: communityQueryKey.feed(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: communityQueryKey.feed({
+              type: type,
+            }),
+          }),
+        ]);
+        
       },
       onError: () => toast.error(t('failed')),
     });
