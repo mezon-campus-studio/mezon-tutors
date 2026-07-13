@@ -107,6 +107,10 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
     });
   };
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   return (
     <main className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_30%,#ffffff_100%)]">
       <div
@@ -122,13 +126,10 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
         />
 
         <article className="px-6 py-8 sm:py-12 lg:px-8">
-        <Link
-          href={ROUTES.BLOGS.INDEX}
-          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-violet-700"
-        >
-          <ArrowLeft className="size-4" />
-          {t('back')}
-        </Link>
+        <div className='mb-4 flex items-center gap-2 text-sm font-medium cursor-pointer text-slate-500 hover:text-violet-700' onClick={handleBack}>
+          <ArrowLeft className='size-4' />
+          <span>{t('back')}</span>
+        </div>
 
         <header className="space-y-5">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl sm:leading-tight">

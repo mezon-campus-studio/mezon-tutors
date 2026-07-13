@@ -73,7 +73,7 @@
       }
     },
     "detail": {
-      "back": "Back to community",
+      "back": "Back",
       "publishedAt": "{date}",
       "by": "by {name}",
       "follow": "Follow",

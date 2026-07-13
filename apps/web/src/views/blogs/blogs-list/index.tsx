@@ -168,14 +168,14 @@ export default function BlogsListPage({
               <div className="grid gap-0 lg:grid-cols-2">
                 <Link
                   href={ROUTES.BLOGS.DETAIL(featuredPost.slug)}
-                  className="relative block min-h-[260px]"
+                  className="relative block min-h-[260px] max-lg:min-h-[320px]"
                 >
                   {featuredPost.coverImageUrl ? (
                     <Image
                       src={featuredPost.coverImageUrl}
                       alt={featuredPost.title}
                       fill
-                      className="transition-transform duration-500 hover:scale-105 p-2 rounded-l-4xl"
+                      className="transition-transform duration-500 hover:scale-105 p-2 lg:rounded-l-4xl max-lg:rounded-t-4xl max-lg:object-contain"
                       sizes="(max-width: 1024px) 100vw, 50vw"
                     />
                   ) : (
