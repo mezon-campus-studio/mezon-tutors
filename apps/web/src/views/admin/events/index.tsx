@@ -37,7 +37,7 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "
 export default function AdminEventsView() {
   const t = useTranslations("Admin.Events");
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<EventPublishStatusFilter>("PENDING");
+  const [status, setStatus] = useState<EventPublishStatusFilter>("all");
   const { data: events = [], isLoading } = useAdminEvents(status);
   const { data: metrics } = useAdminEventMetrics();
 

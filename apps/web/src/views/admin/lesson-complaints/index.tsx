@@ -146,7 +146,7 @@ export default function AdminLessonComplaintsView() {
   const tFilters = useTranslations("Admin.LessonComplaints.filters");
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<LessonComplaintStatusFilter>("PENDING");
+  const [status, setStatus] = useState<LessonComplaintStatusFilter>("all");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [confirmState, setConfirmState] = useState<{
     action: "approve" | "approveWithoutTutor" | "reject";

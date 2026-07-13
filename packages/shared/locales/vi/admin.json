@@ -21,6 +21,12 @@
       "searchPlaceholder": "Tìm kiếm hồ sơ...",
       "title": "Hồ sơ ứng tuyển gia sư",
       "description": "Xem xét và duyệt các hồ sơ gia sư mới.",
+      "statusFilter": {
+        "all": "Tất cả",
+        "PENDING": "Chờ duyệt",
+        "APPROVED": "Đã duyệt",
+        "REJECTED": "Từ chối"
+      },
       "metrics": {
         "totalPending": {
           "title": "Đang chờ duyệt",
@@ -244,26 +250,50 @@
       "title": "Giao dịch",
       "description": "Theo dõi dòng tiền vào/ra trên toàn hệ thống ví.",
       "metrics": {
-        "totalCredit": {
-          "title": "Tổng tiền vào",
-          "helper": "Tháng này: {amount}"
+        "tab": {
+          "today": "Hôm nay",
+          "week": "Tuần này",
+          "month": "Tháng này",
+          "total": "Tổng"
         },
-        "totalDebit": {
-          "title": "Tổng tiền ra",
-          "helper": "Tháng này: {amount}"
+        "today": {
+          "credit": { "title": "Tiền vào" },
+          "debit": { "title": "Tiền ra" },
+          "platformFee": { "title": "Phí nền tảng" },
+          "transactionCount": { "title": "Giao dịch" }
         },
-        "platformFee": {
-          "title": "Phí nền tảng",
-          "helper": "Tổng phí thu được từ các giao dịch"
+        "week": {
+          "credit": { "title": "Tiền vào" },
+          "debit": { "title": "Tiền ra" },
+          "platformFee": { "title": "Phí nền tảng" },
+          "transactionCount": { "title": "Giao dịch" }
         },
-        "transactionCount": {
-          "title": "Số giao dịch",
-          "helper": "Tháng này: {count} giao dịch"
+        "month": {
+          "credit": { "title": "Tiền vào" },
+          "debit": { "title": "Tiền ra" },
+          "platformFee": { "title": "Phí nền tảng" },
+          "transactionCount": { "title": "Giao dịch" }
+        },
+        "total": {
+          "credit": { "title": "Tổng tiền vào" },
+          "debit": { "title": "Tổng tiền ra" },
+          "platformFee": { "title": "Tổng phí nền tảng" },
+          "transactionCount": { "title": "Tổng giao dịch" }
         }
       },
       "filters": {
         "allTypes": "Tất cả loại",
-        "allDirections": "Tất cả chiều"
+        "allDirections": "Tất cả chiều",
+        "period": {
+          "today": "Hôm nay",
+          "week": "Tuần này",
+          "month": "Tháng này",
+          "all": "Tổng",
+          "custom": "Tuỳ chỉnh"
+        },
+        "tutorPlaceholder": "Tìm gia sư...",
+        "clearDate": "Xoá ngày",
+        "clearFilters": "Xoá bộ lọc"
       },
       "list": {
         "title": "Lịch sử giao dịch",
