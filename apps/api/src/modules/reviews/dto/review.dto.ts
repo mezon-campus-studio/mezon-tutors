@@ -1,5 +1,5 @@
 import { OmitType } from '@nestjs/mapped-types';
-import { IsInt, IsString, Length, Max, Min } from 'class-validator';
+import { IsInt, IsString, MaxLength, Max, Min } from 'class-validator';
 import { REVIEW_VALIDATION } from '@mezon-tutors/shared';
 
 export class CreateReviewDto {
@@ -12,7 +12,7 @@ export class CreateReviewDto {
   rating: number;
 
   @IsString()
-  @Length(REVIEW_VALIDATION.MIN_COMMENT_LENGTH, REVIEW_VALIDATION.MAX_COMMENT_LENGTH)
+  @MaxLength(REVIEW_VALIDATION.MAX_COMMENT_LENGTH)
   comment: string;
 }
 

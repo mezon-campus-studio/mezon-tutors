@@ -1,7 +1,6 @@
 export const REVIEW_VALIDATION = {
   MIN_RATING: 1,
   MAX_RATING: 5,
-  MIN_COMMENT_LENGTH: 20,
   MAX_COMMENT_LENGTH: 500,
 } as const;
 

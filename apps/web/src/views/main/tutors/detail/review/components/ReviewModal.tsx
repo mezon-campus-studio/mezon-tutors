@@ -66,14 +66,6 @@ export function ReviewModal({
 
   const validateComment = (text: string): boolean => {
     const trimmed = text.trim();
-    if (trimmed.length < REVIEW_VALIDATION.MIN_COMMENT_LENGTH) {
-      setError(
-        t("reviewModal.errors.commentTooShort", {
-          min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
-        }),
-      );
-      return false;
-    }
     if (trimmed.length > REVIEW_VALIDATION.MAX_COMMENT_LENGTH) {
       setError(
         t("reviewModal.errors.commentTooLong", {
@@ -159,7 +151,6 @@ export function ReviewModal({
                 if (error) validateComment(e.target.value);
               }}
               placeholder={t("reviewModal.placeholderComment", {
-                min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
                 max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH,
               })}
               className="min-h-[120px] bg-gray-50 border-gray-200 text-gray-900 text-sm p-3 rounded-xl resize-none"

@@ -437,7 +437,7 @@
       "forTutor": "cho {tutorName}",
       "ratingLabel": "Đánh giá",
       "commentLabel": "Nhận xét",
-      "placeholderComment": "Chia sẻ trải nghiệm của bạn với gia sư này ({min}-{max} ký tự)",
+      "placeholderComment": "Chia sẻ trải nghiệm của bạn với gia sư này ({max} ký tự)",
       "cancel": "Hủy",
       "submit": "Gửi đánh giá",
       "update": "Cập nhật đánh giá",

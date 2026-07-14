@@ -438,7 +438,7 @@
       "forTutor": "for {tutorName}",
       "ratingLabel": "Rating",
       "commentLabel": "Comment",
-      "placeholderComment": "Share your experience with this tutor ({min}-{max} characters)",
+      "placeholderComment": "Share your experience with this tutor ({max} characters)",
       "cancel": "Cancel",
       "submit": "Submit Review",
       "update": "Update Review",
