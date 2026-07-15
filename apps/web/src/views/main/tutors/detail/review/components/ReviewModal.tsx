@@ -33,6 +33,8 @@ interface ReviewModalProps {
     | null;
   isOpen: boolean;
   onClose: () => void;
+  viewOnly?: boolean;
+  onEdit?: () => void;
 }
 
 export function ReviewModal({
@@ -41,6 +43,8 @@ export function ReviewModal({
   existingReview,
   isOpen,
   onClose,
+  viewOnly = false,
+  onEdit,
 }: ReviewModalProps) {
   const t = useTranslations("Tutors.Detail");
   const [rating, setRating] = useState(existingReview?.rating || 5);
@@ -66,14 +70,6 @@ export function ReviewModal({
 
   const validateComment = (text: string): boolean => {
     const trimmed = text.trim();
-    if (trimmed.length < REVIEW_VALIDATION.MIN_COMMENT_LENGTH) {
-      setError(
-        t("reviewModal.errors.commentTooShort", {
-          min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
-        }),
-      );
-      return false;
-    }
     if (trimmed.length > REVIEW_VALIDATION.MAX_COMMENT_LENGTH) {
       setError(
         t("reviewModal.errors.commentTooLong", {
@@ -121,9 +117,11 @@ export function ReviewModal({
       <DialogContent className="max-w-[500px] w-[90%] p-5 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            {existingReview
-              ? t("reviewModal.editTitle")
-              : t("reviewModal.postTitle")}
+            {viewOnly
+              ? t("reviewModal.viewTitle")
+              : existingReview
+                ? t("reviewModal.editTitle")
+                : t("reviewModal.postTitle")}
           </DialogTitle>
           <p className="text-sm text-gray-600">
             {t("reviewModal.forTutor", { tutorName })}
@@ -137,7 +135,8 @@ export function ReviewModal({
             </label>
             <ReviewStarRating
               rating={rating}
-              onRatingChange={setRating}
+              onRatingChange={viewOnly ? undefined : setRating}
+              readonly={viewOnly}
               size={32}
               gap={8}
             />
@@ -148,48 +147,76 @@ export function ReviewModal({
               <label className="text-gray-900 font-semibold text-sm">
                 {t("reviewModal.commentLabel")}
               </label>
-              <span className="text-xs text-gray-500">
-                {comment.trim().length}/{REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
-              </span>
+              {!viewOnly && (
+                <span className="text-xs text-gray-500">
+                  {comment.trim().length}/{REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
+                </span>
+              )}
             </div>
-            <Textarea
-              value={comment}
-              onChange={(e) => {
-                setComment(e.target.value);
-                if (error) validateComment(e.target.value);
-              }}
-              placeholder={t("reviewModal.placeholderComment", {
-                min: REVIEW_VALIDATION.MIN_COMMENT_LENGTH,
-                max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH,
-              })}
-              className="min-h-[120px] bg-gray-50 border-gray-200 text-gray-900 text-sm p-3 rounded-xl resize-none"
-              maxLength={REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
-            />
+            {viewOnly ? (
+              <div className="min-h-[120px] bg-gray-50 border border-gray-200 text-gray-900 text-sm p-3 rounded-xl whitespace-pre-wrap">
+                {comment || <span className="text-gray-400 italic">{t("reviewModal.noComment")}</span>}
+              </div>
+            ) : (
+              <Textarea
+                value={comment}
+                onChange={(e) => {
+                  setComment(e.target.value);
+                  if (error) validateComment(e.target.value);
+                }}
+                placeholder={t("reviewModal.placeholderComment", {
+                  max: REVIEW_VALIDATION.MAX_COMMENT_LENGTH,
+                })}
+                className="min-h-[120px] bg-gray-50 border-gray-200 text-gray-900 text-sm p-3 rounded-xl resize-none"
+                maxLength={REVIEW_VALIDATION.MAX_COMMENT_LENGTH}
+              />
+            )}
             {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
           </div>
         </div>
 
         <DialogFooter className="flex gap-3 justify-end mt-3">
-          <Button
-            variant="outline"
-            disabled={isLoading}
-            onClick={onClose}
-            className="px-5 py-3 rounded-full bg-white border border-slate-200"
-          >
-            {t("reviewModal.cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="gradient"
-            disabled={isLoading || !comment.trim()}
-            className="px-5 py-3 rounded-full"
-          >
-            {isLoading
-              ? t("reviewModal.submitting")
-              : existingReview
-                ? t("reviewModal.update")
-                : t("reviewModal.submit")}
-          </Button>
+          {viewOnly && onEdit ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="px-5 py-3 rounded-full bg-white border border-slate-200"
+              >
+                {t("reviewModal.close")}
+              </Button>
+              <Button
+                onClick={onEdit}
+                variant="gradient"
+                className="px-5 py-3 rounded-full"
+              >
+                {t("reviewModal.edit")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                disabled={isLoading}
+                onClick={onClose}
+                className="px-5 py-3 rounded-full bg-white border border-slate-200"
+              >
+                {t("reviewModal.cancel")}
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                variant="gradient"
+                disabled={isLoading || !comment.trim()}
+                className="px-5 py-3 rounded-full"
+              >
+                {isLoading
+                  ? t("reviewModal.submitting")
+                  : existingReview
+                    ? t("reviewModal.update")
+                    : t("reviewModal.submit")}
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -134,7 +134,7 @@ export class TutorProfileController {
   }
 
   @Get(':id/reviews')
-  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
+  @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300, anonymousOnly: true })
   async getVerifiedTutorReviews(@Param('id') id: string): Promise<TutorReviewsDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorReviews(id)

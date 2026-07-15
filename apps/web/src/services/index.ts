@@ -10,6 +10,7 @@ export * from "./tutor-profile/tutor-profile.qkey";
 export * from "./tutor-profile/tutor-profile.server";
 export * from "./trial-lesson-booking/trial-lesson-booking.api";
 export * from "./review/review.api";
+export * from "./review/review.qkey";
 export * from "./storage/storage.service";
 export * from "./currency/currency.api";
 export * from "./tutor-availability/tutor-availability.api";

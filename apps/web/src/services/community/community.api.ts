@@ -125,6 +125,8 @@ export const useCommunityFeed = (
     getNextPageParam: (last) => last.meta.nextCursor ?? undefined,
     enabled,
     staleTime: 60_000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   });
 

@@ -1,6 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 import { ApiResponse } from '@mezon-tutors/shared';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/store/auth.atom';
 import { apiClient } from '../api-client';
+import { tutorProfileQueryKey } from '../tutor-profile/tutor-profile.qkey';
+import { tutorProfileApi } from '../tutor-profile/tutor-profile.api';
 import { reviewQueryKey } from './review.qkey';
 
 export interface CreateReviewDto {
@@ -93,4 +98,49 @@ const useUpdateReview = () => {
   });
 };
 
-export { useCreateReview, useUpdateReview };
+const useMyReviewsForTutors = (tutorIds: string[]) => {
+  const currentUser = useAtomValue(userAtom);
+  const currentUserId = currentUser?.id;
+
+  const uniqueTutorIds = useMemo(() => [...new Set(tutorIds.filter(Boolean))], [tutorIds]);
+
+  const queries = useQueries({
+    queries: uniqueTutorIds.map((id) => ({
+      queryKey: tutorProfileQueryKey.tutorReviews(id),
+      queryFn: () => tutorProfileApi.getVerifiedTutorReviews(id),
+      enabled: !!id,
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+    })),
+  });
+
+  const isFetching = queries.some((q) => q.isFetching);
+
+  return useMemo(() => {
+    const map = new Map<string, ReviewDto | null>();
+    uniqueTutorIds.forEach((id, index) => {
+      const data = queries[index]?.data;
+      if (data?.reviews && currentUserId) {
+        const myReview = data.reviews.find((r) => r.reviewerId === currentUserId);
+        if (myReview) {
+          map.set(id, {
+            id: myReview.id,
+            tutorId: id,
+            reviewerId: myReview.reviewerId,
+            rating: myReview.rating,
+            comment: myReview.comment,
+            createdAt: myReview.createdAt,
+            updatedAt: myReview.updatedAt,
+          });
+        } else {
+          map.set(id, null);
+        }
+      } else {
+        map.set(id, null);
+      }
+    });
+    return { map, isFetching };
+  }, [queries, uniqueTutorIds, currentUserId, isFetching]);
+};
+
+export { useCreateReview, useUpdateReview, useMyReviewsForTutors };

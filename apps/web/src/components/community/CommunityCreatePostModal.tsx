@@ -168,22 +168,13 @@ export function CommunityCreatePostModal({ open, onOpenChange, defaultType = 'PO
     };
 
     createPost.mutate(payload, {
-      onSuccess: async (data) => {
+      onSuccess: (data) => {
         toast.success(t('success'));
-        onOpenChange(false);
         router.push(ROUTES.COMMUNITY.DETAIL(data.id));
-
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: communityQueryKey.feed(),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: communityQueryKey.feed({
-              type: type,
-            }),
-          }),
-        ]);
-        
+        onOpenChange(false);
+        queryClient.invalidateQueries({
+          queryKey: communityQueryKey.all,
+        });
       },
       onError: () => toast.error(t('failed')),
     });
