@@ -1282,7 +1282,7 @@ export class WalletService {
     if (startDate || endDate) {
       const [creditAgg, debitAgg, platformFeeAgg, count] = await Promise.all([
         this.prisma.transaction.aggregate({
-          _sum: { amount: true },
+          _sum: { grossAmount: true },
           where: { direction: EWalletTransactionDirection.CREDIT, ...where },
         }),
         this.prisma.transaction.aggregate({
@@ -1297,7 +1297,7 @@ export class WalletService {
       ]);
 
       const stats = {
-        credit: Number(creditAgg._sum.amount ?? 0n),
+        credit: Number(creditAgg._sum.grossAmount ?? 0n),
         debit: Number(debitAgg._sum.amount ?? 0n),
         platformFee: Number(platformFeeAgg._sum.platformFee ?? 0n),
         transactionCount: count,
@@ -1315,7 +1315,7 @@ export class WalletService {
 
     const periodAgg = (gte: Date, lte: Date) => Promise.all([
       this.prisma.transaction.aggregate({
-        _sum: { amount: true },
+        _sum: { grossAmount: true },
         where: { direction: EWalletTransactionDirection.CREDIT, createdAt: { gte, lte }, ...where },
       }),
       this.prisma.transaction.aggregate({
@@ -1342,7 +1342,7 @@ export class WalletService {
       periodAgg(weekStart, weekEnd),
       periodAgg(monthStart, monthEnd),
       this.prisma.transaction.aggregate({
-        _sum: { amount: true },
+        _sum: { grossAmount: true },
         where: { direction: EWalletTransactionDirection.CREDIT, ...where },
       }),
       this.prisma.transaction.aggregate({
@@ -1362,7 +1362,7 @@ export class WalletService {
       pf: typeof todayPlatformFeeAgg,
       count: number,
     ) => ({
-      credit: Number(credit._sum.amount ?? 0n),
+      credit: Number(credit._sum.grossAmount ?? 0n),
       debit: Number(debit._sum.amount ?? 0n),
       platformFee: Number(pf._sum.platformFee ?? 0n),
       transactionCount: count,
