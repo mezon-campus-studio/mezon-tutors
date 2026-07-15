@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
@@ -58,12 +58,14 @@ import {
   useCreateDmChannelMutation,
   usePublicAppSettings,
   useGetSupportBotContact,
+  useMyReviewsForTutors,
 } from "@/services";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { ComplainLessonDialog } from "./ComplainLessonDialog";
 import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLessonDialog";
 import { useCreateLessonComplaintMutation } from "@/services/lesson-complaint/lesson-complaint.api";
 import { ReviewModal } from "@/views/main/tutors/detail/review/components/ReviewModal";
+import type { ReviewDto } from "@/services/review/review.api";
 
 type LessonPersonBadgeProps = {
   name: string;
@@ -266,6 +268,8 @@ type PastLessonListItemProps = {
   appSettingsRules: AppSettingsRules;
   onRate: (lesson: LessonItem) => void;
   onComplain: (lesson: LessonItem) => void;
+  onViewReview: (lesson: LessonItem, review: ReviewDto) => void;
+  myReview: ReviewDto | null | undefined;
   contactSupportLabel: string;
   isOpeningSupportChat: boolean;
   onContactSupport: () => void;
@@ -286,6 +290,8 @@ function PastLessonListItem({
   appSettingsRules,
   onRate,
   onComplain,
+  onViewReview,
+  myReview,
   contactSupportLabel,
   isOpeningSupportChat,
   onContactSupport,
@@ -296,6 +302,9 @@ function PastLessonListItem({
   const complaintStatus = lesson.complaintStatus?.toUpperCase();
   const showComplaintStatus = hasLessonComplaintStatus(lesson);
   const tGroups = useTranslations('Groups');
+  const isTrialCompleted =
+    lesson.source === "trial" && lesson.trialBookingStatus === "completed";
+  const hasMyReview = Boolean(myReview);
 
   return (
     <div className="group flex w-full flex-col gap-4 rounded-2xl border border-violet-100 bg-white px-4 py-4 transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/40 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-5">
@@ -380,7 +389,21 @@ function PastLessonListItem({
                 {complainLabel}
               </Button>
             ) : null}
-            {rated ? (
+            {isTrialCompleted && hasMyReview && myReview ? (
+              <button
+                type="button"
+                onClick={() => myReview && onViewReview(lesson, myReview)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-100 hover:bg-amber-100 transition-colors cursor-pointer"
+              >
+                <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-sm font-bold text-amber-700">
+                  {myReview.rating.toFixed(1)}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                  {ratedLabel}
+                </span>
+              </button>
+            ) : rated ? (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-100">
                 <Star className="size-3.5 fill-amber-400 text-amber-400" />
                 <span className="text-sm font-bold text-amber-700">
@@ -390,7 +413,7 @@ function PastLessonListItem({
                   {ratedLabel}
                 </span>
               </div>
-            ) : (
+            ) : isTrialCompleted ? (
               <Button
                 variant="outline"
                 className="h-9 rounded-full border-amber-200 px-4 text-xs font-semibold text-amber-700 hover:border-amber-300 hover:bg-amber-50"
@@ -399,7 +422,7 @@ function PastLessonListItem({
                 <Star className="mr-1.5 size-3.5 fill-amber-400 text-amber-400" />
                 {rateLabel}
               </Button>
-            )}
+            ) : null}
           </>
         )}
       </div>
@@ -767,6 +790,8 @@ type PastLessonsSectionProps = {
   complaintRejectedLabel: string;
   appSettingsRules: AppSettingsRules;
   onRate: (lesson: LessonItem) => void;
+  onViewReview: (lesson: LessonItem, review: ReviewDto) => void;
+  myReviewsMap: Map<string, ReviewDto | null>;
   onComplain: (lesson: LessonItem) => void;
   contactSupportLabel: string;
   isOpeningSupportChat: boolean;
@@ -788,6 +813,8 @@ function PastLessonsSection({
   complaintRejectedLabel,
   appSettingsRules,
   onRate,
+  onViewReview,
+  myReviewsMap,
   onComplain,
   contactSupportLabel,
   isOpeningSupportChat,
@@ -820,6 +847,8 @@ function PastLessonsSection({
             complaintRejectedLabel={complaintRejectedLabel}
             appSettingsRules={appSettingsRules}
             onRate={onRate}
+            onViewReview={onViewReview}
+            myReview={myReviewsMap.get(lesson.tutorId)}
             onComplain={onComplain}
             contactSupportLabel={contactSupportLabel}
             isOpeningSupportChat={isOpeningSupportChat}
@@ -849,10 +878,35 @@ export default function MyLessonsPanel({
   const senderMezonUserId = currentUser?.mezonUserId ?? "";
 
   const [reviewLesson, setReviewLesson] = useState<LessonItem | null>(null);
+  const [isViewOnlyReview, setIsViewOnlyReview] = useState(false);
 
   const handleRate = (lesson: LessonItem) => {
+    setIsViewOnlyReview(false);
     setReviewLesson(lesson);
   };
+
+  const handleViewReview = (lesson: LessonItem, review: ReviewDto) => {
+    setIsViewOnlyReview(true);
+    setReviewLesson(lesson);
+  };
+
+  const handleEditReviewFromView = () => {
+    setIsViewOnlyReview(false);
+  };
+
+  const trialTutorIds = useMemo(
+    () =>
+      previousLessons
+        .filter(
+          (l) =>
+            l.source === "trial" &&
+            l.trialBookingStatus === "completed",
+        )
+        .map((l) => l.tutorId),
+    [previousLessons],
+  );
+
+  const { map: myReviewsMap } = useMyReviewsForTutors(trialTutorIds);
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
@@ -1179,6 +1233,8 @@ export default function MyLessonsPanel({
           complaintRejectedLabel={t("panels.lessons.complaint.statusRejected")}
           appSettingsRules={appSettingsRules}
           onRate={handleRate}
+          onViewReview={handleViewReview}
+          myReviewsMap={myReviewsMap}
           onComplain={handleComplainClick}
           contactSupportLabel={
             isOpeningSupportChat
@@ -1247,11 +1303,28 @@ export default function MyLessonsPanel({
       <ReviewModal
         tutorId={reviewLesson?.tutorId ?? ""}
         tutorName={reviewLesson?.tutor ?? ""}
+        existingReview={
+          isViewOnlyReview && reviewLesson
+            ? myReviewsMap.get(reviewLesson.tutorId) ?? undefined
+            : undefined
+        }
         isOpen={Boolean(reviewLesson)}
         onClose={() => {
+          const closedTutorId = reviewLesson?.tutorId;
           setReviewLesson(null);
+          setIsViewOnlyReview(false);
           queryClient.invalidateQueries({ queryKey: ["my-lessons"] });
+          if (closedTutorId) {
+            queryClient.invalidateQueries({
+              queryKey: ["tutor-reviews", closedTutorId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["tutor-about", closedTutorId],
+            });
+          }
         }}
+        viewOnly={isViewOnlyReview}
+        onEdit={handleEditReviewFromView}
       />
     </div>
   );
