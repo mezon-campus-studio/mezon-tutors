@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
+  AlertCircle,
   Focus,
   GraduationCap,
   Image as ImageIcon,
@@ -24,8 +25,11 @@ import {
   DEFAULT_AVATAR_URL,
   EXISTING_SECURE_FILE,
   MAX_IMAGE_SIZE_MB,
+  MEZON_CHAT_URL,
+  MEZON_URL,
 } from "@mezon-tutors/shared";
 import Image from "next/image";
+import Link from "next/link";
 import { Textarea } from "@/components/ui";
 import UploadFile from "@/components/common/UploadFile";
 import { cloudinaryService } from "@/services";
@@ -320,6 +324,8 @@ export default function PhotoPage() {
 
   const avatarPreviewUrl =
     tutorProfilePhoto.photo?.uploadedUrl || DEFAULT_AVATAR_URL;
+  const hasCustomAvatar =
+    !!currentUser?.avatar && currentUser.avatar !== DEFAULT_AVATAR_URL;
 
   const tips = [
     { key: "clear", Icon: Focus },
@@ -361,10 +367,27 @@ export default function PhotoPage() {
           <div>
             <MezonSyncButton className="mt-3" />
           </div>
-          <div className="space-y-1 text-center text-xs text-slate-500">
-            <p>{t("avatar.syncedNote")}</p>
-            <p>{t("avatar.manualSyncNote")}</p>
-          </div>
+          {!hasCustomAvatar ? (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+              <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
+              <p>
+                {t("avatar.notSetOnMezon")}{" "}
+                <Link
+                  href={MEZON_CHAT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold underline underline-offset-2 hover:text-amber-800"
+                >
+                  {t("avatar.goToMezon")}
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1 text-center text-xs text-slate-500">
+              <p>{t("avatar.syncedNote")}</p>
+              <p>{t("avatar.manualSyncNote")}</p>
+            </div>
+          )}
         </div>
       </BecomeTutorSection>
 
@@ -372,6 +395,7 @@ export default function PhotoPage() {
         eyebrow="Profile"
         title={t("cardTitle")}
         description={t("cardSubtitle")}
+        isShowNote
         contentRef={formCardRef}
       >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
@@ -490,8 +514,12 @@ export default function PhotoPage() {
         eyebrow="Verification"
         title={t("identity.title")}
         description={t("identity.subtitle")}
+        isShowNote
         contentRef={identityCardRef}
       >
+        <div className="mb-4 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs leading-5 text-sky-800 sm:text-sm">
+          {t("identity.frontOnly")}
+        </div>
         <BecomeTutorFieldLabel required className="mb-2 block">
           {t("identity.uploadButton")}
         </BecomeTutorFieldLabel>

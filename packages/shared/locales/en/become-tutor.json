@@ -71,6 +71,7 @@
     "savingExit": "Saving…",
     "draftSaved": "Draft saved at {time}",
     "requiredNote": "indicates a required field",
+    "optionalNote": "optional",
     "stepper": {
       "about": "About",
       "photo": "Photo",
@@ -98,7 +99,9 @@
       "title": "Your profile photo",
       "subtitle": "We will use your current Mezon avatar for your tutor profile.",
       "syncedNote": "This avatar is synced from Mezon.",
-      "manualSyncNote": "You can update it and manually sync from Mezon after approval."
+      "manualSyncNote": "You can update it and manually sync from Mezon after approval.",
+      "notSetOnMezon": "You haven't set your avatar on Mezon yet.",
+      "goToMezon": "Go to Mezon"
     },
     "title": "Upload your profile photo",
     "subtitle": "A professional, friendly photo helps you get up to 5x more students and builds immediate trust.",
@@ -111,6 +114,7 @@
     "identity": {
       "title": "Update Identity Documents",
       "subtitle": "Upload your ID card, national ID, or passport to verify your identity.",
+      "frontOnly": "Please upload the front side of your ID card, national ID, or passport.",
       "emptyState": "No identity photo",
       "dropHere": "Drop image here",
       "uploading": "Uploading...",

@@ -278,6 +278,7 @@ export default function VideoPage() {
         eyebrow={t("stepLabel")}
         title={t("title")}
         description={t("subtitle")}
+        isShowNote
       >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
           <div className="order-2 space-y-3 lg:order-1">
@@ -367,108 +368,105 @@ export default function VideoPage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setInputMode("upload")}
-                className={cn(
-                  "h-10 flex-1 rounded-full border px-4 text-xs font-semibold sm:flex-none",
-                  inputMode === "upload"
-                    ? "border-violet-300 bg-violet-50 text-violet-800 shadow-sm shadow-violet-100"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/50",
-                )}
-              >
-                <Upload className="mr-1.5 size-3.5" />
-                {t("tabs.upload")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setInputMode("pasteLink")}
-                className={cn(
-                  "h-10 flex-1 rounded-full border px-4 text-xs font-semibold sm:flex-none",
-                  inputMode === "pasteLink"
-                    ? "border-violet-300 bg-violet-50 text-violet-800 shadow-sm shadow-violet-100"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:bg-violet-50/50",
-                )}
-              >
-                <Link2 className="mr-1.5 size-3.5" />
-                {t("tabs.pasteLink")}
-              </Button>
-            </div>
-
-            {inputMode === "upload" ? (
-              <div className="space-y-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm shadow-violet-100/30 sm:p-5">
-                <p className="text-sm font-extrabold text-slate-900">{t("upload.label")}</p>
-                <p className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs leading-5 text-sky-800 sm:text-sm">
-                  {t("upload.youtubeNotice")}
-                </p>
-                <UploadFile
-                  accept={ACCEPT_INTRO_VIDEO_TYPES}
-                  fileName={uploadFileName}
-                  isUploading={isUploading}
-                  onFile={handleVideoUpload}
-                  uploadLabel={t("upload.uploadButton")}
-                  uploadingLabel={uploadingLabel}
-                  hint={t("upload.hint", {
-                    maxSize: MAX_INTRO_VIDEO_SIZE_MB,
-                    maxMinutes: maxVideoDurationMinutes,
-                  })}
-                  emptyLabel={t("upload.emptyLabel")}
-                  dropHereLabel={t("upload.dropHereLabel")}
-                  error={uploadError ?? undefined}
-                />
-                {durationError ? (
-                  <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                    <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                    {durationError}
-                  </div>
-                ) : null}
-                {videoId?.type === "cloudinary" && !isUploading && !uploadError ? (
-                  <div className="flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                    <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
-                    {t("upload.success")}
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="space-y-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm shadow-violet-100/30 sm:p-5">
-                <p className="text-sm font-extrabold text-slate-900">{t("link.label")}</p>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Controller
-                    control={control}
-                    name="videoLink"
-                    render={({ field: { value, onChange } }) => (
-                      <Input
-                        className="h-11 flex-1 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
-                        placeholder={t("link.placeholder")}
-                        value={value}
-                        disabled={isCheckingVideo}
-                        onChange={(e) => onChange(e.target.value)}
-                      />
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleSubmit(handleAddLink)}
-                    disabled={isCheckingVideo}
-                    className="h-11 shrink-0 rounded-full bg-brand-gradient px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
-                  >
-                    {isCheckingVideo ? (
-                      <Spinner className="mr-1.5 size-4 text-white" />
-                    ) : null}
-                    {isCheckingVideo ? t("link.checking") : t("link.addButton")}
-                  </Button>
+            <div className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm shadow-violet-100/30">
+              <div className="border-b border-violet-100 bg-violet-50/40 p-1">
+                <div className="flex">
+                  {([
+                    { mode: "upload" as const, icon: Upload, label: t("tabs.upload") },
+                    { mode: "pasteLink" as const, icon: Link2, label: t("tabs.pasteLink") },
+                  ]).map(({ mode, icon: Icon, label }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setInputMode(mode)}
+                      className={cn(
+                        "relative flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-200 sm:flex-none sm:px-5",
+                        inputMode === mode
+                          ? "bg-white text-violet-700 shadow-sm shadow-violet-200/50"
+                          : "text-slate-500 hover:text-slate-700",
+                      )}
+                    >
+                      <Icon className="size-3.5" />
+                      {label}
+                    </button>
+                  ))}
                 </div>
-                {durationError ? (
-                  <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                    <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
-                    {durationError}
-                  </div>
-                ) : null}
               </div>
-            )}
+
+              <div className="p-4 sm:p-5">
+                {inputMode === "upload" ? (
+                  <div className="space-y-4">
+                    <p className="text-sm font-extrabold text-slate-900">{t("upload.label")}</p>
+                    <p className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5 text-xs leading-5 text-sky-800 sm:text-sm">
+                      {t("upload.youtubeNotice")}
+                    </p>
+                    <UploadFile
+                      accept={ACCEPT_INTRO_VIDEO_TYPES}
+                      fileName={uploadFileName}
+                      isUploading={isUploading}
+                      onFile={handleVideoUpload}
+                      uploadLabel={t("upload.uploadButton")}
+                      uploadingLabel={uploadingLabel}
+                      hint={t("upload.hint", {
+                        maxSize: MAX_INTRO_VIDEO_SIZE_MB,
+                        maxMinutes: maxVideoDurationMinutes,
+                      })}
+                      emptyLabel={t("upload.emptyLabel")}
+                      dropHereLabel={t("upload.dropHereLabel")}
+                      error={uploadError ?? undefined}
+                    />
+                    {durationError ? (
+                      <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                        {durationError}
+                      </div>
+                    ) : null}
+                    {videoId?.type === "cloudinary" && !isUploading && !uploadError ? (
+                      <div className="flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                        <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+                        {t("upload.success")}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm font-extrabold text-slate-900">{t("link.label")}</p>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Controller
+                        control={control}
+                        name="videoLink"
+                        render={({ field: { value, onChange } }) => (
+                          <Input
+                            className="h-11 flex-1 rounded-xl border-slate-200 bg-slate-50/60 text-sm transition-colors focus-visible:border-violet-300 focus-visible:bg-white focus-visible:ring-violet-200/60"
+                            placeholder={t("link.placeholder")}
+                            value={value}
+                            disabled={isCheckingVideo}
+                            onChange={(e) => onChange(e.target.value)}
+                          />
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleSubmit(handleAddLink)}
+                        disabled={isCheckingVideo}
+                        className="h-11 shrink-0 rounded-full bg-brand-gradient px-5 text-xs font-semibold text-white shadow-md shadow-violet-300/40 hover:shadow-lg hover:shadow-violet-400/50"
+                      >
+                        {isCheckingVideo ? (
+                          <Spinner className="mr-1.5 size-4 text-white" />
+                        ) : null}
+                        {isCheckingVideo ? t("link.checking") : t("link.addButton")}
+                      </Button>
+                    </div>
+                    {durationError ? (
+                      <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                        {durationError}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </BecomeTutorSection>

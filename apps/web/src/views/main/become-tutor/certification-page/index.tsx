@@ -303,7 +303,7 @@ export default function CertificationPage() {
         <form className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <BecomeTutorFieldLabel htmlFor="certificateType">
+              <BecomeTutorFieldLabel htmlFor="certificateType" optional>
                 {t("teaching.certificateLabel")}
               </BecomeTutorFieldLabel>
               <Input
@@ -319,7 +319,7 @@ export default function CertificationPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <BecomeTutorFieldLabel>
+              <BecomeTutorFieldLabel optional>
                 {t("teaching.yearLabel")}
               </BecomeTutorFieldLabel>
               <Controller
@@ -342,7 +342,7 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-2">
-            <BecomeTutorFieldLabel>
+            <BecomeTutorFieldLabel optional>
               {t("teaching.uploadTitle")}
             </BecomeTutorFieldLabel>
             <UploadFile
@@ -387,7 +387,7 @@ export default function CertificationPage() {
         <form className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <BecomeTutorFieldLabel htmlFor="university">
+              <BecomeTutorFieldLabel htmlFor="university" optional>
                 {t("education.universityLabel")}
               </BecomeTutorFieldLabel>
               <Input
@@ -403,7 +403,7 @@ export default function CertificationPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <BecomeTutorFieldLabel htmlFor="degree">
+              <BecomeTutorFieldLabel htmlFor="degree" optional>
                 {t("education.degreeLabel")}
               </BecomeTutorFieldLabel>
               <Input
@@ -419,7 +419,7 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-1.5">
-            <BecomeTutorFieldLabel htmlFor="specialization">
+            <BecomeTutorFieldLabel htmlFor="specialization" optional>
               {t("education.specializationLabel")}
             </BecomeTutorFieldLabel>
             <Input
@@ -436,7 +436,7 @@ export default function CertificationPage() {
           </div>
 
           <div className="space-y-2">
-            <BecomeTutorFieldLabel>
+            <BecomeTutorFieldLabel optional>
               {t("education.uploadTitle")}
             </BecomeTutorFieldLabel>
             <UploadFile
