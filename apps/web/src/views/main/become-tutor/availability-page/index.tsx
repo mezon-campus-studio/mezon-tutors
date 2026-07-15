@@ -384,6 +384,7 @@ export default function AvailabilityPage() {
         eyebrow="Pricing"
         title={t('rateCardTitle')}
         description={t('rate.question')}
+        isShowNote
       >
         <div className="space-y-3">
           <BecomeTutorFieldLabel required>
@@ -483,6 +484,7 @@ export default function AvailabilityPage() {
         eyebrow="Availability"
         title={t('availabilityCardTitle')}
         contentRef={availabilityCardRef}
+        isShowNote
       >
         <BecomeTutorFieldLabel required className="mb-2 block">
           {t('availabilityCardTitle')}

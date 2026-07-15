@@ -113,9 +113,9 @@ export function BecomeTutorShell({
                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
                       {tShell("applicationEyebrow")}
                     </p>
-                    <h1 className="text-base font-extrabold text-slate-900 sm:text-lg">
-                      {headerTitle}
-                    </h1>
+                      <h1 className="text-base font-extrabold text-slate-900 sm:text-lg">
+                        {headerTitle}
+                      </h1>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -207,7 +207,6 @@ export function BecomeTutorShell({
                 </div>
 
                 <div className="mt-4 space-y-3 border-t border-violet-100 pt-3">
-                  <BecomeTutorRequiredNote variant="chip" />
                   <div className="flex items-center gap-2.5">
                     <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-violet-100">
                       <div
@@ -221,23 +220,23 @@ export function BecomeTutorShell({
                   </div>
                 </div>
               </div>
-
-              <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/40 p-4 shadow-sm shadow-violet-100/20 sm:p-5">
-                <div className="mb-4 space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-                    {tShell("preview.eyebrow")}
-                  </p>
-                  <p className="text-sm font-extrabold text-slate-900 sm:text-base">
-                    {tShell("preview.title")}
-                  </p>
-                  <p className="text-xs leading-5 text-slate-500 sm:text-sm">
-                    {tShell("preview.hint")}
-                  </p>
-                </div>
-                <BecomeTutorCardPreview />
-              </div>
-
               {children}
+              {activeStep === 1 ? (
+                <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/40 p-4 shadow-sm shadow-violet-100/20 sm:p-5">
+                  <div className="mb-4 space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+                      {tShell("preview.eyebrow")}
+                    </p>
+                    <p className="text-sm font-extrabold text-slate-900 sm:text-base">
+                      {tShell("preview.title")}
+                    </p>
+                    <p className="text-xs leading-5 text-slate-500 sm:text-sm">
+                      {tShell("preview.hint")}
+                    </p>
+                  </div>
+                  <BecomeTutorCardPreview />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -279,6 +278,7 @@ type SectionProps = {
   eyebrow?: string;
   title?: string;
   description?: string;
+  isShowNote?: boolean;
   children: ReactNode;
   className?: string;
   contentRef?: React.Ref<HTMLDivElement>;
@@ -288,6 +288,7 @@ export function BecomeTutorSection({
   eyebrow,
   title,
   description,
+  isShowNote = false,
   children,
   className,
   contentRef,
@@ -300,9 +301,12 @@ export function BecomeTutorSection({
       {title || eyebrow || description ? (
         <div className="mb-5 space-y-1">
           {eyebrow ? (
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
-              {eyebrow}
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500">
+                {eyebrow}
+              </p>
+              {isShowNote && <BecomeTutorRequiredNote variant="chip" />}
+            </div>
           ) : null}
           {title ? (
             <h2 className="text-lg font-extrabold text-slate-900 sm:text-xl">

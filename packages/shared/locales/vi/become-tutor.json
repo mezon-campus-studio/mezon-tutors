@@ -71,6 +71,7 @@
     "savingExit": "Đang lưu…",
     "draftSaved": "Bản nháp đã được lưu lúc {time}",
     "requiredNote": "là trường bắt buộc",
+    "optionalNote": "có thể thêm nếu có",
     "stepper": {
       "about": "Giới thiệu",
       "photo": "Ảnh hồ sơ",
@@ -98,7 +99,9 @@
       "title": "Ảnh hồ sơ của bạn",
       "subtitle": "Hệ thống sẽ dùng ảnh Mezon hiện tại cho hồ sơ gia sư của bạn.",
       "syncedNote": "Ảnh này được đồng bộ từ Mezon.",
-      "manualSyncNote": "Bạn có thể thay đổi và sync thủ công từ Mezon sau khi được duyệt."
+      "manualSyncNote": "Bạn có thể thay đổi và sync thủ công từ Mezon sau khi được duyệt.",
+      "notSetOnMezon": "Bạn chưa đặt ảnh đại diện trên Mezon.",
+      "goToMezon": "Đi đến Mezon"
     },
     "title": "Tải lên ảnh hồ sơ của bạn",
     "subtitle": "Một bức ảnh chuyên nghiệp, thân thiện có thể giúp bạn thu hút nhiều học viên hơn và tạo dựng niềm tin ngay lập tức.",
@@ -110,11 +113,12 @@
     "tipsTitle": "Thế nào là một bức ảnh đẹp?",
     "identity": {
       "title": "Cập nhật giấy tờ tùy thân",
-      "subtitle": "Tải lên CCCD/CMND/Hộ chiếu để xác minh danh tính.",
+      "subtitle": "Tải lên CCCD/Hộ chiếu để xác minh danh tính.",
+      "frontOnly": "Vui lòng tải lên mặt trước của CCCD/Hộ chiếu.",
       "emptyState": "Chưa có ảnh giấy tờ",
       "dropHere": "Thả ảnh vào đây",
       "uploading": "Đang tải lên...",
-      "uploadButton": "Tải ảnh CCCD/CMND/Hộ chiếu",
+      "uploadButton": "Tải ảnh CCCD/Hộ chiếu",
       "tipsTitle": "Mẹo chụp giấy tờ tùy thân",
       "tips": {
         "clear": {
@@ -131,7 +135,7 @@
         },
         "validDocument": {
           "title": "Giấy tờ còn hiệu lực",
-          "description": "Sử dụng CCCD/CMND/Hộ chiếu còn thời hạn."
+          "description": "Sử dụng CCCD/Hộ chiếu còn thời hạn."
         }
       }
     },

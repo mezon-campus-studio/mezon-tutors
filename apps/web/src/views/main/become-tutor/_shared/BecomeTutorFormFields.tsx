@@ -45,6 +45,7 @@ export function BecomeTutorRequiredNote({
 type BecomeTutorFieldLabelProps = {
   htmlFor?: string;
   required?: boolean;
+  optional?: boolean;
   children: ReactNode;
   className?: string;
 };
@@ -52,9 +53,12 @@ type BecomeTutorFieldLabelProps = {
 export function BecomeTutorFieldLabel({
   htmlFor,
   required = false,
+  optional = false,
   children,
   className,
 }: BecomeTutorFieldLabelProps) {
+  const t = useTranslations("BecomeTutor.shell");
+
   return (
     <Label
       htmlFor={htmlFor}
@@ -62,6 +66,11 @@ export function BecomeTutorFieldLabel({
     >
       {children}
       {required ? <span className="ml-0.5 text-rose-500">*</span> : null}
+      {optional ? (
+        <span className="ml-1 text-[10px] font-normal text-blue-400">
+          ({t("optionalNote")})
+        </span>
+      ) : null}
     </Label>
   );
 }

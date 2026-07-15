@@ -444,6 +444,7 @@ export default function AboutPage() {
         eyebrow={t("sectionEyebrow", { step: CURRENT_STEP })}
         title={t("title")}
         description={t("subtitle")}
+        isShowNote
         contentRef={formCardRef}
       >
         <form
@@ -676,7 +677,7 @@ export default function AboutPage() {
           </div>
 
           <div className="space-y-1.5" ref={cvCardRef}>
-            <BecomeTutorFieldLabel>
+            <BecomeTutorFieldLabel optional>
               {t("fields.cvLabel")}
             </BecomeTutorFieldLabel>
             <p className="text-xs text-slate-500">{t("fields.cvHelper")}</p>
