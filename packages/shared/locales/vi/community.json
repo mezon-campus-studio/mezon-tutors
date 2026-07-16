@@ -79,6 +79,7 @@
       "follow": "Theo dõi",
       "following": "Đang theo dõi",
       "delete": "Xóa bài viết",
+      "report": "Báo cáo",
       "deleteConfirm": "Bạn có chắc muốn xóa bài viết này?",
       "deleted": "Đã xóa bài viết",
       "deleteFailed": "Không thể xóa bài viết",
@@ -184,6 +185,42 @@
       "errors": {
         "contentRequired": "Vui lòng nhập nội dung",
         "exerciseRequired": "Vui lòng cấu hình bài tập"
+      }
+    },
+    "report": {
+      "title": "Báo cáo bài viết",
+      "description": "Chọn lý do báo cáo bài viết này. Báo cáo của bạn sẽ được kiểm duyệt viên xem xét.",
+      "reasonRequired": "Vui lòng chọn lý do.",
+      "reasonLabel": "Lý do",
+      "reasonPlaceholder": "Chọn lý do...",
+      "detailLabel": "Chi tiết bổ sung (không bắt buộc)",
+      "detailPlaceholder": "Cung cấp thêm thông tin chi tiết...",
+      "submit": "Gửi báo cáo",
+      "submitting": "Đang gửi...",
+      "cancel": "Hủy",
+      "success": "Đã gửi báo cáo. Cảm ơn bạn đã giúp giữ cộng đồng an toàn!",
+      "failed": "Gửi báo cáo thất bại. Vui lòng thử lại.",
+      "reasons": {
+        "SPAM": {
+          "label": "Spam",
+          "description": "Nội dung quảng cáo hoặc không liên quan"
+        },
+        "HARASSMENT": {
+          "label": "Quấy rối",
+          "description": "Bắt nạt, ngôn từ thù địch hoặc quấy rối cá nhân"
+        },
+        "INAPPROPRIATE": {
+          "label": "Không phù hợp",
+          "description": "Nội dung phản cảm, khiêu dâm hoặc không phù hợp"
+        },
+        "MISINFORMATION": {
+          "label": "Sai sự thật",
+          "description": "Thông tin sai lệch hoặc gây hiểu lầm"
+        },
+        "OTHER": {
+          "label": "Khác",
+          "description": "Lý do khác không được liệt kê ở trên"
+        }
       }
     },
     "bookmarks": {

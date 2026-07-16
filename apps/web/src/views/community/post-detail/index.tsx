@@ -2,7 +2,7 @@
 
 import { ROUTES, type CommunityPostDetailDto } from '@mezon-tutors/shared';
 import { useAtomValue } from 'jotai';
-import { ArrowLeftIcon, Hash, Trash2 } from 'lucide-react';
+import { ArrowLeftIcon, Flag, Hash, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -16,6 +16,7 @@ import { CommunityCommentsDrawer } from '@/components/community/CommunityComment
 import { CommunityEngagementButtons } from '@/components/community/CommunityEngagementSection';
 import { CommunityPostTypeBadge } from '@/components/community/CommunityPostTypeBadge';
 import { ExerciseSubmissionPanel } from '@/components/community/ExerciseSubmissionPanel';
+import { ReportModal } from '@/components/community/ReportModal';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import {
   useCommunityEngagement,
@@ -44,6 +45,7 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
 
   const commentsParam = useMemo(() => searchParams.get('comments'), [searchParams]);
   const [drawerOpen, setDrawerOpen] = useState(commentsParam === '1');
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     if (commentsParam === '1') {
@@ -141,7 +143,24 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
                 <Trash2 className="mr-1 size-4" />
                 {t('delete')}
               </Button>
-            ) : null}
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-full"
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    toast.error(t('engagement.loginToInteract'));
+                    return;
+                  }
+                  setReportOpen(true);
+                }}
+              >
+                <Flag className="mr-1 size-4" />
+                {t('report')}
+              </Button>
+            )}
           </div>
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-y border-violet-100 py-4">
@@ -233,6 +252,13 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
         postId={post.id}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+      />
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        postId={post.id}
+        onLoginRequired={() => toast.error(t('engagement.loginToInteract'))}
       />
     </main>
   );

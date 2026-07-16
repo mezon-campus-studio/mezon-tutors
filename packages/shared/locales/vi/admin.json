@@ -507,6 +507,58 @@
         }
       }
     },
+    "CommunityReports": {
+      "title": "Báo cáo cộng đồng",
+      "description": "Xem xét các báo cáo từ người dùng về bài viết cộng đồng.",
+      "empty": "Không tìm thấy báo cáo nào.",
+      "count": "{count} báo cáo",
+      "statusFilter": {
+        "all": "Tất cả",
+        "pending": "Chờ xử lý",
+        "reviewed": "Đã xem",
+        "dismissed": "Đã bỏ qua",
+        "actionTaken": "Đã xử lý"
+      },
+      "status": {
+        "PENDING": "Chờ xử lý",
+        "REVIEWED": "Đã xem",
+        "DISMISSED": "Đã bỏ qua",
+        "ACTION_TAKEN": "Đã xử lý"
+      },
+      "reasons": {
+        "SPAM": "Spam",
+        "HARASSMENT": "Quấy rối",
+        "INAPPROPRIATE": "Không phù hợp",
+        "MISINFORMATION": "Sai sự thật",
+        "OTHER": "Khác"
+      },
+      "table": {
+        "reporter": "Người báo cáo",
+        "author": "Tác giả",
+        "reason": "Lý do",
+        "content": "Nội dung",
+        "status": "Trạng thái",
+        "date": "Ngày",
+        "actions": "Thao tác"
+      },
+      "approve": "Duyệt & ẩn",
+      "dismiss": "Bỏ qua",
+      "approveSuccess": "Đã duyệt báo cáo. Bài viết đã được ẩn.",
+      "dismissSuccess": "Đã bỏ qua báo cáo.",
+      "actionFailed": "Thao tác thất bại. Vui lòng thử lại.",
+      "confirmApprove": {
+        "title": "Duyệt báo cáo này?",
+        "description": "Bài viết bị báo cáo sẽ bị ẩn ngay lập tức. Hành động này không thể hoàn tác.",
+        "confirm": "Duyệt & ẩn bài viết",
+        "cancel": "Hủy"
+      },
+      "confirmDismiss": {
+        "title": "Bỏ qua báo cáo này?",
+        "description": "Báo cáo sẽ được đánh dấu là đã bỏ qua và không có hành động nào được thực hiện.",
+        "confirm": "Bỏ qua",
+        "cancel": "Hủy"
+      }
+    },
     "Blogs": {
       "title": "Duyệt blog",
       "description": "Xem xét các bài viết do người dùng gửi và publish để hiển thị công khai.",

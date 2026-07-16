@@ -79,6 +79,7 @@
       "follow": "Follow",
       "following": "Following",
       "delete": "Delete post",
+      "report": "Report",
       "deleteConfirm": "Are you sure you want to delete this post?",
       "deleted": "Post deleted",
       "deleteFailed": "Failed to delete post",
@@ -184,6 +185,42 @@
       "errors": {
         "contentRequired": "Content is required",
         "exerciseRequired": "Exercise settings are required"
+      }
+    },
+    "report": {
+      "title": "Report this post",
+      "description": "Select a reason for reporting this post. Your report will be reviewed by our moderators.",
+      "reasonRequired": "Please select a reason.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Select a reason...",
+      "detailLabel": "Additional details (optional)",
+      "detailPlaceholder": "Provide any additional context...",
+      "submit": "Submit report",
+      "submitting": "Submitting...",
+      "cancel": "Cancel",
+      "success": "Report submitted. Thank you for helping keep our community safe!",
+      "failed": "Failed to submit report. Please try again.",
+      "reasons": {
+        "SPAM": {
+          "label": "Spam",
+          "description": "Irrelevant or promotional content"
+        },
+        "HARASSMENT": {
+          "label": "Harassment",
+          "description": "Bullying, hate speech, or targeted harassment"
+        },
+        "INAPPROPRIATE": {
+          "label": "Inappropriate",
+          "description": "Explicit, offensive, or NSFW content"
+        },
+        "MISINFORMATION": {
+          "label": "Misinformation",
+          "description": "False or misleading information"
+        },
+        "OTHER": {
+          "label": "Other",
+          "description": "Something else not listed above"
+        }
       }
     },
     "bookmarks": {

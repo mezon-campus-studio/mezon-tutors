@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ReactElement, ReactNode } from "react";
+import type { MouseEvent, ReactElement, ReactNode } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
 export type ActionMenuItem = {
   label: string;
   icon?: ReactNode;
-  onClick: () => void;
+  onClick: (e: MouseEvent) => void;
   variant?: "default" | "destructive";
   disabled?: boolean;
 };
@@ -31,7 +31,7 @@ export function ActionMenu({ trigger, items }: ActionMenuProps) {
           <DropdownMenuItem
             key={index}
             disabled={item.disabled}
-            onClick={item.disabled ? undefined : item.onClick}
+            onClick={item.disabled ? undefined : (e) => { e.stopPropagation(); item.onClick(e); }}
             variant={item.variant}
             className="flex items-center gap-2 px-3 py-2.5 cursor-pointer font-medium"
           >

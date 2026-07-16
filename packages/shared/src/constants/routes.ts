@@ -51,6 +51,7 @@ export const ROUTES = {
     EVENT_DETAIL: (id: string) => `/admin/events/${id}`,
     BLOGS: '/admin/blogs',
     BLOG_DETAIL: (id: string) => `/admin/blogs/${id}`,
+    COMMUNITY_REPORTS: '/admin/community-reports',
   },
   MY_LESSONS: {
     INDEX: '/my-lessons',

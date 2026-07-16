@@ -7,13 +7,13 @@ import {
 } from "@mezon-tutors/shared";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
+  AlertTriangle,
   CalendarDays,
   CreditCard,
   FileCheck,
   Flag,
   GraduationCap,
   LayoutDashboard,
-  LineChart,
   LogOut,
   Newspaper,
   Receipt,
@@ -53,7 +53,7 @@ const ICON_MAP: Record<
   students: GraduationCap,
   payments: CreditCard,
   transactions: Receipt,
-  reports: LineChart,
+  reports: AlertTriangle,
 };
 
 export default function AdminSidebar() {
