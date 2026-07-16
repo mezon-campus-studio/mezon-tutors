@@ -59,6 +59,12 @@ export type EventCreatorDto = {
   email: string | null;
 };
 
+export type ImageCropData = {
+  x: number;
+  y: number;
+  zoom?: number;
+};
+
 export type EventListItemDto = {
   id: string;
   slug: string;
@@ -70,11 +76,9 @@ export type EventListItemDto = {
   location?: EventLocationDto | null;
   registrationUrl: string;
   coverImageUrl: string;
+  coverImageCrop?: ImageCropData | null;
   ogImageUrl: string;
-  content: {
-    vi: EventLocaleContent;
-    en?: EventLocaleContent | null;
-  };
+  content: EventLocaleContent;
   createdAt: string;
   rejectedReason?: string | null;
   updateReviewStatus?: EventUpdateReviewStatus | null;
@@ -113,14 +117,12 @@ export type CreateEventOrganizerInput = {
 
 export type CreateEventGalleryImageInput = {
   imageUrl: string;
-  captionVi?: string;
-  captionEn?: string;
+  caption?: string;
 };
 
 export type CreateEventStatInput = {
   value: string;
-  labelVi: string;
-  labelEn?: string;
+  label: string;
 };
 
 export type CreateEventPayload = {
@@ -134,9 +136,9 @@ export type CreateEventPayload = {
   venue?: string;
   registrationUrl: string;
   coverImageUrl: string;
+  coverImageCrop?: ImageCropData | null;
   ogImageUrl: string;
-  contentVi: EventLocaleContent;
-  contentEn?: EventLocaleContent;
+  content: EventLocaleContent;
   organizers: CreateEventOrganizerInput[];
   galleryImages: CreateEventGalleryImageInput[];
   stats: CreateEventStatInput[];

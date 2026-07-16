@@ -1,6 +1,6 @@
 "use client";
 
-import { ROUTES, type EventStatus } from "@mezon-tutors/shared";
+import { type EventStatus, type ImageCropData, ROUTES } from "@mezon-tutors/shared";
 import {
   ArrowRight,
   Calendar,
@@ -13,7 +13,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, type ComponentType, type CSSProperties, type ReactNode } from "react";
+import { type ComponentType, type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { useEventLifecycleStatus } from "@/hooks/use-event-lifecycle";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,7 @@ export type EventHomeCardProps = {
   startAtLabel?: string;
   locationLabel: string;
   coverImage?: string | null;
+  coverImageCrop?: ImageCropData | null;
   statusLabel?: string;
   theme: string;
   title: string;
@@ -106,6 +107,7 @@ export function EventHomeCard({
   startAtLabel,
   locationLabel,
   coverImage,
+  coverImageCrop,
   statusLabel: statusLabelProp,
   theme,
   title,
@@ -150,6 +152,15 @@ export function EventHomeCard({
               "object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]",
               isPast && "grayscale-[15%] saturate-90",
             )}
+            style={
+              coverImageCrop
+                ? {
+                    objectPosition: `${coverImageCrop.x}% ${coverImageCrop.y}%`,
+                    transform: `scale(${coverImageCrop.zoom ?? 1})`,
+                    transformOrigin: `${coverImageCrop.x}% ${coverImageCrop.y}%`,
+                  }
+                : undefined
+            }
             sizes="(max-width: 640px) 100vw, 50vw"
             unoptimized={preview && coverImage.startsWith("http")}
           />

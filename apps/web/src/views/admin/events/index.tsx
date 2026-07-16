@@ -45,7 +45,7 @@ export default function AdminEventsView() {
     const query = search.trim().toLowerCase();
     if (!query) return events;
     return events.filter((event) => {
-      const content = event.content.vi;
+      const content = event.content;
       return (
         event.slug.toLowerCase().includes(query) ||
         content.title.toLowerCase().includes(query) ||

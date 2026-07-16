@@ -7,6 +7,7 @@ import type {
 } from '@mezon-tutors/db';
 import type {
   CreateEventPayload,
+  ImageCropData,
   EventDetailDto,
   EventListItemDto,
   EventLocaleContent,
@@ -41,12 +42,22 @@ function parseContent(value: unknown): EventLocaleContent {
   return value as EventLocaleContent;
 }
 
+function parseCropData(value: unknown): ImageCropData | null {
+  if (!value || typeof value !== 'object') return null;
+  const obj = value as Record<string, unknown>;
+  if (typeof obj.x !== 'number' || typeof obj.y !== 'number') return null;
+  return {
+    x: obj.x,
+    y: obj.y,
+    ...(typeof obj.zoom === 'number' ? { zoom: obj.zoom } : {}),
+  };
+}
+
 export function toEventListItemDto(
   event: EventWithRelations,
   locale: 'vi' | 'en' = 'vi',
 ): EventListItemDto {
-  const contentVi = parseContent(event.contentVi);
-  const contentEn = event.contentEn ? parseContent(event.contentEn) : null;
+  const content = parseContent(event.content);
 
   return {
     id: event.id,
@@ -59,11 +70,9 @@ export function toEventListItemDto(
     location: toLocationDto(event),
     registrationUrl: event.registrationUrl,
     coverImageUrl: event.coverImageUrl,
+    coverImageCrop: parseCropData(event.coverImageCrop),
     ogImageUrl: event.ogImageUrl,
-    content: {
-      vi: contentVi,
-      en: contentEn,
-    },
+    content,
     createdAt: event.createdAt.toISOString(),
     rejectedReason: event.rejectedReason,
     updateReviewStatus: event.updateReviewStatus,
@@ -98,10 +107,7 @@ export function toEventDetailDto(
       .map((image) => ({
         id: image.id,
         imageUrl: image.imageUrl,
-        caption:
-          locale === 'en' && image.captionEn
-            ? image.captionEn
-            : image.captionVi,
+        caption: image.caption,
         sortOrder: image.sortOrder,
       })),
     stats: event.stats
@@ -110,8 +116,7 @@ export function toEventDetailDto(
       .map((stat) => ({
         id: stat.id,
         value: stat.value,
-        label:
-          locale === 'en' && stat.labelEn ? stat.labelEn : stat.labelVi,
+        label: stat.label,
         sortOrder: stat.sortOrder,
       })),
     rejectedReason: event.rejectedReason,

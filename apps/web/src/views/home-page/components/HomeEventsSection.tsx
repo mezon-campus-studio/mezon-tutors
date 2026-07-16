@@ -130,6 +130,7 @@ export default function HomeEventsSection() {
                   isOnline={isOnline}
                   locationLabel={locationLabel}
                   coverImage={event.coverImageUrl}
+                  coverImageCrop={event.coverImageCrop}
                   theme={content.theme}
                   title={content.title}
                   tagline={content.tagline}

@@ -8,12 +8,14 @@ import {
   ROUTES,
   type CreateEventPayload,
   type EventDetailDto,
+  type ImageCropData,
 } from "@mezon-tutors/shared";
 import {
   ArrowLeft,
   BarChart3,
   CalendarDays,
   Clock,
+  Crop,
   Eye,
   FileText,
   ImageIcon,
@@ -29,6 +31,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { toast } from "sonner";
+import ImageCropModal from "@/components/common/ImageCropModal";
 import UploadFile from "@/components/common/UploadFile";
 import { EventHomeCard } from "@/components/events/EventHomeCard";
 import { Button, Input, Label, Spinner, Textarea } from "@/components/ui";
@@ -57,12 +60,12 @@ type OrganizerDraft = {
 
 type GalleryDraft = {
   imageUrl: string;
-  captionVi: string;
+  caption: string;
 };
 
 type StatDraft = {
   value: string;
-  labelVi: string;
+  label: string;
 };
 
 const INPUT_CLASS =
@@ -161,30 +164,33 @@ function populateFormFromDetail(
     setVenue: (value: string) => void;
     setRegistrationUrl: (value: string) => void;
     setCoverImageUrl: (value: string) => void;
+    setCoverImageCrop: (value: ImageCropData | null) => void;
     setOgImageUrl: (value: string) => void;
     setOrganizers: (value: OrganizerDraft[]) => void;
     setGalleryImages: (value: GalleryDraft[]) => void;
     setStats: (value: StatDraft[]) => void;
   },
+  defaultTeamLabel: string,
+  defaultSessionLabel: string,
 ) {
-  const vi = detail.content.vi;
-  const price = vi.priceLabel?.trim() ?? "";
+  const content = detail.content;
+  const price = content.priceLabel?.trim() ?? "";
 
-  setters.setTitle(vi.title);
-  setters.setTagline(vi.tagline);
-  setters.setTheme(vi.theme);
-  setters.setAboutTitle(vi.aboutTitle ?? "");
-  setters.setAboutBody(vi.aboutBody);
-  setters.setAboutHighlight(vi.aboutHighlight ?? "");
-  setters.setSeoTitle(vi.seoTitle ?? "");
-  setters.setSeoDescription(vi.seoDescription ?? "");
-  setters.setRegisterTitle(vi.registerTitle ?? "");
-  setters.setRegisterDescription(vi.registerDescription ?? "");
+  setters.setTitle(content.title);
+  setters.setTagline(content.tagline);
+  setters.setTheme(content.theme);
+  setters.setAboutTitle(content.aboutTitle ?? "");
+  setters.setAboutBody(content.aboutBody);
+  setters.setAboutHighlight(content.aboutHighlight ?? "");
+  setters.setSeoTitle(content.seoTitle ?? "");
+  setters.setSeoDescription(content.seoDescription ?? "");
+  setters.setRegisterTitle(content.registerTitle ?? "");
+  setters.setRegisterDescription(content.registerDescription ?? "");
   setters.setPriceIsFree(isFreePriceLabel(price, freeLabels));
   setters.setPriceLabel(price);
-  setters.setCardDescription(vi.cardDescription ?? "");
-  setters.setCardTag(vi.cardTag ?? "");
-  setters.setMarquee(vi.marquee ?? "");
+  setters.setCardDescription(content.cardDescription ?? "");
+  setters.setCardTag(content.cardTag ?? "");
+  setters.setMarquee(content.marquee ?? "");
   setters.setStartAt(toDatetimeLocalValue(detail.startAt));
   setters.setEndAt(toDatetimeLocalValue(detail.endAt));
   setters.setDoorsOpenAt(toDatetimeLocalValue(detail.doorsOpenAt));
@@ -194,6 +200,7 @@ function populateFormFromDetail(
   setters.setVenue(detail.location?.venue ?? "");
   setters.setRegistrationUrl(detail.registrationUrl);
   setters.setCoverImageUrl(detail.coverImageUrl);
+  setters.setCoverImageCrop(detail.coverImageCrop ?? null);
   setters.setOgImageUrl(detail.ogImageUrl);
   setters.setOrganizers(
     detail.organizers.length > 0
@@ -210,18 +217,18 @@ function populateFormFromDetail(
   setters.setGalleryImages(
     detail.galleryImages.map((image) => ({
       imageUrl: image.imageUrl,
-      captionVi: image.caption ?? "",
+      caption: image.caption ?? "",
     })),
   );
   setters.setStats(
     detail.stats.length > 0
       ? detail.stats.map((stat) => ({
           value: stat.value,
-          labelVi: stat.label,
+          label: stat.label,
         }))
       : [
-          { value: "4", labelVi: "Ban tổ chức" },
-          { value: "1", labelVi: "Buổi" },
+          { value: "4", label: defaultTeamLabel },
+          { value: "1", label: defaultSessionLabel },
         ],
   );
 }
@@ -232,25 +239,27 @@ function populateFormFromPayload(
   payload: CreateEventPayload,
   freeLabels: string[],
   setters: FormSetters,
+  defaultTeamLabel: string,
+  defaultSessionLabel: string,
 ) {
-  const vi = payload.contentVi;
-  const price = vi.priceLabel?.trim() ?? "";
+  const content = payload.content;
+  const price = content.priceLabel?.trim() ?? "";
 
-  setters.setTitle(vi.title);
-  setters.setTagline(vi.tagline);
-  setters.setTheme(vi.theme);
-  setters.setAboutTitle(vi.aboutTitle ?? "");
-  setters.setAboutBody(vi.aboutBody);
-  setters.setAboutHighlight(vi.aboutHighlight ?? "");
-  setters.setSeoTitle(vi.seoTitle ?? "");
-  setters.setSeoDescription(vi.seoDescription ?? "");
-  setters.setRegisterTitle(vi.registerTitle ?? "");
-  setters.setRegisterDescription(vi.registerDescription ?? "");
+  setters.setTitle(content.title);
+  setters.setTagline(content.tagline);
+  setters.setTheme(content.theme);
+  setters.setAboutTitle(content.aboutTitle ?? "");
+  setters.setAboutBody(content.aboutBody);
+  setters.setAboutHighlight(content.aboutHighlight ?? "");
+  setters.setSeoTitle(content.seoTitle ?? "");
+  setters.setSeoDescription(content.seoDescription ?? "");
+  setters.setRegisterTitle(content.registerTitle ?? "");
+  setters.setRegisterDescription(content.registerDescription ?? "");
   setters.setPriceIsFree(isFreePriceLabel(price, freeLabels));
   setters.setPriceLabel(price);
-  setters.setCardDescription(vi.cardDescription ?? "");
-  setters.setCardTag(vi.cardTag ?? "");
-  setters.setMarquee(vi.marquee ?? "");
+  setters.setCardDescription(content.cardDescription ?? "");
+  setters.setCardTag(content.cardTag ?? "");
+  setters.setMarquee(content.marquee ?? "");
   setters.setStartAt(toDatetimeLocalValue(payload.startAt));
   setters.setEndAt(toDatetimeLocalValue(payload.endAt));
   setters.setDoorsOpenAt(toDatetimeLocalValue(payload.doorsOpenAt));
@@ -260,6 +269,7 @@ function populateFormFromPayload(
   setters.setVenue(payload.venue ?? "");
   setters.setRegistrationUrl(payload.registrationUrl);
   setters.setCoverImageUrl(payload.coverImageUrl);
+  setters.setCoverImageCrop(payload.coverImageCrop ?? null);
   setters.setOgImageUrl(payload.ogImageUrl);
   setters.setOrganizers(
     payload.organizers.length > 0
@@ -276,18 +286,18 @@ function populateFormFromPayload(
   setters.setGalleryImages(
     payload.galleryImages.map((image) => ({
       imageUrl: image.imageUrl,
-      captionVi: image.captionVi ?? "",
+      caption: image.caption ?? "",
     })),
   );
   setters.setStats(
     payload.stats.length > 0
       ? payload.stats.map((stat) => ({
           value: stat.value,
-          labelVi: stat.labelVi,
+          label: stat.label,
         }))
       : [
-          { value: "4", labelVi: "Ban tổ chức" },
-          { value: "1", labelVi: "Buổi" },
+          { value: "4", label: defaultTeamLabel },
+          { value: "1", label: defaultSessionLabel },
         ],
   );
 }
@@ -346,9 +356,12 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
   const [organizers, setOrganizers] = useState<OrganizerDraft[]>([EMPTY_ORGANIZER()]);
   const [galleryImages, setGalleryImages] = useState<GalleryDraft[]>([]);
   const [stats, setStats] = useState<StatDraft[]>([
-    { value: "4", labelVi: "Ban tổ chức" },
-    { value: "1", labelVi: "Buổi" },
+    { value: "4", label: t("defaultStats.team") },
+    { value: "1", label: t("defaultStats.session") },
   ]);
+  const [coverImageCrop, setCoverImageCrop] = useState<ImageCropData | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [croppingImageUrl, setCroppingImageUrl] = useState("");
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingOg, setUploadingOg] = useState(false);
   const [uploadingOrganizerIndex, setUploadingOrganizerIndex] = useState<number | null>(null);
@@ -399,6 +412,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
       setVenue,
       setRegistrationUrl,
       setCoverImageUrl,
+      setCoverImageCrop,
       setOgImageUrl,
       setOrganizers,
       setGalleryImages,
@@ -406,9 +420,9 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
     };
 
     if (existingEvent.pendingUpdate && existingEvent.updateReviewStatus === "PENDING") {
-      populateFormFromPayload(existingEvent.pendingUpdate, freeLabels, setters);
+      populateFormFromPayload(existingEvent.pendingUpdate, freeLabels, setters, t("defaultStats.team"), t("defaultStats.session"));
     } else {
-      populateFormFromDetail(existingEvent, freeLabels, setters);
+      populateFormFromDetail(existingEvent, freeLabels, setters, t("defaultStats.team"), t("defaultStats.session"));
     }
     setFormInitialized(true);
   }, [isEditMode, existingEvent, formInitialized, t]);
@@ -495,8 +509,9 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
       venue: venue.trim() || undefined,
       registrationUrl,
       coverImageUrl,
+      coverImageCrop: coverImageCrop ?? undefined,
       ogImageUrl,
-      contentVi: {
+      content: {
         title,
         tagline,
         theme,
@@ -514,7 +529,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
       },
       organizers: validOrganizers,
       galleryImages: galleryImages.filter((item) => item.imageUrl),
-      stats: stats.filter((item) => item.value.trim() && item.labelVi.trim()),
+      stats: stats.filter((item) => item.value.trim() && item.label.trim()),
     };
 
     try {
@@ -771,6 +786,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   <EventHomeCard
                     preview
                     coverImage={coverImageUrl || null}
+                    coverImageCrop={coverImageCrop}
                     status="upcoming"
                     statusLabel={tHome("status.upcoming")}
                     theme={theme || "—"}
@@ -1049,19 +1065,39 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
 
           <EventFormSection icon={ImageIcon} eyebrow="04" title={t("sections.images")}>
             <div className="grid gap-6 sm:grid-cols-2">
-              <UploadField
-                label={t("fields.coverImage")}
-                previewUrl={coverImageUrl}
-                isUploading={uploadingCover}
-                onFile={async (file) => {
-                  setUploadingCover(true);
-                  try {
-                    setCoverImageUrl(await uploadImage(file));
-                  } finally {
-                    setUploadingCover(false);
-                  }
-                }}
-              />
+              <div className="space-y-1.5">
+                <UploadField
+                  label={t("fields.coverImage")}
+                  previewUrl={coverImageUrl}
+                  isUploading={uploadingCover}
+                  onFile={async (file) => {
+                    setUploadingCover(true);
+                    try {
+                      const url = await uploadImage(file);
+                      setCoverImageUrl(url);
+                      setCroppingImageUrl(url);
+                      setCropModalOpen(true);
+                    } finally {
+                      setUploadingCover(false);
+                    }
+                  }}
+                />
+                {coverImageUrl ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCroppingImageUrl(coverImageUrl);
+                      setCropModalOpen(true);
+                    }}
+                    className="w-full"
+                  >
+                    <Crop className="mr-1.5 size-3.5" />
+                    {t("actions.crop")}
+                  </Button>
+                ) : null}
+              </div>
               <UploadField
                 label={t("fields.ogImage")}
                 previewUrl={ogImageUrl}
@@ -1104,6 +1140,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     </span>
                     {organizers.length > 1 ? (
                       <RemoveItemButton
+                        label={t("actions.remove")}
                         onClick={() =>
                           setOrganizers((items) => items.filter((_, i) => i !== index))
                         }
@@ -1225,7 +1262,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
               <AddItemButton
                 label={t("actions.addImage")}
                 onClick={() =>
-                  setGalleryImages((items) => [...items, { imageUrl: "", captionVi: "" }])
+                  setGalleryImages((items) => [...items, { imageUrl: "", caption: "" }])
                 }
               />
             }
@@ -1234,7 +1271,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
               <EmptyBlock
                 label={t("actions.addImage")}
                 onClick={() =>
-                  setGalleryImages([{ imageUrl: "", captionVi: "" }])
+                  setGalleryImages([{ imageUrl: "", caption: "" }])
                 }
               />
             ) : (
@@ -1264,16 +1301,16 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     />
                     <FormField
                       label={t("fields.galleryCaption")}
-                      error={getError(`galleryCaption_${index}`, image.captionVi, FIELD_MAX_LENGTH.galleryCaption)}
-                      currentLength={image.captionVi.length}
+                      error={getError(`galleryCaption_${index}`, image.caption, FIELD_MAX_LENGTH.galleryCaption)}
+                      currentLength={image.caption.length}
                       maxLength={FIELD_MAX_LENGTH.galleryCaption}
                     >
                       <Input
-                        value={image.captionVi}
+                        value={image.caption}
                         onChange={(e) =>
                           setGalleryImages((items) =>
                             items.map((item, i) =>
-                              i === index ? { ...item, captionVi: e.target.value } : item,
+                              i === index ? { ...item, caption: e.target.value } : item,
                             ),
                           )
                         }
@@ -1284,6 +1321,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     </FormField>
                     <div className="flex items-end justify-end sm:pb-1">
                       <RemoveItemButton
+                        label={t("actions.remove")}
                         onClick={() =>
                           setGalleryImages((items) => items.filter((_, i) => i !== index))
                         }
@@ -1302,7 +1340,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
             action={
               <AddItemButton
                 label={t("actions.addStat")}
-                onClick={() => setStats((items) => [...items, { value: "", labelVi: "" }])}
+                onClick={() => setStats((items) => [...items, { value: "", label: "" }])}
               />
             }
           >
@@ -1336,16 +1374,16 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   <FormField
                     label={t("fields.statLabel")}
                     className="flex-[1.4]"
-                    error={getError(`statLabel_${index}`, stat.labelVi, FIELD_MAX_LENGTH.statLabel)}
-                    currentLength={stat.labelVi.length}
+                    error={getError(`statLabel_${index}`, stat.label, FIELD_MAX_LENGTH.statLabel)}
+                    currentLength={stat.label.length}
                     maxLength={FIELD_MAX_LENGTH.statLabel}
                   >
                     <Input
-                      value={stat.labelVi}
+                      value={stat.label}
                       onChange={(e) =>
                         setStats((items) =>
                           items.map((item, i) =>
-                            i === index ? { ...item, labelVi: e.target.value } : item,
+                            i === index ? { ...item, label: e.target.value } : item,
                           ),
                         )
                       }
@@ -1355,6 +1393,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                     />
                   </FormField>
                   <RemoveItemButton
+                    label={t("actions.remove")}
                     onClick={() => setStats((items) => items.filter((_, i) => i !== index))}
                   />
                 </div>
@@ -1396,6 +1435,22 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
           </div>
         </div>
       ) : null}
+
+      <ImageCropModal
+        open={cropModalOpen}
+        onOpenChange={setCropModalOpen}
+        imageUrl={croppingImageUrl}
+        aspect={16 / 9}
+        initialCrop={coverImageCrop}
+        title={t("crop.title")}
+        description={t("crop.description")}
+        confirmLabel={t("crop.confirm")}
+        cancelLabel={t("crop.cancel")}
+        onConfirm={(crop) => {
+          setCoverImageCrop(crop);
+          setCropModalOpen(false);
+        }}
+      />
     </main>
   );
 }
@@ -1525,7 +1580,7 @@ function AddItemButton({ label, onClick }: { label: string; onClick: () => void 
   );
 }
 
-function RemoveItemButton({ onClick }: { onClick: () => void }) {
+function RemoveItemButton({ onClick, label }: { onClick: () => void; label?: string }) {
   return (
     <Button
       type="button"
@@ -1533,7 +1588,7 @@ function RemoveItemButton({ onClick }: { onClick: () => void }) {
       size="icon-sm"
       onClick={onClick}
       className="rounded-full border-slate-200 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-      aria-label="Remove"
+      aria-label={label}
     >
       <Trash2 className="size-4" />
     </Button>
