@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { ROUTES, type CommunityPostListItemDto } from '@mezon-tutors/shared';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS, vi } from 'date-fns/locale';
@@ -13,6 +13,7 @@ import {
   HelpCircle,
   MessageSquare,
   MoreHorizontal,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -23,12 +24,11 @@ import {
   ImageAttachmentGallery,
   toImageGalleryItems,
 } from '@/components/common/ImageAttachmentGallery';
-import { ActionMenu } from '@/components/common/ActionMenu';
+import { ActionMenu, type ActionMenuItem } from '@/components/common/ActionMenu';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { useCommunityPost, useMyCommunitySubmissions, useToggleCommunityUpvote } from '@/services';
-import { isAuthenticatedAtom, isLoadingAtom, userAtom } from '@/store';
-import { ExerciseSubmissionPanel } from './ExerciseSubmissionPanel';
+import { useToggleCommunityUpvote, useHideCommunityPost, communityQueryKey } from '@/services';
+import { userAtom } from '@/store';
 import { ReportModal } from './ReportModal';
 
 type CommunityPostCardProps = {
@@ -79,6 +79,8 @@ function formatRelativeTime(iso: string, locale: string) {
 export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
   const locale = useLocale();
   const router = useRouter();
+  const user = useAtomValue(userAtom);
+  const t = useTranslations('Community.card');
   const [expanded, setExpanded] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const isLongContent = post.content.length > 200;
@@ -86,8 +88,10 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
   const accent = getAvatarAccent(post.author.username);
   const typeConfig = TYPE_CONFIG[post.type];
   const toggleUpvote = useToggleCommunityUpvote(post.id);
+  const hidePost = useHideCommunityPost();
   const correctCount = post.correctCount;
   const incorrectCount = post.incorrectCount;
+  const isAdmin = user?.role === "ADMIN" || user?.role === "CTV";
   const difficultyLabel =
     isExercise && post.exercise?.difficulty
       ? post.exercise.difficulty.charAt(0).toUpperCase() +
@@ -145,17 +149,33 @@ export function CommunityPostCard({ post, className }: CommunityPostCardProps) {
                     <MoreHorizontal className="size-4" />
                   </Button>
                 }
-                items={[
-                  {
-                    label: "Report",
-                    icon: <Flag className="size-4" />,
-                    variant: "destructive",
-                    onClick: (e) => {
-                      e.stopPropagation()
-                      setReportOpen(true)
-                    },
-                  },
-                ]}
+                items={
+                  [
+                    ...(isAdmin
+                      ? [
+                          {
+                            label: t('hide'),
+                            icon: <Trash2 className="size-4" />,
+                            variant: "destructive" as const,
+                            onClick: (e: MouseEvent) => {
+                              e.stopPropagation();
+                              if (!window.confirm(t('hideConfirm'))) return;
+                              hidePost.mutate(post.id);
+                            },
+                          } satisfies ActionMenuItem,
+                        ]
+                      : []),
+                    {
+                      label: t('report'),
+                      icon: <Flag className="size-4" />,
+                      variant: "destructive",
+                      onClick: (e: MouseEvent) => {
+                        e.stopPropagation()
+                        setReportOpen(true)
+                      },
+                    } satisfies ActionMenuItem,
+                  ] satisfies ActionMenuItem[]
+                }
               />
             </div>
           </div>

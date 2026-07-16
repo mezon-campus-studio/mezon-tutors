@@ -56,9 +56,12 @@
       "ADVANCED": "Nâng cao"
     },
     "card": {
-      "submissions": "{count} lượt làm",
+      "submissions": "{count} submissions",
       "comments": "{count} bình luận",
-      "upvotes": "{count} upvote"
+      "upvotes": "{count} upvote",
+      "hide": "Ẩn",
+      "hideConfirm": "Ẩn bài viết này?",
+      "report": "Báo cáo"
     },
     "tag": {
       "meta": {
@@ -80,6 +83,10 @@
       "following": "Đang theo dõi",
       "delete": "Xóa bài viết",
       "report": "Báo cáo",
+      "hide": "Ẩn",
+      "hideConfirm": "Ẩn bài viết này?",
+      "hideSuccess": "Đã ẩn bài viết",
+      "hideFailed": "Không thể ẩn bài viết",
       "deleteConfirm": "Bạn có chắc muốn xóa bài viết này?",
       "deleted": "Đã xóa bài viết",
       "deleteFailed": "Không thể xóa bài viết",

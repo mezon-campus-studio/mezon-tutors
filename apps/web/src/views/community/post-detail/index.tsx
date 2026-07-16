@@ -19,9 +19,11 @@ import { ExerciseSubmissionPanel } from '@/components/community/ExerciseSubmissi
 import { ReportModal } from '@/components/community/ReportModal';
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui';
 import {
+  communityQueryKey,
   useCommunityEngagement,
   useCommunityFollowingIds,
   useDeleteCommunityPost,
+  useHideCommunityPost,
   useToggleCommunityFollow,
   useToggleCommunityUpvote,
 } from '@/services';
@@ -62,9 +64,11 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
   const toggleUpvote = useToggleCommunityUpvote(post.id);
   const toggleFollow = useToggleCommunityFollow();
   const deletePost = useDeleteCommunityPost();
+  const hidePost = useHideCommunityPost();
   const QueryClient = useQueryClient();
 
   const isMine = user?.id === post.author.id;
+  const isAdmin = user?.role === "ADMIN" || user?.role === "CTV";
   const isFollowing = followingIds.includes(post.author.id);
   const upvoteCount = engagement?.upvoteCount ?? post.upvoteCount;
   const commentCount = engagement?.commentCount ?? post.commentCount;
@@ -131,36 +135,61 @@ export default function CommunityPostDetailPage({ post }: CommunityPostDetailPag
               <CommunityPostTypeBadge type={post.type} />
             </div>
 
-            {isMine ? (
+            <div>
+              {isMine ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-full"
+                  onClick={handleDelete}
+                  disabled={deletePost.isPending}
+                >
+                  <Trash2 className="mr-1 size-4" />
+                  {t('delete')}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-full"
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      toast.error(t('engagement.loginToInteract'));
+                      return;
+                    }
+                    setReportOpen(true);
+                  }}
+                >
+                  <Flag className="mr-1 size-4" />
+                  {t('report')}
+                </Button>
+              )}
+            {isAdmin && !isMine ? (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-full"
-                onClick={handleDelete}
-                disabled={deletePost.isPending}
+                onClick={() => {
+                  if (!window.confirm(t('hideConfirm'))) return;
+                  hidePost.mutate(post.id, {
+                    onSuccess: () => {
+                      QueryClient.invalidateQueries({ queryKey: communityQueryKey.all });
+                      toast.success(t('hideSuccess'));
+                      router.push(ROUTES.COMMUNITY.INDEX);
+                    },
+                    onError: () => toast.error(t('hideFailed')),
+                  });
+                }}
+                disabled={hidePost.isPending}
               >
                 <Trash2 className="mr-1 size-4" />
-                {t('delete')}
+                {t('hide')}
               </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-full"
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    toast.error(t('engagement.loginToInteract'));
-                    return;
-                  }
-                  setReportOpen(true);
-                }}
-              >
-                <Flag className="mr-1 size-4" />
-                {t('report')}
-              </Button>
-            )}
+            ) : null}
+            </div>
           </div>
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-y border-violet-100 py-4">

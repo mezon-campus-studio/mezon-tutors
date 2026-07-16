@@ -1214,4 +1214,18 @@ export class CommunityService {
       },
     });
   }
+
+  async hidePost(postId: string): Promise<void> {
+    const post = await this.prisma.communityPost.findUnique({
+      where: { id: postId },
+    });
+    if (!post) {
+      throw new NotFoundException('Community post not found');
+    }
+
+    await this.prisma.communityPost.update({
+      where: { id: postId },
+      data: { deletedAt: new Date() },
+    });
+  }
 }

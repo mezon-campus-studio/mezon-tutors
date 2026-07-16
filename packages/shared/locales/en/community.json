@@ -58,7 +58,10 @@
     "card": {
       "submissions": "{count} submissions",
       "comments": "{count} comments",
-      "upvotes": "{count} upvotes"
+      "upvotes": "{count} upvotes",
+      "hide": "Hide",
+      "hideConfirm": "Hide this post?",
+      "report": "Report"
     },
     "tag": {
       "meta": {
@@ -80,6 +83,10 @@
       "following": "Following",
       "delete": "Delete post",
       "report": "Report",
+      "hide": "Hide",
+      "hideConfirm": "Hide this post?",
+      "hideSuccess": "Post hidden",
+      "hideFailed": "Failed to hide post",
       "deleteConfirm": "Are you sure you want to delete this post?",
       "deleted": "Post deleted",
       "deleteFailed": "Failed to delete post",

@@ -315,4 +315,13 @@ export class AdminCommunityReportController {
     await this.communityService.dismissReport(id, user.sub);
     return { success: true };
   }
+
+  @Post('hide-post/:postId')
+  @ApiOperation({ summary: 'Hide a community post (admin/CTV)' })
+  async hidePost(
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ): Promise<{ success: true }> {
+    await this.communityService.hidePost(postId);
+    return { success: true };
+  }
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api-client';
 import { adminCommunityReportQueryKey } from './admin-community-report.qkey';
+import { communityQueryKey } from '../community/community.qkey';
 
 const BASE = '/admin/community/reports';
 
@@ -59,6 +60,17 @@ export const useDismissCommunityReport = () => {
       queryClient.invalidateQueries({
         queryKey: adminCommunityReportQueryKey.all,
       });
+    },
+  });
+};
+
+export const useHideCommunityPost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (postId: string) =>
+      apiClient.post<{ success: true }>(`${BASE}/hide-post/${postId}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityQueryKey.all });
     },
   });
 };
