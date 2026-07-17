@@ -7,34 +7,28 @@ import type {
 
 export function pickEventContent(
   event: EventListItemDto | EventDetailDto,
-  locale: string,
+  _locale: string,
 ): EventLocaleContent {
-  if (locale === "en" && event.content.en) {
-    return event.content.en;
-  }
-  return event.content.vi;
+  return event.content;
 }
 
 /** SEO / share copy — prefers explicit seo* fields, then falls back to display content. */
 export function pickEventShareContent(
   event: EventListItemDto | EventDetailDto,
-  locale: string,
+  _locale: string,
 ): {
   shareTitle: string;
   shareDescription: string;
   displayTitle: string;
 } {
-  const content = pickEventContent(event, locale);
+  const content = pickEventContent(event, _locale);
   const displayTitle = content.title.replace(/\n/g, " ").trim();
   const shareTitle =
     content.seoTitle?.trim() ||
-    event.content.vi.seoTitle?.trim() ||
-    event.content.en?.seoTitle?.trim() ||
+    content.title ||
     displayTitle;
   const shareDescription =
     content.seoDescription?.trim() ||
-    event.content.vi.seoDescription?.trim() ||
-    event.content.en?.seoDescription?.trim() ||
     content.tagline.replace(/\n/g, " ").trim() ||
     "Workshop và sự kiện tiếng Anh dành cho người đi làm trên Mezonly.";
 

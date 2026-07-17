@@ -7,14 +7,35 @@ import {
   IsBoolean,
   IsDateString,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
 const limits = EVENT_CONTENT_LIMITS;
+
+class ImageCropDataDto {
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  x!: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  y!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(3)
+  zoom?: number;
+}
 
 class EventLocaleContentDto {
   @IsString()
@@ -59,32 +80,32 @@ class EventLocaleContentDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(limits.title)
+  @MaxLength(limits.registerTitle)
   registerTitle?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(limits.aboutBody)
+  @MaxLength(limits.registerDescription)
   registerDescription?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(60)
+  @MaxLength(limits.priceLabel)
   priceLabel?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(limits.tagline)
+  @MaxLength(limits.cardDescription)
   cardDescription?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(60)
+  @MaxLength(limits.cardTag)
   cardTag?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(240)
+  @MaxLength(limits.marquee)
   marquee?: string;
 }
 
@@ -127,12 +148,7 @@ class CreateEventGalleryImageDto {
   @IsOptional()
   @IsString()
   @MaxLength(limits.galleryCaption)
-  captionVi?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(limits.galleryCaption)
-  captionEn?: string;
+  caption?: string;
 }
 
 class CreateEventStatDto {
@@ -144,12 +160,7 @@ class CreateEventStatDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(limits.statLabel)
-  labelVi!: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(limits.statLabel)
-  labelEn?: string;
+  label!: string;
 }
 
 export class CreateEventDto {
@@ -194,18 +205,18 @@ export class CreateEventDto {
   @IsNotEmpty()
   coverImageUrl!: string;
 
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ImageCropDataDto)
+  coverImageCrop?: ImageCropDataDto;
+
   @IsString()
   @IsNotEmpty()
   ogImageUrl!: string;
 
   @ValidateNested()
   @Type(() => EventLocaleContentDto)
-  contentVi!: EventLocaleContentDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => EventLocaleContentDto)
-  contentEn?: EventLocaleContentDto;
+  content!: EventLocaleContentDto;
 
   @IsArray()
   @ArrayMinSize(1)

@@ -806,9 +806,9 @@ model Event {
   venue           String?            @db.VarChar(255)
   registrationUrl String             @map("registration_url") @db.Text
   coverImageUrl   String             @map("cover_image_url") @db.Text
+  coverImageCrop  Json?              @map("cover_image_crop")
   ogImageUrl      String             @map("og_image_url") @db.Text
-  contentVi       Json               @map("content_vi")
-  contentEn       Json?              @map("content_en")
+  content         Json               @map("content")
   rejectedReason       String?                  @map("rejected_reason") @db.Text
   publishedAt          DateTime?                @map("published_at")
   updateReviewStatus   EventUpdateReviewStatus? @map("update_review_status")
@@ -853,8 +853,7 @@ model EventGalleryImage {
   eventId   String  @map("event_id") @db.Uuid
   sortOrder Int     @default(0) @map("sort_order")
   imageUrl  String  @map("image_url") @db.Text
-  captionVi String? @map("caption_vi") @db.VarChar(500)
-  captionEn String? @map("caption_en") @db.VarChar(500)
+  caption   String? @db.VarChar(500)
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -867,8 +866,7 @@ model EventStat {
   eventId   String  @map("event_id") @db.Uuid
   sortOrder Int     @default(0) @map("sort_order")
   value     String  @db.VarChar(50)
-  labelVi   String  @map("label_vi") @db.VarChar(120)
-  labelEn   String? @map("label_en") @db.VarChar(120)
+  label     String  @db.VarChar(120)
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 

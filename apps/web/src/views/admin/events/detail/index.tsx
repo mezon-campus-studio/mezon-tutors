@@ -125,10 +125,7 @@ export default function AdminEventDetailView({ eventId }: AdminEventDetailViewPr
           registrationUrl: event.pendingUpdate.registrationUrl,
           coverImageUrl: event.pendingUpdate.coverImageUrl,
           ogImageUrl: event.pendingUpdate.ogImageUrl,
-          content: {
-            vi: event.pendingUpdate.contentVi,
-            en: event.pendingUpdate.contentEn ?? null,
-          },
+          content: event.pendingUpdate.content,
         },
         "vi",
       )

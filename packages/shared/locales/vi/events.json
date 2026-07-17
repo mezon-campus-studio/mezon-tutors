@@ -344,7 +344,19 @@
         "addImage": "Thêm ảnh",
         "addStat": "Thêm số liệu",
         "submit": "Gửi duyệt",
-        "submitting": "Đang gửi..."
+        "submitting": "Đang gửi...",
+        "crop": "Cắt ảnh",
+        "remove": "Xóa"
+      },
+      "defaultStats": {
+        "team": "Ban tổ chức",
+        "session": "Buổi"
+      },
+      "crop": {
+        "title": "Cắt ảnh banner",
+        "description": "Kéo để di chuyển. Khu vực chọn sẽ được hiển thị trên banner.",
+        "confirm": "Xác nhận",
+        "cancel": "Hủy"
       },
       "errors": {
         "imagesRequired": "Vui lòng tải ảnh cover và ảnh OGP.",

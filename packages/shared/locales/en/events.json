@@ -344,7 +344,19 @@
         "addImage": "Add image",
         "addStat": "Add stat",
         "submit": "Submit for review",
-        "submitting": "Submitting..."
+        "submitting": "Submitting...",
+        "crop": "Crop image",
+        "remove": "Remove"
+      },
+      "defaultStats": {
+        "team": "Organizing team",
+        "session": "Session"
+      },
+      "crop": {
+        "title": "Crop banner image",
+        "description": "Drag to reposition. The selected area will be displayed on the banner.",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
       },
       "errors": {
         "imagesRequired": "Please upload cover and OGP images.",

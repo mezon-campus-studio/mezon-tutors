@@ -100,7 +100,7 @@ export class EventService {
   ): Promise<EventDetailDto> {
     const slug = await this.resolveUniqueSlug(
       payload.slug,
-      payload.contentVi.title,
+      payload.content.title,
     );
 
     const event = await this.prisma.event.create({
@@ -116,9 +116,9 @@ export class EventService {
         venue: payload.venue?.trim() || null,
         registrationUrl: payload.registrationUrl,
         coverImageUrl: payload.coverImageUrl,
+        coverImageCrop: payload.coverImageCrop ?? Prisma.JsonNull,
         ogImageUrl: payload.ogImageUrl,
-        contentVi: payload.contentVi,
-        contentEn: payload.contentEn ?? undefined,
+        content: payload.content,
         createdById: userId,
         organizers: {
           create: payload.organizers.map((organizer, index) => ({
@@ -137,16 +137,14 @@ export class EventService {
           create: payload.galleryImages.map((image, index) => ({
             sortOrder: index,
             imageUrl: image.imageUrl,
-            captionVi: image.captionVi?.trim() || null,
-            captionEn: image.captionEn?.trim() || null,
+            caption: image.caption?.trim() || null,
           })),
         },
         stats: {
           create: payload.stats.map((stat, index) => ({
             sortOrder: index,
             value: stat.value.trim(),
-            labelVi: stat.labelVi.trim(),
-            labelEn: stat.labelEn?.trim() || null,
+            label: stat.label.trim(),
           })),
         },
       },
@@ -190,9 +188,9 @@ export class EventService {
       venue: payload.venue?.trim() || null,
       registrationUrl: payload.registrationUrl,
       coverImageUrl: payload.coverImageUrl,
+      coverImageCrop: payload.coverImageCrop ?? Prisma.JsonNull,
       ogImageUrl: payload.ogImageUrl,
-      contentVi: payload.contentVi,
-      contentEn: payload.contentEn ?? undefined,
+        content: payload.content,
       organizers: {
         create: payload.organizers.map((organizer, index) => ({
           sortOrder: index,
@@ -210,16 +208,14 @@ export class EventService {
         create: payload.galleryImages.map((image, index) => ({
           sortOrder: index,
           imageUrl: image.imageUrl,
-          captionVi: image.captionVi?.trim() || null,
-          captionEn: image.captionEn?.trim() || null,
+          caption: image.caption?.trim() || null,
         })),
       },
       stats: {
         create: payload.stats.map((stat, index) => ({
           sortOrder: index,
           value: stat.value.trim(),
-          labelVi: stat.labelVi.trim(),
-          labelEn: stat.labelEn?.trim() || null,
+          label: stat.label.trim(),
         })),
       },
     };
@@ -320,23 +316,23 @@ export class EventService {
   async getMetrics(): Promise<EventMetricsDto> {
     const [pending, published, rejected, closed, pendingUpdates, total] =
       await Promise.all([
-        this.prisma.event.count({
-          where: { publishStatus: EventPublishStatus.PENDING },
-        }),
-        this.prisma.event.count({
-          where: { publishStatus: EventPublishStatus.PUBLISHED },
-        }),
-        this.prisma.event.count({
-          where: { publishStatus: EventPublishStatus.REJECTED },
-        }),
-        this.prisma.event.count({
-          where: { publishStatus: EventPublishStatus.CLOSED },
-        }),
-        this.prisma.event.count({
-          where: { updateReviewStatus: EventUpdateReviewStatus.PENDING },
-        }),
-        this.prisma.event.count(),
-      ]);
+      this.prisma.event.count({
+        where: { publishStatus: EventPublishStatus.PENDING },
+      }),
+      this.prisma.event.count({
+        where: { publishStatus: EventPublishStatus.PUBLISHED },
+      }),
+      this.prisma.event.count({
+        where: { publishStatus: EventPublishStatus.REJECTED },
+      }),
+      this.prisma.event.count({
+        where: { publishStatus: EventPublishStatus.CLOSED },
+      }),
+      this.prisma.event.count({
+        where: { updateReviewStatus: EventUpdateReviewStatus.PENDING },
+      }),
+      this.prisma.event.count(),
+    ]);
     return { pending, published, rejected, closed, pendingUpdates, total };
   }
 
