@@ -568,7 +568,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
         <div className="absolute top-1/3 -right-24 size-[24rem] rounded-full bg-fuchsia-200/25 blur-[100px]" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-5 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-[1280px] px-5 py-8 sm:px-6 lg:px-8 lg:py-10">
         <Link
           href={isEditMode ? ROUTES.DASHBOARD.MY_EVENTS : ROUTES.HOME.events}
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-violet-700"
@@ -633,6 +633,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
           )}
         </header>
 
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
         <form
           id="create-event-form"
           onSubmit={handleSubmit}
@@ -644,8 +645,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
             eyebrow="01"
             title={t("sections.basic")}
           >
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] xl:items-start">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   label={t("fields.title")}
                   className="sm:col-span-2"
@@ -769,41 +769,6 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   />
                 </FormField>
               </div>
-
-              <aside className="xl:sticky xl:top-24">
-                <div className="mb-3 flex items-center gap-2">
-                  <Eye className="size-4 text-violet-600" />
-                  <div>
-                    <p className="text-xs font-bold text-violet-800">
-                      {t("preview.homeLabel")}
-                    </p>
-                    <p className="text-[11px] leading-5 text-slate-500">
-                      {t("preview.homeHint")}
-                    </p>
-                  </div>
-                </div>
-                <div className="scale-[0.98] origin-top rounded-2xl ring-1 ring-violet-100/80 xl:scale-100">
-                  <EventHomeCard
-                    preview
-                    coverImage={coverImageUrl || null}
-                    coverImageCrop={coverImageCrop}
-                    status="upcoming"
-                    statusLabel={tHome("status.upcoming")}
-                    theme={theme || "—"}
-                    title={title || t("preview.titlePlaceholder")}
-                    tagline={tagline || t("preview.taglinePlaceholder")}
-                    description={cardDescription || tagline || "—"}
-                    tag={cardTag || theme || "—"}
-                    price={resolvedPriceLabel}
-                    registerLabel={tHome("register")}
-                    locale={locale}
-                    startAt={startAt || undefined}
-                    startAtLabel={startAt ? undefined : t("preview.datePlaceholder")}
-                    locationLabel={previewLocationLabel}
-                  />
-                </div>
-              </aside>
-            </div>
           </EventFormSection>
 
           <EventFormSection icon={Clock} eyebrow="02" title={t("sections.schedule")}>
@@ -1070,6 +1035,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   label={t("fields.coverImage")}
                   previewUrl={coverImageUrl}
                   isUploading={uploadingCover}
+                  cropData={coverImageCrop}
                   onFile={async (file) => {
                     setUploadingCover(true);
                     try {
@@ -1083,19 +1049,21 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
                   }}
                 />
                 {coverImageUrl ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCroppingImageUrl(coverImageUrl);
-                      setCropModalOpen(true);
-                    }}
-                    className="w-full"
-                  >
-                    <Crop className="mr-1.5 size-3.5" />
-                    {t("actions.crop")}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCroppingImageUrl(coverImageUrl);
+                        setCropModalOpen(true);
+                      }}
+                      className="flex-1"
+                    >
+                      <Crop className="mr-1.5 size-3.5" />
+                      {t("actions.crop")}
+                    </Button>
+                  </div>
                 ) : null}
               </div>
               <UploadField
@@ -1401,11 +1369,46 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
             </div>
           </EventFormSection>
         </form>
+
+        <aside className="xl:sticky xl:top-24 xl:self-start">
+          <div className="mb-3 flex items-center gap-2">
+            <Eye className="size-4 text-violet-600" />
+            <div>
+              <p className="text-xs font-bold text-violet-800">
+                {t("preview.homeLabel")}
+              </p>
+              <p className="text-[11px] leading-5 text-slate-500">
+                {t("preview.homeHint")}
+              </p>
+            </div>
+          </div>
+          <div className="scale-[0.98] origin-top rounded-2xl ring-1 ring-violet-100/80 xl:scale-100">
+            <EventHomeCard
+              preview
+              coverImage={coverImageUrl || null}
+              coverImageCrop={coverImageCrop}
+              status="upcoming"
+              statusLabel={tHome("status.upcoming")}
+              theme={theme || "—"}
+              title={title || t("preview.titlePlaceholder")}
+              tagline={tagline || t("preview.taglinePlaceholder")}
+              description={cardDescription || tagline || "—"}
+              tag={cardTag || theme || "—"}
+              price={resolvedPriceLabel}
+              registerLabel={tHome("register")}
+              locale={locale}
+              startAt={startAt || undefined}
+              startAtLabel={startAt ? undefined : t("preview.datePlaceholder")}
+              locationLabel={previewLocationLabel}
+            />
+          </div>
+        </aside>
+        </div>
       </div>
 
       {!isLocked ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-violet-100/90 bg-white/85 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
             <p className="text-xs leading-5 text-slate-500">
               {isPublished ? tEdit("publishedEditNote") : t("pendingNote")}
             </p>
@@ -1440,7 +1443,7 @@ export default function CreateEventView({ eventId }: CreateEventViewProps = {}) 
         open={cropModalOpen}
         onOpenChange={setCropModalOpen}
         imageUrl={croppingImageUrl}
-        aspect={16 / 9}
+        aspect={5 / 2}
         initialCrop={coverImageCrop}
         title={t("crop.title")}
         description={t("crop.description")}
@@ -1615,11 +1618,13 @@ function UploadField({
   previewUrl,
   isUploading,
   onFile,
+  cropData,
 }: {
   label: string;
   previewUrl?: string;
   isUploading?: boolean;
   onFile: (file: File) => void | Promise<void>;
+  cropData?: ImageCropData | null;
 }) {
   const t = useTranslations("Events.create");
   return (
@@ -1634,6 +1639,7 @@ function UploadField({
         uploadingLabel={t("actions.uploading")}
         hint={t("uploadHint", { maxMb: MAX_IMAGE_SIZE_MB })}
         className="rounded-2xl border-violet-100 bg-violet-50/20"
+        cropData={cropData}
       />
     </FormField>
   );
