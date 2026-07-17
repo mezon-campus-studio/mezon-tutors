@@ -1114,4 +1114,118 @@ export class CommunityService {
 
     return { success: true };
   }
+
+  async listReports(
+    status?: string,
+  ): Promise<
+    Array<{
+      id: string;
+      reason: string;
+      description: string | null;
+      status: string;
+      createdAt: string;
+      reporter: { id: string; username: string; avatar: string };
+      post: {
+        id: string;
+        content: string;
+        publishedAt: string;
+        author: { id: string; username: string; avatar: string };
+      } | null;
+    }>
+  > {
+    const where: Prisma.CommunityReportWhereInput = {};
+    if (status && status !== 'all') {
+      where.status = status as never;
+    }
+
+    const reports = await this.prisma.communityReport.findMany({
+      where,
+      include: {
+        reporter: { select: { id: true, username: true, avatar: true } },
+        post: {
+          select: {
+            id: true,
+            content: true,
+            publishedAt: true,
+            author: { select: { id: true, username: true, avatar: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return reports.map((r) => ({
+      id: r.id,
+      reason: r.reason,
+      description: r.description,
+      status: r.status,
+      createdAt: r.createdAt.toISOString(),
+      reporter: r.reporter,
+      post: r.post
+        ? {
+            ...r.post,
+            publishedAt: r.post.publishedAt.toISOString(),
+          }
+        : null,
+    }));
+  }
+
+  async approveReport(reportId: string, adminId: string): Promise<void> {
+    const report = await this.prisma.communityReport.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.communityReport.update({
+        where: { id: reportId },
+        data: {
+          status: 'ACTION_TAKEN' as never,
+          reviewedById: adminId,
+          reviewedAt: new Date(),
+        },
+      });
+
+      if (report.postId) {
+        await tx.communityPost.update({
+          where: { id: report.postId },
+          data: { deletedAt: new Date() },
+        });
+      }
+    });
+  }
+
+  async dismissReport(reportId: string, adminId: string): Promise<void> {
+    const report = await this.prisma.communityReport.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    await this.prisma.communityReport.update({
+      where: { id: reportId },
+      data: {
+        status: 'DISMISSED' as never,
+        reviewedById: adminId,
+        reviewedAt: new Date(),
+      },
+    });
+  }
+
+  async hidePost(postId: string): Promise<void> {
+    const post = await this.prisma.communityPost.findUnique({
+      where: { id: postId },
+    });
+    if (!post) {
+      throw new NotFoundException('Community post not found');
+    }
+
+    await this.prisma.communityPost.update({
+      where: { id: postId },
+      data: { deletedAt: new Date() },
+    });
+  }
 }

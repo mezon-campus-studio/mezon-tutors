@@ -507,6 +507,58 @@
         }
       }
     },
+    "CommunityReports": {
+      "title": "Community Reports",
+      "description": "Review reports submitted by users about community posts.",
+      "empty": "No reports found.",
+      "count": "{count} reports",
+      "statusFilter": {
+        "all": "All",
+        "pending": "Pending",
+        "reviewed": "Reviewed",
+        "dismissed": "Dismissed",
+        "actionTaken": "Action taken"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "REVIEWED": "Reviewed",
+        "DISMISSED": "Dismissed",
+        "ACTION_TAKEN": "Action taken"
+      },
+      "reasons": {
+        "SPAM": "Spam",
+        "HARASSMENT": "Harassment",
+        "INAPPROPRIATE": "Inappropriate",
+        "MISINFORMATION": "Misinformation",
+        "OTHER": "Other"
+      },
+      "table": {
+        "reporter": "Reporter",
+        "author": "Author",
+        "reason": "Reason",
+        "content": "Content",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "approve": "Approve & hide",
+      "dismiss": "Dismiss",
+      "approveSuccess": "Report approved. Post has been hidden.",
+      "dismissSuccess": "Report dismissed.",
+      "actionFailed": "Action failed. Please try again.",
+      "confirmApprove": {
+        "title": "Approve this report?",
+        "description": "The reported post will be hidden immediately. This action cannot be undone.",
+        "confirm": "Approve & hide post",
+        "cancel": "Cancel"
+      },
+      "confirmDismiss": {
+        "title": "Dismiss this report?",
+        "description": "The report will be marked as dismissed and no action will be taken on the post.",
+        "confirm": "Dismiss",
+        "cancel": "Cancel"
+      }
+    },
     "Blogs": {
       "title": "Review blog posts",
       "description": "Review user-submitted articles and publish them publicly.",

@@ -72,6 +72,13 @@ export const ADMIN_MENU_ITEMS: AdminMenuItem[] = [
     href: ROUTES.ADMIN.TRANSACTIONS,
     allowedRoles: ['ADMIN'],
   },
+  {
+    key: 'reports',
+    labelKey: 'reports',
+    iconKey: 'reports',
+    href: ROUTES.ADMIN.COMMUNITY_REPORTS,
+    allowedRoles: ['ADMIN', 'CTV'],
+  },
 ];
 
 export const ADMIN_TUTOR_APPLICATION_PAGE_SIZE = 10;

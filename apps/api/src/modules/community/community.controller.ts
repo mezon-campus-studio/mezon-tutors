@@ -26,9 +26,11 @@ import type {
   ToggleCommunityUpvoteResultDto,
 } from '@mezon-tutors/shared';
 import type { CommunityFeedSort } from '@mezon-tutors/shared';
-import { CommunityPostType } from '@mezon-tutors/db';
+import { CommunityPostType, Role } from '@mezon-tutors/db';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
 import { CommunityService } from './community.service';
 import {
@@ -265,5 +267,61 @@ export class UserCommunityController {
   ): Promise<{ success: true }> {
     const user = req.user as AuthUserPayload;
     return this.communityService.createReport(user.sub, body);
+  }
+}
+
+@Controller('admin/community/reports')
+@ApiTags('Admin - Community Reports')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.CTV)
+@ApiBearerAuth()
+export class AdminCommunityReportController {
+  constructor(private readonly communityService: CommunityService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List all community reports (admin)' })
+  list(
+    @Query('status') status?: string,
+  ): Promise<Array<{
+    id: string;
+    reason: string;
+    description: string | null;
+    status: string;
+    createdAt: string;
+    reporter: { id: string; username: string; avatar: string };
+    post: { id: string; content: string; publishedAt: string; author: { id: string; username: string; avatar: string } } | null;
+  }>> {
+    return this.communityService.listReports(status);
+  }
+
+  @Post(':id/approve')
+  @ApiOperation({ summary: 'Approve report and hide the post' })
+  async approve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ): Promise<{ success: true }> {
+    const user = req.user as AuthUserPayload;
+    await this.communityService.approveReport(id, user.sub);
+    return { success: true };
+  }
+
+  @Post(':id/dismiss')
+  @ApiOperation({ summary: 'Dismiss a report' })
+  async dismiss(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ): Promise<{ success: true }> {
+    const user = req.user as AuthUserPayload;
+    await this.communityService.dismissReport(id, user.sub);
+    return { success: true };
+  }
+
+  @Post('hide-post/:postId')
+  @ApiOperation({ summary: 'Hide a community post (admin/CTV)' })
+  async hidePost(
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ): Promise<{ success: true }> {
+    await this.communityService.hidePost(postId);
+    return { success: true };
   }
 }
