@@ -55,6 +55,7 @@ export const adminTutorApplicationApi = {
     return apiClient.post<{ success: boolean }>(
       `${BASE}/tutor-applications/${id}/approve`,
       note?.trim() ? { note: note.trim() } : {},
+      { timeout: 180000 },
     );
   },
 

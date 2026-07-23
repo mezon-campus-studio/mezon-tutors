@@ -10,6 +10,7 @@ import {
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Input,
   Select,
@@ -132,7 +133,13 @@ export default function AdminTutorApplicationsView() {
     const note = emailNote.trim() || undefined;
     approveMutation.mutate(
       { id: confirmAction.id, note },
-      { onSuccess: closeConfirmDialog },
+      {
+        onSuccess: closeConfirmDialog,
+        onError: (error) => {
+          closeConfirmDialog();
+          toast.error(error instanceof Error ? error.message : 'Failed to approve application');
+        },
+      },
     );
   };
 
@@ -141,7 +148,13 @@ export default function AdminTutorApplicationsView() {
     const note = emailNote.trim() || undefined;
     rejectMutation.mutate(
       { id: confirmAction.id, note },
-      { onSuccess: closeConfirmDialog },
+      {
+        onSuccess: closeConfirmDialog,
+        onError: (error) => {
+          closeConfirmDialog();
+          toast.error(error instanceof Error ? error.message : 'Failed to reject application');
+        },
+      },
     );
   };
 

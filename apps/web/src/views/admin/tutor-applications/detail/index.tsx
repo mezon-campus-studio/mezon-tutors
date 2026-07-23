@@ -6,6 +6,7 @@ import { ArrowLeft, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Avatar,
   AvatarFallback,
@@ -108,7 +109,13 @@ export default function AdminTutorApplicationDetailView({
     const note = emailNote.trim() || undefined;
     approveMutation.mutate(
       { id: profile.id, note },
-      { onSuccess: closeConfirmDialog },
+      {
+        onSuccess: closeConfirmDialog,
+        onError: (error) => {
+          closeConfirmDialog();
+          toast.error(error instanceof Error ? error.message : 'Failed to approve application');
+        },
+      },
     );
   };
 
@@ -116,7 +123,13 @@ export default function AdminTutorApplicationDetailView({
     const note = emailNote.trim() || undefined;
     rejectMutation.mutate(
       { id: profile.id, note },
-      { onSuccess: closeConfirmDialog },
+      {
+        onSuccess: closeConfirmDialog,
+        onError: (error) => {
+          closeConfirmDialog();
+          toast.error(error instanceof Error ? error.message : 'Failed to reject application');
+        },
+      },
     );
   };
 
