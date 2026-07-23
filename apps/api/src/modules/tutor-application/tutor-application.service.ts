@@ -258,34 +258,48 @@ export class TutorApplicationService {
       );
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.tutorProfile.update({
-        where: { id },
-        data: {
-          verificationStatus: VerificationStatus.APPROVED,
-          videoUrl: resolvedVideoUrl,
-        },
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.tutorProfile.update({
+          where: { id },
+          data: {
+            verificationStatus: VerificationStatus.APPROVED,
+            videoUrl: resolvedVideoUrl,
+          },
+        });
+        await tx.user.update({
+          where: { id: profile.userId },
+          data: { role: Role.TUTOR },
+        });
+        await tx.tutorSetupChecklist.upsert({
+          where: { tutorId: profile.id },
+          update: {},
+          create: { tutorId: profile.id },
+        });
+        await this.syncTutorVerificationDocuments(tx, profile.id, 'approved');
       });
-      await tx.user.update({
-        where: { id: profile.userId },
-        data: { role: Role.TUTOR },
-      });
-      await tx.tutorSetupChecklist.upsert({
-        where: { tutorId: profile.id },
-        update: {},
-        create: { tutorId: profile.id },
-      });
-      await this.syncTutorVerificationDocuments(tx, profile.id, 'approved');
-    });
+    } catch (error) {
+      this.logger.error(`Database transaction failed while approving tutor ${id}`, error);
+      const message = error instanceof Error ? error.message : 'Unknown database error';
+      throw new InternalServerErrorException(`Failed to approve tutor application: ${message}`);
+    }
 
     const tutorName = profile.user?.username ?? 'there';
 
     if (profile.user?.email) {
-      await this.emailService.sendApprovalEmail(
-        profile.user.email,
-        tutorName,
-        emailNote?.trim() || undefined,
-      );
+      try {
+        await this.emailService.sendApprovalEmail(
+          profile.user.email,
+          tutorName,
+          emailNote?.trim() || undefined,
+        );
+      } catch (error) {
+        this.logger.error(`Failed to send approval email to ${profile.user.email}`, error);
+        const message = error instanceof Error ? error.message : 'Unknown email error';
+        throw new InternalServerErrorException(
+          `Tutor application approved but approval email could not be sent: ${message}`,
+        );
+      }
     }
 
     await this.notifyTutorApplicationDecision({
@@ -318,25 +332,31 @@ export class TutorApplicationService {
       throw new NotFoundException(`Tutor application not found: ${id}`);
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.tutorProfile.update({
-        where: { id },
-        data: {
-          verificationStatus: VerificationStatus.REJECTED,
-        },
-      });
-      const user = await tx.user.findUnique({
-        where: { id: profile.userId },
-        select: { role: true },
-      });
-      if (user?.role === Role.TUTOR) {
-        await tx.user.update({
-          where: { id: profile.userId },
-          data: { role: Role.STUDENT },
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.tutorProfile.update({
+          where: { id },
+          data: {
+            verificationStatus: VerificationStatus.REJECTED,
+          },
         });
-      }
-      await this.syncTutorVerificationDocuments(tx, profile.id, 'rejected');
-    });
+        const user = await tx.user.findUnique({
+          where: { id: profile.userId },
+          select: { role: true },
+        });
+        if (user?.role === Role.TUTOR) {
+          await tx.user.update({
+            where: { id: profile.userId },
+            data: { role: Role.STUDENT },
+          });
+        }
+        await this.syncTutorVerificationDocuments(tx, profile.id, 'rejected');
+      });
+    } catch (error) {
+      this.logger.error(`Database transaction failed while rejecting tutor ${id}`, error);
+      const message = error instanceof Error ? error.message : 'Unknown database error';
+      throw new InternalServerErrorException(`Failed to reject tutor application: ${message}`);
+    }
 
     const reviewerNotes: ContentReviewer[] = await this.prisma.tutorAdminNote.findMany({
       where: { tutorId: profile.id },
@@ -347,13 +367,21 @@ export class TutorApplicationService {
     const rejectionSummary = this.buildRejectionSummary(reviewerNotes);
 
     if (profile.email) {
-      await this.emailService.sendRejectionEmail(
-        profile.email,
-        tutorName,
-        reviewerNotes,
-        null,
-        emailNote?.trim() || undefined,
-      );
+      try {
+        await this.emailService.sendRejectionEmail(
+          profile.email,
+          tutorName,
+          reviewerNotes,
+          null,
+          emailNote?.trim() || undefined,
+        );
+      } catch (error) {
+        this.logger.error(`Failed to send rejection email to ${profile.email}`, error);
+        const message = error instanceof Error ? error.message : 'Unknown email error';
+        throw new InternalServerErrorException(
+          `Tutor application rejected but rejection email could not be sent: ${message}`,
+        );
+      }
     }
 
     await this.notifyTutorApplicationDecision({
