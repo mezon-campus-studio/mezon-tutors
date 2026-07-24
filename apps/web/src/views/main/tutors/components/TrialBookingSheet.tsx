@@ -58,6 +58,7 @@ import {
   partitionOccupiedSlotsByHold,
 } from "@/lib/schedule-slot-occupancy";
 import { isAuthenticatedAtom } from "@/store/auth.atom";
+import DEFAULT_AVATAR from '@/public/images/default-avatar.png';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -722,7 +723,7 @@ export function TrialBookingSheet({
                   }`}
                 >
                   <Image
-                    src={tutor.avatar}
+                    src={tutor.avatar || DEFAULT_AVATAR}
                     alt={tutor.name}
                     width={56}
                     height={56}
@@ -872,7 +873,7 @@ export function TrialBookingSheet({
           <div className="flex flex-col gap-4 px-6 py-5">
             <div className="flex items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50/40 px-4 py-3">
               <Image
-                src={tutor.avatar}
+                src={tutor.avatar || DEFAULT_AVATAR}
                 alt={tutor.name}
                 width={48}
                 height={48}

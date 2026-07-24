@@ -13,6 +13,8 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Badge, Button } from '@/components/ui';
 import { useTrustShowcaseAvatars } from '@/services/user/user.api';
+import DEFAULT_AVATAR from '@/public/images/default-avatar.png';
+import Image from 'next/image';
 
 const TRUST_SHOWCASE_AVATAR_MAX = 4;
 
@@ -122,8 +124,8 @@ export default function HomeHeroSection() {
                     style={{ zIndex: index + 1 }}
                     className="relative flex size-10 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-slate-100 shadow-sm ring-1 ring-black/5"
                   >
-                    <img
-                      src={avatar.url}
+                    <Image
+                      src={avatar.url || DEFAULT_AVATAR}
                       alt=""
                       className="size-full object-cover"
                       loading="lazy"

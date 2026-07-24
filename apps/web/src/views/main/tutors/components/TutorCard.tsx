@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { SaveTutorButton } from "./SaveTutorButton";
 import ReactGA from "react-ga4";
 import { ProfessionalBadge } from "@/components/icons";
+import DEFAULT_AVATAR from '@/public/images/default-avatar.png';
 
 type TutorCardProps = {
   tutor: VerifiedTutorProfileDto;
@@ -148,12 +149,12 @@ export default function TutorCard({
           <div className="flex flex-1 items-start gap-4">
             <div className="relative shrink-0">
               <Image
-                src={tutor.avatar}
+                src={tutor.avatar || DEFAULT_AVATAR}
                 alt={name}
                 width={140}
                 height={140}
                 unoptimized={
-                  tutor.avatar.startsWith('data:') || tutor.avatar.startsWith('blob:')
+                  (tutor.avatar || '').startsWith('data:') || (tutor.avatar || '').startsWith('blob:')
                 }
                 className="aspect-square size-28 rounded-2xl object-cover object-center shadow-sm md:size-36"
               />

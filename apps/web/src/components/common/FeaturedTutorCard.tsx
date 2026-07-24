@@ -17,6 +17,7 @@ import { useAtomValue } from "jotai";
 import { Button } from "@/components/ui";
 import { useGetSubscriptionEligibility } from "@/services";
 import { userAtom } from "@/store/auth.atom";
+import DEFAULT_AVATAR from '@/public/images/default-avatar.png';
 
 const HEADER_DOT_PATTERN: CSSProperties = {
   backgroundImage:
@@ -30,12 +31,6 @@ export const FEATURED_GRADIENTS = [
   "from-fuchsia-500 via-rose-500 to-orange-500",
   "from-purple-500 via-fuchsia-500 to-rose-500",
 ] as const;
-
-function tutorInitials(tutor: VerifiedTutorProfileDto): string {
-  const a = tutor.firstName?.trim()?.[0] ?? "";
-  const b = tutor.lastName?.trim()?.[0] ?? "";
-  return `${a}${b}`.toUpperCase() || "?";
-}
 
 function trialLessonPrice(
   tutor: VerifiedTutorProfileDto,
@@ -90,17 +85,14 @@ export function FeaturedTutorCard({ tutor, gradient, currency }: FeaturedTutorCa
     Boolean(subjectKey) && subjectKey !== ESubject.ANY_SUBJECT;
   const detailHref = ROUTES.TUTOR.DETAIL(tutor.id);
 
-  const avatarInner = tutor.avatar ? (
+  const avatarInner = 
     <Image
-      src={tutor.avatar}
+      src={tutor.avatar || DEFAULT_AVATAR}
       alt={name}
       fill
       className="object-cover"
       sizes="80px"
     />
-  ) : (
-    tutorInitials(tutor)
-  );
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-200/50">
