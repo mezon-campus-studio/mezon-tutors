@@ -25,6 +25,7 @@ import { useTutorBooking } from "../hooks/TutorBookingContext";
 import { TutorProfileTags } from "./TutorProfileTags";
 import { CommunityBadge, ProfessionalBadge } from "@/components/icons";
 import { ComponentType, SVGProps } from "react";
+import DEFAULT_AVATAR from '@/public/images/default-avatar.png';
 
 type TutorDetailHeaderProps = {
   tutor: TutorAboutDto;
@@ -77,7 +78,7 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 flex-1 gap-4 sm:gap-5">
             <Image
-              src={tutor.avatar}
+              src={tutor.avatar || DEFAULT_AVATAR}
               alt={name}
               width={96}
               height={96}
