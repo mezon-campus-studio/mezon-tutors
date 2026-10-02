@@ -224,6 +224,7 @@ export class TutorApplicationService {
       select: {
         id: true,
         userId: true,
+        email: true,
         videoUrl: true,
         firstName: true,
         lastName: true,
@@ -284,17 +285,18 @@ export class TutorApplicationService {
       throw new InternalServerErrorException(`Failed to approve tutor application: ${message}`);
     }
 
-    const tutorName = profile.user?.username ?? 'there';
+    const tutorName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'there';
+    const recipientEmail = profile.email?.trim();
 
-    if (profile.user?.email) {
+    if (recipientEmail) {
       try {
         await this.emailService.sendApprovalEmail(
-          profile.user.email,
+          recipientEmail,
           tutorName,
           emailNote?.trim() || undefined,
         );
       } catch (error) {
-        this.logger.error(`Failed to send approval email to ${profile.user.email}`, error);
+        this.logger.error(`Failed to send approval email to ${recipientEmail}`, error);
         const message = error instanceof Error ? error.message : 'Unknown email error';
         throw new InternalServerErrorException(
           `Tutor application approved but approval email could not be sent: ${message}`,
@@ -322,6 +324,8 @@ export class TutorApplicationService {
         id: true,
         userId: true,
         email: true,
+        firstName: true,
+        lastName: true,
         user: {
           select: { email: true, username: true, mezonUserId: true },
         },
@@ -363,20 +367,21 @@ export class TutorApplicationService {
       select: { content: true },
     });
 
-    const tutorName = profile.user?.username ?? 'there';
+    const tutorName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'there';
     const rejectionSummary = this.buildRejectionSummary(reviewerNotes);
+    const recipientEmail = profile.email?.trim();
 
-    if (profile.email) {
+    if (recipientEmail) {
       try {
         await this.emailService.sendRejectionEmail(
-          profile.email,
+          recipientEmail,
           tutorName,
           reviewerNotes,
           null,
           emailNote?.trim() || undefined,
         );
       } catch (error) {
-        this.logger.error(`Failed to send rejection email to ${profile.email}`, error);
+        this.logger.error(`Failed to send rejection email to ${recipientEmail}`, error);
         const message = error instanceof Error ? error.message : 'Unknown email error';
         throw new InternalServerErrorException(
           `Tutor application rejected but rejection email could not be sent: ${message}`,
