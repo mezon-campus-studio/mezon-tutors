@@ -285,7 +285,7 @@ export class TutorApplicationService {
       throw new InternalServerErrorException(`Failed to approve tutor application: ${message}`);
     }
 
-    const tutorName = profile.user?.username ?? 'there';
+    const tutorName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'there';
     const recipientEmail = profile.email?.trim();
 
     if (recipientEmail) {
@@ -324,6 +324,8 @@ export class TutorApplicationService {
         id: true,
         userId: true,
         email: true,
+        firstName: true,
+        lastName: true,
         user: {
           select: { email: true, username: true, mezonUserId: true },
         },
@@ -365,7 +367,7 @@ export class TutorApplicationService {
       select: { content: true },
     });
 
-    const tutorName = profile.user?.username ?? 'there';
+    const tutorName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'there';
     const rejectionSummary = this.buildRejectionSummary(reviewerNotes);
     const recipientEmail = profile.email?.trim();
 
