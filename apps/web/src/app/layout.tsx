@@ -85,7 +85,10 @@ export default function RootLayout({
       className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900">
+      <body
+        className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900"
+        suppressHydrationWarning
+      >
         <GoogleAnalyticsProvider>
           <ScrollRestoration />
           <Suspense fallback={null}>

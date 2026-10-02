@@ -127,7 +127,9 @@ export default function HomeHeroSection() {
                     <Image
                       src={avatar.url || DEFAULT_AVATAR}
                       alt=""
-                      className="size-full object-cover"
+                      fill
+                      sizes="40px"
+                      className="object-cover"
                       loading="lazy"
                       decoding="async"
                       referrerPolicy="no-referrer"
