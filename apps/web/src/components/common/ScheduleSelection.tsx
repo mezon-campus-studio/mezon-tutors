@@ -476,9 +476,6 @@ export function ScheduleSelection({
 
     for (const key of selectableCellSet) {
       const [date, startTime] = key.split("|");
-      if (toCellTimestamp(date, startTime, timezone) <= nowMs) {
-        continue;
-      }
       addSlot(
         toSelectedSlot({ date, startTime }, lessonDurationMinutes, timezone),
       );
@@ -674,24 +671,28 @@ export function ScheduleSelection({
                   {daySlots.map((slot) => {
                     const slotKey = toSlotKey(slot);
                     const isSelected = selectedSet.has(slotKey);
+                    const isPast = toCellTimestamp(day.id, slot.startTime, timezone) <= nowInTimezone(timezone).valueOf();
                     const isClickable =
-                      !readOnly && selectableCellSet.has(slotKey);
+                      !readOnly && !isPast && selectableCellSet.has(slotKey);
                     const showTitle =
-                      (isClickable || onReadOnlyCellClick) && selectableCellTitle;
+                      (isClickable || (onReadOnlyCellClick && !isPast)) && selectableCellTitle;
 
                     const btn = (
                       <button
                         type="button"
-                        onClick={() => handleCellSelect(day.id, slot.startTime)}
-                        disabled={readOnly && !isSelected && !onReadOnlyCellClick}
+                        onClick={() => {
+                          if (!isPast) handleCellSelect(day.id, slot.startTime);
+                        }}
+                        disabled={isPast || (readOnly && !isSelected && !onReadOnlyCellClick)}
                         className={cn(
                           "text-sm font-medium underline decoration-1 underline-offset-4 transition-colors",
-                          isSelected
-                            ? "text-violet-600 decoration-violet-500"
-                            : isClickable
-                              ? "cursor-pointer text-slate-900 decoration-slate-400 hover:text-violet-600 hover:decoration-violet-500"
-                              : cn("text-slate-600 decoration-slate-300", onReadOnlyCellClick ? "cursor-pointer" : "cursor-default"),
-                          readOnly && !isSelected && cn("opacity-80", !onReadOnlyCellClick && "cursor-default"),
+                          isPast
+                            ? "cursor-not-allowed text-slate-400 decoration-slate-200"
+                            : isSelected
+                              ? "text-violet-600 decoration-violet-500"
+                              : (isClickable || (readOnly && !!onReadOnlyCellClick))
+                                ? "cursor-pointer text-slate-900 decoration-slate-400 hover:text-violet-600 hover:decoration-violet-500"
+                                : "cursor-default text-slate-600 decoration-slate-300",
                         )}
                         aria-label={slot.label}
                         aria-pressed={isSelected}
