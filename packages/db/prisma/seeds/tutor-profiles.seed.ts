@@ -171,7 +171,6 @@ export async function seedTutorProfiles(prisma: PrismaClient): Promise<void> {
     const tutorProfileData = {
       firstName,
       lastName,
-      avatar: AVATAR_URL,
       videoUrl: VIDEO_URL,
       country,
       phone: `+84${String(900000000 + i)}`,
