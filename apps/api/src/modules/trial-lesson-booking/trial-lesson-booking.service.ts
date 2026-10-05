@@ -1873,6 +1873,8 @@ export class TrialLessonBookingService {
           tutor: {
             select: {
               id: true,
+              isHidden: true,
+              activeStatus: true,
               user: { select: { timezone: true } },
             },
           },
@@ -1887,6 +1889,14 @@ export class TrialLessonBookingService {
 
     if (booking.studentId !== studentUserId) {
       throw new ForbiddenException('Not allowed to reschedule this booking')
+    }
+
+    if (booking.tutor.isHidden === true) {
+      throw new BadRequestException('This tutor is currently hidden and cannot accept rescheduled bookings')
+    }
+
+    if (booking.tutor.activeStatus === false) {
+      throw new BadRequestException('This tutor is temporarily busy and cannot accept rescheduled bookings')
     }
 
     if (booking.status !== ETrialLessonStatus.CONFIRMED) {

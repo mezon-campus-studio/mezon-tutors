@@ -169,6 +169,8 @@ export class SubscriptionService {
           select: {
             id: true,
             userId: true,
+            isHidden: true,
+            activeStatus: true,
             user: { select: { username: true, timezone: true } },
           },
         },
@@ -180,6 +182,12 @@ export class SubscriptionService {
     }
     if (enrollment.studentId !== studentUserId) {
       throw new ForbiddenException('Not allowed to modify this lesson');
+    }
+    if (enrollment.tutor.isHidden === true) {
+      throw new BadRequestException('This tutor is currently hidden and cannot accept reschedules');
+    }
+    if (enrollment.tutor.activeStatus === false) {
+      throw new BadRequestException('This tutor is temporarily busy and cannot accept reschedules');
     }
     if (enrollment.status !== ESubscriptionEnrollmentStatus.ACTIVE) {
       throw new BadRequestException('Only active subscriptions can be modified');
