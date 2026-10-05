@@ -17,6 +17,8 @@ import {
   inferPaymentProviderFromUrl,
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
+  ERROR_TUTOR_HIDDEN,
+  ERROR_TUTOR_BUSY,
 } from '@mezon-tutors/shared'
 import {
   BadRequestException,
@@ -1539,11 +1541,11 @@ export class TrialLessonBookingService {
     }
 
     if (tutor.isHidden === true) {
-      throw new BadRequestException('This tutor is currently hidden and cannot accept new bookings')
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN)
     }
 
     if (tutor.activeStatus === false) {
-      throw new BadRequestException('This tutor is temporarily busy and not accepting new students')
+      throw new BadRequestException(ERROR_TUTOR_BUSY)
     }
 
     if (!tutor.trialLessonPrice) {
@@ -1892,11 +1894,11 @@ export class TrialLessonBookingService {
     }
 
     if (booking.tutor.isHidden === true) {
-      throw new BadRequestException('This tutor is currently hidden and cannot accept rescheduled bookings')
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN)
     }
 
     if (booking.tutor.activeStatus === false) {
-      throw new BadRequestException('This tutor is temporarily busy and cannot accept rescheduled bookings')
+      throw new BadRequestException(ERROR_TUTOR_BUSY)
     }
 
     if (booking.status !== ETrialLessonStatus.CONFIRMED) {

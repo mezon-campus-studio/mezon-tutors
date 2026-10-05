@@ -11,7 +11,7 @@ import {
   PaymentMethodSelection,
 } from "@/components/common/PaymentMethodSelection";
 import { toast } from "@/components/ui";
-import { useCurrency } from "@/hooks";
+import { useCurrency, useTranslateApiError } from "@/hooks";
 import {
   detectBrowserTimezone,
   formatInstantRangeLabels,
@@ -40,6 +40,7 @@ import { computeWalletPaymentSplit } from "./components/wallet-payment";
 
 export default function TrialLessonCheckoutPage() {
   const t = useTranslations("TrialLessonCheckout.Screen");
+  const translateApiError = useTranslateApiError();
   const router = useRouter();
   const { currency } = useCurrency();
   const currentUser = useAtomValue(userAtom);
@@ -176,8 +177,7 @@ export default function TrialLessonCheckoutPage() {
           router.push(ROUTES.CHECKOUT.SUCCESS_WITH_ID('trial', booking.id));
         }
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : t("toast.bookingFailedFallback");
+        const message = translateApiError(error, t("toast.bookingFailedFallback"));
         toast.error(t("toast.bookingFailedTitle"), { description: message });
       }
     },

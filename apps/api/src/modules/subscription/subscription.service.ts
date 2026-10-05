@@ -51,6 +51,8 @@ import {
   isTrialLessonPaymentHoldActive,
   trialLessonPaymentHoldExpiresAt,
   calculateGroupSubscriptionPrice,
+  ERROR_TUTOR_HIDDEN,
+  ERROR_TUTOR_BUSY,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
@@ -184,10 +186,10 @@ export class SubscriptionService {
       throw new ForbiddenException('Not allowed to modify this lesson');
     }
     if (enrollment.tutor.isHidden === true) {
-      throw new BadRequestException('This tutor is currently hidden and cannot accept reschedules');
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN);
     }
     if (enrollment.tutor.activeStatus === false) {
-      throw new BadRequestException('This tutor is temporarily busy and cannot accept reschedules');
+      throw new BadRequestException(ERROR_TUTOR_BUSY);
     }
     if (enrollment.status !== ESubscriptionEnrollmentStatus.ACTIVE) {
       throw new BadRequestException('Only active subscriptions can be modified');
@@ -525,11 +527,11 @@ export class SubscriptionService {
     }
 
     if (tutorProfile.isHidden === true) {
-      throw new BadRequestException('This tutor is currently hidden and cannot accept new bookings');
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN);
     }
 
     if (tutorProfile.activeStatus === false) {
-      throw new BadRequestException('This tutor is temporarily busy and not accepting new students');
+      throw new BadRequestException(ERROR_TUTOR_BUSY);
     }
 
     if (

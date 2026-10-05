@@ -15,7 +15,7 @@ import {
   Spinner,
   toast,
 } from "@/components/ui";
-import { useUserTimezone } from "@/hooks";
+import { useUserTimezone, useTranslateApiError } from "@/hooks";
 import { computeBlockedWallClockSlots } from "@/lib/schedule-slot-occupancy";
 import {
   convertWallClockSlotBetweenTimezones,
@@ -67,6 +67,7 @@ export function RescheduleSubscriptionLessonDialog({
 }: RescheduleSubscriptionLessonDialogProps) {
   const t = useTranslations("MyLessons.panels.lessons.subscription.reschedule");
   const tDm = useTranslations("MyLessons.panels.lessons.cancellation");
+  const translateApiError = useTranslateApiError();
   const locale = useLocale();
   const userTimezone = useUserTimezone();
   const { data: publicAppSettings } = usePublicAppSettings();
@@ -109,11 +110,9 @@ export function RescheduleSubscriptionLessonDialog({
 
   useEffect(() => {
     if (error && open) {
-      toast.error(
-        error instanceof Error ? error.message : t("dialog.loadFailed"),
-      );
+      toast.error(translateApiError(error, t("dialog.loadFailed")));
     }
-  }, [error, open, t]);
+  }, [error, open, t, translateApiError]);
 
   const gridInterval = options?.gridIntervalMinutes ?? 60;
   const lessonDuration = options?.lessonDurationMinutes ?? 60;
@@ -244,7 +243,7 @@ export function RescheduleSubscriptionLessonDialog({
       toast.success(t("dialog.success"));
       onClose();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("dialog.failed"));
+      toast.error(translateApiError(e, t("dialog.failed")));
     }
   };
 

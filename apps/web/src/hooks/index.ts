@@ -7,3 +7,4 @@ export * from "./use-breakpoint";
 export * from "./useTutorPendingPayment";
 export * from "./useTutorSetupChecklist";
 export * from "./useTutorScheduleGrid";
+export * from "./useTranslateApiError";
