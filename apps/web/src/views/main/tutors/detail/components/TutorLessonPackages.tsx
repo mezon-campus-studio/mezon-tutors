@@ -263,25 +263,30 @@ export function TutorLessonPackages({ tutor }: TutorLessonPackagesProps) {
       booking.showBookTrial &&
       !booking.bookTrialDisabled &&
       !booking.showContinuePayment &&
+      !booking.showHiddenBadge &&
       !booking.showBusyBadge;
 
     const subscribeEnabled = booking.showSubscribe && Boolean(primaryPlan);
 
     const trialDisabledHint = booking.showContinuePayment
       ? t("continuePayment")
-      : booking.showBusyBadge
-        ? t("temporarilyBusy")
-        : booking.bookTrialDisabled
-          ? t("bookTrialDisabledHint")
-          : !booking.showBookTrial
-            ? t("trialAlreadyBookedWarning")
-            : undefined;
+      : booking.showHiddenBadge
+        ? t("tutorIsHidden")
+        : booking.showBusyBadge
+          ? t("temporarilyBusy")
+          : booking.bookTrialDisabled
+            ? t("bookTrialDisabledHint")
+            : !booking.showBookTrial
+              ? t("trialAlreadyBookedWarning")
+              : undefined;
 
     const subscribeDisabledHint = booking.showContinuePayment
       ? t("continuePayment")
-      : booking.showBusyBadge
-        ? t("temporarilyBusy")
-        : booking.isAlreadyEnrolled
+      : booking.showHiddenBadge
+        ? t("tutorIsHidden")
+        : booking.showBusyBadge
+          ? t("temporarilyBusy")
+          : booking.isAlreadyEnrolled
           ? t("packageAlreadyEnrolled")
           : !primaryPlan
             ? t("packageNoPlans")

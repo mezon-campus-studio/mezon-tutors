@@ -638,4 +638,20 @@ export class TutorApplicationService {
       },
     };
   }
+
+  async updateTutorIsHidden(tutorId: string, isHidden: boolean): Promise<void> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      select: { id: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    await this.prisma.tutorProfile.update({
+      where: { id: profile.id },
+      data: { isHidden },
+    });
+  }
 }

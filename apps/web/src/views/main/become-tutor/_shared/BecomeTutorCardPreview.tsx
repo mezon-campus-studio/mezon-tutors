@@ -70,6 +70,7 @@ function useBecomeTutorPreviewTutor(
       },
       isProfessional,
       activeStatus: true,
+      isHidden: false,
       totalLessonsTaught: 0,
       totalStudents: 0,
       ratingCount: 0,

@@ -148,7 +148,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   }, [isAuthenticated, isOwnProfile, hasActiveTrialBooking]);
 
   const includeOccupiedBlocking = viewMode !== 'guest';
-  const readOnly = viewMode !== 'bookable' || !tutor.activeStatus;
+  const readOnly = viewMode !== 'bookable' || !tutor.activeStatus || tutor.isHidden;
 
   const {
     scheduleAvailableSlots,
@@ -176,7 +176,9 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
     }
     if (isOwnProfile) return;
 
-    if (!tutor.activeStatus) {
+    if (tutor.isHidden) {
+      toast.warning(t('tutorIsHidden'));
+    } else if (!tutor.activeStatus) {
       toast.warning(t('temporarilyBusy'));
     } else if (hasActiveTrialBooking) {
       toast.warning(t('trialAlreadyBookedWarning'));
@@ -188,6 +190,10 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
       toast.error(tSheet('loginRequiredTitle'), {
         description: tSheet('loginRequiredDescription'),
       });
+      return;
+    }
+    if (tutor.isHidden) {
+      toast.warning(t('tutorIsHidden'));
       return;
     }
     if (!tutor.activeStatus) {
@@ -254,6 +260,7 @@ export function TutorScheduleTab({ tutor }: TutorScheduleTabProps) {
   const getCellTitle = () => {
     if (!isAuthenticated) return tSheet('loginRequiredDescription');
     if (isOwnProfile) return undefined;
+    if (tutor.isHidden) return t('tutorIsHidden');
     if (!tutor.activeStatus) return t('temporarilyBusy');
     if (hasActiveTrialBooking) return t('trialAlreadyBookedWarning');
     return t('scheduleBookTrialHover');

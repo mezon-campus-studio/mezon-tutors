@@ -2,7 +2,7 @@
 
 import { ROUTES, isCloudinaryVideoUrl } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -23,6 +23,7 @@ import {
   useAdminTutorStats,
   useApproveTutorApplication,
   useRejectTutorApplication,
+  useUpdateTutorIsHidden,
 } from "@/services";
 import StatusBadge from "../components/StatusBadge";
 import AdminNotesCard from "./components/AdminNotesCard";
@@ -72,6 +73,7 @@ export default function AdminTutorApplicationDetailView({
   const { data: statsData } = useAdminTutorStats(id);
   const approveMutation = useApproveTutorApplication();
   const rejectMutation = useRejectTutorApplication();
+  const updateIsHiddenMutation = useUpdateTutorIsHidden();
 
   if (isLoading) {
     return (
@@ -133,6 +135,20 @@ export default function AdminTutorApplicationDetailView({
     );
   };
 
+  const handleToggleIsHidden = () => {
+    updateIsHiddenMutation.mutate(
+      { id: profile.id, isHidden: !profile.isHidden },
+      {
+        onSuccess: () => {
+          toast.success(!profile.isHidden ? "Tutor profile hidden successfully" : "Tutor profile unhidden successfully");
+        },
+        onError: (error) => {
+          toast.error(error instanceof Error ? error.message : 'Failed to update visibility');
+        }
+      }
+    );
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1280px] p-4 md:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -176,6 +192,17 @@ export default function AdminTutorApplicationDetailView({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {profile.verificationStatus === "APPROVED" && (
+              <Button
+                variant="outline"
+                className={profile.isHidden ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50" : "border-slate-200 text-slate-700 hover:bg-slate-50"}
+                onClick={handleToggleIsHidden}
+                disabled={updateIsHiddenMutation.isPending}
+              >
+                {profile.isHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {profile.isHidden ? "Unhide" : "Hide"}
+              </Button>
+            )}
             {showReject ? (
               <Button
                 variant="outline"
@@ -218,6 +245,11 @@ export default function AdminTutorApplicationDetailView({
               {profile.activeStatus
                 ? t("sections.profileStats.active")
                 : t("sections.profileStats.inactive")}
+              {profile.isHidden && (
+                <span className="ml-2 inline-flex items-center rounded-md bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
+                  Hidden
+                </span>
+              )}
             </p>
           </div>
           <div className="rounded-lg bg-slate-50 p-3">

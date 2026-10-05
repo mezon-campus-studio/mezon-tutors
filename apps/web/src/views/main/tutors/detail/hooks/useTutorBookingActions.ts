@@ -46,8 +46,9 @@ export function useTutorBookingActions(tutor: TutorAboutDto) {
     elig?.trialStatus === "COMPLETED" &&
     elig?.trialPaymentStatus === "SUCCEEDED";
   const showContinuePayment = canFetchSub && Boolean(pendingPayment);
-  const showMonthlyActions = tutor.activeStatus !== false;
-  const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false;
+  const showMonthlyActions = tutor.activeStatus !== false && tutor.isHidden !== true;
+  const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false && tutor.isHidden !== true;
+  const isTutorHidden = !isOwnProfile && tutor.isHidden === true;
 
   const isBookingReady =
     !isAuthLoading &&
@@ -65,6 +66,10 @@ export function useTutorBookingActions(tutor: TutorAboutDto) {
   const showBookTrial = showMonthlyActions && wouldShowBookTrialIfActive;
   const showBusyBadge =
     isTutorTemporarilyBusy &&
+    !showContinuePayment &&
+    (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
+  const showHiddenBadge =
+    isTutorHidden &&
     !showContinuePayment &&
     (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
   const bookTrialDisabled =
@@ -121,12 +126,13 @@ export function useTutorBookingActions(tutor: TutorAboutDto) {
       showBookTrial,
       showSubscribe,
       showBusyBadge,
+      showHiddenBadge,
       bookTrialDisabled,
       pendingPayment,
       handleBookLesson,
       isBookingReady,
       canBookLesson:
-        showContinuePayment || showBookTrial || showSubscribe || showBusyBadge,
+        showContinuePayment || showBookTrial || showSubscribe || showBusyBadge || showHiddenBadge,
     }),
     [
       name,
@@ -145,6 +151,7 @@ export function useTutorBookingActions(tutor: TutorAboutDto) {
       showBookTrial,
       showSubscribe,
       showBusyBadge,
+      showHiddenBadge,
       bookTrialDisabled,
       pendingPayment,
       handleBookLesson,

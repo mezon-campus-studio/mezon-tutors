@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Res, NotFoundException } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -55,6 +55,12 @@ export class TutorApplicationController {
   @Get('tutor-profiles/:id')
   async getTutorProfile(@Param('id') id: string): Promise<FullTutorApplication> {
     return this.tutorApplicationService.getTutorProfile(id);
+  }
+
+  @Patch('tutor-profiles/:id/is-hidden')
+  async patchTutorIsHidden(@Param('id') id: string, @Body() body: { isHidden: boolean }) {
+    await this.tutorApplicationService.updateTutorIsHidden(id, body.isHidden);
+    return { success: true };
   }
 
   @Get('tutor-profiles/:id/stats')

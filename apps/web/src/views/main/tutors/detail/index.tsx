@@ -114,6 +114,13 @@ function TutorDetailPageContent({
 
   return (
     <>
+      {aboutData.isHidden ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+          <p className="text-base font-medium text-amber-800">
+            {t("tutorIsHidden")}
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-5">
         <SectionCard>
           <TutorAboutTab

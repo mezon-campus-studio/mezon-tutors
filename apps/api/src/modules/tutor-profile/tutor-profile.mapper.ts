@@ -51,6 +51,7 @@ export function toVerifiedTutorProfileDto(
     prices: getTutorPrices(tutor),
     isProfessional: tutor.isProfessional,
     activeStatus: tutor.activeStatus,
+    isHidden: tutor.isHidden,
     totalLessonsTaught: tutor.totalLessonsTaught,
     totalStudents: tutor.totalStudents,
     ratingCount: tutor.ratingCount,
