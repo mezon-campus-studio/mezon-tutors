@@ -1151,6 +1151,20 @@ export class TutorProfileService {
     })
   }
 
+  async getTutorRealtimeStatus(id: string): Promise<{ isHidden: boolean; activeStatus: boolean }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { id },
+      select: { isHidden: true, activeStatus: true },
+    })
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found')
+    }
+    return {
+      isHidden: tutor.isHidden ?? false,
+      activeStatus: tutor.activeStatus ?? true,
+    }
+  }
+
   async getVerifiedTutorAbout(id: string) {
     const tutor = (await this.prisma.tutorProfile.findUnique({
       where: { id },

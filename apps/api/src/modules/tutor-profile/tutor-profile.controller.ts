@@ -134,6 +134,11 @@ export class TutorProfileController {
     return this.tutorProfileService.getVerifiedTutorAbout(id)
   }
 
+  @Get(':id/realtime-status')
+  async getTutorRealtimeStatus(@Param('id') id: string): Promise<{ isHidden: boolean; activeStatus: boolean }> {
+    return this.tutorProfileService.getTutorRealtimeStatus(id)
+  }
+
   @Get(':id/schedule')
   @PublicCache({ maxAge: 60, sMaxAge: 120, staleWhileRevalidate: 300 })
   async getVerifiedTutorSchedule(@Param('id') id: string): Promise<TutorScheduleDto> {

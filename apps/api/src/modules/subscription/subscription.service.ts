@@ -507,11 +507,21 @@ export class SubscriptionService {
         userId: true,
         firstName: true,
         lastName: true,
+        isHidden: true,
+        activeStatus: true,
         user: { select: { username: true } },
       },
     });
     if (!tutorProfile) {
       throw new NotFoundException('Tutor not found');
+    }
+
+    if (tutorProfile.isHidden === true) {
+      throw new BadRequestException('This tutor is currently hidden and cannot accept new bookings');
+    }
+
+    if (tutorProfile.activeStatus === false) {
+      throw new BadRequestException('This tutor is temporarily busy and not accepting new students');
     }
 
     if (

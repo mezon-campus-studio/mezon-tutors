@@ -1528,12 +1528,22 @@ export class TrialLessonBookingService {
       firstName: string
       lastName: string
       verificationStatus: VerificationStatus
+      isHidden: boolean
+      activeStatus: boolean
       trialLessonPrice?: { usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } | null
       user?: { timezone: string; username: string } | null
     } | null
 
     if (!tutor || tutor.verificationStatus !== VerificationStatus.APPROVED) {
       throw new NotFoundException(`Tutor with ID ${dto.tutorId} not found`)
+    }
+
+    if (tutor.isHidden === true) {
+      throw new BadRequestException('This tutor is currently hidden and cannot accept new bookings')
+    }
+
+    if (tutor.activeStatus === false) {
+      throw new BadRequestException('This tutor is temporarily busy and not accepting new students')
     }
 
     if (!tutor.trialLessonPrice) {
