@@ -186,3 +186,6 @@ export const PROFESSIONAL_DOCUMENT_TYPE = {
   CV: 'CV',
   OTHER: 'OTHER',
 } as const;
+
+export const ERROR_TUTOR_HIDDEN = 'ERROR_TUTOR_HIDDEN';
+export const ERROR_TUTOR_BUSY = 'ERROR_TUTOR_BUSY';

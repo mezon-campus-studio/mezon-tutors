@@ -50,6 +50,7 @@ export class TutorApplicationMapper {
       },
       isProfessional: profile.isProfessional,
       activeStatus: profile.activeStatus,
+      isHidden: profile.isHidden,
       verificationStatus: parseEnum(
         profile.verificationStatus,
         VALID_VERIFICATION_STATUSES,

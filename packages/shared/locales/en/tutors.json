@@ -381,6 +381,7 @@
     "continuePayment": "Pay now",
     "bookTrialDisabledHint": "You already have a trial booking with this tutor that is not completed yet.",
     "temporarilyBusy": "Tutor temporarily busy",
+    "tutorIsHidden": "This tutor is currently away",
     "sendMessage": "Send message",
     "bookedLast48h": "{count} lessons booked in the last 48h",
     "totalStudents": "{count} students",

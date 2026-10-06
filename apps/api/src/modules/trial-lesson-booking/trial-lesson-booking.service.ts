@@ -17,6 +17,8 @@ import {
   inferPaymentProviderFromUrl,
   type PaginatedResponse,
   type SubscriptionWeeklySlotDto,
+  ERROR_TUTOR_HIDDEN,
+  ERROR_TUTOR_BUSY,
 } from '@mezon-tutors/shared'
 import {
   BadRequestException,
@@ -1528,12 +1530,22 @@ export class TrialLessonBookingService {
       firstName: string
       lastName: string
       verificationStatus: VerificationStatus
+      isHidden: boolean
+      activeStatus: boolean
       trialLessonPrice?: { usd: Prisma.Decimal; vnd: bigint; php: Prisma.Decimal } | null
       user?: { timezone: string; username: string } | null
     } | null
 
     if (!tutor || tutor.verificationStatus !== VerificationStatus.APPROVED) {
       throw new NotFoundException(`Tutor with ID ${dto.tutorId} not found`)
+    }
+
+    if (tutor.isHidden === true) {
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN)
+    }
+
+    if (tutor.activeStatus === false) {
+      throw new BadRequestException(ERROR_TUTOR_BUSY)
     }
 
     if (!tutor.trialLessonPrice) {
@@ -1863,6 +1875,8 @@ export class TrialLessonBookingService {
           tutor: {
             select: {
               id: true,
+              isHidden: true,
+              activeStatus: true,
               user: { select: { timezone: true } },
             },
           },
@@ -1877,6 +1891,14 @@ export class TrialLessonBookingService {
 
     if (booking.studentId !== studentUserId) {
       throw new ForbiddenException('Not allowed to reschedule this booking')
+    }
+
+    if (booking.tutor.isHidden === true) {
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN)
+    }
+
+    if (booking.tutor.activeStatus === false) {
+      throw new BadRequestException(ERROR_TUTOR_BUSY)
     }
 
     if (booking.status !== ETrialLessonStatus.CONFIRMED) {

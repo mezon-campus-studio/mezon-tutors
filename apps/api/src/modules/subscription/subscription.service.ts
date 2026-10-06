@@ -51,6 +51,8 @@ import {
   isTrialLessonPaymentHoldActive,
   trialLessonPaymentHoldExpiresAt,
   calculateGroupSubscriptionPrice,
+  ERROR_TUTOR_HIDDEN,
+  ERROR_TUTOR_BUSY,
 } from '@mezon-tutors/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LessonSettlementService } from '../lesson-settlement/lesson-settlement.service';
@@ -169,6 +171,8 @@ export class SubscriptionService {
           select: {
             id: true,
             userId: true,
+            isHidden: true,
+            activeStatus: true,
             user: { select: { username: true, timezone: true } },
           },
         },
@@ -180,6 +184,12 @@ export class SubscriptionService {
     }
     if (enrollment.studentId !== studentUserId) {
       throw new ForbiddenException('Not allowed to modify this lesson');
+    }
+    if (enrollment.tutor.isHidden === true) {
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN);
+    }
+    if (enrollment.tutor.activeStatus === false) {
+      throw new BadRequestException(ERROR_TUTOR_BUSY);
     }
     if (enrollment.status !== ESubscriptionEnrollmentStatus.ACTIVE) {
       throw new BadRequestException('Only active subscriptions can be modified');
@@ -507,11 +517,21 @@ export class SubscriptionService {
         userId: true,
         firstName: true,
         lastName: true,
+        isHidden: true,
+        activeStatus: true,
         user: { select: { username: true } },
       },
     });
     if (!tutorProfile) {
       throw new NotFoundException('Tutor not found');
+    }
+
+    if (tutorProfile.isHidden === true) {
+      throw new BadRequestException(ERROR_TUTOR_HIDDEN);
+    }
+
+    if (tutorProfile.activeStatus === false) {
+      throw new BadRequestException(ERROR_TUTOR_BUSY);
     }
 
     if (

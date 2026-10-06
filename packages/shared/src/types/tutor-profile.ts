@@ -181,6 +181,7 @@ export type TutorProfile = {
   }
   isProfessional: boolean
   activeStatus: boolean
+  isHidden: boolean
   verificationStatus: VerificationStatus
   totalLessonsTaught: number
   totalStudents: number
@@ -195,6 +196,10 @@ export type TutorProfile = {
 
 export interface UpdateTutorActiveStatusDto {
   activeStatus: boolean
+}
+
+export interface UpdateTutorIsHiddenDto {
+  isHidden: boolean
 }
 
 export type TutorApplicationMetrics = {
@@ -258,6 +263,7 @@ export interface VerifiedTutorProfileDto {
   }
   isProfessional: boolean
   activeStatus: boolean
+  isHidden: boolean
   totalLessonsTaught: number
   totalStudents: number
   ratingCount: number

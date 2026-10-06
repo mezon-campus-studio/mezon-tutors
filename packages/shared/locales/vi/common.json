@@ -102,5 +102,9 @@
     "goHome": "Về trang chủ",
     "findTutors": "Tìm gia sư",
     "goBack": "Quay lại trang trước"
+  },
+  "Errors": {
+    "tutorHidden": "Gia sư này đang ẩn hồ sơ và không thể nhận booking mới.",
+    "tutorBusy": "Gia sư này đang bận và tạm thời không nhận thêm học viên."
   }
 }

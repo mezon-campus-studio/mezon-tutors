@@ -408,6 +408,22 @@ export class TutorProfileService {
     });
   }
 
+  async updateIsHiddenByUserId(userId: string, isHidden: boolean): Promise<void> {
+    const profile = await this.prisma.tutorProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Tutor profile not found');
+    }
+
+    await this.prisma.tutorProfile.update({
+      where: { id: profile.id },
+      data: { isHidden },
+    });
+  }
+
   async createReview(
     tutorId: string,
     reviewerId: string,
@@ -872,6 +888,7 @@ export class TutorProfileService {
 
     const where: Prisma.TutorProfileWhereInput = {
       verificationStatus: VerificationStatus.APPROVED,
+      isHidden: false,
     }
 
     if (subject && subject !== ESubject.ANY_SUBJECT) {
@@ -1132,6 +1149,20 @@ export class TutorProfileService {
         tutorId,
       },
     })
+  }
+
+  async getTutorRealtimeStatus(id: string): Promise<{ isHidden: boolean; activeStatus: boolean }> {
+    const tutor = await this.prisma.tutorProfile.findUnique({
+      where: { id },
+      select: { isHidden: true, activeStatus: true },
+    })
+    if (!tutor) {
+      throw new NotFoundException('Tutor profile not found')
+    }
+    return {
+      isHidden: tutor.isHidden ?? false,
+      activeStatus: tutor.activeStatus ?? true,
+    }
   }
 
   async getVerifiedTutorAbout(id: string) {

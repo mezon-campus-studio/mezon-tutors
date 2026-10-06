@@ -129,6 +129,10 @@ export function TutorDetailHeader({ tutor }: TutorDetailHeaderProps) {
                   <CreditCard className="mr-1.5 size-4" />
                   {t("continuePayment")}
                 </Button>
+              ) : booking.showHiddenBadge ? (
+                <span className="inline-flex h-11 w-full items-center justify-center rounded-full border border-gray-200 bg-gray-50 px-5 text-center text-sm font-semibold text-gray-800 lg:w-auto">
+                  {t("tutorIsHidden")}
+                </span>
               ) : booking.showBusyBadge ? (
                 <span className="inline-flex h-11 w-full items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-5 text-center text-sm font-semibold text-amber-800 lg:w-auto">
                   {t("temporarilyBusy")}

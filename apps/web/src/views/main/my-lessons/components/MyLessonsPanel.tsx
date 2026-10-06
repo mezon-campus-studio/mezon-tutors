@@ -34,7 +34,7 @@ import {
 } from "@/services/trial-lesson-booking/trial-lesson-booking.api";
 import { useGetVerifiedTutorAbout } from "@/services/tutor-profile/tutor-profile.api";
 import { walletQueryKey } from "@/services/wallet/wallet.qkey";
-import { useOpenAdminSupportChat, useUserTimezone } from "@/hooks";
+import { useOpenAdminSupportChat, useUserTimezone, useTranslateApiError } from "@/hooks";
 import {
   TrialBookingSheet,
   type TrialBookingPayload,
@@ -870,6 +870,7 @@ export default function MyLessonsPanel({
   previousLessons,
 }: MyLessonsPanelProps) {
   const t = useTranslations("MyLessons");
+  const translateApiError = useTranslateApiError();
   const locale = useLocale();
   const router = useRouter();
 
@@ -1040,9 +1041,7 @@ export default function MyLessonsPanel({
       }
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : t("panels.lessons.reschedule.failed"),
-      );
+      toast.error(translateApiError(error, t("panels.lessons.reschedule.failed")));
       throw error;
     } finally {
       setIsRescheduling(false);
@@ -1097,9 +1096,7 @@ export default function MyLessonsPanel({
       setComplainLesson(null);
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : t("panels.lessons.complaint.dialog.failed"),
-      );
+      toast.error(translateApiError(error, t("panels.lessons.complaint.dialog.failed")));
     } finally {
       setIsSubmittingComplaint(false);
     }
@@ -1184,7 +1181,7 @@ export default function MyLessonsPanel({
       setSelectedLesson(null);
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Failed to cancel lesson.");
+      toast.error(translateApiError(error, "Failed to cancel lesson."));
     } finally {
       setIsCanceling(false);
     }

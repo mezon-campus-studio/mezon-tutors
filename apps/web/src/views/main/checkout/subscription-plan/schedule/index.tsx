@@ -40,7 +40,7 @@ import {
   toast,
 } from "@/components/ui";
 import { buttonVariants } from "@/components/ui/button";
-import { useCurrency, useUserTimezone } from "@/hooks";
+import { useCurrency, useUserTimezone, useTranslateApiError } from "@/hooks";
 import {
   convertWallClockSlotBetweenTimezones,
   getWeekStartMondayInTimezone,
@@ -92,6 +92,7 @@ function slotKey(s: { date: string; startTime: string }): string {
 
 export default function SubscriptionPlanSchedulePage() {
   const t = useTranslations("SubscriptionCheckout.SchedulePicker");
+  const translateApiError = useTranslateApiError();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tutorId = searchParams.get("tutorId") ?? "";
@@ -449,10 +450,10 @@ export default function SubscriptionPlanSchedulePage() {
     try {
       await submitEnrollment(true);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t("toastErrorFallback");
+      const msg = translateApiError(e, t("toastErrorFallback"));
       toast.error(t("toastErrorTitle"), { description: msg });
     }
-  }, [submitEnrollment, t]);
+  }, [submitEnrollment, t, translateApiError]);
 
   const paymentMethodHandlers = useMemo<Record<PaymentMethodId, () => Promise<void>>>(
     () => ({
@@ -472,11 +473,11 @@ export default function SubscriptionPlanSchedulePage() {
         }
         await executePayment();
       } catch (e) {
-        const msg = e instanceof Error ? e.message : t("toastErrorFallback");
+        const msg = translateApiError(e, t("toastErrorFallback"));
         toast.error(t("toastErrorTitle"), { description: msg });
       }
     },
-    [paymentMethodHandlers, t],
+    [paymentMethodHandlers, t, translateApiError],
   );
 
   const removeSlot = (key: string) => {

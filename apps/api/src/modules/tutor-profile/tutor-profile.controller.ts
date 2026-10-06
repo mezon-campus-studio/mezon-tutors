@@ -83,6 +83,14 @@ export class TutorProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch('me/is-hidden')
+  async patchMyIsHidden(@Req() req: Request, @Body() body: { isHidden: boolean }) {
+    const user = req.user as AuthUserPayload
+    await this.tutorProfileService.updateIsHiddenByUserId(user.sub, body.isHidden)
+    return { success: true }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('me/setup-checklist')
   async getMySetupChecklist(@Req() req: Request): Promise<TutorSetupChecklistDto> {
     const user = req.user as AuthUserPayload
@@ -124,6 +132,11 @@ export class TutorProfileController {
   async getVerifiedTutorAbout(@Param('id') id: string): Promise<TutorAboutDto> {
     await this.validateVerifiedTutor(id)
     return this.tutorProfileService.getVerifiedTutorAbout(id)
+  }
+
+  @Get(':id/realtime-status')
+  async getTutorRealtimeStatus(@Param('id') id: string): Promise<{ isHidden: boolean; activeStatus: boolean }> {
+    return this.tutorProfileService.getTutorRealtimeStatus(id)
   }
 
   @Get(':id/schedule')

@@ -28,4 +28,5 @@ export const tutorProfileQueryKey = {
   savedTutors: () => ['saved-tutors'],
   myTutorProfile: () => ['my-tutor-profile'],
   mySetupChecklist: () => ['my-tutor-setup-checklist'],
+  tutorRealtimeStatus: (id: string) => ['tutor-realtime-status', id],
 } as const

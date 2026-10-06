@@ -2,7 +2,7 @@
 
 import { ROUTES, type TutorProfile } from "@mezon-tutors/shared";
 import dayjs from "dayjs";
-import { Check, Eye, X } from "lucide-react";
+import { Check, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -109,9 +109,16 @@ export default function ApplicationsTable({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-900">
-                          {fullName}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium text-slate-900">
+                            {fullName}
+                          </span>
+                          {app.isHidden && (
+                            <span title="Hidden">
+                              <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-slate-500">
                           {app.email || "—"}
                         </span>

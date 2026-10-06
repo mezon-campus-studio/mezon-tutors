@@ -63,6 +63,10 @@ export const tutorProfileApi = {
     return apiClient.get<ApiResponse<TutorAboutDto>, TutorAboutDto>(`/tutor-profiles/${id}/about`);
   },
 
+  getTutorRealtimeStatus(id: string): Promise<{ isHidden: boolean; activeStatus: boolean }> {
+    return apiClient.get<ApiResponse<{ isHidden: boolean; activeStatus: boolean }>, { isHidden: boolean; activeStatus: boolean }>(`/tutor-profiles/${id}/realtime-status`);
+  },
+
   getVerifiedTutorSchedule(id: string): Promise<TutorScheduleDto> {
     return apiClient.get<ApiResponse<TutorScheduleDto>, TutorScheduleDto>(
       `/tutor-profiles/${id}/schedule`
@@ -174,6 +178,14 @@ const useGetVerifiedTutorAbout = (id: string) => {
   return useQuery({
     queryKey: tutorProfileQueryKey.tutorAbout(id),
     queryFn: () => tutorProfileApi.getVerifiedTutorAbout(id),
+    enabled: !!id,
+  });
+};
+
+const useGetTutorRealtimeStatus = (id: string) => {
+  return useQuery({
+    queryKey: tutorProfileQueryKey.tutorRealtimeStatus(id),
+    queryFn: () => tutorProfileApi.getTutorRealtimeStatus(id),
     enabled: !!id,
   });
 };
@@ -315,6 +327,7 @@ const useUnsaveTutorMutation = () => {
 export {
   useGetVerifiedTutors,
   useGetVerifiedTutorAbout,
+  useGetTutorRealtimeStatus,
   useGetVerifiedTutorSchedule,
   useGetVerifiedTutorReviews,
   useGetVerifiedTutorResources,

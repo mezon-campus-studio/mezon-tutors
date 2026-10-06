@@ -2,7 +2,7 @@
 
 import type { TutorAboutDto } from "@mezon-tutors/shared";
 import { useTranslations } from "next-intl";
-import { useGetVerifiedTutorResume, useGetVerifiedTutorReviews } from "@/services";
+import { useGetVerifiedTutorResume, useGetVerifiedTutorReviews, useGetTutorRealtimeStatus } from "@/services";
 import { Skeleton } from "@/components/ui";
 import { TutorAboutTab } from "./components/TutorAboutTab";
 import { TutorBookingModals } from "./components/TutorBookingModals";
@@ -13,6 +13,7 @@ import { TutorScheduleTab } from "./components/TutorScheduleTab";
 import { SectionCard } from "./components/SectionCard";
 import { SimilarTutorsSection } from "./components/SimilarTutorsSection";
 import { TutorBookingProvider, useTutorBooking } from "./hooks/TutorBookingContext";
+import { useMemo } from "react";
 
 type TutorDetailPageProps = {
   tutorId: string;
@@ -46,13 +47,24 @@ function TutorDetailPageBody({
     isLoading: isLoadingResume,
   } = useGetVerifiedTutorResume(tutorId, true);
 
+  const { data: realtimeStatus } = useGetTutorRealtimeStatus(tutorId);
+
+  const mergedAboutData = useMemo(() => {
+    if (!realtimeStatus) return aboutData;
+    return {
+      ...aboutData,
+      isHidden: realtimeStatus.isHidden,
+      activeStatus: realtimeStatus.activeStatus,
+    };
+  }, [aboutData, realtimeStatus]);
+
   return (
-    <TutorBookingProvider tutor={aboutData}>
-      <TutorDetailHeader tutor={aboutData} />
+    <TutorBookingProvider tutor={mergedAboutData}>
+      <TutorDetailHeader tutor={mergedAboutData} />
 
       <div className="mx-auto max-w-5xl px-4 py-6">
         <TutorDetailPageContent
-          aboutData={aboutData}
+          aboutData={mergedAboutData}
           reviewsData={reviewsData}
           isLoadingReviews={isLoadingReviews}
           isErrorReviews={isErrorReviews}
@@ -114,6 +126,13 @@ function TutorDetailPageContent({
 
   return (
     <>
+      {aboutData.isHidden ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
+          <p className="text-base font-medium text-amber-800">
+            {t("tutorIsHidden")}
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-5">
         <SectionCard>
           <TutorAboutTab

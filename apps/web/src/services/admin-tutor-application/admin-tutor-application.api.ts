@@ -66,6 +66,13 @@ export const adminTutorApplicationApi = {
     );
   },
 
+  updateIsHidden(id: string, isHidden: boolean): Promise<{ success: boolean }> {
+    return apiClient.patch<{ success: boolean }>(
+      `${BASE}/tutor-profiles/${id}/is-hidden`,
+      { isHidden },
+    );
+  },
+
   createAdminNote(payload: CreateAdminNotePayload): Promise<TutorAdminNote> {
     return apiClient.post<TutorAdminNote>(`${BASE}/tutor-admin-notes`, payload);
   },
@@ -144,6 +151,22 @@ export const useRejectTutorApplication = () => {
       });
       queryClient.invalidateQueries({
         queryKey: adminTutorApplicationQueryKey.metrics(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminTutorApplicationQueryKey.detail(id),
+      });
+    },
+  });
+};
+
+export const useUpdateTutorIsHidden = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isHidden }: { id: string; isHidden: boolean }) =>
+      adminTutorApplicationApi.updateIsHidden(id, isHidden),
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: adminTutorApplicationQueryKey.list(),
       });
       queryClient.invalidateQueries({
         queryKey: adminTutorApplicationQueryKey.detail(id),

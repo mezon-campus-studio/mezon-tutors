@@ -80,8 +80,9 @@ export default function TutorCard({
   const trialDone =
     elig?.trialStatus === "COMPLETED" && elig?.trialPaymentStatus === "SUCCEEDED";
   const showContinuePayment = canFetchSub && Boolean(pendingPayment);
-  const showMonthlyActions = tutor.activeStatus !== false;
-  const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false;
+  const showMonthlyActions = tutor.activeStatus !== false && tutor.isHidden !== true;
+  const isTutorTemporarilyBusy = !isOwnProfile && tutor.activeStatus === false && tutor.isHidden !== true;
+  const isTutorHidden = !isOwnProfile && tutor.isHidden === true;
 
   const isBookingReady =
     preview ||
@@ -100,6 +101,10 @@ export default function TutorCard({
   const showBookTrial = preview || (showMonthlyActions && wouldShowBookTrialIfActive);
   const showBusyBadge =
     isTutorTemporarilyBusy &&
+    !showContinuePayment &&
+    (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
+  const showHiddenBadge =
+    isTutorHidden &&
     !showContinuePayment &&
     (wouldShowBookTrialIfActive || wouldShowSubscribeIfActive);
   const bookTrialDisabled =
@@ -250,6 +255,10 @@ export default function TutorCard({
                   <CreditCard className="mr-1.5 size-4" />
                   {t("continuePayment")}
                 </Button>
+              ) : showHiddenBadge ? (
+                <span className="inline-flex h-10 w-full items-center justify-center rounded-full border border-gray-200 bg-gray-50 px-3 text-center text-sm font-semibold text-gray-800">
+                  {t("tutorIsHidden")}
+                </span>
               ) : showBusyBadge ? (
                 <span className="inline-flex h-10 w-full items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-3 text-center text-sm font-semibold text-amber-800">
                   {t("temporarilyBusy")}
