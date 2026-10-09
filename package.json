@@ -18,6 +18,7 @@
     "db:reset": "yarn workspace @mezon-tutors/db prisma:reset",
     "db:migrate": "yarn workspace @mezon-tutors/db prisma:migrate",
     "db:seed": "yarn workspace @mezon-tutors/db seed",
+    "youtube:token": "node scripts/get-youtube-refresh-token.mjs",
     "r2": "cd apps/r2-worker && yarn dev",
     "postinstall": "node scripts/postinstall.js",
     "build": "turbo build --filter=!@mezon-tutors/web",
