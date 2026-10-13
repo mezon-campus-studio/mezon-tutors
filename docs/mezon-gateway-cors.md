@@ -10,29 +10,28 @@ The fix is to proxy Mezon gateway traffic through a domain we control:
 
 ```txt
 browser (www.mezonly.com)
-  -> https://gw.mezonly.com
+  -> https://gw.mezonly.com   (Cloudflare -> tunnel -> Caddy on mac-remote)
   -> https://gw.mezon.ai
 ```
 
-The nginx proxy injects CORS headers and rewrites `gw.mezon.ai` to `gw.mezonly.com` in JSON
+Caddy injects CORS headers and rewrites `gw.mezon.ai` to `gw.mezonly.com` in JSON
 responses so post-login API and WebSocket URLs keep routing through the proxy.
 
-## Current Docker Deploy
+## Current Deploy
 
-The current VPS deployment uses the combined Docker nginx config:
+`deploy/Caddyfile`, site `http://gw.mezonly.com` (served on `127.0.0.1:8090` behind the
+Cloudflare Tunnel):
 
-- `deploy/nginx-mezonly.com.conf`
-- `deploy/nginx-mezonly.com.phase1-http.conf`
-- `docker-compose.api.prod.yml`
+- Preflight `OPTIONS` from an allowed origin (`*.mezonly.com`, `mezon-tutors-*.vercel.app`,
+  `http://localhost:3000`) returns `204` with the CORS headers.
+- WebSocket upgrades are proxied on a separate route without body rewriting.
+- Other requests are proxied with `Host: gw.mezon.ai`, `Accept-Encoding: identity`, and the
+  `replace` handler (plugin `replace-response`) swaps `gw.mezon.ai` for `gw.mezonly.com` in
+  `application/json` bodies. Upstream `Access-Control-*` headers are dropped and replaced by
+  ours.
 
-The full VPS runbook is in `docs/api-docker-vps-deploy.md`.
-
-Required DNS:
-
-```txt
-api.mezonly.com  A  167.233.106.79
-gw.mezonly.com   A  167.233.106.79
-```
+DNS: `gw.mezonly.com` is a public hostname of the Cloudflare Tunnel pointing at
+`http://localhost:8090`. No A record.
 
 Frontend production env should include:
 
@@ -53,6 +52,15 @@ curl -i -X OPTIONS "https://gw.mezonly.com/v2/account/authenticate/idtoken" \
 
 Expected: `204` and `access-control-allow-origin: https://www.mezonly.com`.
 
+On the machine itself, without the tunnel:
+
+```sh
+curl -i -X OPTIONS -H "Host: gw.mezonly.com" -H "Origin: https://www.mezonly.com" \
+  -H "Access-Control-Request-Method: POST" \
+  http://127.0.0.1:8090/v2/account/authenticate/idtoken
+```
+
 After a real login, inspect session storage key `mezon-light-session` and confirm `api_url`
 and `ws_url` use `gw.mezonly.com`. If Mezon returns a different upstream host, add another
-`sub_filter` and matching proxy route in `deploy/nginx-mezonly.com.conf`.
+`<search> <replace>` line inside the `replace` block and a matching proxy route in
+`deploy/Caddyfile`.

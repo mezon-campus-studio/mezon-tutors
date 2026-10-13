@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.mezonly.backup</string>
+	<key>UserName</key>
+	<string>__USER__</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>__HOME__/mezon-tutors/bin/backup-db.sh</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>__HOME__/mezon-tutors</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key>
+		<string>__HOME__</string>
+		<key>LANG</key>
+		<string>en_US.UTF-8</string>
+	</dict>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>1</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+	<key>RunAtLoad</key>
+	<false/>
+	<key>StandardOutPath</key>
+	<string>__HOME__/mezon-tutors-data/backups/backup.log</string>
+	<key>StandardErrorPath</key>
+	<string>__HOME__/mezon-tutors-data/backups/backup.log</string>
+</dict>
+</plist>

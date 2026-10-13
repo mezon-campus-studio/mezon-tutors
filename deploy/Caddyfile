@@ -1,0 +1,111 @@
+{
+	admin off
+	auto_https off
+	http_port 8090
+	order replace after encode
+}
+
+(cors_preflight) {
+	@preflight {
+		method OPTIONS
+		header_regexp Origin ^(https://([a-z0-9-]+\.)*mezonly\.com|https://mezon-tutors(-[a-z0-9-]+)?\.vercel\.app|http://localhost:3000)$
+	}
+	handle @preflight {
+		header {
+			Access-Control-Allow-Origin {http.request.header.Origin}
+			Access-Control-Allow-Credentials true
+			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+			Access-Control-Allow-Headers "{args[0]}"
+			Access-Control-Max-Age 600
+			Cache-Control no-store
+			Vary Origin
+			Content-Type "text/plain; charset=utf-8"
+		}
+		respond 204
+	}
+}
+
+(allowed_origin) {
+	@allowed_origin header_regexp Origin ^(https://([a-z0-9-]+\.)*mezonly\.com|https://mezon-tutors(-[a-z0-9-]+)?\.vercel\.app|http://localhost:3000)$
+}
+
+(client_ip) {
+	header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+	header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+	header_up X-Forwarded-Proto https
+}
+
+(strip_upstream_cors) {
+	header_down -Access-Control-Allow-Origin
+	header_down -Access-Control-Allow-Methods
+	header_down -Access-Control-Allow-Headers
+	header_down -Access-Control-Allow-Credentials
+	header_down -Access-Control-Expose-Headers
+	header_down -Access-Control-Max-Age
+}
+
+http://api.mezonly.com, http://api-mac.mezonly.com {
+	bind 127.0.0.1 ::1
+	encode gzip
+	request_body {
+		max_size 25MB
+	}
+	import cors_preflight "Authorization, Content-Type, Accept, X-Requested-With, Cache-Control, Range, X-CSRF-Token"
+	import allowed_origin
+	header @allowed_origin {
+		Access-Control-Allow-Origin {http.request.header.Origin}
+		Access-Control-Allow-Credentials true
+		Vary Origin
+		defer
+	}
+	reverse_proxy 127.0.0.1:4000 {
+		import client_ip
+		import strip_upstream_cors
+	}
+}
+
+http://gw.mezonly.com, http://gw-mac.mezonly.com {
+	bind 127.0.0.1 ::1
+	request_body {
+		max_size 25MB
+	}
+	import cors_preflight "Authorization, Content-Type, Accept, X-Requested-With, Cache-Control, Range"
+	import allowed_origin
+	header @allowed_origin {
+		Access-Control-Allow-Origin {http.request.header.Origin}
+		Access-Control-Allow-Credentials true
+		Access-Control-Expose-Headers "Content-Length, Content-Range"
+		Vary Origin
+		defer
+	}
+	@websocket {
+		header Connection *Upgrade*
+		header Upgrade websocket
+	}
+	handle @websocket {
+		reverse_proxy https://gw.mezon.ai {
+			header_up Host gw.mezon.ai
+			import client_ip
+			transport http {
+				tls_server_name gw.mezon.ai
+			}
+		}
+	}
+	handle {
+		replace {
+			match {
+				header Content-Type application/json*
+			}
+			gw.mezon.ai gw.mezonly.com
+		}
+		reverse_proxy https://gw.mezon.ai {
+			header_up Host gw.mezon.ai
+			header_up Accept-Encoding identity
+			import client_ip
+			import strip_upstream_cors
+			transport http {
+				tls_server_name gw.mezon.ai
+			}
+		}
+	}
+}
