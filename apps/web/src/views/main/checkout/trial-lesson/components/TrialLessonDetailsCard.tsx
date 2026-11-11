@@ -37,7 +37,7 @@ export function TrialLessonDetailsCard({
                 className="size-16 rounded-2xl object-cover ring-2 ring-white shadow-sm shadow-violet-200/40 sm:size-20"
               />
             ) : (
-              <div className="flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-xl font-extrabold text-violet-700 sm:size-20">
+              <div className="flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-xl font-extrabold text-violet-700 sm:size-20">
                 {tutorName.slice(0, 1).toUpperCase()}
               </div>
             )}

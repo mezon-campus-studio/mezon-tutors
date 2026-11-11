@@ -157,7 +157,7 @@ export default function UploadFile({
             />
           ) : (
             <div className="pointer-events-none flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-600">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-600">
                 <ImageIcon className="size-6" />
               </div>
               <p className="text-xs text-slate-600 sm:text-sm">
@@ -173,7 +173,7 @@ export default function UploadFile({
           )
         ) : hasContent ? (
           <div className="pointer-events-none flex flex-col items-center gap-2 px-2 text-center">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
               <FileText className="size-5" />
             </div>
             <p className="max-w-full truncate text-sm font-semibold text-slate-900">
@@ -188,7 +188,7 @@ export default function UploadFile({
           </div>
         ) : (
           <div className="pointer-events-none flex flex-col items-center gap-2 text-center">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
               <Upload className="size-5" />
             </div>
             <p className="text-sm font-semibold text-slate-900">

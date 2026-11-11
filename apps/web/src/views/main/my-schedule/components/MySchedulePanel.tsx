@@ -440,7 +440,7 @@ function EmptyUpcomingCard({ onViewRequests }: EmptyUpcomingCardProps) {
 
       <div className="relative flex flex-col items-center gap-3 text-center">
         <div className="relative">
-          <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
+          <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] blur-xl" />
           <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
             <CalendarX className="size-5" />
           </div>

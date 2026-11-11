@@ -30,8 +30,8 @@ export default function TutorPreviewCard({
           </div>
           <div className="relative flex flex-col items-center text-center">
             <div className="relative mb-4">
-              <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] ring-1 ring-violet-100">
+              <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] blur-xl" />
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] ring-1 ring-violet-100">
                 <MousePointerClick className="size-6 text-violet-600" />
               </div>
             </div>

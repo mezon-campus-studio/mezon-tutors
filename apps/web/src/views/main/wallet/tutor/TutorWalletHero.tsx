@@ -45,7 +45,7 @@ export default function TutorWalletHero({
   );
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-indigo-400/25 bg-[linear-gradient(145deg,#0c0a1f_0%,#1e1b4b_42%,#4c1d95_78%,#7c3aed_100%)] p-4 text-white shadow-2xl shadow-indigo-950/30 sm:rounded-[1.75rem] sm:p-5 md:p-6">
+    <section className="relative overflow-hidden rounded-2xl border border-indigo-400/25 bg-[linear-gradient(145deg,#17122F_0%,#332B7B_42%,#4A1F95_78%,#8332FF_100%)] p-4 text-white shadow-2xl shadow-indigo-950/30 sm:rounded-[1.75rem] sm:p-5 md:p-6">
       <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-fuchsia-500/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 left-0 size-72 rounded-full bg-indigo-400/20 blur-3xl" />
 

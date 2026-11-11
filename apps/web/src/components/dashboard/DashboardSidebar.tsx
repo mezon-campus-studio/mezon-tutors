@@ -187,7 +187,7 @@ export default function DashboardSidebar({
               variant="ghost"
               className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                 active
-                  ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] text-violet-700 ring-1 ring-violet-100"
                   : isLogout
                     ? "text-rose-600 hover:bg-rose-50"
                     : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"

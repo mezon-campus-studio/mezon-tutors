@@ -110,7 +110,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "group/select-item relative flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 outline-hidden transition-colors select-none focus:bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] focus:text-violet-700 data-checked:bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] data-checked:font-semibold data-checked:text-violet-700 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "group/select-item relative flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 outline-hidden transition-colors select-none focus:bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] focus:text-violet-700 data-checked:bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] data-checked:font-semibold data-checked:text-violet-700 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}

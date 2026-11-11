@@ -1,0 +1,29 @@
+/* Mezonly v1 — sampled sRGB colors from the supplied turtle logo. */
+:root {
+  --mezonly-purple-50: #F6F2FF;
+  --mezonly-purple-100: #EEE4FF;
+  --mezonly-purple-200: #DDC9FF;
+  --mezonly-purple-300: #C6A0FF;
+  --mezonly-purple-400: #AC75FF;
+  --mezonly-purple-500: #9650FF;
+  --mezonly-purple-600: #8332FF;
+  --mezonly-purple-700: #7022E8;
+  --mezonly-purple-800: #5D1CC4;
+  --mezonly-purple-900: #4A1F95;
+  --mezonly-purple-950: #2C1156;
+  --mezonly-ink: #332B7B;
+  --mezonly-gold: #FFA602;
+  --mezonly-gold-soft: #FFF0D6;
+  --mezonly-white: #FFFFFF;
+  --mezonly-text: #27213D;
+  --mezonly-text-muted: #6C647E;
+  --mezonly-border: #DDD5EF;
+  --mezonly-primary: var(--mezonly-purple-600);
+  --mezonly-primary-hover: var(--mezonly-purple-700);
+  --mezonly-primary-active: var(--mezonly-purple-800);
+  --mezonly-on-primary: var(--mezonly-white);
+  --mezonly-on-gold: var(--mezonly-ink);
+  --mezonly-gradient: linear-gradient(110deg, #8332FF 0%, #7022E8 100%);
+  --mezonly-gradient-soft: linear-gradient(135deg, #F6F2FF 0%, #FFFFFF 70%, #FFF0D6 100%);
+  --mezonly-focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 5px #8332FF;
+}

@@ -94,7 +94,7 @@ export function PaymentMethodSelection({
   return (
     <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
       <div className="flex items-center gap-3 border-b border-violet-100 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_100%)] px-5 py-4">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+        <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
           <CreditCard className="size-4" />
         </div>
         <div className="leading-tight">
@@ -124,7 +124,7 @@ export function PaymentMethodSelection({
                 isDisabled
                   ? "cursor-not-allowed border-slate-100 bg-slate-50/80 opacity-70"
                   : active
-                    ? "cursor-pointer border-violet-300 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] shadow-sm shadow-violet-200/40"
+                    ? "cursor-pointer border-violet-300 bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] shadow-sm shadow-violet-200/40"
                     : "cursor-pointer border-slate-200 bg-white hover:border-violet-200 hover:bg-violet-50/30"
               }`}
               onClick={() => {

@@ -355,7 +355,7 @@ export default function PhotoPage() {
         description={t("avatar.subtitle")}
       >
         <div className="flex flex-col items-center gap-3">
-          <div className="rounded-full bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] p-1.5 shadow-md shadow-violet-200/50">
+          <div className="rounded-full bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] p-1.5 shadow-md shadow-violet-200/50">
             <div className="size-32 overflow-hidden rounded-full ring-4 ring-white sm:size-36">
               <img
                 src={avatarPreviewUrl}
@@ -438,7 +438,7 @@ export default function PhotoPage() {
 
           <div className="lg:col-span-2 lg:sticky lg:top-6 lg:self-start">
             <div className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm">
-              <div className="bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] px-4 py-2">
+              <div className="bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] px-4 py-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-600">
                   {t("previewLabel")}
                 </p>
@@ -487,7 +487,7 @@ export default function PhotoPage() {
 
                 <div className="mt-4 border-t border-slate-100 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex size-6 items-center justify-center rounded-md bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+                    <div className="flex size-6 items-center justify-center rounded-md bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
                       <User className="size-3" />
                     </div>
                     <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-violet-500">
@@ -547,7 +547,7 @@ export default function PhotoPage() {
                 key={key}
                 className="flex items-start gap-2.5 rounded-2xl border border-violet-100 bg-violet-50/30 p-3"
               >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
                   <Icon className="size-4" />
                 </div>
                 <div className="min-w-0">

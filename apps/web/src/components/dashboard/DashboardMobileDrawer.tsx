@@ -12,14 +12,13 @@ import {
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, MessageSquareWarning, Newspaper, Scale, Search, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { redirectToMezonOAuthLogin } from "@/lib/mezon-oauth-redirect";
 import { detectBrowserTimezone } from "@/lib/timezone";
 import { MezonSyncButton } from "./MezonSyncButton";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 import { userAtom } from "@/store/auth.atom";
 import { useDashboardRoutePrefetch } from "./useDashboardRoutePrefetch";
 
@@ -157,19 +156,11 @@ export default function DashboardMobileDrawer({
         <div className="flex items-center justify-between border-b border-violet-100 px-5 py-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center"
             onClick={onCloseAction}
+            aria-label="Mezonly"
           >
-            <Image
-              src={MezonlyLogo}
-              alt="Mezonly"
-              width={36}
-              height={36}
-              className="drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
-            />
-            <span className="text-brand-gradient text-lg font-extrabold tracking-tight">
-              Mezonly
-            </span>
+            <MezonlyLogo width={150} alt="" />
           </Link>
           <Button
             variant="ghost"
@@ -229,7 +220,7 @@ export default function DashboardMobileDrawer({
                       variant="ghost"
                       className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                         active
-                          ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                          ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] text-violet-700 ring-1 ring-violet-100"
                           : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"
                       }`}
                     >
@@ -276,7 +267,7 @@ export default function DashboardMobileDrawer({
                 variant="ghost"
                 className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                   active
-                    ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                    ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] text-violet-700 ring-1 ring-violet-100"
                     : isLogout
                       ? "text-rose-600 hover:bg-rose-50"
                       : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"

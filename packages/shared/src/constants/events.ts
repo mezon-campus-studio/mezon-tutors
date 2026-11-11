@@ -32,7 +32,7 @@ export const EVENT_SPEAKERS: Record<string, EventSpeaker> = {
     roleKey: 'speakers.emmaCoach.role',
     categoryKey: 'speakers.emmaCoach.category',
     bioKey: 'speakers.emmaCoach.bio',
-    image: '/images/home-ogp.png',
+    image: '/images/tutor.png',
     gradient: 'from-fuchsia-600 to-rose-500',
   },
   'david-toeic': {
@@ -49,18 +49,18 @@ export const EVENT_SPEAKERS: Record<string, EventSpeaker> = {
 const BUSINESS_GALLERY = [
   { src: '/images/teach.jpg', captionKey: 'gallery.0' },
   { src: '/images/tutor.png', captionKey: 'gallery.1' },
-  { src: '/images/home-ogp.png', captionKey: 'gallery.2' },
-  { src: '/images/Mezonly-logo.png', captionKey: 'gallery.3' },
+  { src: '/brand/social/og-image-1200x630.png', captionKey: 'gallery.2' },
+  { src: '/brand/social/avatar-1024x1024.png', captionKey: 'gallery.3' },
   { src: '/images/tutor.png', captionKey: 'gallery.4' },
   { src: '/images/teach.jpg', captionKey: 'gallery.5' },
 ] as const;
 
 const SPEAKING_GALLERY = [
-  { src: '/images/home-ogp.png', captionKey: 'gallery.0' },
+  { src: '/brand/social/og-image-1200x630.png', captionKey: 'gallery.0' },
   { src: '/images/teach.jpg', captionKey: 'gallery.1' },
   { src: '/images/tutor.png', captionKey: 'gallery.2' },
-  { src: '/images/Mezonly-logo-original.png', captionKey: 'gallery.3' },
-  { src: '/images/home-ogp.png', captionKey: 'gallery.4' },
+  { src: '/brand/social/avatar-1024x1024.png', captionKey: 'gallery.3' },
+  { src: '/brand/social/og-image-1200x630.png', captionKey: 'gallery.4' },
   { src: '/images/teach.jpg', captionKey: 'gallery.5' },
 ] as const;
 
@@ -72,7 +72,7 @@ export const EVENTS: Record<EventSlug, EventMeta> = {
     endAt: '2026-06-14T21:30:00+07:00',
     registrationUrl: 'https://forms.gle/mezonly-business-english',
     coverImage: '/images/teach.jpg',
-    ogImage: '/images/home-ogp.png',
+    ogImage: '/brand/social/og-image-1200x630.png',
     galleryImages: [...BUSINESS_GALLERY],
     highlightIds: ['roleplay', 'feedback', 'takeaway'],
     agendaIds: ['checkin', 'warmup', 'practice', 'wrapup'],
@@ -98,8 +98,8 @@ export const EVENTS: Record<EventSlug, EventMeta> = {
       venue: 'WeWork Saigon Centre',
     },
     registrationUrl: 'https://forms.gle/mezonly-speaking-confidence',
-    coverImage: '/images/home-ogp.png',
-    ogImage: '/images/home-ogp.png',
+    coverImage: '/images/teach.jpg',
+    ogImage: '/brand/social/og-image-1200x630.png',
     galleryImages: [...SPEAKING_GALLERY],
     highlightIds: ['icebreaker', 'drills', 'oneOnOne', 'certificate'],
     agendaIds: ['checkin', 'icebreaker', 'drills', 'roleplay', 'closing'],

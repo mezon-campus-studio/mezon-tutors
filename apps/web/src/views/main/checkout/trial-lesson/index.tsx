@@ -413,7 +413,7 @@ export default function TrialLessonCheckoutPage() {
         <div className="mt-6 flex flex-col items-start gap-5 lg:flex-row">
           <div className="w-full flex-1 space-y-4 lg:basis-2/3">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
                 <CalendarCheck className="size-4" />
               </div>
               <div className="leading-tight">

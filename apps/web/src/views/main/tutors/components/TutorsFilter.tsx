@@ -97,7 +97,7 @@ export default function TutorsFilter({
             size="default"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
                 <BookOpen className="size-5" />
               </div>
               <div className="flex flex-col items-start leading-tight">
@@ -158,7 +158,7 @@ export default function TutorsFilter({
             size="default"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-indigo-700 ring-1 ring-indigo-100">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#dbeafe,#EEE4FF)] text-indigo-700 ring-1 ring-indigo-100">
                 <Globe2 className="size-5" />
               </div>
               <div className="flex flex-col items-start leading-tight">

@@ -17,7 +17,7 @@ const toneStyles: Record<
 > = {
   success: {
     iconBox:
-      'border-violet-200/80 bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 shadow-violet-200/50',
+      'border-violet-200/80 bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 shadow-violet-200/50',
     badge:
       'border-violet-200/80 bg-violet-50/80 text-violet-700',
     glow: 'bg-[radial-gradient(circle,rgba(124,58,237,0.18),transparent_70%)]',
@@ -87,7 +87,7 @@ export function CheckoutResultHero({
       )}
     >
       <div className="relative shrink-0">
-        <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
+        <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] blur-2xl" />
         <div
           className={cn(
             'flex size-16 items-center justify-center rounded-3xl border shadow-md',

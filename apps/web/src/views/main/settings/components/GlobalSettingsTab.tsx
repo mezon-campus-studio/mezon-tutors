@@ -81,7 +81,7 @@ export default function GlobalSettingsTab({ locale }: GlobalSettingsTabProps) {
 
   return (
     <section className="rounded-2xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
-      <div className="overflow-hidden rounded-t-2xl border-b border-violet-50 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-5 py-5 md:px-6">
+      <div className="overflow-hidden rounded-t-2xl border-b border-violet-50 bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] px-5 py-5 md:px-6">
         <div className="flex items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-violet-100">
             <Globe className="size-5 text-violet-600" />

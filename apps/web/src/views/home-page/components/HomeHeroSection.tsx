@@ -50,7 +50,7 @@ export default function HomeHeroSection() {
     <section className="relative w-full max-w-full overflow-x-clip border-b border-slate-100 bg-white pt-8 pb-14 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_56%,#ffffff_100%)]" />
-        <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(90deg,rgba(124,58,237,0.1),rgba(168,85,247,0.08),rgba(236,72,153,0.06))]" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(90deg,rgba(131,50,255,0.1),rgba(112,34,232,0.08),rgba(255,166,2,0.05))]" />
         <div
           className="absolute inset-0 opacity-[0.045]"
           style={{
