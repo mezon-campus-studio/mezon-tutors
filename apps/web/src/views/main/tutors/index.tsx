@@ -458,8 +458,8 @@ export default function TutorsPage() {
                   </div>
                   <div className="relative mx-auto flex max-w-md flex-col items-center text-center">
                     <div className="relative mb-6">
-                      <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
-                      <div className="flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] ring-1 ring-violet-100">
+                      <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] blur-2xl" />
+                      <div className="flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] ring-1 ring-violet-100">
                         <SearchX
                           className="size-9 text-violet-600"
                           strokeWidth={2}

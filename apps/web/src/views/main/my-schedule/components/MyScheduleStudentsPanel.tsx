@@ -149,7 +149,7 @@ export default function MyScheduleStudentsPanel({ students }: MyScheduleStudents
       <div className="flex w-full max-w-full flex-col gap-5 lg:max-w-[1032px]">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] text-violet-700 ring-1 ring-violet-100">
               <Users className="size-5" />
             </div>
             <div className="leading-tight">
@@ -170,7 +170,7 @@ export default function MyScheduleStudentsPanel({ students }: MyScheduleStudents
 
             <div className="relative flex flex-col items-center gap-3 text-center">
               <div className="relative">
-                <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-xl" />
+                <div className="absolute inset-0 -z-10 animate-pulse rounded-2xl bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] blur-xl" />
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-gradient-135 text-white shadow-md shadow-violet-300/40">
                   <Users className="size-5" />
                 </div>

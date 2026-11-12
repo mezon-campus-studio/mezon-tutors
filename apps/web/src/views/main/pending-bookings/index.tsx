@@ -163,7 +163,7 @@ function PendingItemCard({
                 "rounded-lg text-sm font-bold text-white",
                 isTrial
                   ? "bg-[linear-gradient(135deg,#f59e0b,#ea580c)]"
-                  : "bg-[linear-gradient(135deg,#c026d3,#7c3aed)]",
+                  : "bg-brand-gradient-135",
               )}
             >
               {initials(tutorName)}

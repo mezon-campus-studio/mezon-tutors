@@ -106,7 +106,7 @@ export default function GoogleCalendarTab({ locale }: GoogleCalendarTabProps) {
   return (
     <div className="space-y-5">
       <section className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm shadow-violet-100/40">
-        <div className="border-b border-violet-50 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] px-5 py-5 md:px-6">
+        <div className="border-b border-violet-50 bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] px-5 py-5 md:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-violet-100">

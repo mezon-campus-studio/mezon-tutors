@@ -6,9 +6,8 @@ import { useId } from "react"
 
 
 const GRADIENT_STOPS = [
-  { offset: "0%", color: "#7c3aed" },
-  { offset: "50%", color: "#9333ea" },
-  { offset: "100%", color: "#d071ff" },
+  { offset: "0%", color: "#8332FF" },
+  { offset: "100%", color: "#7022E8" },
 ] as const;
 
 function Spinner({

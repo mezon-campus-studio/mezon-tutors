@@ -20,8 +20,8 @@ function EventMarquee({ text }: { text: string }) {
 
   return (
     <div className="relative overflow-hidden border-y border-violet-100/60 bg-violet-50/60 py-2.5">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#ede9fe] to-transparent sm:w-24" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#ede9fe] to-transparent sm:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#EEE4FF] to-transparent sm:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#EEE4FF] to-transparent sm:w-24" />
       <div className="flex w-max motion-safe:[animation:event-marquee_40s_linear_infinite] motion-reduce:animate-none">
         <p className="shrink-0 px-4 text-xs font-semibold tracking-[0.25em] text-violet-500/65 uppercase">
           {track}
@@ -61,11 +61,11 @@ export default function HomeEventsSection() {
     <section
       id="events"
       ref={ref}
-      className="relative scroll-mt-24 overflow-hidden border-t border-violet-100/40 bg-[linear-gradient(180deg,#faf9ff_0%,#f3efff_50%,#ebe6ff_100%)] py-8 text-slate-900 sm:py-10"
+      className="relative scroll-mt-24 overflow-hidden border-t border-violet-100/40 bg-[linear-gradient(180deg,#FFFFFF_0%,#F6F2FF_50%,#EEE4FF_100%)] py-8 text-slate-900 sm:py-10"
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-20 left-1/4 size-72 rounded-full bg-violet-200/25 blur-[90px] motion-safe:[animation:hero-blob-drift_24s_ease-in-out_infinite] motion-reduce:animate-none" />
-        <div className="absolute right-1/4 bottom-0 size-80 rounded-full bg-fuchsia-200/15 blur-[80px] motion-safe:[animation:hero-blob-drift_20s_ease-in-out_infinite_reverse] motion-reduce:animate-none" />
+        <div className="absolute right-1/4 bottom-0 size-80 rounded-full bg-brand-gold-soft/30 blur-[80px] motion-safe:[animation:hero-blob-drift_20s_ease-in-out_infinite_reverse] motion-reduce:animate-none" />
       </div>
 
       <EventMarquee text={marqueeText} />

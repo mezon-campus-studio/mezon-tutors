@@ -2,13 +2,12 @@
 
 import type { VocabularyWordItem } from "@mezon-tutors/shared";
 import { Check, Circle, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 import {
   buildQuizQuestions,
   calculateQuizScore,
@@ -96,23 +95,10 @@ export default function QuizModal({
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
+            className="flex items-center transition-opacity hover:opacity-85"
+            aria-label="Mezonly"
           >
-            <Image
-              src={MezonlyLogo}
-              alt="Mezonly"
-              width={40}
-              height={40}
-              className="drop-shadow-[0_6px_16px_rgba(124,58,237,0.28)]"
-            />
-            <div className="flex flex-col leading-none">
-              <span className="text-brand-gradient text-xl font-extrabold tracking-tight">
-                Mezonly
-              </span>
-              <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Tutor Matching
-              </span>
-            </div>
+            <MezonlyLogo width={160} alt="" />
           </Link>
           {hasEnoughWords && (
             <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">

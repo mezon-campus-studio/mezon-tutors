@@ -61,9 +61,9 @@ export default async function SupportLegalPage({ pageKey }: SupportLegalPageProp
   return (
     <main className="relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#f5f3ff_70%,#fdf2f8_100%)]" />
-        <div className="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-violet-300/20 blur-[120px]" />
-        <div className="absolute -bottom-32 right-1/4 size-[24rem] rounded-full bg-fuchsia-300/15 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f6f2ff_65%,#fff8ee_100%)]" />
+        <div className="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-brand-200/25 blur-[120px]" />
+        <div className="absolute -bottom-32 right-1/4 size-[24rem] rounded-full bg-brand-gold-soft/30 blur-[120px]" />
       </div>
 
       <div className="mx-auto w-full max-w-4xl px-5 pt-10 pb-20 sm:pt-14 lg:px-8">

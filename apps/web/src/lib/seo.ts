@@ -5,9 +5,9 @@ import { getSeoMessages, type SeoMessages } from "./seo-messages";
 
 export const SITE_NAME = "Mezonly";
 
-export const DEFAULT_OG_IMAGE_PATH = "/images/home-ogp.png";
-export const DEFAULT_OG_IMAGE_WIDTH = 1536;
-export const DEFAULT_OG_IMAGE_HEIGHT = 1024;
+export const DEFAULT_OG_IMAGE_PATH = "/brand/social/og-image-1200x630.png";
+export const DEFAULT_OG_IMAGE_WIDTH = 1200;
+export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
 const DEFAULT_SITE_URL = "https://www.mezonly.com";
 
@@ -139,9 +139,14 @@ export function createRootMetadata(siteUrl = getSiteUrl()): Metadata {
       telephone: false,
     },
     icons: {
-      icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
-      apple: [{ url: "/apple-icon.png", type: "image/png" }],
+      icon: [
+        { url: "/brand/icons/favicon.ico", sizes: "16x16 32x32 48x48" },
+        { url: "/brand/icons/favicon.svg", type: "image/svg+xml" },
+        { url: "/brand/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: [{ url: "/brand/icons/apple-touch-icon.png", sizes: "180x180" }],
     },
+    manifest: "/brand/icons/site.webmanifest",
   };
 }
 

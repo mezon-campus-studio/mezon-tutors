@@ -168,7 +168,7 @@ export function ImageAttachmentGallery({
           showCloseButton
           className="gap-0 overflow-hidden rounded-3xl border-violet-100/80 p-0 shadow-2xl shadow-violet-200/40 sm:max-w-5xl [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:text-white [&_[data-slot=dialog-close]]:hover:bg-white/15"
         >
-          <div className="relative overflow-hidden bg-[linear-gradient(135deg,#4c1d95_0%,#7c3aed_55%,#a855f7_100%)] px-5 py-4 pr-14">
+          <div className="relative overflow-hidden bg-[linear-gradient(135deg,#332B7B_0%,#8332FF_55%,#7022E8_100%)] px-5 py-4 pr-14">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-white/10 blur-2xl"
@@ -193,7 +193,7 @@ export function ImageAttachmentGallery({
               <div className="relative flex flex-1 items-center justify-center bg-slate-950 p-4 sm:p-6">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.18)_0%,transparent_70%)]"
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(131,50,255,0.18)_0%,transparent_70%)]"
                 />
 
                 {hasMultiple ? (

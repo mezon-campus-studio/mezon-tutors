@@ -65,7 +65,7 @@ export default function StudentWalletHero({
   }
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[linear-gradient(145deg,#0f0720_0%,#2e1065_38%,#5b21b6_68%,#7c3aed_100%)] p-4 text-white shadow-2xl shadow-violet-900/25 sm:rounded-[1.75rem] sm:p-6 md:p-8">
+    <section className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-[linear-gradient(145deg,#17122F_0%,#2C1156_38%,#4A1F95_68%,#8332FF_100%)] p-4 text-white shadow-2xl shadow-violet-900/25 sm:rounded-[1.75rem] sm:p-6 md:p-8">
       <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-fuchsia-500/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 left-1/4 size-80 rounded-full bg-violet-400/15 blur-3xl" />
 

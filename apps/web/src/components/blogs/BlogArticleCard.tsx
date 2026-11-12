@@ -31,7 +31,7 @@ export function BlogArticleCard({ post }: BlogArticleCardProps) {
               sizes="260px"
             />
           ) : (
-            <div className="size-full bg-[radial-gradient(circle_at_30%_30%,rgba(109,40,217,0.12),transparent_60%),linear-gradient(145deg,#ede9fe,#f5f3ff)]" />
+            <div className="size-full bg-[radial-gradient(circle_at_30%_30%,rgba(131,50,255,0.12),transparent_60%),linear-gradient(145deg,#EEE4FF,#F6F2FF)]" />
           )}
         </Link>
 

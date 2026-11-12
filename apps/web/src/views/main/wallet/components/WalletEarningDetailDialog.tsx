@@ -81,7 +81,7 @@ export default function WalletEarningDetailDialog({
   const headerGradient = isRefund
     ? 'bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)]'
     : isPlan
-      ? 'bg-[linear-gradient(135deg,#a21caf_0%,#7c3aed_100%)]'
+      ? 'bg-[linear-gradient(135deg,#7022E8_0%,#8332FF_100%)]'
       : 'bg-[linear-gradient(135deg,#d97706_0%,#ea580c_100%)]';
 
   const dialogTitle = isRefund

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 import { cn } from "@/lib/utils";
 
 export type ChannelAppAuthVariant = "loading" | "missing-data" | "error";
@@ -51,14 +51,7 @@ export function ChannelAppAuthView({
         aria-busy={isLoading}
       >
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/15">
-          <Image
-            src="/images/Mezonly-logo.png"
-            alt="Mezonly"
-            width={36}
-            height={36}
-            className="h-9 w-9 object-contain"
-            priority
-          />
+          <MezonlyLogo symbolOnly width={36} alt="Mezonly" />
         </div>
 
         <div

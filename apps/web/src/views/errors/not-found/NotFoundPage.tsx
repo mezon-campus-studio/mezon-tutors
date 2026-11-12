@@ -78,7 +78,7 @@ export default function NotFoundPage() {
               className="relative flex size-[5.5rem] items-center justify-center sm:size-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
               style={{ animationDelay: "0.3s" }}
             >
-              <div className="absolute inset-0 rounded-full bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] shadow-[0_20px_60px_-20px_rgba(124,58,237,0.45)] ring-1 ring-violet-200/60" />
+              <div className="absolute inset-0 rounded-full bg-[linear-gradient(135deg,#EEE4FF,#F6F2FF)] shadow-[0_20px_60px_-20px_rgba(131,50,255,0.45)] ring-1 ring-violet-200/60" />
               <div className="absolute inset-2 rounded-full border-2 border-dashed border-violet-300/60 motion-safe:[animation:not-found-spin_12s_linear_infinite]" />
               <Compass className="relative size-10 text-violet-600 sm:size-12 motion-safe:[animation:not-found-compass_6s_ease-in-out_infinite]" />
             </div>

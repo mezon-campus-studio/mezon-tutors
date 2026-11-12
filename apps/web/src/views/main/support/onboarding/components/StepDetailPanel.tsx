@@ -145,22 +145,18 @@ function ChecklistRingBorder({ progress }: { progress: number }) {
             >
               <stop
                 offset="0%"
-                stopColor="#7c3aed"
-              />
-              <stop
-                offset="50%"
-                stopColor="#a855f7"
+                stopColor="#8332FF"
               />
               <stop
                 offset="100%"
-                stopColor="#d071ff"
+                stopColor="#7022E8"
               />
             </linearGradient>
           </defs>
           <path
             d={pathD}
             fill="none"
-            stroke="#ede9fe"
+            stroke="#EEE4FF"
             strokeWidth={ONBOARDING_CHECKLIST_RING_STROKE}
           />
           <path
