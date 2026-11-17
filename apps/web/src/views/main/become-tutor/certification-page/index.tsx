@@ -293,7 +293,7 @@ export default function CertificationPage() {
         contentRef={teachingCardRef}
       >
         <div className="mb-5 flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-brand-gradient-lavender-135 text-violet-700 ring-1 ring-violet-100">
             <BadgeCheck className="size-5" />
           </div>
           <p className="text-xs text-slate-500">
@@ -379,7 +379,7 @@ export default function CertificationPage() {
         contentRef={educationCardRef}
       >
         <div className="mb-5 flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#fce7f3,#fbcfe8)] text-fuchsia-700 ring-1 ring-fuchsia-100">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-brand-gradient-lavender-135 text-violet-700 ring-1 ring-violet-100">
             <Wallet className="size-5" />
           </div>
           <p className="text-xs text-slate-500">{t("educationTitle")}</p>

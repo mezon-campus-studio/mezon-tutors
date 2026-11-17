@@ -384,7 +384,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
 
             {notificationsQuery.isFetchingNextPage ? (
               <div className="flex flex-col items-center justify-center gap-2 px-3 py-4">
-                <Spinner />
+                <Spinner gradient />
                 <p className="text-sm text-slate-500">
                   {getLabel('loadingMore', 'Loading more...')}
                 </p>
@@ -393,7 +393,7 @@ export function HeaderNotification({ enabled }: HeaderNotificationProps) {
 
             {notificationsQuery.isLoading ? (
               <div className="flex flex-col items-center justify-center gap-2 px-4 py-8">
-                <Spinner />
+                <Spinner gradient />
                 <p className="text-sm text-slate-500">
                   {getLabel('loading', 'Loading notifications...')}
                 </p>

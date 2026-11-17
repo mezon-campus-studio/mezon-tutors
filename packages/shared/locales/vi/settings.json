@@ -9,6 +9,16 @@
     "globalSettings": {
       "title": "Cài đặt chung",
       "subtitle": "Quản lý các tùy chọn áp dụng trên toàn bộ Mezonly.",
+      "theme": {
+        "label": "Giao diện",
+        "description": "Tùy chỉnh chế độ hiển thị sáng, tối hoặc theo hệ thống của thiết bị.",
+        "light": "Chế độ sáng",
+        "lightDesc": "Giao diện sáng, tương phản cao",
+        "dark": "Chế độ tối",
+        "darkDesc": "Tông màu tối dịu mắt khi học ban đêm",
+        "system": "Theo hệ thống",
+        "systemDesc": "Tự động đồng bộ theo thiết bị"
+      },
       "timezone": {
         "label": "Múi giờ",
         "description": "Giờ học, lịch và nhắc nhở sẽ hiển thị theo múi giờ này.",

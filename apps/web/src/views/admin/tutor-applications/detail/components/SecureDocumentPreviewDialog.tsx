@@ -132,7 +132,7 @@ export default function SecureDocumentPreviewDialog({
         <div className="relative min-h-0 min-w-0 flex-1 bg-slate-50">
           {loading ? (
             <div className="flex h-full items-center justify-center gap-2 text-sm text-slate-600">
-              <Spinner className="h-5 w-5" />
+              <Spinner gradient className="h-5 w-5" />
               {t("viewFileLoading")}
             </div>
           ) : null}

@@ -17,10 +17,10 @@ const toneStyles: Record<
 > = {
   success: {
     iconBox:
-      'border-violet-200/80 bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 shadow-violet-200/50',
+      'border-violet-200/80 bg-brand-gradient-lavender-135 text-violet-700 shadow-violet-200/50',
     badge:
       'border-violet-200/80 bg-violet-50/80 text-violet-700',
-    glow: 'bg-[radial-gradient(circle,rgba(124,58,237,0.18),transparent_70%)]',
+    glow: 'bg-[radial-gradient(circle,rgba(131,50,255,0.18),transparent_70%)]',
   },
   error: {
     iconBox:
@@ -50,7 +50,7 @@ export function CheckoutResultShell({
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
         <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/25 blur-[140px]" />
-        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/30 blur-[120px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-brand-200/30 blur-[120px]" />
       </div>
 
       <div className={cn('relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10', maxWidth)}>
@@ -87,7 +87,7 @@ export function CheckoutResultHero({
       )}
     >
       <div className="relative shrink-0">
-        <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
+        <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-brand-gradient-lavender-135 blur-2xl" />
         <div
           className={cn(
             'flex size-16 items-center justify-center rounded-3xl border shadow-md',

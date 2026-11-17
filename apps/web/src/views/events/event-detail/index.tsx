@@ -94,7 +94,7 @@ function EventHero({
   return (
     <section className="relative -mt-14 min-h-[min(88vh,820px)] overflow-hidden bg-[#0c0a14] pt-14 text-white sm:-mt-[4.5rem] sm:min-h-[min(92vh,880px)] sm:pt-[4.5rem]">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_-8%,rgba(124,58,237,0.38),transparent_65%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_-8%,rgba(131,50,255,0.38),transparent_65%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_45%_at_100%_60%,rgba(219,39,119,0.18),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_35%_at_0%_80%,rgba(99,102,241,0.12),transparent_50%)]" />
         <div className="absolute -top-24 left-1/4 size-[28rem] rounded-full bg-violet-600/20 blur-[100px] motion-safe:[animation:event-detail-float_18s_ease-in-out_infinite]" />

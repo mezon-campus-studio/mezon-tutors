@@ -114,7 +114,7 @@ export function TutorSetupChecklistWidget() {
           aria-expanded={open}
           aria-label={t("widget.open")}
           className={cn(
-            "group relative flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full border border-white/20 bg-brand-gradient px-4 py-3 text-left text-white shadow-[0_12px_40px_-8px_rgba(124,58,237,0.65)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_16px_48px_-8px_rgba(124,58,237,0.75)] active:scale-[0.98] sm:px-5 sm:py-3.5",
+            "group relative flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full border border-white/20 bg-brand-gradient px-4 py-3 text-left text-white shadow-[0_12px_40px_-8px_rgba(131,50,255,0.65)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_16px_48px_-8px_rgba(131,50,255,0.75)] active:scale-[0.98] sm:px-5 sm:py-3.5",
             open && "ring-2 ring-violet-300 ring-offset-2",
           )}
         >

@@ -1,9 +1,9 @@
 'use client';
 
 const NOW_DOT_GRADIENT =
-  'linear-gradient(110deg,#7c3aed 0%,#9333ea 50%,#d071ff 100%)';
+  'var(--gradient-brand, linear-gradient(110deg,#8332FF 0%,#7022E8 100%))';
 const NOW_LINE_GRADIENT =
-  'linear-gradient(90deg,#7c3aed 0%,#a855f7 42%,#d071ff 78%,#d071ff 100%)';
+  'var(--gradient-brand-90, linear-gradient(90deg,#8332FF 0%,#7022E8 100%))';
 
 type CalendarNowLineProps = {
   top: number;

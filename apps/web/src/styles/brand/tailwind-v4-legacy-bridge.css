@@ -1,0 +1,28 @@
+/* Optional bridge for the existing app's violet-* and purple-* utilities.
+ * Audit their meaning before importing. New components should use brand-*.
+ * Semantic status colors (success/warning/error) are not remapped.
+ */
+@theme inline {
+  --color-violet-50: var(--mezonly-purple-50);
+  --color-violet-100: var(--mezonly-purple-100);
+  --color-violet-200: var(--mezonly-purple-200);
+  --color-violet-300: var(--mezonly-purple-300);
+  --color-violet-400: var(--mezonly-purple-400);
+  --color-violet-500: var(--mezonly-purple-500);
+  --color-violet-600: var(--mezonly-purple-600);
+  --color-violet-700: var(--mezonly-purple-700);
+  --color-violet-800: var(--mezonly-purple-800);
+  --color-violet-900: var(--mezonly-purple-900);
+  --color-violet-950: var(--mezonly-purple-950);
+  --color-purple-50: var(--mezonly-purple-50);
+  --color-purple-100: var(--mezonly-purple-100);
+  --color-purple-200: var(--mezonly-purple-200);
+  --color-purple-300: var(--mezonly-purple-300);
+  --color-purple-400: var(--mezonly-purple-400);
+  --color-purple-500: var(--mezonly-purple-500);
+  --color-purple-600: var(--mezonly-purple-600);
+  --color-purple-700: var(--mezonly-purple-700);
+  --color-purple-800: var(--mezonly-purple-800);
+  --color-purple-900: var(--mezonly-purple-900);
+  --color-purple-950: var(--mezonly-purple-950);
+}

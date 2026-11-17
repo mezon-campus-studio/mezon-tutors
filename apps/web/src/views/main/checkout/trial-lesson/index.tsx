@@ -377,7 +377,7 @@ export default function TrialLessonCheckoutPage() {
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
         <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/30 blur-[140px]" />
-        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/30 blur-[120px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-brand-200/30 blur-[120px]" />
       </div>
 
       <div className="mx-auto w-full max-w-[1240px] px-4 py-8 pb-12 sm:px-6 sm:py-10">
@@ -413,7 +413,7 @@ export default function TrialLessonCheckoutPage() {
         <div className="mt-6 flex flex-col items-start gap-5 lg:flex-row">
           <div className="w-full flex-1 space-y-4 lg:basis-2/3">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-brand-gradient-lavender-135 text-violet-700 ring-1 ring-violet-100">
                 <CalendarCheck className="size-4" />
               </div>
               <div className="leading-tight">

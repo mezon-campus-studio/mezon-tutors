@@ -29,6 +29,10 @@ const notoSansMono = Noto_Sans_Mono({
   subsets: ["latin", "vietnamese"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#8332FF",
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoMessages();
   const siteUrl = getSiteUrl();
@@ -86,7 +90,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-white text-slate-900"
+        className="flex min-h-full w-full max-w-full flex-col overflow-x-clip"
         suppressHydrationWarning
       >
         <GoogleAnalyticsProvider>

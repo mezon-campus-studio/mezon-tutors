@@ -140,7 +140,7 @@ function PendingItemCard({
         "min-w-0 overflow-hidden border-l-4 shadow-sm",
         isTrial
           ? "border-l-amber-400 border-amber-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fffaf0_100%)] shadow-amber-100/30"
-          : "border-l-fuchsia-400 border-fuchsia-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fdf4ff_100%)] shadow-fuchsia-100/30",
+          : "border-l-brand-400 border-brand-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#faf7ff_100%)] shadow-brand-100/30",
       )}
     >
       <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
@@ -148,7 +148,7 @@ function PendingItemCard({
           <Avatar
             className={cn(
               "size-12 shrink-0 rounded-xl border-2 border-white shadow-sm ring-2",
-              isTrial ? "ring-amber-100" : "ring-fuchsia-100",
+              isTrial ? "ring-amber-100" : "ring-brand-100",
             )}
           >
             {tutorAvatarUrl ? (
@@ -163,7 +163,7 @@ function PendingItemCard({
                 "rounded-lg text-sm font-bold text-white",
                 isTrial
                   ? "bg-[linear-gradient(135deg,#f59e0b,#ea580c)]"
-                  : "bg-[linear-gradient(135deg,#c026d3,#7c3aed)]",
+                  : "bg-brand-gradient-135",
               )}
             >
               {initials(tutorName)}
@@ -177,7 +177,7 @@ function PendingItemCard({
                 "h-5 px-2 py-0 text-[10px] font-bold uppercase tracking-wide",
                 isTrial
                   ? "border-amber-200/60 bg-amber-100/90 text-amber-900"
-                  : "border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800",
+                  : "border-brand-200/60 bg-brand-100/90 text-brand-800",
               )}
             >
               {isTrial ? t("trialBadge") : t("planBadge")}
@@ -282,7 +282,7 @@ function PendingBookingsMetrics({
         </CardContent>
       </Card>
 
-      <Card className="col-span-2 min-w-0 border-fuchsia-100 shadow-sm shadow-fuchsia-100/30 lg:col-span-1">
+      <Card className="col-span-2 min-w-0 border-brand-100 shadow-sm shadow-brand-100/30 lg:col-span-1">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
@@ -293,7 +293,7 @@ function PendingBookingsMetrics({
                 {planCount}
               </p>
             </div>
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-fuchsia-100 text-fuchsia-700 sm:size-10">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-700 sm:size-10">
               <Sparkles className="size-4 sm:size-5" />
             </div>
           </div>

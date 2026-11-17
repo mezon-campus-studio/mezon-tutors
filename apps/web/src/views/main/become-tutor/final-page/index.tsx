@@ -47,17 +47,17 @@ function StatusLayout({ statusMeta, statusLabel, title, description, children }:
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_70%)]" />
         <div className="absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-violet-300/25 blur-[140px]" />
-        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-fuchsia-200/30 blur-[120px]" />
+        <div className="absolute top-1/3 -right-24 size-[28rem] rounded-full bg-brand-200/30 blur-[120px]" />
       </div>
 
       <div className="flex min-h-[80vh] items-center px-4 sm:px-6">
         <div className="mx-auto w-full max-w-3xl">
           <div className="relative overflow-hidden rounded-[2rem] border border-violet-100 bg-white/90 p-8 shadow-2xl shadow-violet-200/40 backdrop-blur sm:p-12">
-            <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.18),transparent_70%)] blur-2xl" />
+            <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-[radial-gradient(circle,rgba(131,50,255,0.18),transparent_70%)] blur-2xl" />
 
             <div className="relative flex flex-col items-center text-center">
               <div className="relative mb-5">
-                <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] blur-2xl" />
+                <div className="absolute inset-0 -z-10 animate-pulse rounded-3xl bg-brand-gradient-lavender-135 blur-2xl" />
                 <div className={`flex size-16 items-center justify-center rounded-3xl border ${statusMeta.badge} shadow-md`}>
                   <StatusIcon className="size-7" />
                 </div>

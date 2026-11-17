@@ -173,7 +173,7 @@ export default function CreateBlogView({ blogId }: CreateBlogViewProps = {}) {
   return (
     <div className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_38%,#f8f6ff_100%)]">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(124,58,237,0.14),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(131,50,255,0.14),transparent)]"
         aria-hidden
       />
 

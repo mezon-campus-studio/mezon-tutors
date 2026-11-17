@@ -31,18 +31,18 @@ export default function NotFoundPage() {
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(165deg,#f5f0ff_0%,#faf8ff_35%,#ffffff_72%,#fffdfd_100%)]" />
         <div
-          className="absolute -top-32 left-1/2 size-[42rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/40 via-fuchsia-300/30 to-transparent blur-[120px] motion-reduce:animate-none [animation:hero-blob-drift_22s_ease-in-out_infinite]"
+          className="absolute -top-32 left-1/2 size-[42rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-violet-400/40 via-brand-300/30 to-transparent blur-[120px] motion-reduce:animate-none [animation:hero-blob-drift_22s_ease-in-out_infinite]"
           style={{ animationDelay: "-3s" }}
         />
         <div
-          className="absolute -bottom-20 -right-24 size-[32rem] rounded-full bg-gradient-to-tl from-rose-300/30 via-violet-200/35 to-transparent blur-[100px] motion-reduce:animate-none [animation:hero-blob-drift_18s_ease-in-out_infinite]"
+          className="absolute -bottom-20 -right-24 size-[32rem] rounded-full bg-gradient-to-tl from-brand-gold-soft/30 via-violet-200/35 to-transparent blur-[100px] motion-reduce:animate-none [animation:hero-blob-drift_18s_ease-in-out_infinite]"
           style={{ animationDelay: "-6s" }}
         />
         <div
           className="absolute inset-0 opacity-[0.045]"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgb(108 92 231) 1px, transparent 0)",
+              "radial-gradient(circle at 1px 1px, rgb(131 50 255) 1px, transparent 0)",
             backgroundSize: "32px 32px",
             maskImage:
               "radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 75%)",
@@ -78,7 +78,7 @@ export default function NotFoundPage() {
               className="relative flex size-[5.5rem] items-center justify-center sm:size-[7rem] motion-safe:[animation:not-found-digit-bob_4s_ease-in-out_infinite]"
               style={{ animationDelay: "0.3s" }}
             >
-              <div className="absolute inset-0 rounded-full bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] shadow-[0_20px_60px_-20px_rgba(124,58,237,0.45)] ring-1 ring-violet-200/60" />
+              <div className="absolute inset-0 rounded-full bg-brand-gradient-lavender-135 shadow-[0_20px_60px_-20px_rgba(131,50,255,0.45)] ring-1 ring-violet-200/60" />
               <div className="absolute inset-2 rounded-full border-2 border-dashed border-violet-300/60 motion-safe:[animation:not-found-spin_12s_linear_infinite]" />
               <Compass className="relative size-10 text-violet-600 sm:size-12 motion-safe:[animation:not-found-compass_6s_ease-in-out_infinite]" />
             </div>
