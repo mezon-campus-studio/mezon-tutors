@@ -1,5 +1,6 @@
 export const MEZON_SEND_MESSAGE_ERROR_CODES = {
   RESTORE_SESSION_FAILED: "RESTORE_SESSION_FAILED",
+  MEZON_AUTH_EXPIRED: "MEZON_AUTH_EXPIRED",
   REFRESH_SESSION_FAILED: "REFRESH_SESSION_FAILED",
   MISSING_USER_INFO: "MISSING_USER_INFO",
   CREATE_DM_CHANNEL_FAILED: "CREATE_DM_CHANNEL_FAILED",
@@ -13,6 +14,7 @@ export type MezonSendMessageErrorCode =
 
 export type MezonSendMessageErrorI18nKey =
   | "restoreSessionFailed"
+  | "mezonAuthExpired"
   | "refreshSessionFailed"
   | "missingUserInfo"
   | "createDmChannelFailed"
@@ -23,6 +25,7 @@ export type MezonSendMessageErrorI18nKey =
 
 const CODE_TO_I18N_KEY: Record<MezonSendMessageErrorCode, MezonSendMessageErrorI18nKey> = {
   RESTORE_SESSION_FAILED: "restoreSessionFailed",
+  MEZON_AUTH_EXPIRED: "mezonAuthExpired",
   REFRESH_SESSION_FAILED: "refreshSessionFailed",
   MISSING_USER_INFO: "missingUserInfo",
   CREATE_DM_CHANNEL_FAILED: "createDmChannelFailed",

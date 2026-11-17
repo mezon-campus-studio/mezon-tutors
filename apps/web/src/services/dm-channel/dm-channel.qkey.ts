@@ -4,6 +4,7 @@ export function normalizeDmParticipantPair(a: string, b: string): readonly [stri
 }
 
 export const dmChannelQueryKey = {
+  myChannels: ['my-dm-channels'] as const,
   byParticipantPair: (userA: string, userB: string) => {
     const [x, y] = normalizeDmParticipantPair(userA, userB);
     return ['dm-channel', 'pair', x, y] as const;

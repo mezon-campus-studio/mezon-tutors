@@ -2,6 +2,7 @@
 
 import { AlertCircle, MessageCircle, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   Button,
@@ -12,15 +13,17 @@ import {
   Textarea,
 } from "@/components/ui";
 import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
+import { redirectToMezonOAuthSync } from "@/lib/mezon-oauth-redirect";
 import {
   MezonSendMessageError,
+  isMezonSendMessageError,
   resolveMezonSendMessageError,
 } from "@/lib/mezon-send-message-errors";
 import { useMezonLight } from "@/providers";
+import { dmChannelQueryKey } from "@/services/dm-channel/dm-channel.qkey";
 import {
   persistMezonLightSession,
   refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
   sendMezonLightDMWithRefreshFallback,
   useGetDmChannel,
   useCreateDmChannelMutation,
@@ -49,14 +52,17 @@ export function SendMessageModal({
   const tSendErrors = useTranslations("GlobalChat.sendErrors");
   const [messageContent, setMessageContent] = useState("");
   const [messageError, setMessageError] = useState("");
+  const [needsMezonReconnect, setNeedsMezonReconnect] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const { lightClient, setLightClient } = useMezonLight();
+  const { lightClient, setLightClient, ensureLightClient } = useMezonLight();
+  const queryClient = useQueryClient();
   const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
   const createDmChannelMutation = useCreateDmChannelMutation();
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
       setMessageError("");
+      setNeedsMezonReconnect(false);
     }
     onOpenChangeAction(nextOpen);
   };
@@ -86,16 +92,13 @@ export function SendMessageModal({
     }
 
     setMessageError("");
+    setNeedsMezonReconnect(false);
     setIsSendingMessage(true);
 
     try {
-      let client = lightClient;
+      const client = lightClient ?? (await ensureLightClient());
       if (!client) {
-        client = await restoreMezonLightClientFromStorage();
-        if (!client) {
-          throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
-        }
-        setLightClient(client);
+        throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
       }
 
       const isSessionExpired = await client.isSessionExpired();
@@ -120,13 +123,27 @@ export function SendMessageModal({
         createDmChannelMutation,
       });
 
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: dmChannelQueryKey.byParticipantPair(senderId, recipientId),
+        }),
+        queryClient.invalidateQueries({ queryKey: dmChannelQueryKey.myChannels }),
+      ]);
+
       await sendMezonLightDMWithRefreshFallback(client, channelId, content);
       setMessageContent("");
       setMessageError("");
       onOpenChangeAction(false);
     } catch (error) {
       setMessageError(resolveMezonSendMessageError(error, tSendErrors));
-      console.error(error);
+      setNeedsMezonReconnect(
+        isMezonSendMessageError(error) && error.code === "MEZON_AUTH_EXPIRED",
+      );
+      if (isMezonSendMessageError(error)) {
+        console.warn(`[SendMessageModal] ${error.code}`);
+      } else {
+        console.error(error);
+      }
     } finally {
       setIsSendingMessage(false);
     }
@@ -135,6 +152,7 @@ export function SendMessageModal({
   const handleClear = () => {
     setMessageContent("");
     setMessageError("");
+    setNeedsMezonReconnect(false);
   };
 
   const charLimit = 1000;
@@ -184,7 +202,19 @@ export function SendMessageModal({
           {messageError ? (
             <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2.5">
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-rose-500" />
-              <p className="text-xs leading-5 text-rose-700">{messageError}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs leading-5 text-rose-700">{messageError}</p>
+                {needsMezonReconnect ? (
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs font-semibold text-rose-700 underline"
+                    onClick={redirectToMezonOAuthSync}
+                  >
+                    {tSendErrors("reconnectMezon")}
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ) : null}
         </div>
