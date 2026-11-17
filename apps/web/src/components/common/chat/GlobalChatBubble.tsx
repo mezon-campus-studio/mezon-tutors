@@ -3,12 +3,21 @@
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
-import { ExternalLinkIcon, InfoIcon, MessageCircleMoreIcon, SendIcon, AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeftIcon,
+  ExternalLinkIcon,
+  InfoIcon,
+  MessageCircleMoreIcon,
+  SendIcon,
+} from 'lucide-react';
 import { MEZON_CHAT_URL, MEZON_DIRECT_MESSAGE_URL } from '@mezon-tutors/shared';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { redirectToMezonOAuthSync } from '@/lib/mezon-oauth-redirect';
 import {
   MezonSendMessageError,
+  isMezonSendMessageError,
   resolveMezonSendMessageError,
 } from '@/lib/mezon-send-message-errors';
 import { userAtom } from '@/store/auth.atom';
@@ -25,11 +34,11 @@ import { useMezonLight } from '@/providers';
 import {
   persistMezonLightSession,
   refreshMezonLightSession,
-  restoreMezonLightClientFromStorage,
   sendMezonLightDMWithRefreshFallback,
   useGetMyDmChannels,
 } from '@/services';
 import { buildFakeMessages, getRandomFakeSetIndex } from './global-chat.fake';
+import { LearningNeedsPinCard } from './LearningNeedsPinCard';
 
 const MIN_ROWS = 1;
 const MAX_ROWS = 5;
@@ -72,13 +81,15 @@ export default function GlobalChatBubble() {
   const t = useTranslations('GlobalChat');
   const tSendErrors = useTranslations('GlobalChat.sendErrors');
   const currentUser = useAtomValue(userAtom);
-  const { lightClient, setLightClient } = useMezonLight();
+  const { lightClient, ensureLightClient } = useMezonLight();
   const [open, setOpen] = useAtom(globalChatOpenAtom);
   const [selectedChannelId, setSelectedChannelId] = useAtom(globalChatSelectedChannelIdAtom);
   const [fakeSetIndex, setFakeSetIndex] = useState(0);
   const [messageContent, setMessageContent] = useState('');
   const [messageError, setMessageError] = useState('');
+  const [needsMezonReconnect, setNeedsMezonReconnect] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isMobileConversationOpen, setIsMobileConversationOpen] = useState(false);
   const messagesByChannel = useAtomValue(globalChatMessagesByChannelAtom);
   const unreadChannelIds = useAtomValue(globalChatUnreadChannelIdsAtom);
   const hasUnread = useAtomValue(hasGlobalChatUnreadAtom);
@@ -87,7 +98,9 @@ export default function GlobalChatBubble() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { data: channels = [] } = useGetMyDmChannels(Boolean(currentUser?.id));
+  const { data: channels = [], refetch: refetchChannels } = useGetMyDmChannels(
+    Boolean(currentUser?.id)
+  );
 
   const selectedChannel = useMemo(() => {
     if (!channels.length) {
@@ -120,6 +133,13 @@ export default function GlobalChatBubble() {
   }, [open]);
 
   useEffect(() => {
+    if (!open || !currentUser?.id) {
+      return;
+    }
+    void refetchChannels();
+  }, [currentUser?.id, open, refetchChannels]);
+
+  useEffect(() => {
     if (!open || !selectedChannel?.channelId) {
       return;
     }
@@ -134,15 +154,11 @@ export default function GlobalChatBubble() {
   }, [channels, selectedChannelId, setSelectedChannelId]);
 
   useEffect(() => {
-    if (!open || !selectedChannel) {
+    if (!open || !selectedChannelId || conversationMessages.length === 0) {
       return;
     }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversationMessages.length, open, selectedChannel?.channelId]);
-
-  useEffect(() => {
-    setMessageError('');
-  }, [selectedChannel?.channelId]);
+  }, [conversationMessages, open, selectedChannelId]);
 
   const handleSend = async () => {
     const content = messageContent.trim();
@@ -151,15 +167,12 @@ export default function GlobalChatBubble() {
     }
 
     setMessageError('');
+    setNeedsMezonReconnect(false);
     setIsSending(true);
     try {
-      let client = lightClient;
+      const client = lightClient ?? (await ensureLightClient());
       if (!client) {
-        client = await restoreMezonLightClientFromStorage();
-        if (!client) {
-          throw new MezonSendMessageError('RESTORE_SESSION_FAILED');
-        }
-        setLightClient(client);
+        throw new MezonSendMessageError('RESTORE_SESSION_FAILED');
       }
 
       const isSessionExpired = await client.isSessionExpired();
@@ -192,7 +205,14 @@ export default function GlobalChatBubble() {
       });
     } catch (error) {
       setMessageError(resolveMezonSendMessageError(error, tSendErrors));
-      console.error(error);
+      setNeedsMezonReconnect(
+        isMezonSendMessageError(error) && error.code === 'MEZON_AUTH_EXPIRED'
+      );
+      if (isMezonSendMessageError(error)) {
+        console.warn(`[GlobalChatBubble] ${error.code}`);
+      } else {
+        console.error(error);
+      }
     } finally {
       setIsSending(false);
     }
@@ -207,6 +227,7 @@ export default function GlobalChatBubble() {
     setMessageContent(event.target.value);
     if (messageError) {
       setMessageError('');
+      setNeedsMezonReconnect(false);
     }
     el.style.height = 'auto';
 
@@ -220,6 +241,19 @@ export default function GlobalChatBubble() {
       el.style.height = `${el.scrollHeight}px`;
       el.style.overflowY = 'hidden';
     }
+  };
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setIsMobileConversationOpen(false);
+    }
+  };
+
+  const handleSelectChannel = (channelId: string) => {
+    setSelectedChannelId(channelId);
+    setMessageError('');
+    setIsMobileConversationOpen(true);
   };
 
   if (!currentUser) {
@@ -252,12 +286,12 @@ export default function GlobalChatBubble() {
         </Button>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent
           showCloseButton
           className={cn(
-            'flex max-h-[min(90vh,680px)] w-[calc(100%-1.25rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:max-w-4xl',
-            'rounded-2xl border border-violet-100/90 bg-white ring-violet-200/30',
+            'flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col gap-0 overflow-hidden p-0 sm:h-[min(92dvh,820px)] sm:max-h-none sm:w-[calc(100%-1.25rem)] sm:max-w-3xl lg:max-w-[1180px]',
+            'rounded-none border border-violet-100/90 bg-white ring-violet-200/30 sm:rounded-2xl',
           )}
         >
           <DialogHeader className="shrink-0 space-y-1 border-b border-violet-100/80 bg-[linear-gradient(180deg,#faf7ff_0%,#ffffff_55%)] px-5 pb-4 pt-10 sm:px-6 sm:pb-5 sm:pt-11">
@@ -282,8 +316,13 @@ export default function GlobalChatBubble() {
             </div>
           </DialogHeader>
 
-          <div className="grid h-[480px] shrink-0 grid-cols-1 overflow-hidden md:grid-cols-[240px_1fr]">
-            <div className="flex h-full min-h-0 flex-col overflow-hidden border-b border-violet-100/80 bg-violet-50/35 md:border-b-0 md:border-r">
+          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[274px_1fr]">
+            <div
+              className={cn(
+                'h-full min-h-0 flex-col overflow-hidden border-b border-violet-100/80 bg-violet-50/35 md:flex md:border-b-0 md:border-r',
+                isMobileConversationOpen ? 'hidden' : 'flex',
+              )}
+            >
               <div className="shrink-0 px-4 py-3 sm:px-5">
                 <p className="text-xs font-semibold tracking-wide text-violet-600 uppercase">
                   {t('listTitle')}
@@ -300,7 +339,7 @@ export default function GlobalChatBubble() {
                       <button
                         key={item.channelId}
                         type="button"
-                        onClick={() => setSelectedChannelId(item.channelId)}
+                        onClick={() => handleSelectChannel(item.channelId)}
                         className={cn(
                           'relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors cursor-pointer',
                           isActive
@@ -343,7 +382,12 @@ export default function GlobalChatBubble() {
               )}
             </div>
 
-            <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#faf8ff_0%,#ffffff_38%)]">
+            <div
+              className={cn(
+                'h-full min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#faf8ff_0%,#ffffff_38%)] md:flex',
+                isMobileConversationOpen ? 'flex' : 'hidden',
+              )}
+            >
               {!selectedChannel ? (
                 <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
                   <MessageCircleMoreIcon className="size-10 text-violet-300" />
@@ -353,6 +397,16 @@ export default function GlobalChatBubble() {
                 <>
                   <div className="flex shrink-0 items-center justify-between gap-3 border-b border-violet-100/80 px-4 py-3 sm:px-5">
                     <div className="flex min-w-0 items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="size-10 shrink-0 rounded-full text-violet-700 md:hidden"
+                        onClick={() => setIsMobileConversationOpen(false)}
+                        aria-label={t('listTitle')}
+                      >
+                        <ArrowLeftIcon className="size-5" />
+                      </Button>
                       <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-100 text-sm font-bold text-violet-700">
                         {selectedChannel.peerAvatar ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -390,6 +444,12 @@ export default function GlobalChatBubble() {
                     </Button>
                   </div>
 
+                  <LearningNeedsPinCard
+                    channelId={selectedChannel.channelId}
+                    enabled={open}
+                    onRequestChatClose={() => handleDialogOpenChange(false)}
+                  />
+
                   <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
                     <div className="flex flex-col gap-3">
                       {conversationMessages.length === 0
@@ -417,7 +477,7 @@ export default function GlobalChatBubble() {
                     </div>
                   </div>
 
-                  <div className="shrink-0 space-y-2 border-t border-violet-100/80 bg-white/90 px-4 py-3 backdrop-blur-sm sm:px-5">
+                  <div className="shrink-0 space-y-2 border-t border-violet-100/80 bg-white/90 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:px-5 sm:pb-3">
                     <p className="flex items-start gap-2 text-xs leading-relaxed text-slate-500">
                       <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-violet-500" />
                       <span>
@@ -439,7 +499,19 @@ export default function GlobalChatBubble() {
                     {messageError ? (
                       <div className="flex items-start gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2.5">
                         <AlertCircle className="mt-0.5 size-4 shrink-0 text-rose-500" />
-                        <p className="text-xs leading-5 text-rose-700">{messageError}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs leading-5 text-rose-700">{messageError}</p>
+                          {needsMezonReconnect ? (
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="h-auto p-0 text-xs font-semibold text-rose-700 underline"
+                              onClick={redirectToMezonOAuthSync}
+                            >
+                              {tSendErrors('reconnectMezon')}
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
                     ) : null}
 
