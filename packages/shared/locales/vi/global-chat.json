@@ -11,6 +11,8 @@
   "sending": "Đang gửi...",
   "sendErrors": {
     "restoreSessionFailed": "Không thể khôi phục phiên chat. Vui lòng đăng nhập lại.",
+    "mezonAuthExpired": "Phiên xác thực Mezon đã hết hạn hoặc bị từ chối. Hãy kết nối lại Mezon.",
+    "reconnectMezon": "Kết nối lại Mezon",
     "refreshSessionFailed": "Phiên chat đã hết hạn. Vui lòng đăng nhập lại.",
     "missingUserInfo": "Thiếu thông tin người dùng để mở cuộc trò chuyện.",
     "createDmChannelFailed": "Không thể tạo kênh chat. Vui lòng thử lại sau.",

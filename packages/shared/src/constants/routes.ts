@@ -66,6 +66,8 @@ export const ROUTES = {
     MY_SCHEDULE: '/dashboard/tutor/my-schedule',
     TUTOR_LESSON_COMPLAINTS: '/dashboard/tutor/lesson-complaints',
     MY_LESSONS: '/dashboard/my-lesson',
+    LEARNING_NEEDS: (bookingId: string) =>
+      `/dashboard/my-lesson/${bookingId}/learning-needs`,
     PENDING_BOOKINGS: '/dashboard/pending-bookings',
     COMPLAINTS: '/dashboard/complaints',
     WALLET: '/dashboard/wallet',
