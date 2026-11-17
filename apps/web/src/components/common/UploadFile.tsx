@@ -4,6 +4,7 @@ import { FileText, Image as ImageIcon, Upload } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { Spinner } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import type { ImageCropData } from '@mezon-tutors/shared';
 
 export type UploadFileVariant = 'image' | 'file';
 
@@ -21,6 +22,7 @@ export type UploadFileProps = {
   className?: string;
   error?: string;
   variant?: UploadFileVariant;
+  cropData?: ImageCropData | null;
 };
 
 function UploadActionButton({
@@ -65,6 +67,7 @@ export default function UploadFile({
   className,
   error,
   variant = 'file',
+  cropData,
 }: UploadFileProps) {
   const inputId = useId();
   const dragDepthRef = useRef(0);
@@ -153,7 +156,16 @@ export default function UploadFile({
             <img
               src={previewUrl}
               alt=""
-              className="pointer-events-none h-full w-full object-cover"
+              className="pointer-events-none h-full w-full object-cover transition-transform duration-300"
+              style={
+                cropData
+                  ? {
+                      objectPosition: `${cropData.x}% ${cropData.y}%`,
+                      transform: `scale(${cropData.zoom ?? 1})`,
+                      transformOrigin: "50% 50%",
+                    }
+                  : undefined
+              }
             />
           ) : (
             <div className="pointer-events-none flex h-full flex-col items-center justify-center gap-2 px-4 text-center">

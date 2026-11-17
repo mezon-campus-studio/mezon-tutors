@@ -157,7 +157,7 @@ export function EventHomeCard({
                 ? {
                     objectPosition: `${coverImageCrop.x}% ${coverImageCrop.y}%`,
                     transform: `scale(${coverImageCrop.zoom ?? 1})`,
-                    transformOrigin: `${coverImageCrop.x}% ${coverImageCrop.y}%`,
+                    transformOrigin: "50% 50%",
                   }
                 : undefined
             }
