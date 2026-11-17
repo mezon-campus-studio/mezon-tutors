@@ -1,22 +1,41 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl, IsUUID, MaxLength } from 'class-validator';
 
 export class UpsertDmChannelDto {
-  @IsUUID()
-  senderId: string;
-
   @IsUUID()
   recipientId: string;
 
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(128)
   channelId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(4096)
+  mezonAccessToken: string;
+
+  @IsUrl({ protocols: ['https'], require_protocol: true })
+  @MaxLength(256)
+  mezonApiUrl: string;
+}
+
+export class ResolveDmChannelDto {
+  @IsUUID()
+  recipientId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(4096)
+  mezonAccessToken: string;
+
+  @IsUrl({ protocols: ['https'], require_protocol: true })
+  @MaxLength(256)
+  mezonApiUrl: string;
 }
 
 export class GetDmChannelQueryDto {
   @IsUUID()
-  senderId: string;
-
-  @IsUUID()
-  recipientId: string;
+  peerUserId: string;
 }
 
 export class MyDmChannelItemDto {
