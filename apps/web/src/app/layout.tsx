@@ -30,10 +30,7 @@ const notoSansMono = Noto_Sans_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#8332FF" },
-    { media: "(prefers-color-scheme: dark)", color: "#17122F" },
-  ],
+  themeColor: "#8332FF",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -93,7 +90,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-full w-full max-w-full flex-col overflow-x-clip bg-background text-foreground"
+        className="flex min-h-full w-full max-w-full flex-col overflow-x-clip"
         suppressHydrationWarning
       >
         <GoogleAnalyticsProvider>

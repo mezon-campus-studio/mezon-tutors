@@ -15,7 +15,7 @@ export const EVENT_SPEAKERS: Record<string, EventSpeaker> = {
     categoryKey: 'speakers.maIelts.category',
     bioKey: 'speakers.maIelts.bio',
     image: '/images/tutor.png',
-    gradient: 'from-violet-600 to-fuchsia-500',
+    gradient: 'from-violet-600 to-brand-500',
   },
   'james-native': {
     id: 'james-native',
@@ -33,7 +33,7 @@ export const EVENT_SPEAKERS: Record<string, EventSpeaker> = {
     categoryKey: 'speakers.emmaCoach.category',
     bioKey: 'speakers.emmaCoach.bio',
     image: '/images/tutor.png',
-    gradient: 'from-fuchsia-600 to-rose-500',
+    gradient: 'from-brand-600 to-rose-500',
   },
   'david-toeic': {
     id: 'david-toeic',

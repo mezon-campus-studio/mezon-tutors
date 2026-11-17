@@ -138,14 +138,6 @@ export function createRootMetadata(siteUrl = getSiteUrl()): Metadata {
       address: false,
       telephone: false,
     },
-    icons: {
-      icon: [
-        { url: "/brand/icons/favicon.ico", sizes: "16x16 32x32 48x48" },
-        { url: "/brand/icons/favicon.svg", type: "image/svg+xml" },
-        { url: "/brand/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      ],
-      apple: [{ url: "/brand/icons/apple-touch-icon.png", sizes: "180x180" }],
-    },
     manifest: "/brand/icons/site.webmanifest",
   };
 }

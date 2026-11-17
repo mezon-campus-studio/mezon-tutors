@@ -56,10 +56,10 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
-  complaints: "from-violet-500 to-fuchsia-500",
+  complaints: "from-violet-500 to-brand-500",
   bookingRequests: "from-amber-500 to-orange-500",
-  calendar: "from-purple-500 to-fuchsia-500",
-  trialBookings: "from-fuchsia-500 to-rose-500",
+  calendar: "from-purple-500 to-brand-500",
+  trialBookings: "from-brand-500 to-rose-500",
   logout: "from-rose-500 to-orange-500",
   tutorApplications: "from-sky-500 to-blue-500",
   students: "from-emerald-500 to-teal-500",
@@ -68,11 +68,11 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
   profile: "from-violet-500 to-indigo-500",
-  events: "from-violet-500 to-fuchsia-500",
+  events: "from-violet-500 to-brand-500",
   blogs: "from-indigo-500 to-violet-500",
   adminPanel: "from-sky-500 to-indigo-500",
-  onboarding: "from-violet-500 to-fuchsia-500",
-  becomeTutor: "from-violet-500 to-fuchsia-500",
+  onboarding: "from-violet-500 to-brand-500",
+  becomeTutor: "from-violet-500 to-brand-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
 };
@@ -187,7 +187,7 @@ export default function DashboardSidebar({
               variant="ghost"
               className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                 active
-                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] text-violet-700 ring-1 ring-violet-100"
+                  ? "bg-brand-gradient-lavender text-violet-700 ring-1 ring-violet-100"
                   : isLogout
                     ? "text-rose-600 hover:bg-rose-50"
                     : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"

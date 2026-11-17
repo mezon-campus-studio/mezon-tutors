@@ -178,27 +178,25 @@ export default function Header() {
               className="flex min-w-0 items-center overflow-hidden rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
               aria-label="Mezonly"
             >
-              <div className="max-[360px]:block hidden">
-                <MezonlyLogo
-                  symbolOnly
-                  width={34}
-                  variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
-                  alt=""
-                />
-              </div>
-              <div className="max-[360px]:hidden block">
-                <MezonlyLogo
-                  width={155}
-                  variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
-                  alt=""
-                />
-              </div>
+              <MezonlyLogo
+                symbolOnly
+                width={38}
+                variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
+                className="max-[380px]:block hidden shrink-0"
+                alt=""
+              />
+              <MezonlyLogo
+                width={155}
+                variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
+                className="max-[380px]:hidden block min-w-0"
+                alt=""
+              />
             </Link>
           </div>
 
           <Link
             href="/"
-            className="group hidden items-center gap-2.5 rounded-md transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 md:inline-flex"
+            className="hidden items-center rounded-md transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 md:inline-flex"
             aria-label="Mezonly"
           >
             <MezonlyLogo
@@ -240,8 +238,8 @@ export default function Header() {
                           ? "scale-100 bg-white/12 opacity-100 ring-white/15"
                           : "scale-90 bg-white/8 opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-white/10"
                         : isActive
-                          ? "scale-100 bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] opacity-100 ring-violet-100"
-                          : "scale-90 bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)] opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
+                          ? "scale-100 bg-brand-gradient-lavender opacity-100 ring-violet-100"
+                          : "scale-90 bg-brand-gradient-lavender opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
                     }`}
                   />
                   <span className="relative">{item.label}</span>
@@ -414,7 +412,7 @@ function CurrencyPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -507,7 +505,7 @@ function LocalePopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -607,7 +605,7 @@ function MobileRegionPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -657,7 +655,7 @@ function MobileRegionPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#F6F2FF,#EEE4FF)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >

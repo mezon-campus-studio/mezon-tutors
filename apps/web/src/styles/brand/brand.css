@@ -24,6 +24,10 @@
   --mezonly-on-primary: var(--mezonly-white);
   --mezonly-on-gold: var(--mezonly-ink);
   --mezonly-gradient: linear-gradient(110deg, #8332FF 0%, #7022E8 100%);
+  --mezonly-gradient-90: linear-gradient(90deg, #8332FF 0%, #7022E8 100%);
+  --mezonly-gradient-135: linear-gradient(135deg, #8332FF 0%, #7022E8 100%);
   --mezonly-gradient-soft: linear-gradient(135deg, #F6F2FF 0%, #FFFFFF 70%, #FFF0D6 100%);
+  --mezonly-gradient-lavender: linear-gradient(110deg, #F6F2FF 0%, #EEE4FF 100%);
+  --mezonly-gradient-lavender-135: linear-gradient(135deg, #EEE4FF 0%, #F6F2FF 100%);
   --mezonly-focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 5px #8332FF;
 }

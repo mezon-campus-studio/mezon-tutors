@@ -325,7 +325,7 @@ export default function SubscriptionPlanCheckoutPage() {
 
       <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 border-t border-violet-100/80 bg-linear-to-t from-violet-50/95 via-white/95 to-white/95 shadow-[0_-12px_40px_-16px_rgba(124,58,237,0.2)] backdrop-blur-md",
+          "fixed inset-x-0 bottom-0 z-50 border-t border-violet-100/80 bg-linear-to-t from-violet-50/95 via-white/95 to-white/95 shadow-[0_-12px_40px_-16px_rgba(131,50,255,0.2)] backdrop-blur-md",
           "pb-[max(0.75rem,env(safe-area-inset-bottom,0))] pt-6",
         )}
       >

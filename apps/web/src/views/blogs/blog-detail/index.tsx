@@ -114,7 +114,7 @@ export default function BlogDetailPage({ post }: BlogDetailPageProps) {
   return (
     <main className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_30%,#ffffff_100%)]">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(124,58,237,0.12),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_80%_55%_at_50%_-10%,rgba(131,50,255,0.12),transparent)]"
         aria-hidden
       />
       <div className="relative mx-auto max-w-3xl">

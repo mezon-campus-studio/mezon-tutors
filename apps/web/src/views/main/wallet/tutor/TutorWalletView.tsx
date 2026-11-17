@@ -45,7 +45,7 @@ export default function TutorWalletView() {
       />
 
       <header className="relative mb-6 flex items-center gap-3 md:mb-8">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-white shadow-lg shadow-indigo-300/40">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-ink via-brand-600 to-brand-500 text-white shadow-lg shadow-indigo-300/40">
           <Wallet className="size-5" />
         </div>
         <div className="min-w-0">
