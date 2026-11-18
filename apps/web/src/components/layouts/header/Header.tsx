@@ -3,7 +3,6 @@
 import { HEADER_LOCALES, ROUTES } from "@mezon-tutors/shared";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Check, ChevronDown, Globe, Heart, Menu } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -21,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui";
 import { useCurrency } from "@/hooks";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 import { authService } from "@/services";
 import {
   dashboardMobileDrawerAtom,
@@ -174,46 +173,37 @@ export default function Header() {
             >
               <Menu className="size-5 sm:size-6" />
             </Button>
-            <Link href="/" className="flex min-w-0 items-center gap-1.5 overflow-hidden sm:gap-2">
-              <Image
-                src={MezonlyLogo}
-                alt="Mezonly"
-                width={34}
-                height={34}
-                className="size-[34px] shrink-0 drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)] sm:size-[38px]"
+            <Link
+              href="/"
+              className="flex min-w-0 items-center overflow-hidden rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+              aria-label="Mezonly"
+            >
+              <MezonlyLogo
+                symbolOnly
+                width={38}
+                variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
+                className="max-[380px]:block hidden shrink-0"
+                alt=""
               />
-              <span className="truncate text-brand-gradient text-lg font-extrabold tracking-tight max-[380px]:hidden sm:text-xl">
-                Mezonly
-              </span>
+              <MezonlyLogo
+                width={155}
+                variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
+                className="max-[380px]:hidden block min-w-0"
+                alt=""
+              />
             </Link>
           </div>
 
           <Link
             href="/"
-            className="group hidden items-center gap-2.5 transition-transform hover:scale-[1.02] md:inline-flex"
+            className="hidden items-center rounded-md transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 md:inline-flex"
+            aria-label="Mezonly"
           >
-            <div className="relative">
-              <Image
-                src={MezonlyLogo}
-                alt="Mezonly"
-                width={48}
-                height={48}
-                priority
-                className="drop-shadow-[0_6px_16px_rgba(124,58,237,0.28)] transition-transform duration-300 group-hover:rotate-[-6deg]"
-              />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-brand-gradient text-2xl font-extrabold tracking-tight">
-                Mezonly
-              </span>
-              <span
-                className={`mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${
-                  isEventHeroOverlay ? "text-white/45" : "text-slate-400"
-                }`}
-              >
-                Tutor Search
-              </span>
-            </div>
+            <MezonlyLogo
+              variant={isEventHeroOverlay ? "inverse" : "fullcolor"}
+              width={205}
+              alt=""
+            />
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -248,8 +238,8 @@ export default function Header() {
                           ? "scale-100 bg-white/12 opacity-100 ring-white/15"
                           : "scale-90 bg-white/8 opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-white/10"
                         : isActive
-                          ? "scale-100 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] opacity-100 ring-violet-100"
-                          : "scale-90 bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
+                          ? "scale-100 bg-brand-gradient-lavender opacity-100 ring-violet-100"
+                          : "scale-90 bg-brand-gradient-lavender opacity-0 ring-transparent group-hover:scale-100 group-hover:opacity-100 group-hover:ring-violet-100"
                     }`}
                   />
                   <span className="relative">{item.label}</span>
@@ -422,7 +412,7 @@ function CurrencyPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -515,7 +505,7 @@ function LocalePopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -615,7 +605,7 @@ function MobileRegionPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >
@@ -665,7 +655,7 @@ function MobileRegionPopover({
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all ${
                 isActive
-                  ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)]"
+                  ? "bg-brand-gradient-lavender"
                   : "hover:bg-slate-50"
               }`}
             >

@@ -1,0 +1,19 @@
+/* Import from globals.css after brand.css; Tailwind v4 only. */
+@theme inline {
+  --color-brand-50: var(--mezonly-purple-50);
+  --color-brand-100: var(--mezonly-purple-100);
+  --color-brand-200: var(--mezonly-purple-200);
+  --color-brand-300: var(--mezonly-purple-300);
+  --color-brand-400: var(--mezonly-purple-400);
+  --color-brand-500: var(--mezonly-purple-500);
+  --color-brand-600: var(--mezonly-purple-600);
+  --color-brand-700: var(--mezonly-purple-700);
+  --color-brand-800: var(--mezonly-purple-800);
+  --color-brand-900: var(--mezonly-purple-900);
+  --color-brand-950: var(--mezonly-purple-950);
+  --color-brand-ink: var(--mezonly-ink);
+  --color-brand-gold: var(--mezonly-gold);
+  --color-brand-gold-soft: var(--mezonly-gold-soft);
+  --color-brand-text: var(--mezonly-text);
+  --color-brand-muted: var(--mezonly-text-muted);
+}

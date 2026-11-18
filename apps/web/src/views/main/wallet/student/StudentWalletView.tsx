@@ -39,7 +39,7 @@ export default function StudentWalletView() {
   return (
     <div className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
       <header className="mb-6 flex items-center gap-3 md:mb-8">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-lg shadow-violet-300/35">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-lg shadow-violet-300/35">
           <Wallet className="size-5" />
         </div>
         <div className="min-w-0">

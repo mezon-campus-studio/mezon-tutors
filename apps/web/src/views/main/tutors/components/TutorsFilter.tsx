@@ -97,7 +97,7 @@ export default function TutorsFilter({
             size="default"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#ede9fe,#fce7f3)] text-violet-700 ring-1 ring-violet-100">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-gradient-lavender-135 text-violet-700 ring-1 ring-violet-100">
                 <BookOpen className="size-5" />
               </div>
               <div className="flex flex-col items-start leading-tight">
@@ -122,7 +122,7 @@ export default function TutorsFilter({
         </Select>
 
         <div className="group flex h-16 items-center gap-3 rounded-2xl bg-white px-3 transition-all hover:bg-violet-50/40">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#fce7f3,#fbcfe8)] text-fuchsia-700 ring-1 ring-fuchsia-100">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#FFF0D6,#fde68a)] text-amber-700 ring-1 ring-amber-200/60">
             <Wallet className="size-5" />
           </div>
           <div className="flex flex-1 flex-col gap-1.5 leading-tight">
@@ -158,7 +158,7 @@ export default function TutorsFilter({
             size="default"
           >
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-indigo-700 ring-1 ring-indigo-100">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#dbeafe,#EEE4FF)] text-indigo-700 ring-1 ring-indigo-100">
                 <Globe2 className="size-5" />
               </div>
               <div className="flex flex-col items-start leading-tight">

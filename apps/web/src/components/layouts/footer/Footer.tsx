@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ROUTES, SUPPORT_EMAIL } from "@mezon-tutors/shared";
 import { usePublicAppSettings } from "@/services";
 import { Separator } from "@/components/ui";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -158,14 +157,14 @@ export default function Footer() {
   return (
     <footer className="relative mt-auto overflow-hidden border-t border-violet-100">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf7ff_0%,#f5f3ff_70%,#fdf2f8_100%)]" />
-        <div className="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-violet-300/20 blur-[120px]" />
-        <div className="absolute -bottom-32 right-1/4 size-[24rem] rounded-full bg-fuchsia-300/15 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f6f2ff_65%,#fff8ee_100%)]" />
+        <div className="absolute -top-32 left-1/4 size-[28rem] rounded-full bg-brand-200/25 blur-[120px]" />
+        <div className="absolute -bottom-32 right-1/4 size-[24rem] rounded-full bg-brand-gold-soft/30 blur-[120px]" />
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgb(108 92 231) 1px, transparent 0)",
+              "radial-gradient(circle at 1px 1px, #8332FF 1px, transparent 0)",
             backgroundSize: "32px 32px",
           }}
         />
@@ -174,26 +173,18 @@ export default function Footer() {
       <div className="mx-auto w-full max-w-7xl px-6 pt-16 pb-8 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="space-y-5">
-            <Link
-              href="/"
-              className="group inline-flex items-center gap-2.5 transition-transform hover:scale-[1.02]"
-            >
-              <Image
-                src={MezonlyLogo}
-                alt="Mezonly"
-                width={48}
-                height={48}
-                className="drop-shadow-[0_6px_16px_rgba(124,58,237,0.28)]"
-              />
-              <div className="flex flex-col leading-none">
-                <span className="text-brand-gradient text-2xl font-extrabold tracking-tight">
-                  Mezonly
-                </span>
-                <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  {t("tagline")}
-                </span>
+            <div className="space-y-2.5">
+              <Link
+                href="/"
+                className="group inline-flex items-center rounded-md transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                aria-label="Mezonly"
+              >
+                <MezonlyLogo width={210} alt="" />
+              </Link>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                {t("tagline")}
               </div>
-            </Link>
+            </div>
 
             <p className="max-w-md text-sm leading-6 text-slate-600">
               {t("description")}
@@ -209,7 +200,7 @@ export default function Footer() {
                     aria-label={social.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex size-10 items-center justify-center rounded-full border border-violet-100 bg-white text-slate-500 shadow-sm shadow-violet-100/40 transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] hover:text-violet-700 hover:shadow-md hover:shadow-violet-200/40"
+                    className="group flex size-10 items-center justify-center rounded-full border border-violet-100 bg-white text-slate-500 shadow-sm shadow-violet-100/40 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 hover:shadow-md hover:shadow-brand-200/40"
                   >
                     <Icon className="size-4" />
                   </a>
@@ -220,7 +211,7 @@ export default function Footer() {
 
           {footerColumns.map((column) => (
             <div key={column.key} className="space-y-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-700">
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-ink">
                 {column.title}
               </h4>
               <ul className="space-y-3">
@@ -240,7 +231,7 @@ export default function Footer() {
                             ?.scrollIntoView({ behavior: "smooth" });
                         }
                       }}
-                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-violet-700"
+                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-brand-700"
                     >
                       <span className="size-1 rounded-full bg-slate-300 transition-all group-hover:size-1.5 group-hover:bg-brand-gradient-135" />
                       {link.label}
@@ -262,19 +253,19 @@ export default function Footer() {
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <Link
               href={ROUTES.SUPPORT.TERMS_OF_SERVICE}
-              className="font-medium text-slate-500 transition-colors hover:text-violet-700"
+              className="font-medium text-slate-500 transition-colors hover:text-brand-700"
             >
               {t("bottom.terms")}
             </Link>
             <Link
               href={ROUTES.SUPPORT.PRIVACY_POLICY}
-              className="font-medium text-slate-500 transition-colors hover:text-violet-700"
+              className="font-medium text-slate-500 transition-colors hover:text-brand-700"
             >
               {t("bottom.privacy")}
             </Link>
             <Link
               href={ROUTES.SUPPORT.REFUND_POLICY}
-              className="font-medium text-slate-500 transition-colors hover:text-violet-700"
+              className="font-medium text-slate-500 transition-colors hover:text-brand-700"
             >
               {t("bottom.refund")}
             </Link>

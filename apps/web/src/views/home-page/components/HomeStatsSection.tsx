@@ -16,9 +16,9 @@ export default function HomeStatsSection() {
   return (
     <section className="relative -mt-12 px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-8 text-white shadow-2xl shadow-violet-300/40 sm:p-10">
+        <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-brand-gradient-135 p-8 text-white shadow-2xl shadow-violet-300/40 sm:p-10">
           <div className="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full bg-white/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-fuchsia-300/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-brand-400/25 blur-3xl" />
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.08]"
             style={{

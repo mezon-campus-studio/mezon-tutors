@@ -56,10 +56,10 @@ function WeekDayButton({ day, date, isActive, isToday, onPress, config }: WeekDa
       className={`
         flex flex-col items-center transition-colors
         ${isActive 
-          ? 'bg-primary text-white' 
+          ? 'bg-primary text-primary-foreground' 
           : isToday 
-            ? 'border border-primary text-primary bg-white' 
-            : 'bg-transparent text-gray-600 hover:bg-gray-50'
+            ? 'border border-primary text-primary bg-background' 
+            : 'bg-transparent text-muted-foreground hover:bg-muted'
         }
       `}
       style={{
@@ -150,7 +150,7 @@ function MobileCalendarCard({ item, defaultAvatarUrl, config }: MobileCalendarCa
             e.stopPropagation();
             item.onAction?.();
           }}
-          className="bg-primary hover:bg-primary/90 text-white font-bold"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           style={{
             borderRadius: config.button.borderRadius,
             paddingTop: config.button.padding.vertical,

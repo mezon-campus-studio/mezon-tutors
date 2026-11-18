@@ -94,7 +94,7 @@ export function MobileWeekCalendar({
               onClick={() => onSelectDay(index)}
               className={`
                 flex flex-col items-center flex-shrink-0 transition-colors
-                ${isActive ? 'bg-primary text-white' : 'bg-transparent'}
+                ${isActive ? 'bg-primary text-primary-foreground' : 'bg-transparent'}
                 ${isToday && !isActive ? 'border border-primary' : ''}
               `}
               style={{
@@ -111,7 +111,7 @@ export function MobileWeekCalendar({
             >
               <span
                 className={`font-semibold uppercase ${
-                  isActive ? 'text-white' : isToday ? 'text-primary' : 'text-gray-500'
+                  isActive ? 'text-primary-foreground' : isToday ? 'text-primary' : 'text-muted-foreground'
                 }`}
                 style={{
                   fontSize: dayFontSize,
@@ -122,7 +122,7 @@ export function MobileWeekCalendar({
               </span>
               <span
                 className={`font-bold ${
-                  isActive ? 'text-white' : isToday ? 'text-primary' : 'text-gray-900'
+                  isActive ? 'text-primary-foreground' : isToday ? 'text-primary' : 'text-foreground'
                 }`}
                 style={{
                   fontSize: dateFontSize,

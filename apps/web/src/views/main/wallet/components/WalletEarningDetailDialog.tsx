@@ -81,7 +81,7 @@ export default function WalletEarningDetailDialog({
   const headerGradient = isRefund
     ? 'bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)]'
     : isPlan
-      ? 'bg-[linear-gradient(135deg,#a21caf_0%,#7c3aed_100%)]'
+      ? 'bg-brand-gradient-135'
       : 'bg-[linear-gradient(135deg,#d97706_0%,#ea580c_100%)]';
 
   const dialogTitle = isRefund
@@ -152,7 +152,7 @@ export default function WalletEarningDetailDialog({
                       isRefund
                         ? 'bg-linear-to-br from-emerald-500 to-cyan-600'
                         : isPlan
-                          ? 'bg-linear-to-br from-fuchsia-600 to-violet-600'
+                          ? 'bg-brand-gradient-135'
                           : 'bg-linear-to-br from-amber-500 to-orange-600'
                     )}
                   >
@@ -174,7 +174,7 @@ export default function WalletEarningDetailDialog({
                     isRefund
                       ? 'border-emerald-200/60 bg-emerald-100/90 text-emerald-800'
                       : isPlan
-                        ? 'border-fuchsia-200/60 bg-fuchsia-100/90 text-fuchsia-800'
+                        ? 'border-brand-200/60 bg-brand-100/90 text-brand-800'
                         : 'border-amber-200/60 bg-amber-100/90 text-amber-900'
                   )}
                 >

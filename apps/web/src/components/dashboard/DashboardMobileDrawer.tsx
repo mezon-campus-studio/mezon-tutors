@@ -12,14 +12,13 @@ import {
 } from "@mezon-tutors/shared";
 import { useAtomValue } from "jotai";
 import { Calendar, CalendarDays, Clock, ClipboardList, CreditCard, FileCheck, FileText, GraduationCap, LayoutDashboard, LineChart, LogIn, LogOut, MessageSquareWarning, Newspaper, Scale, Search, Settings, ShieldCheck, Sparkles, User, Wallet, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { redirectToMezonOAuthLogin } from "@/lib/mezon-oauth-redirect";
 import { detectBrowserTimezone } from "@/lib/timezone";
 import { MezonSyncButton } from "./MezonSyncButton";
-import MezonlyLogo from "@/public/images/Mezonly-logo.png";
+import { MezonlyLogo } from "@/components/brand/MezonlyLogo";
 import { userAtom } from "@/store/auth.atom";
 import { useDashboardRoutePrefetch } from "./useDashboardRoutePrefetch";
 
@@ -48,10 +47,10 @@ const ICON_MAP: Record<DashboardMenuIconKey, React.ComponentType<{ className?: s
 
 const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   document: "from-violet-500 to-purple-500",
-  complaints: "from-violet-500 to-fuchsia-500",
+  complaints: "from-violet-500 to-brand-500",
   bookingRequests: "from-amber-500 to-orange-500",
-  calendar: "from-purple-500 to-fuchsia-500",
-  trialBookings: "from-fuchsia-500 to-rose-500",
+  calendar: "from-purple-500 to-brand-500",
+  trialBookings: "from-brand-500 to-rose-500",
   logout: "from-rose-500 to-orange-500",
   tutorApplications: "from-sky-500 to-blue-500",
   students: "from-emerald-500 to-teal-500",
@@ -60,11 +59,11 @@ const ICON_ACCENT_MAP: Record<DashboardMenuIconKey, string> = {
   reports: "from-indigo-500 to-violet-500",
   dashboard: "from-slate-500 to-slate-600",
   profile: "from-violet-500 to-indigo-500",
-  events: "from-violet-500 to-fuchsia-500",
+  events: "from-violet-500 to-brand-500",
   blogs: "from-indigo-500 to-violet-500",
   adminPanel: "from-sky-500 to-indigo-500",
-  onboarding: "from-violet-500 to-fuchsia-500",
-  becomeTutor: "from-violet-500 to-fuchsia-500",
+  onboarding: "from-violet-500 to-brand-500",
+  becomeTutor: "from-violet-500 to-brand-500",
   tutorPolicy: "from-indigo-500 to-violet-500",
   settings: "from-slate-500 to-violet-500",
 };
@@ -157,19 +156,11 @@ export default function DashboardMobileDrawer({
         <div className="flex items-center justify-between border-b border-violet-100 px-5 py-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center"
             onClick={onCloseAction}
+            aria-label="Mezonly"
           >
-            <Image
-              src={MezonlyLogo}
-              alt="Mezonly"
-              width={36}
-              height={36}
-              className="drop-shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
-            />
-            <span className="text-brand-gradient text-lg font-extrabold tracking-tight">
-              Mezonly
-            </span>
+            <MezonlyLogo width={150} alt="" />
           </Link>
           <Button
             variant="ghost"
@@ -229,14 +220,14 @@ export default function DashboardMobileDrawer({
                       variant="ghost"
                       className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                         active
-                          ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                          ? "bg-brand-gradient-lavender text-violet-700 ring-1 ring-violet-100"
                           : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"
                       }`}
                     >
                       <span
                         className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-all ${
                           active
-                            ? "bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-sm shadow-violet-300/40"
+                            ? "bg-brand-gradient-135 text-white shadow-sm shadow-brand-500/30"
                             : "bg-slate-100 text-slate-500 group-hover:bg-violet-100 group-hover:text-violet-700"
                         }`}
                       >
@@ -276,7 +267,7 @@ export default function DashboardMobileDrawer({
                 variant="ghost"
                 className={`group relative h-11 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                   active
-                    ? "bg-[linear-gradient(110deg,#faf5ff,#fdf2f8)] text-violet-700 ring-1 ring-violet-100"
+                    ? "bg-brand-gradient-lavender text-violet-700 ring-1 ring-violet-100"
                     : isLogout
                       ? "text-rose-600 hover:bg-rose-50"
                       : "text-slate-700 hover:bg-violet-50/60 hover:text-violet-700"

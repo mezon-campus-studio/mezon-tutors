@@ -41,7 +41,7 @@ export default function EventsListPage() {
 
   return (
     <div className="relative min-h-screen bg-[linear-gradient(180deg,#faf9ff_0%,#ffffff_38%,#f8f6ff_100%)]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(124,58,237,0.14),transparent)]" aria-hidden />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(131,50,255,0.14),transparent)]" aria-hidden />
 
       <div className="relative mx-auto max-w-4xl px-6 py-8 sm:py-10 lg:px-8">
         <Link

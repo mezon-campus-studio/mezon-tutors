@@ -25,8 +25,8 @@ export default function HomeMezonShowcaseSection() {
   return (
     <section className="relative overflow-hidden bg-slate-950 py-12 text-white sm:py-16">
       <div className="pointer-events-none absolute inset-0 -z-0">
-        <div className="absolute -top-32 -left-24 size-[28rem] rounded-full bg-violet-600/30 blur-3xl" />
-        <div className="absolute top-1/2 right-0 size-[32rem] -translate-y-1/2 rounded-full bg-fuchsia-600/20 blur-3xl" />
+        <div className="absolute -top-32 -left-24 size-[28rem] rounded-full bg-brand-600/30 blur-3xl" />
+        <div className="absolute top-1/2 right-0 size-[32rem] -translate-y-1/2 rounded-full bg-brand-700/20 blur-3xl" />
         <div
           className="absolute inset-0 opacity-[0.05]"
           style={{
@@ -52,7 +52,7 @@ export default function HomeMezonShowcaseSection() {
           <ul className="space-y-4">
             {FEATURES.map(({ key, icon: Icon }) => (
               <li key={key} className="flex gap-4">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient-135 shadow-lg shadow-violet-500/30">
                   <Icon className="size-5" />
                 </div>
                 <div>
@@ -69,7 +69,7 @@ export default function HomeMezonShowcaseSection() {
         </div>
 
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-violet-500/30 via-purple-500/20 to-fuchsia-500/30 blur-2xl" />
+          <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-brand-500/30 via-brand-700/20 to-brand-400/25 blur-2xl" />
 
           <div className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-slate-900/80 shadow-2xl shadow-violet-500/20 backdrop-blur">
             <div className="flex items-center justify-between border-b border-white/5 bg-slate-900/60 px-5 py-4">
