@@ -13,11 +13,12 @@ import {
   globalChatOpenAtom,
   globalChatSelectedChannelIdAtom,
 } from "@/store/global-chat.atom";
-import { useCreateDmChannelMutation } from "@/services/dm-channel/dm-channel.api";
+import {
+  dmChannelApi,
+  useCreateDmChannelMutation,
+} from "@/services/dm-channel/dm-channel.api";
 import { dmChannelQueryKey } from "@/services/dm-channel/dm-channel.qkey";
 import { supportApi } from "@/services/support/support.api";
-import { apiClient } from "@/services/api-client";
-import type { DmChannelRecord } from "@/services/dm-channel/dm-channel.api";
 
 export function useOpenAdminSupportChat() {
   const t = useTranslations("GlobalChat.supportChat");
@@ -42,14 +43,13 @@ export function useOpenAdminSupportChat() {
 
       let existingChannelId: string | undefined;
       try {
-        const record = await apiClient.get<DmChannelRecord | null>("/dm-channels", {
-          params: {
-            senderId: currentUser.id,
-            recipientId: admin.id,
-          },
-        });
+        const record = await dmChannelApi.getBetweenUsers(admin.id);
         existingChannelId = record?.channelId;
-      } catch {
+      } catch (error) {
+        console.warn(
+          "[useOpenAdminSupportChat] stored DM lookup failed; falling back to DM resolution",
+          error,
+        );
         existingChannelId = undefined;
       }
 

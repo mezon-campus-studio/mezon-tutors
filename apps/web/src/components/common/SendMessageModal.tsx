@@ -25,7 +25,6 @@ import {
   persistMezonLightSession,
   refreshMezonLightSession,
   sendMezonLightDMWithRefreshFallback,
-  useGetDmChannel,
   useCreateDmChannelMutation,
 } from "@/services";
 
@@ -56,7 +55,6 @@ export function SendMessageModal({
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const { lightClient, setLightClient, ensureLightClient } = useMezonLight();
   const queryClient = useQueryClient();
-  const { refetch: refetchDmChannel } = useGetDmChannel(senderId, recipientId, false);
   const createDmChannelMutation = useCreateDmChannelMutation();
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -119,18 +117,19 @@ export function SendMessageModal({
         senderMezonUserId,
         recipientId,
         recipientMezonUserId,
-        existingChannelId: (await refetchDmChannel()).data?.channelId,
         createDmChannelMutation,
       });
 
-      await Promise.all([
+      await sendMezonLightDMWithRefreshFallback(client, channelId, content);
+
+      void Promise.all([
         queryClient.invalidateQueries({
           queryKey: dmChannelQueryKey.byParticipantPair(senderId, recipientId),
         }),
         queryClient.invalidateQueries({ queryKey: dmChannelQueryKey.myChannels }),
-      ]);
-
-      await sendMezonLightDMWithRefreshFallback(client, channelId, content);
+      ]).catch((error) => {
+        console.warn("[SendMessageModal] failed to refresh DM channel cache", error);
+      });
       setMessageContent("");
       setMessageError("");
       onOpenChangeAction(false);

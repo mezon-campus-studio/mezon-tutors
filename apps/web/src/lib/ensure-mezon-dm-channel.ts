@@ -6,8 +6,20 @@ import {
   createMezonLightGroupDMWithRetry,
   refreshMezonLightSession,
 } from '@/services/mezon-light/mezon-light.service';
-import { MezonSendMessageError } from '@/lib/mezon-send-message-errors';
+import {
+  MEZON_SEND_MESSAGE_ERROR_CODES,
+  MezonSendMessageError,
+} from '@/lib/mezon-send-message-errors';
 import { dmChannelApi } from '@/services/dm-channel/dm-channel.api';
+import { ApiError } from '@/services/api-client';
+
+function rethrowMezonAuthExpired(error: unknown): void {
+  const body = error instanceof ApiError ? error.body : null;
+  const code = body && typeof body === 'object' ? (body as { code?: unknown }).code : null;
+  if (code === MEZON_SEND_MESSAGE_ERROR_CODES.MEZON_AUTH_EXPIRED) {
+    throw new MezonSendMessageError(MEZON_SEND_MESSAGE_ERROR_CODES.MEZON_AUTH_EXPIRED);
+  }
+}
 
 type CreateDmChannelMutation = Pick<
   UseMutationResult<
@@ -93,9 +105,9 @@ export async function ensureMezonDmChannel(params: EnsureMezonDmChannelParams): 
     if (resolved?.channelId) {
       return resolved.channelId;
     }
-  } catch {
-    console.error('[ensureMezonDmChannel] existing DM lookup failed');
-    throw new MezonSendMessageError('CREATE_DM_CHANNEL_FAILED');
+  } catch (error) {
+    rethrowMezonAuthExpired(error);
+    console.warn('[ensureMezonDmChannel] existing DM lookup failed; falling back to DM creation');
   }
 
   const dmChannel = await createMezonLightDMWithRetry(client, recipientMezonUserId);
@@ -111,13 +123,15 @@ export async function ensureMezonDmChannel(params: EnsureMezonDmChannelParams): 
       mezonAccessToken: resolvePayload.mezonAccessToken,
       mezonApiUrl: resolvePayload.mezonApiUrl,
     });
-  } catch {
+  } catch (error) {
+    rethrowMezonAuthExpired(error);
     try {
       const recovered = await dmChannelApi.resolve(resolvePayload);
       if (recovered?.channelId) {
         return recovered.channelId;
       }
-    } catch {
+    } catch (error) {
+      rethrowMezonAuthExpired(error);
       console.error('[ensureMezonDmChannel] DM recovery failed');
     }
     console.error('[ensureMezonDmChannel] save DM channel failed');
