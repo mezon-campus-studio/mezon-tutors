@@ -33,7 +33,7 @@ export async function createMezonLightDM(client: LightClient, userId: string) {
   return client.createDM(userId);
 }
 
-const CREATE_DM_MAX_ATTEMPTS = 1;
+const CREATE_DM_MAX_ATTEMPTS = 3;
 const CREATE_DM_RETRY_DELAY_MS = 400;
 
 function wait(ms: number) {
@@ -62,7 +62,7 @@ export async function createMezonLightDMWithRetry(
       } catch {
         console.error('[createMezonLightDMWithRetry] refresh session failed');
       }
-      releaseMezonLightSocket();
+      resetMezonLightSocketConnection();
       await wait(CREATE_DM_RETRY_DELAY_MS * attempt);
     }
   }
@@ -92,7 +92,7 @@ export async function createMezonLightGroupDMWithRetry(
       } catch {
         console.error('[createMezonLightGroupDMWithRetry] refresh session failed');
       }
-      releaseMezonLightSocket();
+      resetMezonLightSocketConnection();
       await wait(CREATE_DM_RETRY_DELAY_MS * attempt);
     }
   }
@@ -137,7 +137,7 @@ function withTimeout<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
 
 async function connect(client: LightClient) {
   if (socket && socketClient !== client) {
-    releaseMezonLightSocket();
+    resetMezonLightSocketConnection();
   }
   if (!socket) {
     socket = createMezonLightSocket(client);
@@ -148,11 +148,13 @@ async function connect(client: LightClient) {
     return;
   }
   if (!socketConnectPromise) {
+    joinedChannels.clear();
+    joiningChannels.clear();
     const connectingSocket = socket;
     const connection = withTimeout(connectingSocket.connect(), MEZON_CONNECT_TIMEOUT_MS).catch(
       (error) => {
         if (socket === connectingSocket) {
-          releaseMezonLightSocket();
+          resetMezonLightSocketConnection();
         }
         throw error;
       }
@@ -199,13 +201,17 @@ async function joinChannel(channelId: string) {
   }
 }
 
-export function releaseMezonLightSocket() {
+function resetMezonLightSocketConnection() {
   socket?.disconnect();
   socket = null;
   socketClient = null;
   socketConnectPromise = null;
   joinedChannels.clear();
   joiningChannels.clear();
+}
+
+export function releaseMezonLightSocket() {
+  resetMezonLightSocketConnection();
   onIncomingMessage = null;
 }
 
@@ -234,7 +240,7 @@ export async function sendMezonLightDMWithRefreshFallback(
     await sendMezonLightDM(client, channelId, content);
   } catch (error) {
     if (isMezonSendMessageError(error) && error.code === 'SEND_MESSAGE_FAILED') {
-      releaseMezonLightSocket();
+      resetMezonLightSocketConnection();
       throw error;
     }
     console.error('[sendMezonLightDMWithRefreshFallback] first send failed, retrying');
@@ -244,7 +250,7 @@ export async function sendMezonLightDMWithRefreshFallback(
       console.error('[sendMezonLightDMWithRefreshFallback] refresh session failed');
       throw new MezonSendMessageError('REFRESH_SESSION_FAILED');
     }
-    releaseMezonLightSocket();
+    resetMezonLightSocketConnection();
     try {
       await sendMezonLightDM(client, channelId, content);
     } catch {

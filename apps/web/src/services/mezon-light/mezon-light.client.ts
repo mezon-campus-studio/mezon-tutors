@@ -134,7 +134,7 @@ export async function persistMezonLightSession(client: LightClient) {
   await storage.setItem(MEZON_LIGHT_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
-export async function restoreMezonLightClientFromStorage() {
+export async function restoreMezonLightClientFromStorage(expectedUserId?: string) {
   try {
     const rawSession = await storage.getItem(MEZON_LIGHT_SESSION_STORAGE_KEY);
     if (!rawSession) {
@@ -143,6 +143,10 @@ export async function restoreMezonLightClientFromStorage() {
 
     const parsedSession = JSON.parse(rawSession) as SerializedMezonSession;
     if (!isValidSerializedSession(parsedSession)) {
+      await clearMezonLightSessionStorage();
+      return null;
+    }
+    if (expectedUserId && parsedSession.user_id !== expectedUserId) {
       await clearMezonLightSessionStorage();
       return null;
     }

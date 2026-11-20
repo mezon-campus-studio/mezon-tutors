@@ -22,6 +22,10 @@ import {
 } from "react";
 import { MEZON_LIGHT_SESSION_STORAGE_KEY, storage } from "@/services";
 import { MezonLightSocketListener } from "./MezonLightSocketListener";
+import {
+  canCommitMezonLightInitialization,
+  restoreOrAuthenticateMezonLightClient,
+} from "./mezon-light-initialization";
 import { isMezonSendMessageError } from "@/lib/mezon-send-message-errors";
 
 type MezonLightContextValue = {
@@ -42,6 +46,8 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
   const [lightClient, setLightClientState] = useState<LightClient | null>(null);
   const lightClientRef = useRef<LightClient | null>(null);
   const initializationPromiseRef = useRef<Promise<LightClient | null> | null>(null);
+  const currentMezonUserIdRef = useRef<string | null>(null);
+  currentMezonUserIdRef.current = user?.mezonUserId ?? null;
 
   const setLightClient = useCallback((client: LightClient | null) => {
     lightClientRef.current = client;
@@ -50,7 +56,11 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
 
   const ensureLightClient = useCallback(async (): Promise<LightClient | null> => {
     if (lightClientRef.current) {
-      return lightClientRef.current;
+      if (lightClientRef.current.userId === currentMezonUserIdRef.current) {
+        return lightClientRef.current;
+      }
+      setLightClient(null);
+      releaseMezonLightSocket();
     }
     if (initializationPromiseRef.current) {
       return initializationPromiseRef.current;
@@ -58,34 +68,47 @@ export function MezonLightProvider({ children }: { children: ReactNode }) {
     const idToken = user?.idToken;
     const mezonUserId = user?.mezonUserId;
     const username = user?.username;
-    if (!idToken || !mezonUserId || !username) {
-      console.warn("[MezonLightProvider] Missing required user information");
-      return null;
-    }
 
-    const initializationPromise = (async () => {
-      const storedSession = await storage.getItem(MEZON_LIGHT_SESSION_STORAGE_KEY);
-      if (storedSession) {
-        const restoredClient = await restoreMezonLightClientFromStorage();
-        if (restoredClient) {
-          return restoredClient;
+    const initializationPromise = restoreOrAuthenticateMezonLightClient(
+      async () => {
+        const storedSession = await storage.getItem(MEZON_LIGHT_SESSION_STORAGE_KEY);
+        if (!storedSession || !mezonUserId) {
+          return null;
         }
-      }
 
-      return authenticateMezonLightClient({
-        idToken,
-        userId: mezonUserId,
-        username,
-        serverKey: MEZON_LIGHT_SERVER_KEY,
-        gatewayUrl: getMezonGatewayUrl(),
-      });
-    })();
+        return restoreMezonLightClientFromStorage(mezonUserId);
+      },
+      async () => {
+        if (!idToken || !mezonUserId || !username) {
+          console.warn("[MezonLightProvider] Missing required user information");
+          return null;
+        }
+
+        return authenticateMezonLightClient({
+          idToken,
+          userId: mezonUserId,
+          username,
+          serverKey: MEZON_LIGHT_SERVER_KEY,
+          gatewayUrl: getMezonGatewayUrl(),
+        });
+      },
+    );
     initializationPromiseRef.current = initializationPromise;
 
     try {
       const client = await initializationPromise;
       if (!client) {
         throw new Error("Failed to authenticate with Mezon Light");
+      }
+      if (
+        !canCommitMezonLightInitialization({
+          initializationIsCurrent: initializationPromiseRef.current === initializationPromise,
+          expectedUserId: mezonUserId,
+          currentUserId: currentMezonUserIdRef.current,
+          clientUserId: client.userId,
+        })
+      ) {
+        return null;
       }
       setLightClient(client);
       return client;
