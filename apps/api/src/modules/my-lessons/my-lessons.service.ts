@@ -44,6 +44,11 @@ type TrialLessonBookingWithTutor = Prisma.TrialLessonBookingGetPayload<{
         availability: true;
       };
     };
+    learningNeeds: {
+      select: {
+        sharedAt: true;
+      };
+    };
   };
 }>;
 
@@ -97,6 +102,11 @@ export class MyLessonsService {
           include: {
             user: true,
             availability: true,
+          },
+        },
+        learningNeeds: {
+          select: {
+            sharedAt: true,
           },
         },
       },
@@ -674,6 +684,11 @@ export class MyLessonsService {
       gross_amount: Number(lesson.grossAmount),
       currency: lesson.currency,
       trial_booking_status: trialBookingStatus,
+      learning_needs_status: lesson.learningNeeds
+        ? lesson.learningNeeds.sharedAt
+          ? 'shared'
+          : 'draft'
+        : 'not_started',
       trial_payment_status: lesson.paymentStatus,
       is_payer: true,
     };

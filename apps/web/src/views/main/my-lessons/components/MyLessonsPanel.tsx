@@ -68,7 +68,6 @@ import { RescheduleSubscriptionLessonDialog } from "./RescheduleSubscriptionLess
 import { useCreateLessonComplaintMutation } from "@/services/lesson-complaint/lesson-complaint.api";
 import { ReviewModal } from "@/views/main/tutors/detail/review/components/ReviewModal";
 import type { ReviewDto } from "@/services/review/review.api";
-import { useLearningNeedsForBooking } from "@/services/learning-needs/learning-needs.api";
 
 type LessonPersonBadgeProps = {
   name: string;
@@ -474,10 +473,6 @@ function UpcomingLessonItem({
   const tGroups = useTranslations('Groups');
   const tLearningNeeds = useTranslations('LearningNeeds.entry');
   const cancelled = isCancelledTrialLesson(lesson);
-  const { data: learningNeeds } = useLearningNeedsForBooking(
-    lesson.id,
-    lesson.source === "trial" && !cancelled,
-  );
   const isInProgress = isLessonInProgress(lesson, now);
 
   useEffect(() => {
@@ -621,9 +616,9 @@ function UpcomingLessonItem({
                   onClick={() => router.push(ROUTES.DASHBOARD.LEARNING_NEEDS(lesson.id))}
                 >
                   <BookOpenCheck className="mr-1 size-3.5" />
-                  {learningNeeds?.shared
+                  {lesson.learningNeedsStatus === "shared"
                     ? tLearningNeeds('edit')
-                    : learningNeeds?.draft
+                    : lesson.learningNeedsStatus === "draft"
                       ? tLearningNeeds('continue')
                       : tLearningNeeds('complete')}
                 </Button>
