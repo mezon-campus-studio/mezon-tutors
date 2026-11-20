@@ -3,7 +3,11 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthUserPayload } from '../auth/interfaces/auth.interfaces';
-import { GetDmChannelQueryDto, UpsertDmChannelDto } from './dto/dm-channel.dto';
+import {
+  GetDmChannelQueryDto,
+  ResolveDmChannelDto,
+  UpsertDmChannelDto,
+} from './dto/dm-channel.dto';
 import { DmChannelService } from './dm-channel.service';
 
 @Controller('dm-channels')
@@ -19,12 +23,20 @@ export class DmChannelController {
   }
 
   @Get()
-  async getDmChannel(@Query() query: GetDmChannelQueryDto) {
-    return this.dmChannelService.getChannel(query);
+  async getDmChannel(@Req() req: Request, @Query() query: GetDmChannelQueryDto) {
+    const user = req.user as AuthUserPayload;
+    return this.dmChannelService.getChannel(user.sub, query);
   }
 
   @Post()
-  async createDmChannel(@Body() dto: UpsertDmChannelDto) {
-    return this.dmChannelService.createChannel(dto);
+  async createDmChannel(@Req() req: Request, @Body() dto: UpsertDmChannelDto) {
+    const user = req.user as AuthUserPayload;
+    return this.dmChannelService.createChannel(user.sub, dto);
+  }
+
+  @Post('resolve')
+  async resolveDmChannel(@Req() req: Request, @Body() dto: ResolveDmChannelDto) {
+    const user = req.user as AuthUserPayload;
+    return this.dmChannelService.resolveExistingChannel(user.sub, dto);
   }
 }

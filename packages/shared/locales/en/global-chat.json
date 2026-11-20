@@ -11,6 +11,8 @@
   "sending": "Sending...",
   "sendErrors": {
     "restoreSessionFailed": "Cannot restore chat session. Please log in again.",
+    "mezonAuthExpired": "Your Mezon authentication has expired or was rejected. Reconnect Mezon.",
+    "reconnectMezon": "Reconnect Mezon",
     "refreshSessionFailed": "Chat session has expired. Please log in again.",
     "missingUserInfo": "Missing user information to open a conversation.",
     "createDmChannelFailed": "Could not create chat channel. Please try again later.",

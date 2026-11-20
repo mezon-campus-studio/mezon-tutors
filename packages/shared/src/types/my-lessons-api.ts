@@ -14,6 +14,8 @@ export type MyLessonApiItemSource = 'trial' | 'subscription'
 /** Trial lesson booking lifecycle; omitted for subscription slots. */
 export type MyLessonTrialBookingStatus = 'confirmed' | 'cancelled' | 'completed'
 
+export type MyLessonLearningNeedsStatus = 'not_started' | 'draft' | 'shared'
+
 export type MyLessonApiItem = {
   id: string
   subject: string
@@ -36,6 +38,8 @@ export type MyLessonApiItem = {
   gross_amount?: number
   currency?: string
   trial_booking_status?: MyLessonTrialBookingStatus
+  /** Summary used by lesson cards without fetching the complete learning-needs document. */
+  learning_needs_status?: MyLessonLearningNeedsStatus
   /** Trial booking payment; trial lessons only. */
   trial_payment_status?: string
   /** Parent enrollment id; subscription slots only. */

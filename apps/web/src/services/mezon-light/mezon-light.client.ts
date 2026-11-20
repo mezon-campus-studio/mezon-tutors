@@ -1,20 +1,54 @@
-import { MEZON_LIGHT_SERVER_KEY } from "@mezon-tutors/shared";
-import { LightClient } from "mezon-light-sdk";
-import { storage, MEZON_LIGHT_SESSION_STORAGE_KEY } from "../storage/storage.service";
+import { MEZON_LIGHT_SERVER_KEY } from '@mezon-tutors/shared';
+import { LightClient } from 'mezon-light-sdk';
+import { MezonSendMessageError } from '@/lib/mezon-send-message-errors';
+import { storage, MEZON_LIGHT_SESSION_STORAGE_KEY } from '../storage/storage.service';
 
-const MEZON_GATEWAY_UPSTREAM = "https://gw.mezon.ai";
+const MEZON_GATEWAY_UPSTREAM = 'https://gw.mezon.ai';
 
 export function getMezonGatewayUrl() {
   return process.env.NEXT_PUBLIC_MEZON_GATEWAY_URL?.trim() || MEZON_GATEWAY_UPSTREAM;
 }
 
-function rewriteMezonGatewayUrl(url: string) {
+export function extractHostFromUrl(urlOrHost: string): string {
+  if (!urlOrHost) return '';
+  try {
+    if (urlOrHost.includes('://')) {
+      return new URL(urlOrHost).hostname;
+    }
+  } catch {
+    // ignore
+  }
+  return urlOrHost
+    .replace(/^https?:\/\//i, '')
+    .replace(/^wss?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .replace(/:.*$/, '')
+    .trim();
+}
+
+export function rewriteMezonWsHost(hostOrUrl: string): string {
+  const configuredGateway = getMezonGatewayUrl();
+  const configuredHost = extractHostFromUrl(configuredGateway);
+  const upstreamHost = extractHostFromUrl(MEZON_GATEWAY_UPSTREAM);
+  const currentHost = extractHostFromUrl(hostOrUrl);
+
+  if (currentHost === upstreamHost && configuredHost) {
+    return configuredHost;
+  }
+  return currentHost || configuredHost || upstreamHost;
+}
+
+export function rewriteMezonApiUrl(url: string): string {
   const proxyUrl = getMezonGatewayUrl();
   if (!proxyUrl || proxyUrl === MEZON_GATEWAY_UPSTREAM) {
     return url;
   }
 
   return url.replaceAll(MEZON_GATEWAY_UPSTREAM, proxyUrl);
+}
+
+function rewriteMezonGatewayUrl(url: string) {
+  return rewriteMezonApiUrl(url);
 }
 type MezonAuthenticateOptions = {
   idToken: string;
@@ -43,25 +77,38 @@ type SerializedMezonSession = {
 
 function isValidSerializedSession(session: SerializedMezonSession) {
   return Boolean(
-    session?.token && session?.refresh_token && session?.api_url && session?.ws_url && session?.user_id,
+    session?.token &&
+      session?.refresh_token &&
+      session?.api_url &&
+      session?.ws_url &&
+      session?.user_id
   );
 }
 
 function getBrowserSessionStorage() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return null;
   }
   return window.sessionStorage;
 }
 
 export async function authenticateMezonLightClient(options: MezonAuthenticateOptions) {
-  const client = await LightClient.authenticate({
-    id_token: options.idToken,
-    user_id: options.userId,
-    username: options.username,
-    serverkey: options.serverKey,
-    gateway_url: options.gatewayUrl ?? getMezonGatewayUrl(),
-  });
+  let client: LightClient;
+  try {
+    client = await LightClient.authenticate({
+      id_token: options.idToken,
+      user_id: options.userId,
+      username: options.username,
+      serverkey: options.serverKey,
+      gateway_url: options.gatewayUrl ?? getMezonGatewayUrl(),
+    });
+  } catch (error) {
+    if (error instanceof Response && [400, 401, 403].includes(error.status)) {
+      await clearMezonLightSessionStorage();
+      throw new MezonSendMessageError('MEZON_AUTH_EXPIRED');
+    }
+    throw error;
+  }
 
   await persistMezonLightSession(client);
   return client;
@@ -87,7 +134,7 @@ export async function persistMezonLightSession(client: LightClient) {
   await storage.setItem(MEZON_LIGHT_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
-export async function restoreMezonLightClientFromStorage() {
+export async function restoreMezonLightClientFromStorage(expectedUserId?: string) {
   try {
     const rawSession = await storage.getItem(MEZON_LIGHT_SESSION_STORAGE_KEY);
     if (!rawSession) {
@@ -99,12 +146,16 @@ export async function restoreMezonLightClientFromStorage() {
       await clearMezonLightSessionStorage();
       return null;
     }
+    if (expectedUserId && parsedSession.user_id !== expectedUserId) {
+      await clearMezonLightSessionStorage();
+      return null;
+    }
 
     return initMezonLightClientFromSession({
       token: parsedSession.token as string,
       refreshToken: parsedSession.refresh_token as string,
-      apiUrl: rewriteMezonGatewayUrl(parsedSession.api_url as string),
-      wsUrl: rewriteMezonGatewayUrl(parsedSession.ws_url as string),
+      apiUrl: rewriteMezonApiUrl(parsedSession.api_url as string),
+      wsUrl: rewriteMezonWsHost(parsedSession.ws_url as string),
       userId: parsedSession.user_id as string,
       serverKey: MEZON_LIGHT_SERVER_KEY,
     });

@@ -21,6 +21,7 @@ export * from './types/event-api';
 export * from './types/blog-api';
 export * from './types/community-api';
 export * from './types/vocabulary-api';
+export * from './types/learning-needs';
 
 // Enums
 export * from './enums/verification-status';

@@ -1,0 +1,349 @@
+{
+  "eyebrow": "Cá nhân hóa buổi học",
+  "title": "Nhu cầu học tập môn {subject}",
+  "titleFallback": "Nhu cầu học tập",
+  "description": "Hãy cho gia sư biết điều gì sẽ giúp buổi học hữu ích với bạn.",
+  "sharedWith": "Các câu trả lời này sẽ được chia sẻ với {tutor}.",
+  "loading": "Đang tải nhu cầu học tập...",
+  "progressLabel": "Tiến độ biểu mẫu",
+  "fields": {
+    "goal": "Mục tiêu học tập",
+    "usage": "Bạn sẽ sử dụng kiến thức như thế nào?",
+    "usageLanguage": "Bạn sẽ sử dụng tiếng Anh trong tình huống nào?",
+    "focus": "Nội dung tập trung",
+    "focusLanguage": "Bạn muốn tập trung cải thiện điều gì?",
+    "level": "Trình độ hiện tại",
+    "selfAssessed": "Tự đánh giá",
+    "workContext": "Bối cảnh công việc và nhu cầu cụ thể",
+    "industryRequired": "Bạn có cần kiến thức chuyên ngành không?",
+    "industryContext": "Bối cảnh ngành",
+    "lessonsPerMonth": "Số buổi mong muốn mỗi tháng",
+    "preferenceOnly": "Đây chỉ là nguyện vọng, không mua hoặc giữ chỗ buổi học.",
+    "weekdays": "Ngày học mong muốn",
+    "times": "Khung giờ mong muốn",
+    "timezone": "Múi giờ của bạn",
+    "useCurrentTimezone": "Dùng múi giờ hiện tại",
+    "nativeLanguage": "Ngôn ngữ mẹ đẻ",
+    "instructionLanguage": "Ngôn ngữ giảng dạy mong muốn",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "otherLanguages": "Ngôn ngữ khác",
+    "removeLanguage": "Xóa {language}",
+    "addLanguage": "Thêm",
+    "languagePlaceholder": "Nhập ngôn ngữ và nhấn Enter hoặc Thêm",
+    "commaSeparated": "Thêm các ngôn ngữ bạn biết hoặc có thể giao tiếp.",
+    "interests": "Sở thích"
+  },
+  "placeholders": {
+    "workContext": "Chia sẻ vai trò, lĩnh vực, mục tiêu hoặc điều gia sư nên biết."
+  },
+  "options": {
+    "goals": {
+      "CAREER_BUSINESS": "Công việc và kinh doanh",
+      "EXAMS_CERTIFICATIONS": "Thi cử và chứng chỉ",
+      "TRAVEL": "Du lịch",
+      "PERSONAL_DEVELOPMENT": "Phát triển bản thân"
+    },
+    "usage": {
+      "MEETINGS": "Họp",
+      "PRESENTATIONS": "Thuyết trình",
+      "EVERYDAY_CONVERSATION": "Giao tiếp hằng ngày",
+      "TEAMWORK": "Làm việc nhóm",
+      "NEGOTIATIONS": "Đàm phán",
+      "TEAM_MANAGEMENT": "Quản lý nhóm",
+      "CLIENT_COMMUNICATION": "Giao tiếp khách hàng",
+      "INTERVIEWS": "Phỏng vấn"
+    },
+    "focus": {
+      "FLUENCY": "Trôi chảy",
+      "CONFIDENCE": "Tự tin",
+      "ACCURACY": "Chính xác",
+      "VOCABULARY": "Từ vựng",
+      "PRONUNCIATION_INTONATION": "Phát âm và ngữ điệu",
+      "LISTENING": "Nghe",
+      "READING": "Đọc",
+      "WRITING": "Viết"
+    },
+    "levels": {
+      "JUST_STARTING": "Mới bắt đầu",
+      "KNOW_THE_BASICS": "Biết kiến thức cơ bản",
+      "CONVERSATIONAL": "Có thể giao tiếp",
+      "FLUENT": "Thành thạo"
+    },
+    "yesNo": { "YES": "Có", "NO": "Không" },
+    "languages": {
+      "English": "Tiếng Anh",
+      "Vietnamese": "Tiếng Việt",
+      "Chinese": "Tiếng Trung",
+      "Japanese": "Tiếng Nhật",
+      "Korean": "Tiếng Hàn",
+      "Spanish": "Tiếng Tây Ban Nha",
+      "French": "Tiếng Pháp",
+      "German": "Tiếng Đức",
+      "Portuguese": "Tiếng Bồ Đào Nha",
+      "Arabic": "Tiếng Ả Rập",
+      "Hindi": "Tiếng Hindi",
+      "Russian": "Tiếng Nga",
+      "Thai": "Tiếng Thái",
+      "Indonesian": "Tiếng Indonesia",
+      "Tagalog": "Tiếng Tagalog",
+      "Other": "Khác"
+    },
+    "weekdays": {
+      "MON": "Thứ Hai",
+      "TUE": "Thứ Ba",
+      "WED": "Thứ Tư",
+      "THU": "Thứ Năm",
+      "FRI": "Thứ Sáu",
+      "SAT": "Thứ Bảy",
+      "SUN": "Chủ Nhật"
+    },
+    "times": {
+      "H06_09": "06:00–09:00",
+      "H09_12": "09:00–12:00",
+      "H12_15": "12:00–15:00",
+      "H15_18": "15:00–18:00",
+      "H18_21": "18:00–21:00",
+      "H21_00": "21:00–00:00",
+      "H00_03": "00:00–03:00",
+      "H03_06": "03:00–06:00"
+    },
+    "interests": {
+      "READING": "Đọc sách",
+      "MOVIES": "Phim ảnh",
+      "ART": "Nghệ thuật",
+      "TECHNOLOGY": "Công nghệ",
+      "GAMING": "Trò chơi",
+      "PETS": "Thú cưng",
+      "TRAVEL": "Du lịch",
+      "SPORTS": "Thể thao",
+      "FOOD": "Ẩm thực",
+      "HISTORY": "Lịch sử",
+      "FITNESS": "Thể hình",
+      "FASHION": "Thời trang",
+      "SCIENCE": "Khoa học",
+      "LANGUAGES": "Ngôn ngữ",
+      "FINANCE": "Tài chính",
+      "POLITICS": "Chính trị",
+      "CULTURE": "Văn hóa",
+      "OUTDOORS": "Hoạt động ngoài trời"
+    }
+  },
+  "optionsGeneral": {
+    "goals": {
+      "CAREER_BUSINESS": "Phát triển nghề nghiệp hoặc chuyên môn",
+      "EXAMS_CERTIFICATIONS": "Thi cử và chứng chỉ",
+      "TRAVEL": "Ứng dụng thực tế",
+      "PERSONAL_DEVELOPMENT": "Phát triển bản thân"
+    },
+    "usage": {
+      "MEETINGS": "Ứng dụng thực tế",
+      "PRESENTATIONS": "Thuyết trình",
+      "EVERYDAY_CONVERSATION": "Tự luyện tập",
+      "TEAMWORK": "Làm việc nhóm",
+      "NEGOTIATIONS": "Giải quyết vấn đề",
+      "TEAM_MANAGEMENT": "Hướng dẫn người khác",
+      "CLIENT_COMMUNICATION": "Ứng dụng chuyên môn",
+      "INTERVIEWS": "Đánh giá hoặc phỏng vấn"
+    },
+    "focus": {
+      "FLUENCY": "Làm chủ kiến thức",
+      "CONFIDENCE": "Tự tin",
+      "ACCURACY": "Chính xác",
+      "VOCABULARY": "Khái niệm cốt lõi",
+      "PRONUNCIATION_INTONATION": "Kỹ thuật",
+      "LISTENING": "Hiểu bài",
+      "READING": "Đọc tài liệu",
+      "WRITING": "Bài viết"
+    },
+    "levels": {
+      "JUST_STARTING": "Mới bắt đầu",
+      "KNOW_THE_BASICS": "Biết kiến thức cơ bản",
+      "CONVERSATIONAL": "Trung cấp",
+      "FLUENT": "Nâng cao"
+    }
+  },
+  "optionsStem": {
+    "goals": {
+      "CAREER_BUSINESS": "Nghề nghiệp hoặc kỹ năng kỹ thuật ứng dụng",
+      "EXAMS_CERTIFICATIONS": "Thi cử và chứng chỉ",
+      "TRAVEL": "Giải quyết vấn đề thực tế",
+      "PERSONAL_DEVELOPMENT": "Khám phá và phát triển bản thân"
+    },
+    "usage": {
+      "MEETINGS": "Dự án và ứng dụng thực tế",
+      "PRESENTATIONS": "Trình bày lời giải",
+      "EVERYDAY_CONVERSATION": "Tự luyện tập",
+      "TEAMWORK": "Cùng giải quyết vấn đề",
+      "NEGOTIATIONS": "Phân tích vấn đề phức tạp",
+      "TEAM_MANAGEMENT": "Hướng dẫn hoặc dẫn dắt người khác",
+      "CLIENT_COMMUNICATION": "Ứng dụng chuyên môn",
+      "INTERVIEWS": "Bài đánh giá và phỏng vấn kỹ thuật"
+    },
+    "focus": {
+      "FLUENCY": "Thành thạo giải quyết vấn đề",
+      "CONFIDENCE": "Tự tin",
+      "ACCURACY": "Chính xác",
+      "VOCABULARY": "Khái niệm cốt lõi",
+      "PRONUNCIATION_INTONATION": "Phương pháp và kỹ thuật",
+      "LISTENING": "Hiểu bản chất",
+      "READING": "Tài liệu nghiên cứu và tham khảo",
+      "WRITING": "Trình bày lời giải"
+    },
+    "levels": {
+      "JUST_STARTING": "Mới bắt đầu",
+      "KNOW_THE_BASICS": "Biết kiến thức nền tảng",
+      "CONVERSATIONAL": "Trung cấp",
+      "FLUENT": "Nâng cao"
+    }
+  },
+  "optionsCreative": {
+    "goals": {
+      "CAREER_BUSINESS": "Phát triển nghề nghiệp sáng tạo",
+      "EXAMS_CERTIFICATIONS": "Thi tuyển, hồ sơ năng lực hoặc chứng chỉ",
+      "TRAVEL": "Thực hiện một dự án thực tế",
+      "PERSONAL_DEVELOPMENT": "Thể hiện và phát triển bản thân"
+    },
+    "usage": {
+      "MEETINGS": "Tập luyện",
+      "PRESENTATIONS": "Biểu diễn hoặc thuyết trình",
+      "EVERYDAY_CONVERSATION": "Luyện tập sáng tạo hằng ngày",
+      "TEAMWORK": "Cộng tác",
+      "NEGOTIATIONS": "Giải quyết vấn đề sáng tạo",
+      "TEAM_MANAGEMENT": "Đạo diễn hoặc dẫn dắt người khác",
+      "CLIENT_COMMUNICATION": "Làm việc với khách hàng hoặc hồ sơ năng lực",
+      "INTERVIEWS": "Thi tuyển và nhận xét"
+    },
+    "focus": {
+      "FLUENCY": "Dòng chảy sáng tạo",
+      "CONFIDENCE": "Tự tin",
+      "ACCURACY": "Độ chính xác",
+      "VOCABULARY": "Phạm vi sáng tạo",
+      "PRONUNCIATION_INTONATION": "Kỹ thuật",
+      "LISTENING": "Quan sát và lắng nghe",
+      "READING": "Tham khảo và diễn giải",
+      "WRITING": "Sáng tác"
+    },
+    "levels": {
+      "JUST_STARTING": "Mới bắt đầu",
+      "KNOW_THE_BASICS": "Biết kiến thức nền tảng",
+      "CONVERSATIONAL": "Trung cấp",
+      "FLUENT": "Nâng cao"
+    }
+  },
+  "page": {
+    "breadcrumbBooking": "Lịch học thử",
+    "breadcrumbNeeds": "Nhu cầu học tập",
+    "bookingSuccess": "Bạn đã đặt lịch học thử thành công",
+    "heroTitle": "Giúp {tutor} chuẩn bị buổi học dành cho bạn",
+    "heroDescription": "Mỗi mục tiêu là một khởi đầu. Cùng gia sư chọn cách học phù hợp nhất.",
+    "stepCount": "Bước {step} / 3",
+    "step1": {
+      "label": "Mục tiêu học tập",
+      "title": "Bạn muốn học để làm gì?",
+      "description": "Chia sẻ điều quan trọng nhất với bạn."
+    },
+    "step2": {
+      "label": "Lịch học & sở thích",
+      "title": "Học theo nhịp sống của bạn",
+      "description": "Cho gia sư biết lịch học và những chủ đề bạn yêu thích."
+    },
+    "step3": {
+      "label": "Chia sẻ với gia sư",
+      "title": "Sẵn sàng cho buổi học đầu tiên",
+      "description": "Xem lại trước khi chia sẻ với gia sư."
+    },
+    "levelDescriptions": {
+      "JUST_STARTING": "Chưa có nền tảng",
+      "KNOW_THE_BASICS": "Hiểu câu đơn giản",
+      "CONVERSATIONAL": "Tự trao đổi hằng ngày",
+      "FLUENT": "Sử dụng linh hoạt"
+    },
+    "industryHint": "Giúp gia sư chọn chủ đề và từ vựng phù hợp.",
+    "lessonsUnit": "Buổi học / tháng",
+    "decreaseLessons": "Giảm số buổi mỗi tháng",
+    "increaseLessons": "Tăng số buổi mỗi tháng",
+    "trialCardTitle": "Buổi học thử của bạn",
+    "bookingDateFallback": "Ngày học sẽ được cập nhật",
+    "bookingTimeFallback": "Giờ học sẽ được cập nhật",
+    "onlineLesson": "Học trực tiếp trên Mezon",
+    "helpTitle": "Một chút chia sẻ, một buổi học phù hợp hơn.",
+    "helpDescription": "Mục tiêu và sở thích giúp gia sư chuẩn bị những nội dung gần với nhu cầu của bạn.",
+    "pinExplainer": "Sau khi chia sẻ, nhu cầu học tập sẽ được ghim ở đầu cuộc chat với {tutor}.",
+    "sidebarNote": "Chỉ bạn và gia sư này xem được thông tin đã chia sẻ. Bạn có thể chỉnh sửa bất cứ lúc nào.",
+    "privacy": "Câu trả lời chưa được chia sẻ. Bạn sẽ được xem lại trước khi gửi cho gia sư.",
+    "reviewPinNotice": "Sau khi chia sẻ, một thẻ tóm tắt sẽ được ghim ở đầu cuộc chat. Bạn có thể xem lại và cập nhật bất cứ lúc nào."
+  },
+  "review": {
+    "title": "Kiểm tra trước khi chia sẻ",
+    "shareWith": "Chia sẻ với {tutor}",
+    "onlyTutorReceives": "Chỉ gia sư này nhận được thông tin bạn gửi.",
+    "learningNeedsTitle": "Nhu cầu học tập của bạn"
+  },
+  "summary": {
+    "title": "Nhu cầu học tập đã chia sẻ",
+    "sharedWith": "Đã chia sẻ với {tutor}",
+    "updated": "Cập nhật lần cuối {date}",
+    "empty": "Không có thông tin bổ sung."
+  },
+  "validation": {
+    "goalRequired": "Hãy chọn mục tiêu học tập trước khi chia sẻ.",
+    "lessonsPositive": "Số buổi mỗi tháng phải là số nguyên dương.",
+    "lessonsRange": "Số buổi mỗi tháng phải là số nguyên từ 1 đến 100.",
+    "languagesMax": "Chỉ thêm tối đa {max} ngôn ngữ khác.",
+    "timezoneInvalid": "Hãy nhập múi giờ IANA hợp lệ."
+  },
+  "errors": {
+    "load": "Không thể tải nhu cầu học tập.",
+    "save": "Không thể lưu câu trả lời. Các thay đổi vẫn được giữ lại, vui lòng thử lại.",
+    "chatSync": "Nhu cầu học tập đã được chia sẻ, nhưng chưa thể liên kết cuộc trò chuyện với gia sư.",
+    "chatSyncPending": "Nhu cầu học tập đã được chia sẻ và đang được liên kết với cuộc trò chuyện.",
+    "chatSyncFailed": "Nhu cầu học tập đã được chia sẻ, nhưng liên kết với cuộc trò chuyện thất bại. Vui lòng thử lại."
+  },
+  "unsaved": {
+    "title": "Bỏ các thay đổi chưa lưu?",
+    "description": "Các thay đổi mới nhất chưa được lưu thành bản nháp và sẽ bị mất."
+  },
+  "actions": {
+    "retry": "Thử lại",
+    "retryChatSync": "Thử liên kết lại",
+    "reconnectMezon": "Kết nối lại Mezon",
+    "keepEditing": "Tiếp tục chỉnh sửa",
+    "discard": "Bỏ thay đổi",
+    "clear": "Xóa",
+    "close": "Đóng",
+    "edit": "Chỉnh sửa",
+    "back": "Quay lại",
+    "continue": "Tiếp tục",
+    "saveDraft": "Lưu tiến độ",
+    "saveAndShare": "Lưu và chia sẻ với gia sư",
+    "share": "Lưu và chia sẻ với {tutor}"
+  },
+  "toasts": {
+    "draftSaved": "Đã lưu tiến độ thành công."
+  },
+  "entry": {
+    "eyebrow": "Cá nhân hóa không bắt buộc",
+    "title": "Giúp {tutor} chuẩn bị cho buổi học",
+    "description": "Chia sẻ mục tiêu, sở thích và lịch mong muốn để gia sư điều chỉnh buổi học thử.",
+    "complete": "Hoàn tất nhu cầu học tập",
+    "continue": "Tiếp tục nhu cầu học tập",
+    "skip": "Để sau",
+    "shared": "Đã chia sẻ nhu cầu học tập",
+    "edit": "Xem hoặc chỉnh sửa"
+  },
+  "chat": {
+    "title": "Nhu cầu học tập",
+    "pinned": "Đã ghim",
+    "updatedAt": "Cập nhật {date}",
+    "lessonsPerMonth": "{count} buổi / tháng",
+    "view": "Xem nhu cầu học tập",
+    "edit": "Chỉnh sửa",
+    "complete": "Hoàn tất nhu cầu học tập",
+    "notSharedStudent": "Chia sẻ mục tiêu để gia sư chuẩn bị cho buổi học.",
+    "notSharedTutor": "Học viên chưa chia sẻ nhu cầu học tập.",
+    "noContext": "Chưa có buổi học phù hợp.",
+    "loading": "Đang tải nhu cầu học tập...",
+    "loadError": "Không thể tải nhu cầu học tập.",
+    "retry": "Thử lại"
+  }
+}

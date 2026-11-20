@@ -64,6 +64,13 @@ enum EPaymentStatus {
   REFUNDED
 }
 
+enum ELearningNeedsSyncStatus {
+  NOT_REQUIRED
+  PENDING
+  SYNCED
+  FAILED
+}
+
 enum EWalletTransactionType {
   BOOKING_PAYMENT
   RELEASE
@@ -195,6 +202,7 @@ model User {
   communityExerciseSubmissions     CommunityExerciseSubmission[]
   communityReports                 CommunityReport[]                @relation("CommunityReporter")
   communityReportsReviewed         CommunityReport[]                @relation("CommunityReportReviewer")
+  learningNeeds                    LearningNeeds[]                   @relation("LearningNeedsStudent")
 
   @@map("users")
 }
@@ -316,6 +324,7 @@ model TutorProfile {
   identityVerification  IdentityVerification?
   setupChecklist        TutorSetupChecklist?
   savedBy               SavedTutor[]
+  learningNeeds         LearningNeeds[]
 
   @@index([verificationStatus, subject], map: "tutor_profiles_verif_subject_idx")
   @@index([verificationStatus, country], map: "tutor_profiles_verif_country_idx")
@@ -529,6 +538,7 @@ model TrialLessonBooking {
   walletTransactions Transaction[]
   cancelRescheduleReasons CancelRescheduleReason[]
   lessonComplaint       LessonComplaint?
+  learningNeeds         LearningNeeds?
 
   @@index([paymentRef])
   @@index([studentId])
@@ -614,11 +624,43 @@ model UserDmChannel {
 
   sender    User @relation("UserDmChannelSender", fields: [senderId], references: [id], onDelete: Cascade)
   recipient User @relation("UserDmChannelRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  learningNeeds LearningNeeds[]
 
   @@unique([senderId, recipientId])
   @@index([senderId])
   @@index([recipientId])
   @@map("user_dm_channels")
+}
+
+model LearningNeeds {
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trialLessonBookingId    String                   @unique @map("trial_lesson_booking_id") @db.Uuid
+  studentId               String                   @map("student_id") @db.Uuid
+  tutorProfileId          String                   @map("tutor_profile_id") @db.Uuid
+  subjectSnapshot         String                   @map("subject_snapshot")
+  draftAnswers            Json                     @map("draft_answers")
+  draftRevision           Int                      @default(1) @map("draft_revision")
+  sharedAnswers           Json?                    @map("shared_answers")
+  sharedFromDraftRevision Int?                     @map("shared_from_draft_revision")
+  sharedRevision          Int                      @default(0) @map("shared_revision")
+  sharedAt                DateTime?                @map("shared_at")
+  userDmChannelId         String?                  @map("user_dm_channel_id") @db.Uuid
+  syncStatus              ELearningNeedsSyncStatus @default(NOT_REQUIRED) @map("sync_status")
+  syncAttempts            Int                      @default(0) @map("sync_attempts")
+  lastSyncError           String?                  @map("last_sync_error") @db.Text
+  lastSyncAttemptAt       DateTime?                @map("last_sync_attempt_at")
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
+
+  trialLessonBooking TrialLessonBooking @relation(fields: [trialLessonBookingId], references: [id], onDelete: Cascade)
+  student            User               @relation("LearningNeedsStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  tutor              TutorProfile       @relation(fields: [tutorProfileId], references: [id], onDelete: Cascade)
+  userDmChannel      UserDmChannel?     @relation(fields: [userDmChannelId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, updatedAt])
+  @@index([tutorProfileId, sharedAt])
+  @@index([userDmChannelId, sharedAt])
+  @@map("learning_needs")
 }
 
 /// Refresh token for session management

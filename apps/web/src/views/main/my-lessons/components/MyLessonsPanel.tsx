@@ -11,6 +11,7 @@ import {
   ExternalLink,
   MessageCircle,
   Trash2,
+  BookOpenCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -50,6 +51,7 @@ import {
   isWithinLessonComplaintWindow,
   MEZON_DIRECT_MESSAGE_URL,
   PUBLIC_APP_SETTINGS_FALLBACK,
+  ROUTES,
 } from "@mezon-tutors/shared";
 import { ensureMezonDmChannel } from "@/lib/ensure-mezon-dm-channel";
 import { sendStudentLessonDmToTutor } from "@/lib/send-student-lesson-dm-to-tutor";
@@ -454,6 +456,7 @@ function UpcomingLessonItem({
   onCancel,
 }: UpcomingLessonItemProps) {
   const locale = useLocale();
+  const router = useRouter();
   const currentUser = useAtomValue(userAtom);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
@@ -468,6 +471,7 @@ function UpcomingLessonItem({
   const { refetch: refetchDmChannel } = useGetDmChannel(senderId, botContact?.id ?? '', false);
   const createDmChannelMutation = useCreateDmChannelMutation();
   const tGroups = useTranslations('Groups');
+  const tLearningNeeds = useTranslations('LearningNeeds.entry');
   const cancelled = isCancelledTrialLesson(lesson);
   const isInProgress = isLessonInProgress(lesson, now);
 
@@ -603,6 +607,21 @@ function UpcomingLessonItem({
                   }
                   items={actionItems}
                 />
+              ) : null}
+              {lesson.source === "trial" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full rounded-full border-violet-200 px-4 text-xs font-semibold text-violet-700 hover:bg-violet-50 sm:h-9 sm:w-auto"
+                  onClick={() => router.push(ROUTES.DASHBOARD.LEARNING_NEEDS(lesson.id))}
+                >
+                  <BookOpenCheck className="mr-1 size-3.5" />
+                  {lesson.learningNeedsStatus === "shared"
+                    ? tLearningNeeds('edit')
+                    : lesson.learningNeedsStatus === "draft"
+                      ? tLearningNeeds('continue')
+                      : tLearningNeeds('complete')}
+                </Button>
               ) : null}
               {messageButton}
             </>

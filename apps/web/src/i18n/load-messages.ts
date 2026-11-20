@@ -12,6 +12,7 @@ const MESSAGE_LOADERS: MessageLoaderConfig[] = [
   { messageKey: "Common", file: "common" },
   { messageKey: "Notifications", file: "notifications" },
   { messageKey: "GlobalChat", file: "global-chat" },
+  { messageKey: "LearningNeeds", file: "learning-needs" },
   { messageKey: "Home", file: "home", pick: (payload) => payload.Home },
   { messageKey: "Events", file: "events", pick: (payload) => payload.Events },
   { messageKey: "Blogs", file: "blog", pick: (payload) => payload.Blogs },

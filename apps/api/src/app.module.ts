@@ -38,6 +38,7 @@ import { CommonModule } from './common/common.module';
 import { StudyGroupModule } from './modules/study-group/study-group.module';
 import { LearningLogModule } from './modules/learning-log/learning-log.module';
 import { CommunityModule } from './modules/community/community.module';
+import { LearningNeedsModule } from './modules/learning-needs/learning-needs.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { CommunityModule } from './modules/community/community.module';
     StudyGroupModule,
     LearningLogModule,
     CommunityModule,
+    LearningNeedsModule,
   ],
   controllers: [HealthController],
   providers: [

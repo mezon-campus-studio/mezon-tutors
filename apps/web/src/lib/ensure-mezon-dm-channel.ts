@@ -1,21 +1,39 @@
-import type { LightClient } from "mezon-light-sdk";
-import type { UseMutationResult } from "@tanstack/react-query";
-import { restoreMezonLightClientFromStorage } from "@/services/mezon-light/mezon-light.client";
+import type { LightClient } from 'mezon-light-sdk';
+import type { UseMutationResult } from '@tanstack/react-query';
+import { restoreMezonLightClientFromStorage } from '@/services/mezon-light/mezon-light.client';
 import {
   createMezonLightDMWithRetry,
   createMezonLightGroupDMWithRetry,
   refreshMezonLightSession,
-} from "@/services/mezon-light/mezon-light.service";
-import { MezonSendMessageError } from "@/lib/mezon-send-message-errors";
+} from '@/services/mezon-light/mezon-light.service';
+import {
+  MEZON_SEND_MESSAGE_ERROR_CODES,
+  MezonSendMessageError,
+} from '@/lib/mezon-send-message-errors';
+import { dmChannelApi } from '@/services/dm-channel/dm-channel.api';
+import { ApiError } from '@/services/api-client';
+
+function rethrowMezonAuthExpired(error: unknown): void {
+  const body = error instanceof ApiError ? error.body : null;
+  const code = body && typeof body === 'object' ? (body as { code?: unknown }).code : null;
+  if (code === MEZON_SEND_MESSAGE_ERROR_CODES.MEZON_AUTH_EXPIRED) {
+    throw new MezonSendMessageError(MEZON_SEND_MESSAGE_ERROR_CODES.MEZON_AUTH_EXPIRED);
+  }
+}
 
 type CreateDmChannelMutation = Pick<
   UseMutationResult<
     unknown,
     Error,
-    { senderId: string; recipientId: string; channelId: string },
+    {
+      recipientId: string;
+      channelId: string;
+      mezonAccessToken: string;
+      mezonApiUrl: string;
+    },
     unknown
   >,
-  "mutateAsync"
+  'mutateAsync'
 >;
 
 export type EnsureMezonDmChannelParams = {
@@ -38,9 +56,7 @@ export type EnsureMezonGroupDmChannelParams = {
   existingChannelId?: string | null;
 };
 
-export async function ensureMezonDmChannel(
-  params: EnsureMezonDmChannelParams,
-): Promise<string> {
+export async function ensureMezonDmChannel(params: EnsureMezonDmChannelParams): Promise<string> {
   const {
     setLightClient,
     senderId,
@@ -52,7 +68,7 @@ export async function ensureMezonDmChannel(
   } = params;
 
   if (!senderId || !senderMezonUserId || !recipientMezonUserId || !recipientId) {
-    throw new MezonSendMessageError("MISSING_USER_INFO");
+    throw new MezonSendMessageError('MISSING_USER_INFO');
   }
 
   if (existingChannelId) {
@@ -63,7 +79,7 @@ export async function ensureMezonDmChannel(
   if (!client) {
     client = await restoreMezonLightClientFromStorage();
     if (!client) {
-      throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
+      throw new MezonSendMessageError('RESTORE_SESSION_FAILED');
     }
     setLightClient(client);
   }
@@ -71,48 +87,70 @@ export async function ensureMezonDmChannel(
   if (await client.isSessionExpired()) {
     try {
       await refreshMezonLightSession(client);
-    } catch (error) {
-      console.error("[ensureMezonDmChannel] refresh session failed", error);
-      throw new MezonSendMessageError("REFRESH_SESSION_FAILED");
+    } catch {
+      console.error('[ensureMezonDmChannel] refresh session failed');
+      throw new MezonSendMessageError('REFRESH_SESSION_FAILED');
     }
+  }
+
+  const session = client.exportSession();
+  const resolvePayload = {
+    recipientId,
+    mezonAccessToken: client.getToken(),
+    mezonApiUrl: session.api_url,
+  };
+
+  try {
+    const resolved = await dmChannelApi.resolve(resolvePayload);
+    if (resolved?.channelId) {
+      return resolved.channelId;
+    }
+  } catch (error) {
+    rethrowMezonAuthExpired(error);
+    console.warn('[ensureMezonDmChannel] existing DM lookup failed; falling back to DM creation');
   }
 
   const dmChannel = await createMezonLightDMWithRetry(client, recipientMezonUserId);
   const channelId = dmChannel?.channel_id;
   if (!channelId) {
-    throw new MezonSendMessageError("CREATE_DM_CHANNEL_FAILED");
+    throw new MezonSendMessageError('CREATE_DM_CHANNEL_FAILED');
   }
 
   try {
     await createDmChannelMutation.mutateAsync({
-      senderId,
       recipientId,
       channelId,
+      mezonAccessToken: resolvePayload.mezonAccessToken,
+      mezonApiUrl: resolvePayload.mezonApiUrl,
     });
   } catch (error) {
-    console.error("[ensureMezonDmChannel] save DM channel failed", error);
-    throw new MezonSendMessageError("SAVE_DM_CHANNEL_FAILED");
+    rethrowMezonAuthExpired(error);
+    try {
+      const recovered = await dmChannelApi.resolve(resolvePayload);
+      if (recovered?.channelId) {
+        return recovered.channelId;
+      }
+    } catch (error) {
+      rethrowMezonAuthExpired(error);
+      console.error('[ensureMezonDmChannel] DM recovery failed');
+    }
+    console.error('[ensureMezonDmChannel] save DM channel failed');
+    throw new MezonSendMessageError('SAVE_DM_CHANNEL_FAILED');
   }
 
   return channelId;
 }
 
 export async function ensureMezonGroupDmChannel(
-  params: EnsureMezonGroupDmChannelParams,
+  params: EnsureMezonGroupDmChannelParams
 ): Promise<string> {
-  const {
-    setLightClient,
-    senderId,
-    senderMezonUserId,
-    mezonUserIds,
-    existingChannelId,
-  } = params;
+  const { setLightClient, senderId, senderMezonUserId, mezonUserIds, existingChannelId } = params;
   const groupMezonUserIds = Array.from(
-    new Set(mezonUserIds.map((id) => id.trim()).filter(Boolean)),
+    new Set(mezonUserIds.map((id) => id.trim()).filter(Boolean))
   );
 
   if (!senderId || !senderMezonUserId || groupMezonUserIds.length < 3) {
-    throw new MezonSendMessageError("MISSING_USER_INFO");
+    throw new MezonSendMessageError('MISSING_USER_INFO');
   }
 
   if (existingChannelId) {
@@ -123,7 +161,7 @@ export async function ensureMezonGroupDmChannel(
   if (!client) {
     client = await restoreMezonLightClientFromStorage();
     if (!client) {
-      throw new MezonSendMessageError("RESTORE_SESSION_FAILED");
+      throw new MezonSendMessageError('RESTORE_SESSION_FAILED');
     }
     setLightClient(client);
   }
@@ -131,22 +169,16 @@ export async function ensureMezonGroupDmChannel(
   if (await client.isSessionExpired()) {
     try {
       await refreshMezonLightSession(client);
-    } catch (error) {
-      console.error(
-        "[ensureMezonGroupDmChannel] refresh session failed",
-        error,
-      );
-      throw new MezonSendMessageError("REFRESH_SESSION_FAILED");
+    } catch {
+      console.error('[ensureMezonGroupDmChannel] refresh session failed');
+      throw new MezonSendMessageError('REFRESH_SESSION_FAILED');
     }
   }
 
-  const groupDmChannel = await createMezonLightGroupDMWithRetry(
-    client,
-    groupMezonUserIds,
-  );
+  const groupDmChannel = await createMezonLightGroupDMWithRetry(client, groupMezonUserIds);
   const channelId = groupDmChannel?.channel_id;
   if (!channelId) {
-    throw new MezonSendMessageError("CREATE_GROUP_DM_CHANNEL_FAILED");
+    throw new MezonSendMessageError('CREATE_GROUP_DM_CHANNEL_FAILED');
   }
 
   return channelId;

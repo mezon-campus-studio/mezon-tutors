@@ -1,0 +1,349 @@
+{
+  "eyebrow": "Personalize your lesson",
+  "title": "Learning needs for {subject}",
+  "titleFallback": "Learning needs",
+  "description": "Tell your tutor what will make this lesson useful for you.",
+  "sharedWith": "These answers will be shared with {tutor}.",
+  "loading": "Loading learning needs...",
+  "progressLabel": "Form progress",
+  "fields": {
+    "goal": "Learning goal",
+    "usage": "How will you use what you learn?",
+    "usageLanguage": "When will you use English?",
+    "focus": "Focus areas",
+    "focusLanguage": "What would you like to improve?",
+    "level": "Current level",
+    "selfAssessed": "Self-assessed",
+    "workContext": "Work context and specific needs",
+    "industryRequired": "Do you need industry-specific knowledge?",
+    "industryContext": "Industry context",
+    "lessonsPerMonth": "Desired lessons per month",
+    "preferenceOnly": "This is a preference only and does not purchase or reserve lessons.",
+    "weekdays": "Preferred weekdays",
+    "times": "Preferred times",
+    "timezone": "Your timezone",
+    "useCurrentTimezone": "Use current timezone",
+    "nativeLanguage": "Native language",
+    "instructionLanguage": "Preferred instruction language",
+    "selectLanguage": "Select a language",
+    "otherLanguages": "Other spoken languages",
+    "removeLanguage": "Remove {language}",
+    "addLanguage": "Add",
+    "languagePlaceholder": "Type language and press Enter or click Add",
+    "commaSeparated": "Add languages you speak or understand.",
+    "interests": "Interests"
+  },
+  "placeholders": {
+    "workContext": "Share your role, industry, goals, or anything your tutor should know."
+  },
+  "options": {
+    "goals": {
+      "CAREER_BUSINESS": "Career and business",
+      "EXAMS_CERTIFICATIONS": "Exams and certifications",
+      "TRAVEL": "Travel",
+      "PERSONAL_DEVELOPMENT": "Personal development"
+    },
+    "usage": {
+      "MEETINGS": "Meetings",
+      "PRESENTATIONS": "Presentations",
+      "EVERYDAY_CONVERSATION": "Everyday conversation",
+      "TEAMWORK": "Teamwork",
+      "NEGOTIATIONS": "Negotiations",
+      "TEAM_MANAGEMENT": "Team management",
+      "CLIENT_COMMUNICATION": "Client communication",
+      "INTERVIEWS": "Interviews"
+    },
+    "focus": {
+      "FLUENCY": "Fluency",
+      "CONFIDENCE": "Confidence",
+      "ACCURACY": "Accuracy",
+      "VOCABULARY": "Vocabulary",
+      "PRONUNCIATION_INTONATION": "Pronunciation and intonation",
+      "LISTENING": "Listening",
+      "READING": "Reading",
+      "WRITING": "Writing"
+    },
+    "levels": {
+      "JUST_STARTING": "Just starting",
+      "KNOW_THE_BASICS": "Know the basics",
+      "CONVERSATIONAL": "Conversational",
+      "FLUENT": "Fluent"
+    },
+    "yesNo": { "YES": "Yes", "NO": "No" },
+    "languages": {
+      "English": "English",
+      "Vietnamese": "Vietnamese",
+      "Chinese": "Chinese",
+      "Japanese": "Japanese",
+      "Korean": "Korean",
+      "Spanish": "Spanish",
+      "French": "French",
+      "German": "German",
+      "Portuguese": "Portuguese",
+      "Arabic": "Arabic",
+      "Hindi": "Hindi",
+      "Russian": "Russian",
+      "Thai": "Thai",
+      "Indonesian": "Indonesian",
+      "Tagalog": "Tagalog",
+      "Other": "Other"
+    },
+    "weekdays": {
+      "MON": "Monday",
+      "TUE": "Tuesday",
+      "WED": "Wednesday",
+      "THU": "Thursday",
+      "FRI": "Friday",
+      "SAT": "Saturday",
+      "SUN": "Sunday"
+    },
+    "times": {
+      "H06_09": "06:00–09:00",
+      "H09_12": "09:00–12:00",
+      "H12_15": "12:00–15:00",
+      "H15_18": "15:00–18:00",
+      "H18_21": "18:00–21:00",
+      "H21_00": "21:00–00:00",
+      "H00_03": "00:00–03:00",
+      "H03_06": "03:00–06:00"
+    },
+    "interests": {
+      "READING": "Reading",
+      "MOVIES": "Movies",
+      "ART": "Art",
+      "TECHNOLOGY": "Technology",
+      "GAMING": "Gaming",
+      "PETS": "Pets",
+      "TRAVEL": "Travel",
+      "SPORTS": "Sports",
+      "FOOD": "Food",
+      "HISTORY": "History",
+      "FITNESS": "Fitness",
+      "FASHION": "Fashion",
+      "SCIENCE": "Science",
+      "LANGUAGES": "Languages",
+      "FINANCE": "Finance",
+      "POLITICS": "Politics",
+      "CULTURE": "Culture",
+      "OUTDOORS": "Outdoors"
+    }
+  },
+  "optionsGeneral": {
+    "goals": {
+      "CAREER_BUSINESS": "Career or professional development",
+      "EXAMS_CERTIFICATIONS": "Exams and certifications",
+      "TRAVEL": "Practical application",
+      "PERSONAL_DEVELOPMENT": "Personal development"
+    },
+    "usage": {
+      "MEETINGS": "Real-world application",
+      "PRESENTATIONS": "Presentations",
+      "EVERYDAY_CONVERSATION": "Independent practice",
+      "TEAMWORK": "Collaborative work",
+      "NEGOTIATIONS": "Problem solving",
+      "TEAM_MANAGEMENT": "Leading others",
+      "CLIENT_COMMUNICATION": "Professional application",
+      "INTERVIEWS": "Assessments or interviews"
+    },
+    "focus": {
+      "FLUENCY": "Mastery",
+      "CONFIDENCE": "Confidence",
+      "ACCURACY": "Accuracy",
+      "VOCABULARY": "Core concepts",
+      "PRONUNCIATION_INTONATION": "Technique",
+      "LISTENING": "Understanding",
+      "READING": "Reading materials",
+      "WRITING": "Written work"
+    },
+    "levels": {
+      "JUST_STARTING": "Just starting",
+      "KNOW_THE_BASICS": "Know the basics",
+      "CONVERSATIONAL": "Intermediate",
+      "FLUENT": "Advanced"
+    }
+  },
+  "optionsStem": {
+    "goals": {
+      "CAREER_BUSINESS": "Career or applied technical skills",
+      "EXAMS_CERTIFICATIONS": "Exams and certifications",
+      "TRAVEL": "Solve real-world problems",
+      "PERSONAL_DEVELOPMENT": "Personal curiosity and growth"
+    },
+    "usage": {
+      "MEETINGS": "Projects and practical applications",
+      "PRESENTATIONS": "Explain solutions",
+      "EVERYDAY_CONVERSATION": "Independent practice",
+      "TEAMWORK": "Collaborative problem solving",
+      "NEGOTIATIONS": "Analyze complex problems",
+      "TEAM_MANAGEMENT": "Mentor or lead others",
+      "CLIENT_COMMUNICATION": "Professional applications",
+      "INTERVIEWS": "Assessments and technical interviews"
+    },
+    "focus": {
+      "FLUENCY": "Problem-solving fluency",
+      "CONFIDENCE": "Confidence",
+      "ACCURACY": "Accuracy",
+      "VOCABULARY": "Core concepts",
+      "PRONUNCIATION_INTONATION": "Methods and techniques",
+      "LISTENING": "Conceptual understanding",
+      "READING": "Research and reference materials",
+      "WRITING": "Written solutions"
+    },
+    "levels": {
+      "JUST_STARTING": "Beginner",
+      "KNOW_THE_BASICS": "Know the foundations",
+      "CONVERSATIONAL": "Intermediate",
+      "FLUENT": "Advanced"
+    }
+  },
+  "optionsCreative": {
+    "goals": {
+      "CAREER_BUSINESS": "Professional creative practice",
+      "EXAMS_CERTIFICATIONS": "Auditions, portfolio, or certification",
+      "TRAVEL": "Create a practical project",
+      "PERSONAL_DEVELOPMENT": "Personal expression and growth"
+    },
+    "usage": {
+      "MEETINGS": "Rehearsal and practice",
+      "PRESENTATIONS": "Performance or presentation",
+      "EVERYDAY_CONVERSATION": "Daily creative practice",
+      "TEAMWORK": "Collaboration",
+      "NEGOTIATIONS": "Creative problem solving",
+      "TEAM_MANAGEMENT": "Direct or lead others",
+      "CLIENT_COMMUNICATION": "Client or portfolio work",
+      "INTERVIEWS": "Auditions and reviews"
+    },
+    "focus": {
+      "FLUENCY": "Creative flow",
+      "CONFIDENCE": "Confidence",
+      "ACCURACY": "Precision",
+      "VOCABULARY": "Creative range",
+      "PRONUNCIATION_INTONATION": "Technique",
+      "LISTENING": "Observation and listening",
+      "READING": "References and interpretation",
+      "WRITING": "Composition"
+    },
+    "levels": {
+      "JUST_STARTING": "Beginner",
+      "KNOW_THE_BASICS": "Know the foundations",
+      "CONVERSATIONAL": "Intermediate",
+      "FLUENT": "Advanced"
+    }
+  },
+  "page": {
+    "breadcrumbBooking": "Trial lesson",
+    "breadcrumbNeeds": "Learning needs",
+    "bookingSuccess": "Your trial lesson is booked",
+    "heroTitle": "Help {tutor} prepare a lesson for you",
+    "heroDescription": "Every goal is a starting point. Help your tutor choose the approach that fits you best.",
+    "stepCount": "Step {step} / 3",
+    "step1": {
+      "label": "Learning goals",
+      "title": "What do you want to learn for?",
+      "description": "Share what matters most to you."
+    },
+    "step2": {
+      "label": "Schedule & interests",
+      "title": "Learn at your own pace",
+      "description": "Tell your tutor about your preferred schedule and favorite topics."
+    },
+    "step3": {
+      "label": "Share with tutor",
+      "title": "Ready for your first lesson",
+      "description": "Review your answers before sharing them with your tutor."
+    },
+    "levelDescriptions": {
+      "JUST_STARTING": "No foundation yet",
+      "KNOW_THE_BASICS": "Understand simple ideas",
+      "CONVERSATIONAL": "Can use it day to day",
+      "FLUENT": "Use it confidently"
+    },
+    "industryHint": "Helps your tutor choose relevant topics and vocabulary.",
+    "lessonsUnit": "Lessons / month",
+    "decreaseLessons": "Decrease lessons per month",
+    "increaseLessons": "Increase lessons per month",
+    "trialCardTitle": "Your trial lesson",
+    "bookingDateFallback": "Lesson date to be updated",
+    "bookingTimeFallback": "Lesson time to be updated",
+    "onlineLesson": "Online lesson on Mezon",
+    "helpTitle": "A little context makes a much better lesson.",
+    "helpDescription": "Your goals and interests help your tutor prepare content that matches what you need.",
+    "pinExplainer": "After sharing, your learning needs will be pinned at the top of your chat with {tutor}.",
+    "sidebarNote": "Only you and this tutor can see what you share. You can update it at any time.",
+    "privacy": "Your answers have not been shared yet. You can review them before sending them to your tutor.",
+    "reviewPinNotice": "After sharing, a summary card will be pinned at the top of your chat. You can review and update it at any time."
+  },
+  "review": {
+    "title": "Review before sharing",
+    "shareWith": "Share with {tutor}",
+    "onlyTutorReceives": "Only this tutor will receive the information you share.",
+    "learningNeedsTitle": "Your learning needs"
+  },
+  "summary": {
+    "title": "Shared learning needs",
+    "sharedWith": "Shared with {tutor}",
+    "updated": "Last updated {date}",
+    "empty": "No additional details were provided."
+  },
+  "validation": {
+    "goalRequired": "Choose a learning goal before sharing.",
+    "lessonsPositive": "Lessons per month must be a positive whole number.",
+    "lessonsRange": "Lessons per month must be a whole number from 1 to 100.",
+    "languagesMax": "Add no more than {max} other languages.",
+    "timezoneInvalid": "Enter a valid IANA timezone."
+  },
+  "errors": {
+    "load": "We could not load these learning needs.",
+    "save": "We could not save your answers. Your changes are still here—please try again.",
+    "chatSync": "Your learning needs were shared, but the tutor chat could not be linked yet.",
+    "chatSyncPending": "Your learning needs were shared and are being linked to the tutor chat.",
+    "chatSyncFailed": "Your learning needs were shared, but linking them to the tutor chat failed. Try again."
+  },
+  "unsaved": {
+    "title": "Discard unsaved changes?",
+    "description": "Your latest changes have not been saved as a draft and will be lost."
+  },
+  "actions": {
+    "retry": "Try again",
+    "retryChatSync": "Retry chat link",
+    "reconnectMezon": "Reconnect Mezon",
+    "keepEditing": "Keep editing",
+    "discard": "Discard changes",
+    "clear": "Clear",
+    "close": "Close",
+    "edit": "Edit",
+    "back": "Back",
+    "continue": "Continue",
+    "saveDraft": "Save progress",
+    "saveAndShare": "Save & share with tutor",
+    "share": "Save & share with {tutor}"
+  },
+  "toasts": {
+    "draftSaved": "Progress saved successfully."
+  },
+  "entry": {
+    "eyebrow": "Optional personalization",
+    "title": "Help {tutor} prepare for your lesson",
+    "description": "Share your goals, preferences, and schedule so your tutor can tailor the trial lesson.",
+    "complete": "Complete learning needs",
+    "continue": "Continue learning needs",
+    "skip": "Skip for now",
+    "shared": "Learning needs shared",
+    "edit": "View or edit"
+  },
+  "chat": {
+    "title": "Learning needs",
+    "pinned": "Pinned",
+    "updatedAt": "Updated {date}",
+    "lessonsPerMonth": "{count} lessons / month",
+    "view": "View learning needs",
+    "edit": "Edit",
+    "complete": "Complete learning needs",
+    "notSharedStudent": "Share your learning goals so your tutor can prepare.",
+    "notSharedTutor": "The student has not shared learning needs yet.",
+    "noContext": "No eligible lesson context is available.",
+    "loading": "Loading learning needs...",
+    "loadError": "Could not load learning needs.",
+    "retry": "Retry"
+  }
+}

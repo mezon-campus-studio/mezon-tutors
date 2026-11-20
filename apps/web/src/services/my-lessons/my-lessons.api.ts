@@ -69,6 +69,7 @@ export type LessonItem = {
   grossAmount?: number;
   currency?: string;
   trialBookingStatus?: "confirmed" | "cancelled" | "completed";
+  learningNeedsStatus?: "not_started" | "draft" | "shared";
   trialPaymentStatus?: string;
   subscriptionEnrollmentId?: string;
   subscriptionSlotIndex?: number;
@@ -233,6 +234,7 @@ const mapLesson = (
     grossAmount: item.gross_amount,
     currency: item.currency,
     trialBookingStatus: item.trial_booking_status,
+    learningNeedsStatus: item.learning_needs_status,
     trialPaymentStatus: item.trial_payment_status,
     subscriptionEnrollmentId: item.subscription_enrollment_id,
     subscriptionSlotIndex: item.subscription_slot_index,

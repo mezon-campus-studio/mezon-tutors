@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  BookOpenCheck,
   Calendar,
   CheckCircle2,
   Clock,
@@ -33,6 +34,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ApiError } from '@/services/api-client';
 import { useGetTrialLessonBookingDetail } from '@/services/trial-lesson-booking/trial-lesson-booking.api';
+import { useLearningNeedsForBooking } from '@/services/learning-needs/learning-needs.api';
 import { walletQueryKey } from '@/services/wallet/wallet.qkey';
 import { isAuthenticatedAtom } from '@/store/auth.atom';
 import {
@@ -108,6 +110,7 @@ export default function TrialLessonSuccessContent({ bookingId }: { bookingId: st
   const queryClient = useQueryClient();
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const [authHydrated, setAuthHydrated] = useState(false);
+  const learningT = useTranslations('LearningNeeds.entry');
 
   useEffect(() => {
     setAuthHydrated(true);
@@ -119,6 +122,8 @@ export default function TrialLessonSuccessContent({ bookingId }: { bookingId: st
     bookingId,
     canFetchBooking,
   );
+  const canLoadLearningNeeds = canFetchBooking && data?.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED;
+  const { data: learningNeeds } = useLearningNeedsForBooking(bookingId, canLoadLearningNeeds);
 
   useEffect(() => {
     if (data?.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED) {
@@ -383,6 +388,41 @@ export default function TrialLessonSuccessContent({ bookingId }: { bookingId: st
             </div>
           </CheckoutResultCard>
         </div>
+
+        {data.paymentStatus === ETrialLessonBookingPaymentStatus.SUCCEEDED ? (
+          <CheckoutResultCard className="overflow-hidden border-violet-200">
+            <div className="flex flex-col gap-5 bg-[linear-gradient(120deg,#f5f3ff,#fdf2f8_65%,#ffffff)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-6">
+              <div className="flex min-w-0 gap-4">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm ring-1 ring-violet-100">
+                  <BookOpenCheck className="size-6" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-violet-600">{learningT('eyebrow')}</p>
+                  <h2 className="mt-1 text-lg font-bold text-slate-900">{learningT('title', { tutor: data.tutor.displayName })}</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">{learningT('description')}</p>
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                <Button
+                  type="button"
+                  onClick={() => router.push(ROUTES.DASHBOARD.LEARNING_NEEDS(bookingId))}
+                  className={checkoutGradientButtonClass}
+                >
+                  {learningNeeds?.shared
+                    ? learningT('edit')
+                    : learningNeeds?.draft
+                      ? learningT('continue')
+                      : learningT('complete')}
+                </Button>
+                {!learningNeeds?.shared ? (
+                  <Button type="button" variant="ghost" onClick={() => router.push(ROUTES.DASHBOARD.MY_LESSONS)} className="text-slate-500">
+                    {learningT('skip')}
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </CheckoutResultCard>
+        ) : null}
 
         <CheckoutResultCard variant="muted">
           <div className="px-5 py-5 sm:px-7 sm:py-7">
