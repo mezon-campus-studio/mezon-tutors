@@ -3,10 +3,11 @@ import {
   BadRequestException,
   HttpException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ChannelType, type ApiChannelDescription } from 'mezon-sdk';
 import { MezonApi } from 'mezon-sdk/dist/cjs/api';
+import { listMezonDirectMessagePage } from './mezon-channel-desc-page';
+import { createMezonProviderException } from './mezon-provider.exception';
 
 const MEZON_REQUEST_TIMEOUT_MS = 7_000;
 const MEZON_DM_PAGE_SIZE = 100;
@@ -51,10 +52,7 @@ export class MezonChannelVerificationService {
         throw error;
       }
       if (error instanceof MezonProviderHttpError) {
-        if (error.status === 401 || error.status === 403) {
-          throw new UnauthorizedException('Mezon session is invalid or expired');
-        }
-        throw new BadGatewayException('Mezon is temporarily unavailable');
+        throw createMezonProviderException(error.status);
       }
       throw new BadGatewayException('Unable to verify the Mezon direct-message channel');
     }
@@ -76,7 +74,8 @@ export class MezonChannelVerificationService {
       throw new BadRequestException('Mezon access token does not match the authenticated user');
     }
 
-    const api = this.createApi(this.trustedMezonBasePath(apiUrl));
+    const basePath = this.trustedMezonBasePath(apiUrl);
+    const api = this.createApi(basePath);
 
     if (channelId) {
       try {
@@ -90,10 +89,7 @@ export class MezonChannelVerificationService {
           : null;
       } catch (error) {
         if (error instanceof MezonProviderHttpError) {
-          if (error.status === 401 || error.status === 403) {
-            throw new UnauthorizedException('Mezon session is invalid or expired');
-          }
-          throw new BadGatewayException('Mezon is temporarily unavailable');
+          throw createMezonProviderException(error.status);
         }
         if (error instanceof HttpException) throw error;
         throw new BadGatewayException('Unable to query the Mezon direct-message channel');
@@ -105,16 +101,14 @@ export class MezonChannelVerificationService {
 
     try {
       for (let page = 0; page < MEZON_DM_MAX_PAGES; page += 1) {
-        const response = await api.listChannelDescs(
+        const response = await listMezonDirectMessagePage({
+          api,
+          basePath,
           accessToken,
-          ChannelType.CHANNEL_TYPE_DM,
-          '0',
-          MEZON_DM_PAGE_SIZE,
-          0,
           cursor,
-          false
-        );
-        const match = response.channeldesc?.find(
+          limit: MEZON_DM_PAGE_SIZE,
+        });
+        const match = response.channels.find(
           (channel) =>
             this.hasExpectedParticipants(channel, authenticatedMezonUserId, recipientMezonUserId)
         );
@@ -122,7 +116,7 @@ export class MezonChannelVerificationService {
           return match;
         }
 
-        const nextCursor = response.next_cursor?.trim();
+        const nextCursor = response.nextCursor?.trim();
         if (!nextCursor || nextCursor === cursor || visitedCursors.has(nextCursor)) {
           return null;
         }
@@ -131,10 +125,7 @@ export class MezonChannelVerificationService {
       }
     } catch (error) {
       if (error instanceof MezonProviderHttpError) {
-        if (error.status === 401 || error.status === 403) {
-          throw new UnauthorizedException('Mezon session is invalid or expired');
-        }
-        throw new BadGatewayException('Mezon is temporarily unavailable');
+        throw createMezonProviderException(error.status);
       }
       if (error instanceof HttpException) throw error;
       throw new BadGatewayException('Unable to query Mezon direct-message channels');

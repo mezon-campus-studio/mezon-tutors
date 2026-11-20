@@ -17,10 +17,6 @@ export class DmChannelService {
   ) {}
 
   async createChannel(authenticatedUserId: string, dto: UpsertDmChannelDto) {
-    const { authenticatedUser, recipient } = await this.getParticipants(
-      authenticatedUserId,
-      dto.recipientId
-    );
     const [userAId, userBId] = [authenticatedUserId, dto.recipientId].sort();
 
     const existingChannel = await this.prisma.userDmChannel.findFirst({
@@ -42,6 +38,11 @@ export class DmChannelService {
       return existingChannel;
     }
 
+    const { authenticatedUser, recipient } = await this.getParticipants(
+      authenticatedUserId,
+      dto.recipientId
+    );
+
     await this.mezonChannelVerification.assertDirectMessageParticipants(
       dto.mezonAccessToken,
       dto.mezonApiUrl,
@@ -53,10 +54,6 @@ export class DmChannelService {
   }
 
   async resolveExistingChannel(authenticatedUserId: string, dto: ResolveDmChannelDto) {
-    const { authenticatedUser, recipient } = await this.getParticipants(
-      authenticatedUserId,
-      dto.recipientId
-    );
     const [userAId, userBId] = [authenticatedUserId, dto.recipientId].sort();
     const existing = await this.prisma.userDmChannel.findUnique({
       where: { senderId_recipientId: { senderId: userAId, recipientId: userBId } },
@@ -64,6 +61,11 @@ export class DmChannelService {
     if (existing) {
       return existing;
     }
+
+    const { authenticatedUser, recipient } = await this.getParticipants(
+      authenticatedUserId,
+      dto.recipientId
+    );
 
     const channel = await this.mezonChannelVerification.findDirectMessage(
       dto.mezonAccessToken,
