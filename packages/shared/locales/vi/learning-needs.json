@@ -314,12 +314,12 @@
     "edit": "Chỉnh sửa",
     "back": "Quay lại",
     "continue": "Tiếp tục",
-    "saveDraft": "Lưu bản nháp",
-    "saveAndShare": "Lưu và chia sẻ",
+    "saveDraft": "Lưu tiến độ",
+    "saveAndShare": "Lưu và chia sẻ với gia sư",
     "share": "Lưu và chia sẻ với {tutor}"
   },
   "toasts": {
-    "draftSaved": "Đã lưu bản nháp thành công."
+    "draftSaved": "Đã lưu tiến độ thành công."
   },
   "entry": {
     "eyebrow": "Cá nhân hóa không bắt buộc",

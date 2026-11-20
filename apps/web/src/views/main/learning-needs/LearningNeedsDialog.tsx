@@ -191,7 +191,7 @@ export function LearningNeedsDialog({
     if (loadedKey === nextLoadedKey) return;
     const isFirstLoadForBooking = !loadedKey.startsWith(`${bookingId}:`);
 
-    setAnswers(data.draft?.answers ?? data.shared?.answers ?? emptyAnswers());
+    setAnswers(data.draft?.answers ?? data.shared?.answers ?? data.prefill ?? emptyAnswers());
     if (isFirstLoadForBooking) {
       setView(initialView ?? (data.shared ? 'summary' : 'edit'));
       setStep(1);
@@ -205,7 +205,7 @@ export function LearningNeedsDialog({
   const busy =
     saveDraft.isPending || share.isPending || createDmChannel.isPending || isRetryingSync;
   const tutorName = data?.context.tutor.displayName ?? '';
-  const persistedAnswers = data?.draft?.answers ?? data?.shared?.answers;
+  const persistedAnswers = data?.draft?.answers ?? data?.shared?.answers ?? data?.prefill;
   const hasUnsavedChanges = Boolean(
     data &&
       view === 'edit' &&
@@ -588,7 +588,7 @@ export function LearningNeedsDialog({
 
       {data ? (
         <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-white px-5 py-4 sm:px-8">
-          {view === 'summary' || step === 1 ? (
+          {view === 'summary' ? (
             <Button
               variant="ghost"
               disabled={busy}
@@ -605,7 +605,9 @@ export function LearningNeedsDialog({
                     onEdit();
                     return;
                   }
-                  setAnswers(data.draft?.answers ?? data.shared?.answers ?? emptyAnswers());
+                  setAnswers(
+                    data.draft?.answers ?? data.shared?.answers ?? data.prefill ?? emptyAnswers()
+                  );
                   setView('edit');
                   setStep(1);
                 }}
@@ -615,58 +617,55 @@ export function LearningNeedsDialog({
               </Button>
             ) : null
           ) : (
-            <div
-              className={cn(
-                'flex flex-wrap items-center gap-2',
-                step > 1 && presentation === 'page' && 'w-full justify-between'
-              )}
-            >
-              {presentation !== 'page' ? (
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => void handleSaveDraft()}
-                >
-                  {saveDraft.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                  {t('actions.saveDraft')}
-                </Button>
-              ) : null}
-              {step > 1 ? (
-                <Button
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => {
-                    setFormError('');
-                    setStep((value) => value - 1);
-                  }}
-                >
-                  <ChevronLeft className="size-4" />
-                  {t('actions.back')}
-                </Button>
-              ) : null}
-              {step < 3 ? (
-                <Button
-                  className="h-11 bg-[#8332ff] px-5 text-white hover:bg-[#7024e8]"
-                  onClick={handleContinue}
-                >
-                  {t('actions.continue')}
-                </Button>
-              ) : (
-                <Button
-                  className="h-11 bg-[#8332ff] px-5 text-white hover:bg-[#7024e8]"
-                  disabled={busy}
-                  onClick={() => void handleShare()}
-                >
-                  {busy ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Check className="size-4" />
-                  )}
-                  {presentation === 'page'
-                    ? t('actions.saveAndShare')
-                    : t('actions.share', { tutor: tutorName })}
-                </Button>
-              )}
+            <div className="flex w-full flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                className="h-11 border-[#ddd4ea] bg-white px-4 text-[#332b7b] hover:bg-[#f7f3ff]"
+                disabled={busy}
+                onClick={() => void handleSaveDraft()}
+              >
+                {saveDraft.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                {t('actions.saveDraft')}
+              </Button>
+              <div className="flex items-center gap-2">
+                {step > 1 ? (
+                  <Button
+                    variant="ghost"
+                    className="h-11 px-4 text-[#332b7b] hover:bg-[#f7f3ff]"
+                    disabled={busy}
+                    onClick={() => {
+                      setFormError('');
+                      setStep((value) => value - 1);
+                    }}
+                  >
+                    <ChevronLeft className="size-4" />
+                    {t('actions.back')}
+                  </Button>
+                ) : null}
+                {step < 3 ? (
+                  <Button
+                    className="h-11 bg-[#8332ff] px-5 text-white hover:bg-[#7024e8]"
+                    onClick={handleContinue}
+                  >
+                    {t('actions.continue')}
+                  </Button>
+                ) : (
+                  <Button
+                    className="h-11 bg-[#8332ff] px-5 text-white hover:bg-[#7024e8]"
+                    disabled={busy}
+                    onClick={() => void handleShare()}
+                  >
+                    {busy ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Check className="size-4" />
+                    )}
+                    {presentation === 'page'
+                      ? t('actions.saveAndShare')
+                      : t('actions.share', { tutor: tutorName })}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>

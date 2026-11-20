@@ -51,7 +51,7 @@ ALTER TABLE "learning_needs" ADD CONSTRAINT "learning_needs_sync_state_check"
 CHECK (
   ("sync_status" = 'NOT_REQUIRED')
   OR ("sync_status" IN ('PENDING', 'FAILED') AND "shared_at" IS NOT NULL)
-  OR ("sync_status" = 'SYNCED' AND "shared_at" IS NOT NULL AND "user_dm_channel_id" IS NOT NULL)
+  OR ("sync_status" = 'SYNCED' AND "shared_at" IS NOT NULL)
 );
 
 ALTER TABLE "learning_needs" ADD CONSTRAINT "learning_needs_sync_error_check"

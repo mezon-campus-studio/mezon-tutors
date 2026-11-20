@@ -90,8 +90,12 @@ export const LEARNING_LANGUAGES = [
 const LANGUAGE_SUBJECT_PATTERN =
   /\b(language|english|vietnamese|chinese|mandarin|cantonese|japanese|korean|spanish|french|german|portuguese|arabic|hindi|russian|thai|indonesian|tagalog|tieng anh|tieng viet|tieng trung|tieng nhat|tieng han|tieng phap|tieng duc|tieng tay ban nha)\b/;
 
+function normalizeLearningSubject(subject: string): string {
+  return subject.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/đ/g, 'd').trim();
+}
+
 export function isLanguageLearningSubject(subject: string): boolean {
-  const normalized = subject.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  const normalized = normalizeLearningSubject(subject);
   return LANGUAGE_SUBJECT_PATTERN.test(normalized);
 }
 
@@ -103,7 +107,7 @@ const CREATIVE_SUBJECT_PATTERN =
 export type LearningNeedsSubjectCategory = 'language' | 'stem' | 'creative' | 'general';
 
 export function getLearningNeedsSubjectCategory(subject: string): LearningNeedsSubjectCategory {
-  const normalized = subject.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  const normalized = normalizeLearningSubject(subject);
   if (LANGUAGE_SUBJECT_PATTERN.test(normalized)) return 'language';
   if (STEM_SUBJECT_PATTERN.test(normalized)) return 'stem';
   if (CREATIVE_SUBJECT_PATTERN.test(normalized)) return 'creative';
@@ -171,6 +175,7 @@ export type LearningNeedsBookingDto = {
     answers: LearningNeedsAnswersV1;
     updatedAt: string;
   } | null;
+  prefill: LearningNeedsAnswersV1 | null;
   shared: LearningNeedsSharedSnapshotDto | null;
   sync: LearningNeedsSyncDto;
   canEdit: boolean;

@@ -314,12 +314,12 @@
     "edit": "Edit",
     "back": "Back",
     "continue": "Continue",
-    "saveDraft": "Save draft",
-    "saveAndShare": "Save & share",
+    "saveDraft": "Save progress",
+    "saveAndShare": "Save & share with tutor",
     "share": "Save & share with {tutor}"
   },
   "toasts": {
-    "draftSaved": "Draft saved successfully."
+    "draftSaved": "Progress saved successfully."
   },
   "entry": {
     "eyebrow": "Optional personalization",

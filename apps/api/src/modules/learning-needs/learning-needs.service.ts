@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import {
   BadRequestException,
   ConflictException,
@@ -91,7 +92,7 @@ export class LearningNeedsService {
 
     if (
       current &&
-      JSON.stringify(current.draftAnswers) === JSON.stringify(answers) &&
+      isDeepStrictEqual(current.draftAnswers, answers) &&
       (dto.expectedDraftRevision === undefined ||
         dto.expectedDraftRevision === current.draftRevision)
     ) {
@@ -309,6 +310,9 @@ export class LearningNeedsService {
     if (!record || record.studentId !== userId) {
       throw new NotFoundException('Learning needs not found');
     }
+    if (!record.sharedAt) {
+      throw new BadRequestException('Learning needs must be shared before associating a channel');
+    }
 
     const channel = await this.prisma.userDmChannel.findUnique({
       where: { channelId: dto.channelId },
@@ -457,21 +461,15 @@ export class LearningNeedsService {
     const canEdit = booking.studentId === userId;
     return {
       context: this.bookingContextDto(booking),
-      draft: canEdit
-        ? record
+      draft:
+        canEdit && record
           ? {
               revision: record.draftRevision,
               answers: record.draftAnswers as unknown as LearningNeedsAnswersV1,
               updatedAt: record.updatedAt.toISOString(),
             }
-          : previousAnswers
-            ? {
-                revision: 0,
-                answers: previousAnswers,
-                updatedAt: new Date().toISOString(),
-              }
-            : null
-        : null,
+          : null,
+      prefill: canEdit && !record ? (previousAnswers ?? null) : null,
       shared: record?.sharedAnswers && record.sharedAt ? this.sharedDto(record) : null,
       sync: this.syncDto(record),
       canEdit,

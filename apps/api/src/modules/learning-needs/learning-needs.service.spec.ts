@@ -252,16 +252,16 @@ describe('LearningNeedsService authorization and snapshots', () => {
     // When student visits a new booking:
     const studentResult = await service.getForBooking('student-1', 'booking-1');
     expect(studentResult.canEdit).toBe(true);
-    expect(studentResult.draft).not.toBeNull();
-    expect(studentResult.draft?.revision).toBe(0);
-    expect(studentResult.draft?.answers.nativeLanguage).toBe('Vietnamese');
-    expect(studentResult.draft?.answers.learningGoal).toBe('PERSONAL_DEVELOPMENT');
+    expect(studentResult.draft).toBeNull();
+    expect(studentResult.prefill?.nativeLanguage).toBe('Vietnamese');
+    expect(studentResult.prefill?.learningGoal).toBe('PERSONAL_DEVELOPMENT');
     expect(studentResult.shared).toBeNull(); // Crucial: NOT shared automatically!
 
     // When the new tutor visits that same booking:
     const tutorResult = await service.getForBooking('tutor-user-1', 'booking-1');
     expect(tutorResult.canEdit).toBe(false);
     expect(tutorResult.draft).toBeNull(); // Tutor cannot see student's unshared draft
+    expect(tutorResult.prefill).toBeNull();
     expect(tutorResult.shared).toBeNull(); // Tutor sees nothing shared yet
   });
 
@@ -294,7 +294,7 @@ describe('LearningNeedsService authorization and snapshots', () => {
 
     const result = await service.getForBooking('student-1', 'booking-1');
 
-    expect(result.draft?.answers).toMatchObject({
+    expect(result.prefill).toMatchObject({
       learningGoal: null,
       usageSituations: [],
       focusAreas: [],
@@ -425,6 +425,7 @@ describe('LearningNeedsService authorization and snapshots', () => {
           studentId: 'student-1',
           tutor: { userId: 'tutor-user-1' },
           trialLessonBookingId: 'booking-1',
+          sharedAt: new Date('2026-11-05T00:00:00.000Z'),
         }),
       },
       userDmChannel: {
