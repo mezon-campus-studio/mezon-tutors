@@ -1,18 +1,18 @@
 {
   "Home": {
     "Hero": {
-      "badge": "Học gia sư trực tuyến trên Mezonly",
-      "title": "Tìm gia sư 1-1",
+      "badge": "Gia sư trực tuyến 1–1",
+      "title": "Tìm gia sư phù hợp,",
       "titleHighlightLead": "đúng mục tiêu học,",
-      "titleHighlightTail": "đúng lịch của bạn",
-      "description": "Tự lọc theo môn học, lịch rảnh, ngân sách và đánh giá thật. Xem hồ sơ gia sư đã xác minh, chọn người phù hợp rồi đặt buổi học thử trực tiếp trên Mezon.",
+      "titleHighlightTail": "học theo lịch của bạn",
+      "description": "Chọn môn học, xem hồ sơ và học phí. Đặt lịch với gia sư bạn thấy phù hợp.",
       "startNow": "Tìm gia sư ngay",
       "match": "Phù hợp",
       "profile": "Xem hồ sơ",
       "connect": "Đặt buổi thử",
       "search": {
-        "label": "Tôi muốn học",
-        "placeholder": "Toán, tiếng Anh, lập trình, IELTS...",
+        "label": "Bạn muốn học môn gì?",
+        "placeholder": "Bạn muốn học môn gì?",
         "submit": "Tìm gia sư"
       },
       "subjects": {
@@ -109,7 +109,8 @@
           "label": "Gia sư đã xác minh",
           "description": "Kiểm tra ID, phỏng vấn và đánh giá thật — mọi gia sư."
         }
-      }
+      },
+      "popular": "Khám phá:"
     },
     "Stats": {
       "title": "Xây dựng cho người không có thời gian để lãng phí",
@@ -135,20 +136,20 @@
     },
     "HowItWorks": {
       "badge": "Cách thức hoạt động",
-      "title": "Ba bước đến buổi học tiếp theo",
+      "title": "Bắt đầu học trên Mezonly",
       "description": "Từ lần tìm kiếm đầu tiên tới buổi học đầu tiên — thiết kế phù hợp lịch sinh hoạt bận rộn.",
       "steps": {
         "step1": {
-          "title": "Tìm gia sư phù hợp",
-          "description": "Lọc theo môn học, trình độ, mức giá và thời gian rảnh. Xem video giới thiệu và đánh giá thật từ học viên."
+          "title": "Chọn gia sư",
+          "description": "Xem hồ sơ, môn dạy và học phí của từng gia sư."
         },
         "step2": {
-          "title": "Đặt buổi học thử",
-          "description": "Chọn khung giờ phù hợp nhịp của bạn, bất kỳ ngày nào trong tuần. Thanh toán an toàn theo từng buổi, không gói dài hạn."
+          "title": "Đặt lịch học",
+          "description": "Chọn khung giờ phù hợp trên lịch của gia sư."
         },
         "step3": {
-          "title": "Học trực tiếp trên Mezon",
-          "description": "Chat, gửi tài liệu và vào phòng học video ngay trên Mezon. Tất cả trong một nền tảng."
+          "title": "Học trên Mezon",
+          "description": "Vào lớp, trao đổi và nhận tài liệu ngay trên Mezon."
         }
       }
     },

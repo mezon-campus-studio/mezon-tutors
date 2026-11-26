@@ -1,19 +1,19 @@
 {
   "Home": {
     "Hero": {
-      "badge": "Online tutoring on Mezonly",
-      "title": "Find a 1-on-1 tutor",
+      "badge": "Online tutoring, one to one",
+      "title": "Find the right tutor,",
       "titleHighlightLead": "for your exact goal,",
-      "titleHighlightTail": "on your schedule",
-      "description": "Filter by subject, availability, budget, and real reviews. Compare verified tutor profiles, choose the right person, then book a trial lesson directly on Mezon.",
+      "titleHighlightTail": "learn on your schedule",
+      "description": "Choose a subject, compare profiles and lesson prices, then book a time that works for you.",
       "startNow": "Find your tutor",
       "match": "Match",
       "profile": "View profile",
       "connect": "Book trial",
       "search": {
-        "label": "I want to learn",
-        "placeholder": "Math, English, coding, IELTS...",
-        "submit": "Search tutors"
+        "label": "What would you like to learn?",
+        "placeholder": "What would you like to learn?",
+        "submit": "Find a tutor"
       },
       "subjects": {
         "ielts": "IELTS Speaking",
@@ -109,7 +109,8 @@
           "label": "Verified tutors",
           "description": "ID-checked, interviewed and reviewed — every single one."
         }
-      }
+      },
+      "popular": "Explore:"
     },
     "Stats": {
       "title": "Built for learners who don't waste time",
@@ -135,20 +136,20 @@
     },
     "HowItWorks": {
       "badge": "How it works",
-      "title": "Three steps to your next lesson",
+      "title": "Getting started on Mezonly",
       "description": "From your first search to your first class — designed to fit a busy schedule.",
       "steps": {
         "step1": {
-          "title": "Find the right tutor",
-          "description": "Filter by subject, level, price, and availability. See video intros and real reviews from other learners."
+          "title": "Choose your tutor",
+          "description": "Compare profiles, subjects and lesson prices."
         },
         "step2": {
-          "title": "Book a trial lesson",
-          "description": "Choose a slot that fits your routine any day of the week. Pay securely per lesson, no subscription required."
+          "title": "Book a lesson",
+          "description": "Pick a time from your tutor’s available schedule."
         },
         "step3": {
-          "title": "Learn live on Mezon",
-          "description": "Chat, share files and join your video classroom directly on Mezon. Everything in one place."
+          "title": "Learn on Mezon",
+          "description": "Join your class, chat and share learning materials."
         }
       }
     },
